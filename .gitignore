@@ -11,6 +11,7 @@
 # literature folder
 /literatur/*
 
-# data related
-*results_msci_market_factors*
+# R related
+*.Rhistory
+*result_msci_market_factors*
 r_project/data_in/*
