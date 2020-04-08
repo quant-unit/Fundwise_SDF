@@ -5,8 +5,9 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
 
 list.cache <- list()
-dir.cache <- "data_out/cache_q_factors"
+dir.cache <- "data_out/cache_q_factors_EW"
 for(file in list.files(dir.cache)) {
+  if(substr(file,1,1) == 0) next
   df.f <- read.csv(paste0(dir.cache, "/", file))
   df.f$CV.key <- as.character(df.f$CV.key)
   list.cache[[file]] <- df.f
@@ -40,7 +41,8 @@ q.factors <- c("MKT", "ME", "IA", "ROE", "EG")
 
 cv.res <- list()
 for(Factor in q.factors) {
-  df <- df.f[(df.f$CV.key != "ALL") & (df.f$Factor == Factor), c(q.factors, "Type", "max.quarter")]
+  df <- df.f[(df.f$CV.key != "ALL") & (df.f$Factor == Factor), 
+             c(q.factors, "Type", "max.quarter", "validation.error")]
   df <- df[, !is.na(df[1, ])]
   df$id <- paste0(df$Type, "_", df$max.quarter)
   df$Type <- NULL
@@ -49,8 +51,9 @@ for(Factor in q.factors) {
   if( is.data.frame(df) ) {
     m <-   aggregate(. ~ id, mean, data = df)
     s <-   aggregate(. ~ id, sd, data = df)
+    s["validation.error"] <- NULL
   }
-  n <- ncol(df)
+  n <- ncol(s)
   a <- 2
   b <- 3
   if(n == b) {
@@ -67,18 +70,20 @@ for(Factor in q.factors) {
 }
 
 df.cv <- data.frame(Reduce(rbind.all.columns, cv.res))
+df.cv$validation.error <- as.character(round(df.cv$validation.error))
 for(i in 1:nrow(df.cv)) {
   df.cv[i, "Type"] <- strsplit(df.cv$id, "_")[[i]][1]
   df.cv[i, "Max.Quarter"] <- strsplit(df.cv$id, "_")[[i]][2]
 }
-df.cv <- df.cv[, c(7, 8, 2:6)]
+df.cv <- df.cv[, c(8, 9, 2, 4:7, 3)]
 df.cv <- df.cv[order(df.cv$Type, df.cv$Max.Quarter), ]
 df.cv.40 <- df.cv[df.cv$Max.Quarter == 40, ]
 df.cv.60 <- df.cv[df.cv$Max.Quarter == 60, ]
 df.cv.40$Max.Quarter <- df.cv.60$Max.Quarter <- NULL
-print(xtable::xtable(df.cv.40, caption = "Cross validation with max quarter is 40."), include.rownames=FALSE)
-print(xtable::xtable(df.cv.60, caption = "Cross validation with max quarter is 60."), include.rownames=FALSE)
+print(xtable::xtable(df.cv.40, caption = "Cross validation with max quarter 40."), include.rownames=FALSE)
+print(xtable::xtable(df.cv.60, caption = "Cross validation with max quarter 60."), include.rownames=FALSE)
 
+write.csv(df.cv, paste0(dir.cache,"/0_cross_validation_summary.csv"))
 
 df.all <- df.f[(df.f$CV.key == "ALL"), ]
 for(factor in q.factors[2:5]) {
@@ -97,6 +102,7 @@ df.all40$max.quarter <- df.all60$max.quarter <- NULL
 print(xtable::xtable(df.all40, caption = "Asymptotic inference with max quarter 40."), include.rownames=FALSE)
 print(xtable::xtable(df.all60, caption = "Asymptotic inference with max quarter 60."), include.rownames=FALSE)
 
+write.csv(df.all, paste0(dir.cache,"/0_asymptotic_inference_summary.csv"))
 
 
 # cross validation ----
