@@ -6,6 +6,7 @@ if(sys.nframe() == 0L) rm(list = ls())
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
+if(!dir.exists("data_prepared")) dir.create("data_prepared")
 
 
 path <- "data_in/Preqin_Cashflow_export-26_Feb_20e003d5aa-5a18-4c12-aba8-7586a7435ac9.xlsx"
@@ -17,14 +18,17 @@ colnames(df.xl)
 #df <- df.xl
 table(df.xl$ASSET.CLASS[!duplicated(df.xl$FUND.ID)])
 table(df.xl$STRATEGY[!duplicated(df.xl$FUND.ID)])
+for(asset.class in c("Private Equity", "Venture Capital", "Private Debt")) {
+  print(table(df.xl$STRATEGY[df.xl$ASSET.CLASS == asset.class]))
+}
 
 make.preqin.df <- function(
   df = df.xl,
   fund.size.weighting=TRUE,
-  acs.filter = "Infrastructure",
-  out.name = "INF",
-  region.filter = NA
-  ) {
+  acs.filter = "Fund of Funds",
+  out.name = "FOF",
+  region.filter = NA,
+  vin.year.pfs = FALSE) {
   col.to.keep <- c("FUND.ID", "FUND.SIZE..USD.MN.", "VINTAGE...INCEPTION.YEAR",
                    "TRANSACTION.DATE", "TRANSACTION.AMOUNT", "NET.CASHFLOW")
   
@@ -59,22 +63,44 @@ make.preqin.df <- function(
     df.ss <- df[df$FUND.ID == fund.id, ]
     df.ss$CF <- c(df.ss$NET.CASHFLOW[1], diff(df.ss$NET.CASHFLOW))
     df.ss$CF[nrow(df.ss)] <- df.ss$CF[nrow(df.ss)] + df.ss$TRANSACTION.AMOUNT[nrow(df.ss)]
-    list.df[[fund.id]] <- df.ss
+    
+    year.diff <- min(as.numeric(format(df.ss$TRANSACTION.DATE, "%Y"))) - as.numeric(df.ss$VINTAGE...INCEPTION.YEAR[1])
+    if(abs(year.diff) < 2) {
+      list.df[[fund.id]] <- df.ss
+    }
   }
   df <- data.frame(do.call(rbind, list.df))
 
   if(fund.size.weighting) {
     df$CF <- df$CF * df$FUND.SIZE..USD.MN.
+  } else {
+    df$CF <- df$CF * mean(df$FUND.SIZE..USD.MN.)
   }
   
-  df$CF <- df$CF/ 1000 / 1000 / 10
+  df$CF <- df$CF/ 1000 / 1000
   df <- df[, c("FUND.ID", "TRANSACTION.DATE", "CF", "VINTAGE...INCEPTION.YEAR")]
   colnames(df) <- c("Fund.ID", "Date", "CF", "Vintage")
   df$type <- out.name
-
+  
+  # Vintage Year Porftolio Formation
+  agg.vin.year.pf <- function(df) {
+    Vintage <- df$Vintage[1]
+    type <- df$type[1]
+    df.out <- aggregate(CF ~ Date, data = df, sum)
+    df.out$type <- type
+    df.out$Vintage <- Vintage
+    df.out$Fund.ID <- paste0(Vintage, "_", type)
+    df.out <- df.out[order(df.out$Date), ]
+    return(df.out)
+  }
+  if (vin.year.pfs) {
+    dfx <- split(df, df$Vintage)
+    df <- data.frame(do.call(rbind,lapply(dfx, agg.vin.year.pf))) 
+  }
+  
   return(df)
 }
-make.preqin.df()
+df <- make.preqin.df()
 
 
 # run ----
@@ -113,7 +139,6 @@ make.preqin.csv <- function(fund.size.weighting) {
   }
   file = paste0("data_prepared/preqin_cashflows_", tag, ".csv")
   write.csv(df.out, file, row.names = FALSE)
-  
   
 }
 make.preqin.csv(TRUE)

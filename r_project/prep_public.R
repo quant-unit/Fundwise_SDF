@@ -6,6 +6,7 @@ if(sys.nframe() == 0L) rm(list = ls())
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
+if(!dir.exists("data_prepared")) dir.create("data_prepared")
 
 path <- "data_in/2020-02-26 150100 Update-51aec0-52aa6c.xlsx"
 sheets <- c("msci_market_factors", "public_indices")
@@ -43,7 +44,6 @@ df$PE <- df$Russell.2000.Total.Return.Index - df$MSCI.World.Net.Return.Daily
 df$Factor <- "Public"
   
 df <- df[, c("Date", setdiff(colnames(df), col.before))]
-
 
 write.csv(df, "data_prepared/public_returns.csv", row.names = FALSE)
 
@@ -89,6 +89,8 @@ write.csv(df, "data_prepared/msci_market_factors.csv", row.names = FALSE)
 url <- "http://global-q.org/uploads/1/2/2/6/122679606/q5_factors_monthly_2019.csv"
 url <- "data_in/q5_factors_monthly_2019.csv"
 df.q <- read.csv(url)
+cor(df.q[, 3:8])
+
 cols.before <- colnames(df.q)
 cols <- cols.before[3:ncol(df.q)]
 for (col in cols) {

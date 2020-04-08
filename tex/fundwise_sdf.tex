@@ -70,96 +70,224 @@ Do investments in private equity funds offer abnormal returns to fund investors 
 Or more profoundly, do we need yet another Stochastic Discount Factor (SDF) approach to evaluate private equity fund cash flows?
 
 To answer these questions, we propose a simple SDF model estimation methodology that incorporates private equity fund-level cash flow data.
-The basic idea is that the expected value of discounted fund net cash flows is zero when an appropriate SDF model is applied.
-Given this setting, our estimator can be regarded as the simplified version of the approaches of \cite{DLP12} and \cite{KN16}.
+The basic idea is that the expected value of all discounted fund net cash flows is zero when an appropriate SDF model is applied.
+Therefore, our estimator is closely related to the well-known approaches of \cite{DLP12} and \cite{KN16}.
+Similarly to \cite{KN16}, we provide asymptotic inference formulations that rely on a spatial (near-epoch) dependency between funds.
+On the other hand, our least-mean-distance estimator can be regarded as generalization of the \cite{DLP12} methodology, where we provide the asymptotic inference framework that was missing in the original paper.
+In contrast to \cite{DLP12}, we explicitly do not require the pooling of private equity fund cash flows to form vintage year portfolios, to increase the number of cross-sectional units (cite advantage of pricing underlying assets in public market literature).
+
+In the empirical application of our new estimator, we estimate a simple linear SDF model that can draw on the five return factors associated with the $q^5$ investment factor model recently proposed by \cite{HXZ20}.
+In a model selection setup, for various private equity fund types the most relevant subset of $q^5$ factors are selected by means of lasso-regularization \citep{T96} in combination with $hv$-block bootstrapping \citep{R00}.
+Post-model selection, results: best factors by fund types (Preqin asset class classification: Private Equity, Venture Capital, Private Debt).
+
 
 
 \section{Methodology}
 
 \subsection{Fundwise least-mean-distance estimator}
 
-Let fund $\chi=1,2,\dots,n$ be characterized by its (net) cash flows ${CF}_{t,\chi}$ and its net asset values ${NAV}_{t,\chi}$ with discrete time index $t=1,2,\dots,T$.
-The stochastic discount factor $\Psi_{t,\tau}$ can be used to calculate the time-$\tau$ present value $P_{t,\tau,\chi}$ of a time-$t$ cash flow of any given PE fund $\chi$
-\[
-P_{t,\tau,\chi} = \Psi_{t,\tau} \cdot CF_{t,\chi}
-\]
-As SDFs are commonly parameterized by a vector $\theta$, i.e., $\Psi_{t,\tau} \equiv \Psi_{t,\tau} (\theta)$, our goal is to find an estimation method for the optimal $\theta$.
-For each fund $\chi$ and all points $\tau$ within a common fund lifetime, the pricing error $\epsilon_{\tau,\chi}$ of all fund cash flows is calculated as
+Let fund $i=1,2,\dots,n$ be characterized by its (net) cash flows ${CF}_{t,i}$ and its net asset values ${NAV}_{t,i}$ with discrete time index $t=1,2,\dots,T$.
+The data generating processes for $CF$ and $NAV$ are left unspecified.
+The stochastic discount factor $\Psi_{t,\tau}$ can be used to calculate the time-$\tau$ present value $P_{t,\tau,i}$ of a time-$t$ cash flow of any given PE fund $i$
+\begin{equation}
+\label{eq:price}
+P_{t,\tau,i} = \Psi_{t,\tau} \cdot CF_{t,i}
+\end{equation}
+As SDFs are commonly parameterized by a vector $\theta \in \mathbb{R}^p$, i.e., $\Psi_{t,\tau} \equiv \Psi_{t,\tau} (\theta)$, our goal is to find an estimation method for the optimal $\theta$.
+For each fund $i$ and all points $\tau$ within a common fund lifetime, the pricing error $\epsilon_{\tau,i}$ of all fund cash flows is calculated as
 \begin{equation}
 \label{eq:pricing_error}
-\epsilon_{\tau,\chi} = \sum_{t=1}^T P_{t,\tau,\chi} \qquad \forall \quad \tau,\chi
+\epsilon_{\tau,i} = \sum_{t=1}^T P_{t,\tau,i} 
+\qquad \forall \quad \tau,i
 \end{equation}
-Our least-mean-distance estimator minimizes the sum of all $\tau,\chi$ pricing error losses
+We define the $w$-weighted $\tau$-average fund pricing error as
+\begin{equation}
+\label{eq:average_pricing_error}
+\bar{\epsilon}_{i} =
+w_{i} \cdot
+\frac{1}{\mathrm{card}( \mathcal{T}_{i})}
+\sum_{\tau \in \mathcal{T}_{i}}
+\epsilon_{\tau,i}
+\qquad \forall \quad i
+\end{equation}
+where $\mathcal{T}_i$ gives the set of relevant present value times $\tau$ for fund $i$ and, for example, can be thought of all quarterly/yearly dates within the usual fund lifetime of ten to fifteen years.
+Each fund $i$ is characterized by its vintage year which can be expressed by $v_{i}=\min(\mathcal{T}_i) \in 1,2,\dots,V$, where $V$ denotes the maximum vintage year used in a given data set.
+Here we implicitly assume that $\mathcal{T}_i$ always contains at least the fund's starting date.
+Finally, the scalar weighting factor $w_i$ can be (i) one divided by the fund's invested capital for equal weighting of funds, (ii) one divided by the vintage year sum of invested capital for vintage year weighting, (iii) the scalar one for fund-size weighting, or (iv) some macroeconomic deflator.
+
+Our least-mean-distance estimator minimizes the average loss of $\bar{\epsilon}$
 \begin{equation}
 \label{eq:estimator}
 \hat{\theta} = 
 \mathrm{arg \ min}_{\theta \in \Theta}
-\sum_{\chi=1}^{n}
-\sum_{\tau \in W_{\chi}}
-L \left[ w_{\tau,\chi} \epsilon_{\tau,\chi} \right]
-\equiv
-\mathrm{arg \ min}_{\theta \in \Theta}
-\sum_{i=1}^N
-L \left[ w_{i} \epsilon_{i} \right]
+\enspace
+S_n(\theta)
+\quad
+\mathrm{with}
+\quad
+S_n(\theta) = 
+\frac{1}{n}
+\sum_{i=1}^n
+L \left( \bar{\epsilon}_{i} \right) 
 \end{equation}
-where $L$ denotes a loss function, e.g., $L[x]=(x-0)^2$, and $N$ gives the cardinality of $\epsilon_{\tau,\chi}$.
-The weighting factor $w_i$ can be one divided by invested capital for equal weighting of funds, a positive constant for fund-size weighting, or e.g., some macroeconomic deflator.
-$W_{\chi}$ gives the set of relevant present value times $\tau$ for fund $\chi$ and can be thought of all quarterly dates within the usual fund lifetime of ten to fifteen years.
-Each fund $\chi$ is characterized by its vintage year which can be expressed by $v_{\chi}=\mathrm{min}(W_{\chi}) \in 1,2,\dots,V$, where $V$ denotes the maximum vintage year used in a given data set.
+where $L$ denotes a loss function, e.g., $L(x)=(x-0)^2$.
+Throughout the paper, the weighted average fund pricing error $\bar{\epsilon} \equiv \bar{\epsilon}(\theta)$ is regarded as nonlinear random function of the SDF parameter $\theta$.
 
-\subsection{Asymptotic assumptions}
 
-The estimator in equation \ref{eq:estimator} exhibits a cross-sectional nature, since it sums over all funds rather than constructing vintage year based time-series.
-This means, we intentionally opt against a framework compatible with classical, time-series Generalized Method of Moments (GMM) that requires the construction of stationary, ergodic time-series of moment conditions \citep{H82,H12}.
-These time-series (of random functions) are used to empirically estimate the expected value of equation \ref{eq:pricing_error}.
-The stationarity requirement would prevent us from (i) using funds from non-liquidated vintages for model estimation and (ii) weighting vintages by cumulative fund sizes or invested capital.
-Additionally, our approach automatically down-weights non-fully-invested funds and preserves the unbalanced data structure of empirical single fund data.
-As the number of funds increases by time, more recent vintages are overweighted by our procedure.
-As we drop the time-series GMM framework, in turn identification requires a sufficient number of funds from different vintage years in the fund-level data set used for model estimation \citep{DLP12,KN16}.
+\subsection{Asymptotic framework}
+\label{sec:asymptotic_assumptions}
 
-Law of large numbers:
-The global moment condition underlying our estimation approach is that the ($\tau,\chi$-unconditional) expected pricing error shall be zero, if we use the optimal SDF parameter $\theta_0$. 
-This also means, instead of applying a time-series law of large numbers, we rely on a cross-section law of large numbers, but acknowledge the statistical dependence of  pricing errors with respect to (i) vintage year $v_{\chi}$ and (ii) fund lifetimes $\tau$.
-\cite{JP12} develop an asymptotic inference framework for near-epoch dependent spatial processes that is suitable for our setting.
+\subsubsection{Vintage year asymptotics}
+We employ a spatial framework, where we assume that the (spatial, i.e., economic) distance between cross-sectional units, i.e., private equity funds, can be measured in quantitative way.
+Here asymptotic results are derived for the case when the number of funds goes to infinity $n \to \infty$.
+However, identification of model parameters requires a sufficient number of funds from different vintage years in the fund-level data set used for model estimation \citep{DLP12,KN16}.
+\begin{assume}
+	(i) The number of vintage years $V \to \infty$ as $n \to \infty$.
+	(ii) The number of funds per vintage year is bounded by some positive constant.
+	(iii) The maximal fund lifetime is also bounded by a positive constant.
+	(iv) The economic distance between fund $i$ and $j$ is measured by the vintage year difference $d_{i,j}=v_i - v_j$.
+\end{assume}
+
+\subsubsection{Law of large numbers}
+The global moment condition underlying our estimation approach is that the ($i$-unconditional) expected value of $\bar{\epsilon}$ shall be zero, if we use the optimal SDF parameter $\theta_0$. 
+This also means, instead of applying a time-series law of large numbers, we rely on a spatial (cross-sectional) law of large numbers, but acknowledge the statistical dependence of  pricing errors with respect to vintage year differences between funds.
+\cite{JP12} develop an asymptotic inference framework for near-epoch dependent spatial processes that is instructive for our setting.
 
 \begin{assume}
-	The dependence structure and time-trend of $\{w\epsilon\}$ shall allow
+	The (i) time-trend and (ii) dependence structure of $\bar{\epsilon}$ shall allow
 	\[
-	N^{-1} \sum_{i=1}^N w_i \epsilon_i \overset{a.s.}\to E[w \epsilon]
-	\quad {as} \quad V \to \infty
+	n^{-1} \sum_{i=1}^n \overline{\epsilon}_i \overset{a.s.}\to E[\bar{\epsilon}]
+	\quad {as} \quad V,n \to \infty
 	\]
+	Specifically, the process $\overline{\epsilon}$ is spatial near-epoch dependent with respect to fund vintage years \citep{JP12}.
 \end{assume}
-	
-Consistency: 
-The estimator $\hat{\theta}$ converges in probability to the true parameter value $\theta_0$ as the number of distinct vintage years in our data set goes to infinity.
+To satisfy the time trend part (i) of this law of large number assumption, the weighting factor $w$, introduced in equation \ref{eq:average_pricing_error}, can be used to make $\bar{\epsilon}$ stationary.
+Spatial near-epoch dependence with respect to fund vintage years formalizes the idea that two funds with a small absolute vintage year difference are supposed to be dependent (due to being exposed to the same macroeconomic condition), whereas two funds with a very large absolute vintage year difference can be assumed to be independent.
+In our framework, spatial distance is considered as economic distance between funds (represented by $\bar{\epsilon}$); our spatial space is thus of dimension one.
+
+\subsubsection{Consistency}
+The estimator $\hat{\theta}$ shall converge in probability to the true parameter value $\theta_0$ as the number of distinct vintage years in our data set goes to infinity.
 Multiple funds for a specific vintage year are not necessarily required and are thus considered as additional, stabilizing moment conditions.
 
 \begin{assume}
- Consistency of $\hat{\theta}$ requires $\hat{\theta} \overset{p}{\to} \theta_0$ as $V \to \infty$.
- Thus $E[w\epsilon]=0$ if and only if $\theta=\theta_0$.
+ Consistency of $\hat{\theta}$ requires $\hat{\theta} \overset{p}{\to} \theta_0$ as $V,n \to \infty$.
+ Thus $E[\bar{\epsilon}]=0$ if and only if $\theta=\theta_0$.
  The parameter space is compact $\theta \in \Theta$.
 \end{assume}
-Compactness of $\Theta$ can be assured by lower and upper bounds for certain parameters that are justified by economic reasoning, e.g., a market $\beta$ of $\pm 12$ seems implausible for PE funds because of the implied return expectations.
+Compactness of $\Theta$ can be assured by lower and upper bounds for all parameters that can be justified by economic reasoning in our case, e.g., a market beta factor of ten seems implausible for PE funds because of the implied risk and return expectations.
 
-Central limit theorem:
-To assess the significance of our parameter estimates, we want to describe the asymptotic distribution of the parameter vector as a normal distribution; see
-\cite[Theorem 11.2]{PP97} and \cite[Theorem 4]{JP12}.
+\subsubsection{Central limit theorem}
+To assess the significance of our parameter estimates, we want to describe the asymptotic distribution of the parameter vector as a normal distribution.
 
 \begin{assume}
-	$\mathbf{D}^{-\frac{1}{2}} \sqrt{N}(\hat{\theta} - \theta_0) \overset{d}{\to} \mathcal{N}(0,\mathbf{I})$ as $V \to \infty$ for some Matrix $\mathbf{D}$ and identity matrix $\mathbf{I}$.
+	$\sqrt{n}(\hat{\theta} - \theta_0) \overset{d}{\to} \mathcal{N}(0,\mathbf{\Sigma})$ as $V,n \to \infty$ with covariance matrix $\mathbf{\Sigma}$.
 \end{assume}
 
-Due to the limited amount of available private equity data (typically the oldest vintages start in the 1980s), we refrain from asymptotic closed-form solutions for $\mathbf{D}$ which rely on the dependence assumptions about $we$.
-In empirical applications, the small sample behavior of an estimation method for private equity data is more important than its asymptotic theory.
+\subsection{Asymptotic inference}
+
+In the general (time-series) near-epoch-dependent least-mean-distance literature, $\mathbf{\Sigma}$ can be characterized according to \citet[Theorem 11.2.b, Theorem H.1]{PP97}:
+\[
+\mathbf{\Sigma} = C^{-1} \Delta (C^{-1})^\top
+\]
+with expected hessian matrix converging to $C$ as $V,n \to \infty$
+\[
+E 
+\left(
+\nabla_{\theta \theta} S_n
+\right)
+\to C
+\]
+and the expected covariance matrix of gradients converging to $\Delta$ as $V,n \to \infty$
+\[
+n E 
+\left[
+\nabla_{\theta} S_n
+(\nabla_{\theta} S_n)^\top
+\right]
+\to \Delta
+\]
+Here, the gradient vector $\nabla_{\theta} S_n$ is denoted as column vector.
+We define the corresponding finite sample estimators analogously to \citet[Chapters 12, 13.1]{PP97} and approximate the first and second derivatives by finite differences. $\hat{C}$ is relatively straightforward
+\[
+\hat{C} = \frac{1}{n} \sum_{i=1}^n \nabla_{\theta \theta} L \left( \epsilon_i \right)
+\]
+Due to the (spatial near-epoch) dependence, the intricate part is to consistently estimate $\hat{\Delta}$ by a Spatial Heteroskedasticity and Autocorrelation Consistent (SHAC) covariance matrix estimator \cite[equation 2]{KS11}
+\[
+\hat{\Delta} = \frac{1}{n} \sum_{i=1}^n \sum_{j=1}^n
+k_{i,j}
+\left[
+\nabla_{\theta} L \left( \epsilon_i \right)
+\left(
+\nabla_{\theta} L \left( \epsilon_j \right)
+\right)^\top
+\right]
+\]
+We define the kernel weight $k$ as
+\[
+k_{i,j} \equiv K \left( \frac{d_{i,j}}{b_n} \right)
+\]
+with kernel function $K: \mathbb{R} \to [0,1]$ satisfies $K(0)=1$, $K(x)=K(-x)$, $\int_{-\infty}^{\infty} K^2(x) dx < \infty$, and $K(\cdot)$ continuous at zero and at all but a finite number of other points.
+Specifically, we select the Bartlett kernel $K_{BT}(x)= \max(0, 1-|x|)$; see equation 2.7 in \cite{A91} for other popular kernel choices.
+This means absolute vintage year differences larger than the bandwidth (or truncation) parameter $b_n$ are considered independent and are thus excluded from the $\hat{\Delta}$ estimation formula.
+
+In large samples, the parameter standard error vector can thus be estimated by
+\[
+\mathrm{SE}(\hat{\theta}) = 
+\sqrt{
+	\mathrm{diag} \left[
+	n^{-\frac{1}{2}}
+	\hat{C}^{-1} \hat{\Delta} (\hat{C}^{-1})^\top
+	(n^{-\frac{1}{2}})^\top
+	\right] 
+}
+=
+\sqrt{
+	\mathrm{diag} \left[
+	\frac{\hat{C}^{-1} \hat{\Delta} (\hat{C}^{-1})^\top}{n}
+	\right] 
+}
+\]
+The Wald test statistic for linear hypotheses $H_0: R \theta = r$ and $H_1: R \theta \neq r$ is constructed as
+\[
+W = 
+(R \hat{\theta} - r)^\top
+\left[
+R
+\frac{\hat{C}^{-1} \hat{\Delta} (\hat{C}^{-1})^\top}{n}
+R^\top
+\right]^{-1}
+(R \hat{\theta} - r)
+\stackrel{H_0}{\sim}
+\chi_q^2
+\]
+where $\hat{\theta}$ is the $p \times 1$ parameter vector, $R$ is a $q \times p$ matrix, and $r$ is a $q \times 1$ vector.
+Usually, we select $R$ as $p \times p$ identity matrix, and $r$ as $p \times 1$ vector (e.g., of zeros).
+Under the null hypothesis, $W$ is chi-squared distributed with $q$ degrees of freedom. As large values of $W$ indicate the rejection of $H_0$, the corresponding p-value is calculated as $1 - F_{\chi_q^2}(W)$ where $F_{\chi_q^2}$ is the cumulative distribution function of a chi-squared random variable with $q$ degrees of freedom.
+
+However, in view of the limited amount of available private equity data (typically the oldest vintages start in the 1980s), asymptotic characterizations of $\mathbf{\Sigma}$ and $\mathrm{SE}(\hat{\theta})$ are of limited importance. 
+In empirical applications, the small sample behavior of an estimation method for private equity data is more relevant than its asymptotic theory.
+Moreover, the standard asymptotic distribution associated with an estimator is generally not valid for post-model-selection inference, i.e., if a model selection procedure is applied to find the best model from a collection of competitors \citep{LP05}.
 
 
 \subsection{Comparison to other approaches}
 
-In contrast to our approach, the closely related method of \cite{DLP12} forms vintage year portfolios instead of using individual fund moments.
-Further, they discount all fund cash flows just to the first cash flow date (like in a classical net present value calculation) and we additionally sum over all dates within $W_{\chi}$ to alleviate the exploding alpha issue mentioned in \cite{DLP12}.
+The estimator in equation \ref{eq:estimator} exhibits a cross-sectional nature, since it sums over all funds rather than constructing vintage year based time-series.
+This means, we intentionally opt against a framework compatible with classical, time-series GMM that requires the construction of stationary, ergodic time-series of moment conditions \citep{H82,H12}.
+These time-series (of random functions) are used to empirically estimate the expected value of pricing errors in equation \ref{eq:pricing_error}.
+The stationarity requirement would prevent us from (i) using funds from non-liquidated vintages for model estimation and (ii) weighting vintages by cumulative fund sizes or invested capital.
+Additionally, our fundwise approach automatically down-weights non-fully-invested funds and preserves the unbalanced data structure of empirical single fund data.
+As empirically the number of funds increases with time, more recent vintages are overweighted in our naive procedure with $w=1$.
 
-Similar to our ansatz, \cite{KN16} draw on a spatial GMM framework to handle cross-sectional dependence \citep{C99}.
-However, to obtain their Generalized Public Market Equivalent (GPME) metric they opt for pricing public market cash flows that shall replicate PE funds instead of pricing the observed fund cash flows itself.
+In contrast to our approach, the closely related method of \cite{DLP12} forms vintage year portfolios instead of using individual fund moments.
+Further, they discount all fund cash flows just to the first cash flow date (like in a classical net present value calculation) and we additionally sum over all dates within $W_{i}$ to alleviate the exploding alpha issue mentioned in \cite{DLP12}.
+Although \cite{DLP12} describe their estimator as one-step GMM approach, it can be regarded very closely related to our least-mean-distance estimator.
+Especially, the asymptotic assumptions from subsection \ref{sec:asymptotic_assumptions} shall be likewise apply to their setting.
+
+Similar to our ansatz, \cite{KN16} draw on a spatial framework to handle cross-sectional dependence between funds \citep{C99}.
+However, they utilize a classical GMM estimator, thus a time-series law of large numbers.
+To obtain their Generalized Public Market Equivalent (GPME) metric they opt for pricing public market cash flows that shall replicate PE funds instead of directly pricing the observed fund cash flows.
+
+Due to the fundwise nature of our approach it is simple and stable but slow.
 
 
 \section{Empirical estimation}
@@ -167,33 +295,44 @@ However, to obtain their Generalized Public Market Equivalent (GPME) metric they
 \subsection{Data}
 
 We use the Preqin cashflow data set as of 26th February 2020.
-We pool all regions and analyze the following fund types:
-INF ("Infrastructure", 174 funds in data set), 
-NATRES ("Natural Resources", 167),
-PD ("Private Debt"; 488),
-PE ("Private Equity"; 2474),
-RE ("Real Estate"; 810),
+We pool all regions and analyze the following fund types (using the Preqin asset class classification):
+PE ("Private Equity"; 2474 distinct funds in data set),
 VC ("Venture Capital"; 985),
-MEZZ ("Mezzanine"; 147),
-DD ("Special Situations", "Distressed Debt"; 60+153),
-BO ("Growth", "Buyout"; 265+1251),
-FOF ("Fund of Funds"; 589),
-SEC ("Secondaries"; 131).
+RE ("Real Estate"; 810),
+PD ("Private Debt"; 488),
+INF ("Infrastructure", 174), 
+NATRES ("Natural Resources", 167).
+%MEZZ ("Mezzanine"; 147),
+%DD ("Special Situations", "Distressed Debt"; 60+153),
+%BO ("Growth", "Buyout"; 265+1251),
+%FOF ("Fund of Funds"; 589),
+%SEC ("Secondaries"; 131).
 For these fund types we extract all unweighted cash flow series, which corresponds to fund-size weighting.
 For non-liquidated funds we treat the latest net asset value as final cash flow.
 
-The public market factors that enter our SDF draw on the US data set of the $q^5$ investment factor model sourced from \url{http://global-q.org/factors.html} \citep{HXZ15,HXZ20}. 
-Their five factor model includes: "MKT" the market excess return, "ME" the size factor, "IA" the investment factor, "ROE" the return on equity factor, and "EG" the expected growth factor.
+The public market factors that enter our SDF draw on the US data set of the recently popularized $q^5$ investment factor model sourced from \url{http://global-q.org/factors.html} \citep{HXZ15,HXZ20}. 
+Their five factor model includes: MKT the market excess return, ME the size factor, IA the investment factor, ROE the return on equity factor, and EG the expected growth factor.
 
 
-\subsection{Regularization and blockwise cross-validation}
+\subsection{Model selection by lasso and blockwise cross-validation}
+\label{sec:model_selection}
 
-To avoid to determine the parameter significance by asymptotic results, we apply model selection by means of a regularized loss function and estimate the regularization hyper-parameter by (blockwise) cross-validation.
+To select the most predictive public factors for a given private equity fund SDF model, we perform model selection by the lasso (least absolute shrinkage and selection operator) and estimate the regularization hyper-parameter by blockwise cross-validation.
+Lasso estimators can be used for variable selection due to their desirable property to produce sparse models by shrinking irrelevant variable coefficients to exactly zero.
+For a recent asset pricing application of lasso regularization see \cite{FGX20}, and for a brief retrospective of the general lasso approach refer to \cite{T11}.
 
-Specifically, we use the following lasso-regularized loss function in equation \ref{eq:estimator}
+Specifically, our lasso-regularized version of the estimator from equation \ref{eq:estimator} is given by
 \begin{equation}
-\label{eq:lasso_loss_function}
-L(w\epsilon; \lambda) = (w\epsilon-0)^2 + \lambda \sum_{j \in J} \left| \theta_j \right|
+\label{eq:lasso_estimator}
+\hat{\theta}_{\mathrm{lasso}} = 
+\mathrm{arg \ min}_{\theta \in \Theta}
+\enspace
+\frac{1}{n}
+\left(
+\sum_{i=1}^n
+w_{i}^2 \epsilon_{i}^2
+\right)^{\frac{1}{2}}
++ \lambda \sum_{j \in J} \left| \theta_j \right|
 \end{equation}
 where the MKT coefficient is not subject to any regularization, $J = \left\{\mathrm{ME}, \mathrm{IA}, \mathrm{ROE}, \mathrm{EG}\right\}$.
 By not penalizing the MKT coefficient, we preferably explain private equity returns by the market return factor.
@@ -203,7 +342,7 @@ Therefore, we form three partitions for several vintage year groups.
 As larger validation sets are preferred for model selection, the validation set ($v$-block) always contains funds of three neighboring vintage years (e.g. 2000, 2001, 2002). 
 To reduce the dependency between training and validation set, we remove all funds from three-year-adjacent vintage years, i.e., the $h$-block (e.g. 1997, 1998, 1999, 2003, 2004, 2005). 
 Funds from the remaining vintage years enter the training set and are thus used for model estimation (e.g. 1985-1996, 2006-2019).
-We apply ten-fold cross validation using the ten validation sets described in table \ref{tab:hv_block_cv}.
+We apply ten-fold cross validation using the ten validation sets described in table \ref{tab:hv_block_cv}. Here we test in steps of 0.02 all $\lambda$ values between 0 and 0.1; the optimal $\lambda$ generally depends on the scaling and variability of fund cash flows.
 
 \begin{table}[ht]
 	\centering
@@ -227,73 +366,29 @@ We apply ten-fold cross validation using the ten validation sets described in ta
 	\caption{Partitions used for $hv$-block cross validation.}
 \end{table}
 
+\subsection{Post-model selection}
+\label{sec:post_model_selection}
+
+Post-model selection in combination with a lasso estimator \citep{BC13}.
+Common pitfalls associated with post-model selection are discussed in \cite{LP05}, i.e., basically that a valid parameter covariance matrix cannot be estimated in the post-model selection step alone without accounting for the model selection step.
+\cite{TRTW18} propose a selective pivotal inference framework for sequential regression procedures that does not rely on a simple regression setup in combination with normality.
+
+
 \subsection{Results}
 
 We apply the simple linear SDF
 \begin{equation}
 \label{eq:SDF}
-\Psi_{t,\tau} (\theta) = \prod_{h=\tau}^{t} \left( 1 + r_f + \sum_{j} \theta_{j,h} \cdot F_{j,h} \right)^{-1}
+\Psi_{t,\tau} (\theta) = \prod_{h=\tau}^{t} \left( 1 + r_f + \sum_{j \in J} \theta_{j,h} \cdot F_{j,h} \right)^{-1}
 \end{equation}
 with risk-free return $r_f$ and zero-net-investment portfolio returns $F_j$.
 
-Our general approach is to estimate an ensemble of SDF models by varying the set of relevant fund lifetimes $W_{\chi}$ and the maximum vintage year of funds that enter estimation.
+Our general approach is to estimate an ensemble of SDF models by varying the set of relevant fund lifetimes $W_{i}$ and the maximum vintage year of funds that enter estimation.
 We use the variation of estimated parameters within the ensemble to gauge their significance.
 Specifically, we regard relevant fund lifetimes between 40 and 60 quarters, and maximum vintage years between year 2010 and 2015.
 To avoid overfitting our SDF ensemble just considers two-factor models that contain \{MKT\} and \{ME or IA or ROE or EG\}.
 
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{llrrrr}
-		\hline
-		Type & Factor & MKT.mean & MKT.t & Q.mean & Q.t \\ 
-		\hline
-		BO & EG & 2.03 & 24.13 & 2.88 & 11.45 \\ 
-		DD & EG & 1.42 & 37.55 & 3.92 & 68.13 \\ 
-		FOF & EG & 2.11 & 52.67 & 3.62 & 25.28 \\ 
-		INF & EG & 1.55 & 25.06 & 4.42 & 78.74 \\ 
-		MEZZ & EG & 1.64 & 5.78 & 2.35 & 7.93 \\ 
-		NATRES & EG & -0.40 & -18.66 & 3.26 & 13.43 \\ 
-		PD & EG & 1.42 & 31.92 & 3.89 & 66.41 \\ 
-		PE & EG & 1.97 & 24.29 & 3.05 & 14.23 \\ 
-		RE & EG & 0.93 & 20.19 & 3.85 & 52.35 \\ 
-		SEC & EG & 1.80 & 35.44 & 4.54 & 31.48 \\ 
-		VC & EG & 2.51 & 26.53 & -0.83 & -1.70 \\ 
-		BO & IA & 2.16 & 31.00 & 2.71 & 10.87 \\ 
-		DD & IA & 1.47 & 22.84 & 0.93 & 5.75 \\ 
-		FOF & IA & 2.30 & 149.30 & 3.39 & 75.52 \\ 
-		INF & IA & 1.36 & 32.58 & 2.38 & 40.06 \\ 
-		MEZZ & IA & 1.67 & 6.64 & 1.05 & 7.64 \\ 
-		NATRES & IA & -0.65 & -26.58 & 2.10 & 55.22 \\ 
-		PD & IA & 1.47 & 22.00 & 0.96 & 6.62 \\ 
-		PE & IA & 2.13 & 30.68 & 2.65 & 13.50 \\ 
-		RE & IA & 0.98 & 23.60 & 1.55 & 28.97 \\ 
-		SEC & IA & 1.61 & 74.75 & 4.25 & 26.46 \\ 
-		VC & IA & 2.34 & 12.20 & -1.18 & -1.99 \\ 
-		BO & ME & 1.28 & 14.14 & 1.42 & 30.17 \\ 
-		DD & ME & 1.03 & 17.87 & 0.78 & 21.14 \\ 
-		FOF & ME & 1.73 & 48.83 & 1.17 & 11.67 \\ 
-		INF & ME & 1.33 & 32.05 & 0.52 & 28.39 \\ 
-		MEZZ & ME & 0.92 & 3.69 & 1.24 & 14.31 \\ 
-		NATRES & ME & -0.95 & -46.48 & 0.91 & 19.26 \\ 
-		PD & ME & 0.98 & 17.09 & 0.86 & 24.44 \\ 
-		PE & ME & 1.23 & 14.70 & 1.45 & 33.66 \\ 
-		RE & ME & 0.11 & 2.15 & 1.38 & 11.82 \\ 
-		SEC & ME & 0.80 & 25.22 & 1.90 & 14.08 \\ 
-		VC & ME & 2.71 & 91.65 & -0.94 & -5.85 \\ 
-		BO & ROE & 2.39 & 20.09 & 2.45 & 8.83 \\ 
-		DD & ROE & 1.95 & 21.77 & 2.33 & 19.64 \\ 
-		FOF & ROE & 2.28 & 65.92 & 2.43 & 9.97 \\ 
-		INF & ROE & 1.46 & 26.34 & 5.98 & 50.50 \\ 
-		MEZZ & ROE & 1.72 & 5.67 & 2.04 & 14.61 \\ 
-		NATRES & ROE & -0.16 & -4.34 & 2.58 & 16.02 \\ 
-		PD & ROE & 1.93 & 20.14 & 2.31 & 17.42 \\ 
-		PE & ROE & 2.35 & 22.04 & 2.54 & 10.13 \\ 
-		RE & ROE & 1.22 & 19.34 & 2.69 & 8.64 \\ 
-		SEC & ROE & 2.59 & 22.44 & 4.32 & 18.00 \\ 
-		VC & ROE & 2.40 & 21.45 & -0.87 & -3.11 \\ 
-		\hline
-	\end{tabular}
-\end{table}
+$\mathcal{T}_i$ includes quarterly $\tau$ horizons smaller than $\{40, 60\}$ quarters.
 
 
 \section{Public market factor style analysis}
@@ -305,9 +400,224 @@ In the next step, we linearly combine the collection of $n$ underlying factor mo
 
 \section{Conclusion}
 
+\begin{align}
+\begin{aligned}
+&\hat{\Delta} & = &
+\enspace k_{i,i}
+\left[
+\frac{1}{n}
+\sum_{i=1}^n
+\nabla_{\theta} L \left( \epsilon_i \right)
+\left(
+\nabla_{\theta} L \left( \epsilon_i \right)
+\right)^T
+\right]  + \\
+& &  & +
+\sum_{j=1}^{n-1}
+k_{i,j}
+\{
+\frac{1}{n}
+\sum_{i=1}^{n-j}
+[
+\nabla_{\theta} L \left( \epsilon_i \right)
+\left(
+\nabla_{\theta} L \left( \epsilon_{i+j} \right)
+\right)^T + \\
+& &  & +
+\nabla_{\theta} L \left( \epsilon_{i+j} \right)
+\left(
+\nabla_{\theta} L \left( \epsilon_i \right)
+\right)^T
+]
+\}
+\end{aligned}
+\end{align}
+
+
 %% References
 \bibliographystyle{apalike}
 \bibliography{xfundwise_sdf}
+
+
+
+% Appendix
+
+
+
+\newpage
+
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{lrrlrr}
+		\hline
+		Type & MKT.mean & MKT.sd & Factor & Second.mean & Second.sd \\ 
+		\hline
+		INF & 2.00 & 0.73 & MKT &  &  \\ 
+		INF & 1.27 & 1.14 & ME & 1.03 & 0.74 \\ 
+		INF & 2.01 & 0.65 & IA & -0.55 & 1.26 \\ 
+		INF & 1.36 & 0.68 & ROE & 4.57 & 2.07 \\ 
+		INF & 1.52 & 0.91 & EG & 3.78 & 0.78 \\ 
+		NATRES & 2.03 & 0.42 & MKT &  &  \\ 
+		NATRES & 1.01 & 0.80 & ME & 1.80 & 0.63 \\ 
+		NATRES & 1.83 & 0.49 & IA & 1.79 & 0.87 \\ 
+		NATRES & 1.61 & 0.52 & ROE & 2.49 & 1.37 \\ 
+		NATRES & 1.67 & 0.47 & EG & 2.26 & 0.40 \\ 
+		PD & 1.50 & 0.46 & MKT &  &  \\ 
+		PD & 0.50 & 0.29 & ME & 1.67 & 0.15 \\ 
+		PD & 1.15 & 0.33 & IA & 3.13 & 0.52 \\ 
+		PD & 1.16 & 0.53 & ROE & 2.05 & 0.36 \\ 
+		PD & 1.13 & 0.40 & EG & 3.22 & 0.48 \\ 
+		PE & 2.79 & 0.20 & MKT &  &  \\ 
+		PE & 1.72 & 0.37 & ME & 1.57 & 0.24 \\ 
+		PE & 2.42 & 0.24 & IA & 2.71 & 0.40 \\ 
+		PE & 2.03 & 0.25 & ROE & 2.29 & 0.44 \\ 
+		PE & 2.14 & 0.19 & EG & 2.84 & 0.26 \\ 
+		RE & 1.39 & 0.79 & MKT &  &  \\ 
+		RE & 0.38 & 0.64 & ME & 1.52 & 0.67 \\ 
+		RE & 1.18 & 0.92 & IA & 1.85 & 0.62 \\ 
+		RE & 0.77 & 0.43 & ROE & 2.94 & 1.03 \\ 
+		RE & 0.87 & 0.67 & EG & 3.48 & 0.47 \\ 
+		VC & 2.81 & 0.58 & MKT &  &  \\ 
+		VC & 3.39 & 0.76 & ME & -1.30 & 1.23 \\ 
+		VC & 2.69 & 0.57 & IA & -1.08 & 1.34 \\ 
+		VC & 2.86 & 0.79 & ROE & -0.48 & 1.61 \\ 
+		VC & 2.54 & 0.84 & EG & 1.44 & 1.58 \\ 
+		\hline
+	\end{tabular}
+	\caption{Cross validation with equal-weighting and max quarter 40.} 
+\end{table}
+
+% latex table generated in R 3.4.2 by xtable 1.8-4 package
+% Tue Apr  7 20:07:23 2020
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{lrrlrr}
+		\hline
+		Type & MKT.mean & MKT.sd & Factor & Second.mean & Second.sd \\ 
+		\hline
+		INF & 1.95 & 0.76 & MKT &  &  \\ 
+		INF & 1.18 & 1.20 & ME & 1.08 & 0.76 \\ 
+		INF & 1.90 & 0.75 & IA & -0.21 & 1.24 \\ 
+		INF & 1.38 & 0.69 & ROE & 4.50 & 2.20 \\ 
+		INF & 1.56 & 1.00 & EG & 3.67 & 0.88 \\ 
+		NATRES & 1.70 & 0.37 & MKT &  &  \\ 
+		NATRES & 0.90 & 0.83 & ME & 1.31 & 0.56 \\ 
+		NATRES & 1.50 & 0.46 & IA & 1.82 & 0.91 \\ 
+		NATRES & 1.36 & 0.44 & ROE & 2.05 & 1.36 \\ 
+		NATRES & 1.38 & 0.40 & EG & 2.15 & 0.39 \\ 
+		PD & 1.24 & 0.58 & MKT &  &  \\ 
+		PD & 0.32 & 0.34 & ME & 1.49 & 0.19 \\ 
+		PD & 0.91 & 0.45 & IA & 3.05 & 0.43 \\ 
+		PD & 0.94 & 0.60 & ROE & 1.72 & 0.32 \\ 
+		PD & 0.92 & 0.50 & EG & 2.82 & 0.45 \\ 
+		PE & 2.52 & 0.25 & MKT &  &  \\ 
+		PE & 1.61 & 0.32 & ME & 1.29 & 0.24 \\ 
+		PE & 2.17 & 0.21 & IA & 2.52 & 0.40 \\ 
+		PE & 1.87 & 0.29 & ROE & 1.86 & 0.34 \\ 
+		PE & 1.96 & 0.24 & EG & 2.51 & 0.24 \\ 
+		RE & 1.27 & 0.79 & MKT &  &  \\ 
+		RE & 0.37 & 0.58 & ME & 1.33 & 0.59 \\ 
+		RE & 1.07 & 0.89 & IA & 1.70 & 0.60 \\ 
+		RE & 0.68 & 0.45 & ROE & 2.70 & 0.96 \\ 
+		RE & 0.78 & 0.66 & EG & 3.36 & 0.46 \\ 
+		VC & 2.29 & 0.69 & MKT &  &  \\ 
+		VC & 3.10 & 0.79 & ME & -1.70 & 1.24 \\ 
+		VC & 2.11 & 0.67 & IA & -1.95 & 2.12 \\ 
+		VC & 2.56 & 0.82 & ROE & -1.27 & 1.55 \\ 
+		VC & 2.14 & 0.90 & EG & -0.15 & 1.98 \\ 
+		\hline
+	\end{tabular}
+	\caption{Cross validation with equal-weighting and max quarter 60.} 
+\end{table}
+
+
+
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{lrrlrrr}
+		\hline
+		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & Wald.p.value.MKT\_1 \\ 
+		\hline
+		PE & 2.76 & 1.33 & MKT &  &  & 0.02 \\ 
+		PE & 1.63 & 3.02 & ME & 1.48 & 3.17 & 0.00 \\ 
+		PE & 2.34 & 1.08 & IA & 2.64 & 7.28 & 0.00 \\ 
+		PE & 2.08 & 2.25 & ROE & 2.22 & 3.57 & 0.00 \\ 
+		PE & 2.16 & 0.08 & EG & 2.83 & 0.05 & 0.99 \\ 
+		VC & 2.87 & 1.45 & MKT &  &  & 0.01 \\ 
+		VC & 3.71 & 5.72 & ME & -1.78 & 6.43 & 0.00 \\ 
+		VC & 2.79 & 1.40 & IA & -1.66 & 4.14 & 0.00 \\ 
+		VC & 3.09 & 0.58 & ROE & -1.09 & 0.43 & 0.27 \\ 
+		VC & 2.82 & 1.38 & EG & 0.96 & 5.53 & 0.00 \\ 
+		PD & 1.60 & 5.22 & MKT &  &  & 0.00 \\ 
+		PD & 0.46 & 14.43 & ME & 1.68 & 5.94 & 0.00 \\ 
+		PD & 1.17 & 6.95 & IA & 3.18 & 10.60 & 0.00 \\ 
+		PD & 1.26 & 4.71 & ROE & 1.98 & 8.58 & 0.00 \\ 
+		PD & 1.20 & 7.89 & EG & 3.24 & 3.20 & 0.00 \\ 
+		RE & 1.19 & 1.37 & MKT &  &  & 0.80 \\ 
+		RE & 0.13 & 7.29 & ME & 1.35 & 4.78 & 0.00 \\ 
+		RE & 0.95 & 2.32 & IA & 1.41 & 7.35 & 0.00 \\ 
+		RE & 0.76 & 3.13 & ROE & 2.75 & 3.57 & 0.00 \\ 
+		RE & 0.69 & 3.49 & EG & 3.69 & 6.54 & 0.00 \\ 
+		NATRES & 1.90 & 1.73 & MKT &  &  & 0.12 \\ 
+		NATRES & 0.84 & 1.49 & ME & 1.68 & 1.79 & 0.01 \\ 
+		NATRES & 1.64 & 1.52 & IA & 1.91 & 16.03 & 0.00 \\ 
+		NATRES & 1.56 & 1.15 & ROE & 2.18 & 4.29 & 0.00 \\ 
+		NATRES & 1.52 & 1.64 & EG & 2.28 & 18.23 & 0.00 \\ 
+		INF & 1.72 & 2.46 & MKT &  &  & 0.08 \\ 
+		INF & 0.75 & 11.62 & ME & 1.27 & 3.52 & 0.00 \\ 
+		INF & 1.73 & 3.79 & IA & -0.02 & 11.57 & 0.01 \\ 
+		INF & 1.08 & 8.99 & ROE & 4.65 & 23.92 & 0.00 \\ 
+		INF & 1.09 & 7.84 & EG & 3.97 & 4.13 & 0.00 \\ 
+		\hline
+	\end{tabular}
+	\caption{Asymptotic inference with equal-weighting and max quarter 40.} 
+\end{table}
+
+
+% latex table generated in R 3.4.2 by xtable 1.8-4 package
+% Tue Apr  7 20:28:17 2020
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{lrrlrrr}
+		\hline
+		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & Wald.p.value.MKT\_1 \\ 
+		\hline
+		PE & 2.52 & 1.81 & MKT &  &  & 0.01 \\ 
+		PE & 1.59 & 3.43 & ME & 1.23 & 4.68 & 0.00 \\ 
+		PE & 2.15 & 2.34 & IA & 2.45 & 7.87 & 0.00 \\ 
+		PE & 1.94 & 3.56 & ROE & 1.81 & 5.17 & 0.00 \\ 
+		PE & 1.99 & 3.37 & EG & 2.48 & 6.69 & 0.00 \\ 
+		VC & 2.33 & 1.00 & MKT &  &  & 0.18 \\ 
+		VC & 3.48 & 5.71 & ME & -2.18 & 6.32 & 0.00 \\ 
+		VC & 2.20 & 1.05 & IA & -2.82 & 4.64 & 0.00 \\ 
+		VC & 2.77 & 1.55 & ROE & -1.92 & 3.49 & 0.00 \\ 
+		VC & 2.40 & 1.00 & EG & -0.89 & 5.65 & 0.00 \\ 
+		PD & 1.38 & 10.19 & MKT &  &  & 0.00 \\ 
+		PD & 0.36 & 0.15 & ME & 1.51 & 0.15 & 0.95 \\ 
+		PD & 0.98 & 13.26 & IA & 3.18 & 13.83 & 0.00 \\ 
+		PD & 1.07 & 6.03 & ROE & 1.68 & 10.56 & 0.00 \\ 
+		PD & 1.02 & 9.89 & EG & 2.86 & 5.77 & 0.00 \\ 
+		RE & 1.11 & 3.07 & MKT &  &  & 0.74 \\ 
+		RE & 0.16 & 0.49 & ME & 1.19 & 0.60 & 0.53 \\ 
+		RE & 0.89 & 2.52 & IA & 1.31 & 7.36 & 0.00 \\ 
+		RE & 0.67 & 3.27 & ROE & 2.50 & 5.06 & 0.00 \\ 
+		RE & 0.62 & 4.35 & EG & 3.57 & 7.32 & 0.00 \\ 
+		NATRES & 1.61 & 1.23 & MKT &  &  & 0.45 \\ 
+		NATRES & 0.88 & 5.09 & ME & 1.17 & 7.58 & 0.00 \\ 
+		NATRES & 1.36 & 1.28 & IA & 1.96 & 15.52 & 0.00 \\ 
+		NATRES & 1.34 & 1.36 & ROE & 1.74 & 6.94 & 0.00 \\ 
+		NATRES & 1.27 & 1.54 & EG & 2.18 & 17.55 & 0.00 \\ 
+		INF & 1.65 & 2.45 & MKT &  &  & 0.11 \\ 
+		INF & 0.65 & 11.79 & ME & 1.32 & 3.48 & 0.00 \\ 
+		INF & 1.62 & 2.09 & IA & 0.21 & 5.14 & 0.18 \\ 
+		INF & 1.07 & 8.98 & ROE & 4.67 & 23.98 & 0.00 \\ 
+		INF & 1.09 & 7.85 & EG & 3.91 & 4.20 & 0.00 \\ 
+		\hline
+	\end{tabular}
+	\caption{Asymptotic inference with equal-weighting and max quarter 60.} 
+\end{table}
+
+
 
 
 \end{document}

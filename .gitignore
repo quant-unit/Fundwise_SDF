@@ -15,3 +15,4 @@
 *.Rhistory
 *result_msci_market_factors*
 r_project/data_in/*
+r_project/data_out/*
