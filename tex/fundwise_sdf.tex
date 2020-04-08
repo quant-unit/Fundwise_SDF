@@ -62,28 +62,36 @@ The author alone is responsible for the content and writing of the paper.
 
 \begin{abstract}
 This paper proposes a simple stochastic discount factor estimation methodology suited for private equity fund-level cash flow data.
-We provide an asymptotic inference framework for our least-mean-distance estimator.
+The asymptotic inference framework for our least-mean-distance estimator draws on the notion of a measurable economic distance between distinct private equity funds.
 \end{abstract}
 
 %% main text
 \section{Introduction}
 Do investments in private equity funds offer abnormal returns to fund investors when risk-adjusted to public market factors?
-Or more profoundly, do we need yet another Stochastic Discount Factor (SDF) approach to evaluate private equity fund cash flows?
+Currently, a popular approach to answer this question is to evaluate private equity fund cash flows by Stochastic Discount Factor (SDF) models that draw on public market return covariates.
+The basic idea for SDF model estimation is that the sum of all discounted fund net cash flows is zero when the true SDF is applied.
+Unfortunately, there is no conclusion about the best methodology to estimate these SDF models, as a variety of proposal coexists in the academic private equity fund literature \citep{DLP12,KN16,ACGP18,GSW19}.
 
-To answer these questions, we propose a simple SDF model estimation methodology that incorporates private equity fund-level cash flow data.
-The basic idea is that the expected value of all discounted fund net cash flows is zero when an appropriate SDF model is applied.
-Therefore, our estimator is closely related to the well-known approaches of \cite{DLP12} and \cite{KN16}.
-Similarly to \cite{KN16}, we provide asymptotic inference formulations that rely on a spatial (near-epoch) dependency between funds.
+
+Especially our conclusions from the \cite{DLP12} and \cite{KN16} approaches lead us to suggest a new least-mean-distance estimator for SDF models that is applicable to private equity fund-level cash flow data.
+On the one hand, we provide asymptotic inference formulations that rely on the concept of spatial (near-epoch) dependency between funds comparable to \cite{KN16}.
+In this context, it is paramount to quantify the economic distance between funds by a measure like absolute vintage year difference or cash flow overlap\footnote{However, this economic inter-fund distance refers NOT to the term least-mean-distance estimator.}.
 On the other hand, our least-mean-distance estimator can be regarded as generalization of the \cite{DLP12} methodology, where we provide the asymptotic inference framework that was missing in the original paper.
-In contrast to \cite{DLP12}, we explicitly do not require the pooling of private equity fund cash flows to form vintage year portfolios, to increase the number of cross-sectional units (cite advantage of pricing underlying assets in public market literature).
+In contrast to \cite{DLP12}, we explicitly do not require the pooling of private equity fund cash flows to form vintage year portfolios.
+The increased number of cross-sectional units (in a fundwise approach) in turn decreases the asymptotic variance of coefficient estimates compared to the case when just a small number of vintage year portfolios is available.
 
 In the empirical application of our new estimator, we estimate an exponentially affine SDF model that can draw on the five return factors associated with the $q^5$ investment factor model recently proposed by \cite{HXZ20}.
 We calculate asymptotic standard errors and a Wald test statistic for the model coefficients.
-Moreover, we assess the small-sample variance of coefficient estimates out-of-sample performance of the different SDF models by $hv$-block cross validation to account for the inter-vintage-year dependence of private equity funds \citep{R00}.
+Moreover, we assess the small-sample variance of coefficient estimates and the out-of-sample performance of the different SDF models by $hv$-block cross validation which accounts for the inter-vintage-year dependence of private equity funds \citep{R00}.
 
+The paper is structured as follows. 
+Section \ref{sec:Methodology} introduces our fundwise least-mean-distance estimator and its corresponding asymptotic inference framework.
+Section \ref{sec:empirical_estimation} applies the method to estimate SDFs for various private equity fund types by drawing on the public market factors of the $q^5$ investment factor model of \cite{HXZ20}.
+Section \ref{sec:conclusion} concludes.
 
 
 \section{Methodology}
+\label{sec:Methodology}
 
 \subsection{Fundwise least-mean-distance estimator}
 
@@ -111,7 +119,7 @@ w_{i} \cdot
 \epsilon_{\tau,i}
 \qquad \forall \quad i
 \end{equation}
-where $\mathcal{T}_i$ gives the set of relevant present value times $\tau$ for fund $i$ and, for example, can be thought of all quarterly/yearly dates within the usual fund lifetime of ten to fifteen years.
+where $\mathcal{T}_i$ gives the set of relevant present value times $\tau$ for fund $i$, which can be thought of as all quarterly/yearly dates within the usual fund lifetime of ten to fifteen years.
 Each fund $i$ is characterized by its vintage year which can be expressed by $v_{i}=\min(\mathcal{T}_i) \in 1,2,\dots,V$, where $V$ denotes the maximum vintage year used in a given data set.
 Here we implicitly assume that $\mathcal{T}_i$ always contains at least the fund's starting date.
 Finally, the scalar weighting factor $w_i$ can be (i) one divided by the fund's invested capital for equal weighting of funds, (ii) one divided by the vintage year sum of invested capital for vintage year weighting, (iii) the scalar one for fund-size weighting, or (iv) some macroeconomic deflator.
@@ -209,7 +217,7 @@ n E
 \to \Delta
 \]
 Here, the gradient vector $\nabla_{\theta} S_n$ is denoted as column vector.
-We define the corresponding finite sample estimators analogously to \citet[Chapters 12, 13.1]{PP97} and approximate the first and second derivatives by finite differences. $\hat{C}$ is relatively straightforward
+We define the corresponding finite sample estimators analogously to \citet[Chapters 12, 13.1]{PP97} and numerically approximate the first and second derivatives by finite differences. $\hat{C}$ is relatively straightforward
 \[
 \hat{C} = \frac{1}{n} \sum_{i=1}^n \nabla_{\theta \theta} L \left( \epsilon_i \right)
 \]
@@ -229,7 +237,7 @@ We define the kernel weight $k$ as
 k_{i,j} \equiv K \left( \frac{d_{i,j}}{b_n} \right)
 \]
 with kernel function $K: \mathbb{R} \to [0,1]$ satisfies $K(0)=1$, $K(x)=K(-x)$, $\int_{-\infty}^{\infty} K^2(x) dx < \infty$, and $K(\cdot)$ continuous at zero and at all but a finite number of other points.
-Specifically, we select the Bartlett kernel $K_{BT}(x)= \max(0, 1-|x|)$; see equation 2.7 in \cite{A91} for other popular kernel choices.
+A common choice is the Bartlett kernel $K_{BT}(x)= \max(0, 1-|x|)$; see equation 2.7 in \cite{A91} for other popular kernel choices.
 This means absolute vintage year differences larger than the bandwidth (or truncation) parameter $b_n=D$ are considered independent and are thus excluded from the $\hat{\Delta}$ estimation formula.
 
 In large samples, the parameter standard error vector can thus be estimated by
@@ -276,9 +284,7 @@ Moreover, the standard asymptotic distribution associated with an estimator is g
 The estimator in equation \ref{eq:estimator} exhibits a cross-sectional nature, since it sums over all funds rather than constructing vintage year based time-series.
 This means, we intentionally opt against a framework compatible with classical, time-series GMM that requires the construction of stationary, ergodic time-series of moment conditions \citep{H82,H12}.
 These time-series (of random functions) are used to empirically estimate the expected value of pricing errors in equation \ref{eq:pricing_error}.
-The stationarity requirement would prevent us from (i) using funds from non-liquidated vintages for model estimation and (ii) weighting vintages by cumulative fund sizes or invested capital.
-Additionally, our fundwise approach automatically down-weights non-fully-invested funds and preserves the unbalanced data structure of empirical single fund data.
-As empirically the number of funds increases with time, more recent vintages are overweighted in our naive procedure with $w=1$.
+The stationarity requirement of classical time-series GMM restrict us with respect to (i) more elaborate weighting-schemes for $w$, like fund-size weighting, and (ii) the usage of fund cash flows from non-realized vintages.
 
 In contrast to our approach, the closely related method of \cite{DLP12} forms vintage year portfolios instead of using individual fund moments.
 Further, they discount all fund cash flows just to the first cash flow date (like in a classical net present value calculation) and we additionally average over all dates within $W_{i}$ to alleviate the exploding alpha issue mentioned in \cite{DLP12}.
@@ -288,11 +294,13 @@ Due to the fundwise nature of our approach it is more stable but slower than the
 This stability results in smaller asymptotic standard errors for the coefficients.
 
 Similar to our ansatz, \cite{KN16} draw on a spatial framework to handle cross-sectional dependence between funds \citep{C99}.
-However, they utilize a classical GMM estimator, thus a time-series law of large numbers.
+However, they ultimately utilize a classical GMM estimator, thus a time-series law of large numbers.
 To obtain their Generalized Public Market Equivalent (GPME) metric they opt for pricing public market cash flows that shall replicate PE funds instead of directly pricing the observed fund cash flows.
+Time-series GMM estimators always bear the risk of under-identification, if the corresponding time series are constructed by pooling all fund cash flows from a given fund type, since you end up with just one moment condition per fund type.
 
 
 \section{Empirical estimation}
+\label{sec:empirical_estimation}
 
 \subsection{Data}
 
@@ -332,7 +340,7 @@ We use the exponential affine SDF analogously to \cite{KN16}
 \end{equation}
 with risk-free return $r_f$ and zero-net-investment portfolio returns $F_j$.
 To avoid overfitting, we just test five simple SDF models that contain \{MKT\} alone or \{MKT\} plus \{ME or IA or ROE or EG\}.
-We test two different sets for $\mathcal{T}_i$; they include all quarterly $\tau$ horizons smaller than $\{40, 60\}$ quarters.
+We test two different sets for $\mathcal{T}_i$: they include all quarterly $\tau$ horizons smaller than $\{40, 60\}$ quarters, respectively.
 In equation \ref{eq:estimator}, we use the quadratic loss function $L(x)=x^2$.
 
 To assess the parameter significance, we compute the asymptotic standard errors as outlined in subsection \ref{sec:asymptotic_inference}.
@@ -377,14 +385,8 @@ We apply ten-fold cross validation using the ten validation sets described in ta
 
 
 
-\section{Public market factor style analysis}
-
-Assume we want to assess the performance of a given (liquidated) fund, and we estimated a total of $N$ competing SDF models for that given fund type and region $\{ \Psi^{(i)}, i=1,2,\dots,N \}$.
-After we compute the set of (possible) net present values $\{ \mathrm{NPV}^{(i)}, i=1,2,\dots,N \}$, we can select the subset of $n$ SDFs that exhibit the smallest squared net present value errors $\{ j: (\mathrm{NPV}^{(j)})^2 < \alpha_n \}$.
-In the next step, we linearly combine the collection of $n$ underlying factor models to obtain one factor model that describes the investment style of that given fund in terms of public market factors (cf. model averaging vs. combination, bucket of models, bake-off contest).
-
-
 \section{Conclusion}
+\label{sec:conclusion}
 
 Equipped with a case specific (economic) distance measure, our least-mean-distance estimator can be easily generalized to estimate SDF models for all kinds of non-traded cash flows.
 

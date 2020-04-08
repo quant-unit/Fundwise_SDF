@@ -14,7 +14,7 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
 
 # 1.1) PARAMETERS ----
-weighting <- "EW"
+weighting <- "FW"
 public.filename <- "public_returns"
 public.filename <- "msci_market_factors"
 public.filename <- "q_factors"
@@ -355,13 +355,13 @@ iter.run <- function(input.list) {
     for(max.quarter in max.quarters) {
       print(paste("Max.Q", max.quarter, "Lambda", lambda))
       
-      do.parallel <- FALSE
+      do.parallel <- TRUE
       if(do.parallel) {
         cl <- parallel::makeForkCluster(3)
         doParallel::registerDoParallel(cl)    
       }
 
-      output <- foreach (type = types, .combine = "rbind", .verbose = FALSE) %do% {
+      output <- foreach (type = types, .combine = "rbind", .verbose = FALSE) %dopar% {
         df.optim.in <- df.estimate[df.estimate$type == type, ]
         df.optim.in$Fund.ID <- (as.character(df.optim.in$Fund.ID))
         df.val <- df.validate[df.validate$type == type, ]
@@ -456,12 +456,12 @@ iter.run <- function(input.list) {
   return(df.res)
 }
 
-system.time(df.res <- iter.run(vintage.blocks$ALL))
+#system.time(df.res <- iter.run(vintage.blocks$ALL))
 #tag <- paste0("_50_2019_L1_", weighting)
 #file.out <- paste0("data_out/result_", public.filename, tag, ".csv")
 #write.csv(df.res, file.out, row.names = FALSE)
 
-#system.time(out.list <- lapply(vintage.blocks, iter.run))
+system.time(out.list <- lapply(vintage.blocks, iter.run))
 #saveRDS(out.list, "data_out/out_list_40_FW.RDS")
 
 # x) Grid Search ----

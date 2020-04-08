@@ -5,7 +5,7 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
 
 list.cache <- list()
-dir.cache <- "data_out/cache_q_factors_EW"
+dir.cache <- "data_out/cache_q_factors"
 for(file in list.files(dir.cache)) {
   if(substr(file,1,1) == 0) next
   df.f <- read.csv(paste0(dir.cache, "/", file))
