@@ -37,6 +37,7 @@ rbind.all.columns <- function(x, y) {
 
 
 # summarize coefficient estimates -----
+require(xtable)
 q.factors <- c("MKT", "ME", "IA", "ROE", "EG")
 
 cv.res <- list()
@@ -57,12 +58,12 @@ for(Factor in q.factors) {
   a <- 2
   b <- 3
   if(n == b) {
-    names(m)[b] <- "Second"
-    names(s)[b] <- "Second"
+    names(m)[b] <- "Coef"
+    names(s)[b] <- "Coef"
   }
   
-  names(m)[a:n] <- paste0(names(m)[a:n], ".mean")
-  names(s)[a:n] <- paste0(names(s)[a:n], ".sd")
+  names(m)[a:n] <- paste0(names(m)[a:n])
+  names(s)[a:n] <- paste0("SE.", names(s)[a:n])
   
   df <- merge(m, s, by = "id")
   df$Factor <- Factor
@@ -80,8 +81,6 @@ df.cv <- df.cv[order(df.cv$Type, df.cv$Max.Quarter), ]
 df.cv.40 <- df.cv[df.cv$Max.Quarter == 40, ]
 df.cv.60 <- df.cv[df.cv$Max.Quarter == 60, ]
 df.cv.40$Max.Quarter <- df.cv.60$Max.Quarter <- NULL
-print(xtable::xtable(df.cv.40, caption = "Cross validation with max quarter 40."), include.rownames=FALSE)
-print(xtable::xtable(df.cv.60, caption = "Cross validation with max quarter 60."), include.rownames=FALSE)
 
 write.csv(df.cv, paste0(dir.cache,"/0_cross_validation_summary.csv"))
 
@@ -99,40 +98,59 @@ df.all <- df.all[, c("Type", "max.quarter", "MKT", "SE.MKT", "Factor", "Coef", "
 df.all40 <- df.all[df.all$max.quarter == 40, ]
 df.all60 <- df.all[df.all$max.quarter == 60, ]
 df.all40$max.quarter <- df.all60$max.quarter <- NULL
-print(xtable::xtable(df.all40, caption = "Asymptotic inference with max quarter 40."), include.rownames=FALSE)
-print(xtable::xtable(df.all60, caption = "Asymptotic inference with max quarter 60."), include.rownames=FALSE)
+
+
+
+
+
+print(xtable::xtable(df.all40, caption = "Asymptotic inference with max quarter 40. The Wald test null hypothesis is a MKT coefficient of one, and zeros for all other coefficients."), include.rownames=FALSE)
+print(xtable::xtable(df.cv.40, caption = "$hv$-block cross-validation with max quarter 40."), include.rownames=FALSE)
+print(xtable::xtable(df.all60, caption = "Asymptotic inference with max quarter 60. The Wald test null hypothesis is a MKT coefficient of one, and zeros for all other coefficients."), include.rownames=FALSE)
+print(xtable::xtable(df.cv.60, caption = "$hv$-block cross-validation with max quarter 60."), include.rownames=FALSE)
+
 
 write.csv(df.all, paste0(dir.cache,"/0_asymptotic_inference_summary.csv"))
 
 
-# cross validation ----
-
-df.cv <- data.frame(
-  aggregate(validation.error ~ Type + lambda, FUN=mean, data=df.f[df.f$CV.key != "ALL", ])
-)
-
-df.cv <- df.cv[order(df.cv$validation.error), ]
-df.cv <- df.cv[!duplicated(df.cv$Type), ]
-
-df <- df.f[((df.f$CV.key == "ALL") & (df.f$lambda == 2)), ]
-
-aggregate(validation.error ~ Type, FUN=min, data=df.cv[is.finite(df.cv$validation.error), ])
-
-# calc returns ----
-type <- "BO"
-factor <- "ME"
-cols <- c("RF", "MKT", "ME", "IA", "ROE", "EG")
-df <- data.frame((as.matrix(df.q[, cols])) %*% t(as.matrix(df.f[(df.f$Type == type) & (df.f[, factor] != 0), cols])))
-colnames(df) <- df.f$Factor[df.f$Type == type]
-
-df$Date <- df.q$Date
-df <- df[df$Date > as.Date("1989-12-31"), ]
-
-i <- 1
-plot(x = df$Date, y = cumprod(1 + df[, i]), xlab = "Date", ylab = "Cum. Return", ylim = c(0, 5000))
-max.c <- (ncol(df)-1)
-for( i in 2:max.c) {
-  lines(df$Date, cumprod(1 + df[, i]), col = "grey")
+# plot log returns ----
+plot.log.return <- function(type, df.f) {
+  df.f <- df.f[(df.f$Type == type), ]
+  df.f <- df.f[(df.f$CV.key == "ALL"), ]
+  
+  cols <- c("RF", "MKT", "ME", "IA", "ROE", "EG")
+  df.f[is.na(df.f)] <- 0
+  df <- data.frame((as.matrix(df.q[, cols])) %*% t(as.matrix(
+    df.f[, cols]
+  )))
+  colnames(df) <- df.f$Factor
+  
+  df$Date <- df.q$Date
+  df <- df[df$Date > as.Date("1989-12-31"), ]
+  
+  # plot
+  plot(x = df$Date, y = log(cumprod(1 + df[, 1])), main = type, type = "l",
+       xlab = "Date", ylab = "Cum. Log Return", ylim = c(-5, 15))
+  color <- 0 ; i <- 1
+  for(col in cols[2:6]) {
+    df.ss <- df[, colnames(df) == col]
+    color <- color + 1
+    for(i in 1:ncol(df.ss)) {
+      lines(df$Date, log(cumprod(1 + df.ss[, i])), col = color)
+    }
+  }
+  legend("topleft", bty="n", legend = cols[2:6], col = 1:5, lty = 1)
+  
 }
-#plot(x = df$Date, y = df[, i], type="l", xlab = "Date", ylab = "Return")
 
+setEPS()
+postscript(paste0(dir.cache, "/", "0_SDF_realizations.eps"), 
+           width = 5.5, height = 4, family = "Helvetica", pointsize = 5)
+par(mfrow=c(2,2), cex=1.0, mar = c(4.1, 4.1, 3.1, 1.1))
+
+for(type in c("PE", "VC", "PD", "RE")) {
+  plot.log.return(type, df.f)
+  abline(h=c(0,5), col = "grey", lty = 3)
+}
+
+par(mfrow=c(1,1), cex=1)
+dev.off() 

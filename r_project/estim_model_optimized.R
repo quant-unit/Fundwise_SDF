@@ -1,6 +1,6 @@
 #### estimated model
 # 0) Prologue -----
-if(FALSE) {
+if(TRUE) {
   files <- c("prep_preqin.R", "prep_public.R")
   for(file in files) {
     source(file)
@@ -14,7 +14,7 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
 
 # 1.1) PARAMETERS ----
-weighting <- "FW"
+weighting <- "EW"
 public.filename <- "public_returns"
 public.filename <- "msci_market_factors"
 public.filename <- "q_factors"
@@ -463,30 +463,3 @@ iter.run <- function(input.list) {
 
 system.time(out.list <- lapply(vintage.blocks, iter.run))
 #saveRDS(out.list, "data_out/out_list_40_FW.RDS")
-
-# x) Grid Search ----
-
-if (FALSE) {
-  grid <- expand.grid(Alpha = seq(-0.005, 0.005, by=0.0025),
-                      MKT = seq(-2, 2, 0.2),
-                      RE = seq(-2, 2, 0.2))
-  print(nrow(grid))
-  
-  
-  val <- c()
-  for(i in 1:nrow(grid)) {
-    print(i)
-    par <- as.numeric(grid[i, ])
-    names(par) <- names(grid)
-    
-    val <- c(val, npv.calc(par))
-  }
-  grid <- data.frame(grid)
-  grid$res <- val
-  
-  g1 <- grid
-  
-  head(g1[order(g1$res), ])
-}
-
-

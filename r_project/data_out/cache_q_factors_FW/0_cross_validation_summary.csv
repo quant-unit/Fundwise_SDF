@@ -1,4 +1,4 @@
-"","Type","Max.Quarter","MKT.mean","MKT.sd","Factor","Second.mean","Second.sd","validation.error"
+"","Type","Max.Quarter","MKT","SE.MKT","Factor","Coef","SE.Coef","validation.error"
 "1","INF","40",3.19140625,1.96069501737825,"MKT",NA,NA,"3762"
 "13","INF","40",3.80751072642045,2.33610440135481,"ME",-1.41896888856178,1.32320851333229,"3160"
 "25","INF","40",2.42301160726067,1.32202110677428,"IA",4.16278069751378,4.74985821670531,"4332"
