@@ -1,6 +1,6 @@
 #### estimated model
 # 0) Prologue -----
-if(TRUE) {
+if(FALSE) {
   files <- c("prep_preqin.R", "prep_public.R")
   for(file in files) {
     source(file)
@@ -14,7 +14,9 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
 
 # 1.1) PARAMETERS ----
-weighting <- "EW"
+weighting <- "FW"
+use.vintage.year.pfs <- FALSE
+if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
 public.filename <- "public_returns"
 public.filename <- "msci_market_factors"
 public.filename <- "q_factors"
@@ -25,6 +27,7 @@ sdf.model <- "exp.aff"
 do.cache <- TRUE
 max.quarters <- c(40, 60)
 lambdas <- 0 # L2_Lasso
+kernel.bandwidth <- 12
 
 if(public.filename == "msci_market_factors") {
   error.function <- "L1_Ridge"
@@ -35,6 +38,7 @@ if(public.filename == "msci_market_factors") {
 # 1.2) load data -----
 
 df.preqin <- read.csv(paste0("data_prepared/preqin_cashflows_", weighting, ".csv"))
+table(df.preqin$type[!duplicated(df.preqin$Fund.ID)])
 df.public <- read.csv(paste0("data_prepared/", public.filename, ".csv"))
 
 df.preqin$Date <- as.Date(df.preqin$Date)
@@ -66,13 +70,10 @@ Rcpp::cppFunction("
 
     int n = cf.length();
     int i_max = std::min(max_quarter, n);
-    int j_max = (i_max - 1) / 12 + 1;
-    NumericVector VectorOut(j_max, 0.0);
+    NumericVector VectorOut(i_max, 0.0);
     
-    int j = 0;
-    for(int i = 0; i < i_max; i = i + 12) {
-      VectorOut[j] = DCF * ret[i];
-      j += 1;
+    for(int i = 0; i < i_max; i++) {
+      VectorOut[i] = DCF * ret[i];
     }
 
     double y = mean(VectorOut);
@@ -130,8 +131,6 @@ system.time(
 )
 
 # 2.3 Asymptotic gradient hessian -----
-psi <- NULL
-
 if(TRUE) {
   res <- optimx::optimx(par, err.sqr.calc, 
                         lambda = 0,
@@ -174,13 +173,13 @@ Avg.Grad <- colMeans(
   )
 Avg.Grad
 
-weighter <- function(x, y, bw=12) {
+weighter <- function(x, y, bw = kernel.bandwidth) {
   abs.dis <- abs( (x - y) / bw )
   ifelse(abs.dis <= 1, 1 - abs.dis, 0) # Bartlett kernel
   }
 weighter(2010, 2015)
 
-get.psi.matrix2 <- function(dfx, par) {
+get.psi.matrix.dep <- function(dfx, par) {
   n <- length(dfx)
   A <- as.matrix(data.frame(do.call(rbind, lapply(dfx, get.grad.per.fund, par=par))))
   dim.GG <- length(A[1, ])
@@ -196,6 +195,20 @@ get.psi.matrix2 <- function(dfx, par) {
   }
   return(M / n)
 }
+
+get.psi.matrix.indep <- function(dfx, par) {
+  n <- length(dfx)
+  A <- as.matrix(data.frame(do.call(rbind, lapply(dfx, get.grad.per.fund, par=par))))
+  dim.GG <- length(A[1, ])
+  M <- matrix(0, dim.GG, dim.GG)
+  
+  for (i in 1:n) {
+    GG <- A[i, ] %*% t(A[i, ])
+    M <- M + GG
+  }
+  return(M / n)
+}
+
 #system.time(psi <- get.psi.matrix2(dfx, par))
 
 # HESSIAN
@@ -256,9 +269,12 @@ get.hess.per.fund <- function(df.ss, par) {
 get.hess.per.fund(df.ss, par)
 
 
-estim.CoVM <- function(dfx, par, psi=NULL) {
-  if(is.null(psi)) {
-    psi <- get.psi.matrix2(dfx, par)
+estim.CoVM <- function(dfx, par, indep=FALSE) {
+  if(indep) {
+    psi <- get.psi.matrix.indep(dfx, par)
+  } else {
+    psi <- get.psi.matrix.dep(dfx, par)
+    
   }
   hessian <- Reduce('+', lapply(dfx, get.hess.per.fund, par=par)) / length(dfx)
   
@@ -281,7 +297,10 @@ estim.CoVM <- function(dfx, par, psi=NULL) {
   return(out)
 }
 system.time(
-  out <- estim.CoVM(dfx, par, psi=NULL)
+  out <- estim.CoVM(dfx, par, indep=FALSE)
+)
+system.time(
+  out <- estim.CoVM(dfx, par, indep=TRUE)
 )
 out
 
@@ -345,6 +364,8 @@ iter.run <- function(input.list) {
   }
   if (public.filename == "q_factors") {
     factors <- colnames(df.public)[2:6] # q_factors
+    factors <- c(factors, "Alpha")
+    
     #factors <- c( "ALL", factors)
     types <- c("PE", "VC", "PD", "RE", "NATRES", "INF") # asset classes
   }
@@ -371,13 +392,14 @@ iter.run <- function(input.list) {
         for (factor in factors) {
           if(nrow(df.optim.in) == 0 | nrow(df.val) == 0) next
           
-          par <- c("MKT" = 1, "Alpha"=0)
           par <- c("MKT" = 1)
           
           if(factor == "ALL") {
             for(fac in setdiff(factors, "ALL")) {
               par[fac] <- 0
             }
+          } else if (factor == "Alpha") {
+            par <- c("MKT" = 1, "Alpha"=0)
           } else {
             if ("ALL" %in% factors) break
             if(!(factor %in% names(par))) par[factor] <- 0
@@ -410,16 +432,23 @@ iter.run <- function(input.list) {
           # Standard Error calc
           for(v in names(par)) par[v] <- res[1, v]
           dfx <- split(df.optim.in, df.optim.in$Fund.ID)
-          cov <- estim.CoVM(dfx, par=par, psi = NULL)
+          
+          # dependent - kernel bandwidht
+          cov <- estim.CoVM(dfx, par=par, indep = FALSE)
           print(cov)
           for(v in names(cov$SE)) res[, v] <- cov$SE[v]
           res$Wald.p.value.MKT_1 <- cov$Wald.p.value.MKT_1
-
+          
+          # independet with other funds
+          cov.indep <- estim.CoVM(dfx, par=par, indep = TRUE)
+          for(v in names(cov.indep$SE)) res[, paste0(v, ".indep")] <- cov.indep$SE[v]
+          
           print(res)
           res$Factor <- factor
           res$Type <- type
           res$max.quarter <- max.quarter
           res$lambda <- lambda
+          res$kernel.bandwidth <- kernel.bandwidth
           res$CV.key <- input.list$cv.year
           res$weighting <- weighting
           res$error.fun <- error.function
@@ -461,5 +490,6 @@ iter.run <- function(input.list) {
 #file.out <- paste0("data_out/result_", public.filename, tag, ".csv")
 #write.csv(df.res, file.out, row.names = FALSE)
 
-system.time(out.list <- lapply(vintage.blocks, iter.run))
+for(v in names(vintage.blocks)) df.res <- iter.run(vintage.blocks[[v]])
+#system.time(out.list <- lapply(vintage.blocks, iter.run))
 #saveRDS(out.list, "data_out/out_list_40_FW.RDS")

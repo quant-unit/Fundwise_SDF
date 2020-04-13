@@ -61,8 +61,9 @@ The author alone is responsible for the content and writing of the paper.
 
 
 \begin{abstract}
-This paper proposes a stochastic discount factor estimation methodology suited for private equity fund-level cash flow data.
+This paper proposes a new stochastic discount factor estimation methodology suited for private equity fund-level cash flow data.
 The asymptotic inference framework for our least-mean-distance estimator draws on a spatial notion, i.e., the idea that the economic distance between distinct private equity funds can be measured.
+We extensively test our new approach by empirically estimating several simple two-factor stochastic discount factor models for a variety of private equity fund types.
 \end{abstract}
 
 %% main text
@@ -114,7 +115,7 @@ We define the $w$-weighted $\tau$-average fund pricing error as
 \label{eq:average_pricing_error}
 \bar{\epsilon}_{i} =
 w_{i} \cdot
-\frac{1}{\mathrm{card}( \mathcal{T}_{i})}
+\frac{1}{\mathrm{card}( \mathcal{T}_{i}) }
 \sum_{\tau \in \mathcal{T}_{i}}
 \epsilon_{\tau,i}
 \qquad \forall \quad i
@@ -221,7 +222,7 @@ We define the corresponding finite sample estimators analogously to \citet[Chapt
 \[
 \hat{C} = \frac{1}{n} \sum_{i=1}^n \nabla_{\theta \theta} L \left( \epsilon_i \right)
 \]
-Due to the (spatial near-epoch) dependence, the intricate part is to consistently estimate $\hat{\Delta}$ by a Spatial Heteroskedasticity and Autocorrelation Consistent (SHAC) covariance matrix estimator \cite[equation 2]{KS11}
+Due to the (spatial near-epoch) dependence, the involved and computationally intensive part is to consistently estimate $\hat{\Delta}$ by a Spatial Heteroskedasticity and Autocorrelation Consistent (SHAC) covariance matrix estimator \cite[equation 2]{KS11}
 \begin{equation}
 \label{eq:hac}
 \hat{\Delta} = \frac{1}{n} \sum_{i=1}^n \sum_{j=1}^n
@@ -307,17 +308,12 @@ Time-series GMM estimators always bear the risk of under-identification, if the 
 
 We use the Preqin cash flow data set as of 26th February 2020.
 We pool all regions and analyze the following fund types (using the Preqin asset class classification):
-PE ("Private Equity"; 2474 distinct funds in data set),
-VC ("Venture Capital"; 985),
-RE ("Real Estate"; 810),
-PD ("Private Debt"; 488),
-INF ("Infrastructure", 174), 
-NATRES ("Natural Resources", 167).
-%MEZZ ("Mezzanine"; 147),
-%DD ("Special Situations", "Distressed Debt"; 60+153),
-%BO ("Growth", "Buyout"; 265+1251),
-%FOF ("Fund of Funds"; 589),
-%SEC ("Secondaries"; 131).
+PE ("Private Equity"; 2248 distinct funds in data set),
+VC ("Venture Capital"; 871),
+RE ("Real Estate"; 742),
+PD ("Private Debt"; 441),
+INF ("Infrastructure", 144), 
+NATRES ("Natural Resources", 138).
 For these fund types we extract all (i) equal-weighted and (ii) fund-size-weighted cash flow series.
 For non-liquidated funds we treat the latest net asset value as final cash flow.
 We explicitly refrain from excluding the most recent vintage years.
@@ -340,16 +336,15 @@ We use the exponential affine SDF analogously to \cite{KN16}
 \right]
 \end{equation}
 with risk-free return $r_f$ and zero-net-investment portfolio returns $F_j$.
-To avoid overfitting, we just test five simple SDF models that contain \{MKT\} alone or \{MKT\} plus \{ME or IA or ROE or EG\}.
+To avoid overfitting, we just test five simple SDF models that contain \{MKT\} alone or \{MKT\} plus \{ME or IA or ROE or EG or Alpha\}.
 We test two different sets for $\mathcal{T}_i$: they include all quarterly $\tau$ horizons smaller than $\{40, 60\}$ quarters, respectively.
 In equation \ref{eq:estimator}, we use the quadratic loss function $L(x)=x^2$.
 
 To assess the parameter significance, we compute the asymptotic standard errors as outlined in subsection \ref{sec:asymptotic_inference}.
-Moreover, we perform a Wald test for the null hypothesis of a MKT coefficient of one and zeros for the other coefficients (ME, IA, ROE, EG).
 The Bartlett kernel's bandwidth $b_n=D$ is selected as 12 years, i.e., funds with absolute vintage year differences larger than 12 years are assumed to be independent.
 
 Additionally, we want to test the finite - or more honestly small - sample parameter significance and the out-of-sample performance of our SDF models.
-Here we rely on $hv$-block cross validation to account for the dependency in our data set introduced by overlapping fund cash flows for funds from adjacent vintage years \citep{R00}. 
+Here we draw on $hv$-block cross validation to account for the dependency in our data set introduced by overlapping fund cash flows for funds from adjacent vintage years \citep{R00}. 
 Therefore, we form three partitions for several vintage year groups. 
 As larger validation sets are preferred for model selection, the validation set ($v$-block) always contains funds of three neighboring vintage years (e.g. 2000, 2001, 2002). 
 To reduce the dependency between training and validation set, we remove all funds from three-year-adjacent vintage years, i.e., the $h$-block (e.g. 1997, 1998, 1999, 2003, 2004, 2005). 
@@ -381,145 +376,168 @@ We apply ten-fold cross validation using the ten validation sets described in ta
 
 \subsection{Results}
 
-The main results are summarized in table \ref{tab:result_summary}, which condenses the information from tables \ref{tab:ai_40_ew_dep} to \ref{tab:cv_60_fw_dep} that are displayed at the end of this paper.
+\subsubsection{Fundwise}
+\label{sec:results_fundwise}
+
+The SDF models estimated on fundwise data with best out-of-sample performance are summarized in table \ref{tab:result_summary}, which condenses the information from tables \ref{tab:ai_40_fw} to \ref{tab:cv_60_ew} that are displayed at the end of this paper.
 We generally analyze the results in a two step procedure: For a given model specification, we use the cross-validation error (i.e., the average out-of-sample error) to select the best model for each fund type, but analyze the corresponding coefficient estimates from the asymptotic inference tables (estimated on the total data set).
 
 Throughout this subsection, we sloppily define the statistical significance of coefficient estimates in terms of a t-ratio $\hat{\theta}[SE(\hat{\theta})]^{-1}$ greater than two.
 
 
+% latex table generated in R 3.4.2 by xtable 1.8-4 package
+% Mon Apr 13 13:21:07 2020
 \begin{table}[ht]
 	\centering
-	\begin{tabular}{lllrlllllr}
-		Weighting & Max. Q. & Bandwidth & Type & MKT & ME & IA & ROE & EG & Tables \\ 
+	\begin{tabular}{llrrrrrrl}
+		ID & Type & MKT & Alpha.p.a. & ME & IA & ROE & EG & Tables \\ 
 		\hline
 		\hline
-			Equal & 40 & $D=12$ & PE & 2.34 & 0 & 2.64 & 0 & 0 & \ref{tab:ai_40_ew_dep}, \ref{tab:cv_40_ew_dep} \\ 
-		Equal & 40 & $D=12$ & VC & 2.87 & 0 & 0 & 0 & 0 & \ref{tab:ai_40_ew_dep}, \ref{tab:cv_40_ew_dep} \\ 
-		Equal & 40 & $D=12$ & PD & 1.26 & 0 & 0 & 1.98 & 0 & \ref{tab:ai_40_ew_dep}, \ref{tab:cv_40_ew_dep} \\ 
-		Equal & 40 & $D=12$ & RE & 0.69 & 0 & 0 & 0 & 3.69 & \ref{tab:ai_40_ew_dep}, \ref{tab:cv_40_ew_dep} \\ 
-		Equal & 40 & $D=12$ & NATRES & 1.52 & 0 & 0 & 0 & 2.28 & \ref{tab:ai_40_ew_dep}, \ref{tab:cv_40_ew_dep} \\ 
-		Equal & 40 & $D=12$ & INF & 1.72 & 0 & 0 & 0 & 0 & \ref{tab:ai_40_ew_dep}, \ref{tab:cv_40_ew_dep} \\ 
+		FW - 40 & PE & -0.51 & 0.13 &  &  &  &  & \ref{tab:ai_40_fw}, \ref{tab:cv_40_fw} \\ 
+		FW - 40 & VC & 2.70 &  &  &  &  &  &  \\ 
+		FW - 40 & PD & 1.43 &  &  &  &  & 3.83 &  \\ 
+		FW - 40 & RE & 0.83 &  &  &  &  & 4.30 &  \\ 
+		FW - 40 & NATRES & -0.69 &  &  &  &  & 4.06 &  \\ 
+		FW - 40 & INF & 1.35 &  &  &  & 5.82 &  &  \\ 
 		\hline
-		Equal & 60 & $D=12$ & PE & 2.15 & 0 & 2.45 & 0 & 0 & \ref{tab:ai_60_ew_dep}, \ref{tab:cv_60_ew_dep} \\ 
-		Equal & 60 & $D=12$ & VC & 2.33 & 0 & 0 & 0 & 0 & \ref{tab:ai_60_ew_dep}, \ref{tab:cv_60_ew_dep} \\ 
-		Equal & 60 & $D=12$ & PD & 1.07 & 0 & 0 & 1.68 & 0 & \ref{tab:ai_60_ew_dep}, \ref{tab:cv_60_ew_dep} \\ 
-		Equal & 60 & $D=12$ & RE & 0.62 & 0 & 0 & 0 & 3.57 & \ref{tab:ai_60_ew_dep}, \ref{tab:cv_60_ew_dep} \\ 
-		Equal & 60 & $D=12$ & NATRES & 1.27 & 0 & 0 & 0 & 2.18 & \ref{tab:ai_60_ew_dep}, \ref{tab:cv_60_ew_dep} \\ 
-		Equal & 60 & $D=12$ & INF & 1.65 & 0 & 0 & 0 & 0 & \ref{tab:ai_60_ew_dep}, \ref{tab:cv_60_ew_dep} \\ 
+		FW - 60 & PE & -0.29 & 0.11 &  &  &  &  & \ref{tab:ai_60_fw}, \ref{tab:cv_60_fw} \\ 
+		FW - 60 & VC & 2.12 &  &  &  &  &  &  \\ 
+		FW - 60 & PD & 1.38 &  &  &  &  & 3.75 &  \\ 
+		FW - 60 & RE & 0.74 &  &  &  &  & 4.11 &  \\ 
+		FW - 60 & NATRES & -1.08 &  &  & 3.40 &  &  &  \\ 
+		FW - 60 & INF & 1.29 &  &  &  & 5.82 &  &  \\ 
 		\hline
 		\hline
-		Fund-size & 40 & $D=12$ & PE & 2.67 & 0 & 0 & 0 & 0 & \ref{tab:ai_40_fw_dep}, \ref{tab:cv_40_fw_dep} \\ 
-		Fund-size & 40 & $D=12$ & VC & 2.46 & 0 & 0 & 0 & 0 & \ref{tab:ai_40_fw_dep}, \ref{tab:cv_40_fw_dep} \\ 
-		Fund-size & 40 & $D=12$ & PD & 1.43 & 0 & 0 & 0 & 3.96 & \ref{tab:ai_40_fw_dep}, \ref{tab:cv_40_fw_dep} \\ 
-		Fund-size & 40 & $D=12$ & RE & -0.36 & 2.07 & 0 & 0 & 0 & \ref{tab:ai_40_fw_dep}, \ref{tab:cv_40_fw_dep} \\ 
-		Fund-size & 40 & $D=12$ & NATRES & -0.73 & 0 & 0 & 0 & 4.72 & \ref{tab:ai_40_fw_dep}, \ref{tab:cv_40_fw_dep} \\ 
-		Fund-size & 40 & $D=12$ & INF & 1.31 & 0 & 0 & 6.08 & 0 & \ref{tab:ai_40_fw_dep}, \ref{tab:cv_40_fw_dep} \\ 
+		EW - 40 & PE & -0.01 & 0.12 &  &  &  &  & \ref{tab:ai_40_ew}, \ref{tab:cv_40_ew} \\ 
+		EW - 40 & VC & 3.08 &  &  &  &  &  &  \\ 
+		EW - 40 & PD & -0.26 & 0.10 &  &  &  &  &  \\ 
+		EW - 40 & RE & 0.67 &  &  &  &  & 3.27 &  \\ 
+		EW - 40 & NATRES & 1.48 &  &  &  &  & 2.27 &  \\ 
+		EW - 40 & INF & 1.20 &  &  &  & 3.92 &  &  \\ 
 		\hline
-		Fund-size & 60 & $D=12$ & PE & 1.92 & 0 & 2.90 & 0 & 0 & \ref{tab:ai_60_fw_dep}, \ref{tab:cv_60_fw_dep} \\ 
-		Fund-size & 60 & $D=12$ & VC & 2.16 & 0 & 0 & 0 & 0 & \ref{tab:ai_60_fw_dep}, \ref{tab:cv_60_fw_dep} \\ 
-		Fund-size & 60 & $D=12$ & PD & 1.40 & 0 & 0 & 0 & 3.95 & \ref{tab:ai_60_fw_dep}, \ref{tab:cv_60_fw_dep} \\ 
-		Fund-size & 60 & $D=12$ & RE & 1.27 & 0 & 0 & 0 & 0 & \ref{tab:ai_60_fw_dep}, \ref{tab:cv_60_fw_dep} \\ 
-		Fund-size & 60 & $D=12$ & NATRES & -1.00 & 0 & 3.29 & 0 & 0 & \ref{tab:ai_60_fw_dep}, \ref{tab:cv_60_fw_dep} \\ 
-		Fund-size & 60 & $D=12$ & INF & 1.22 & 0 & 0 & 6.13 & 0 & \ref{tab:ai_60_fw_dep}, \ref{tab:cv_60_fw_dep} \\ 
+		EW - 60 & PE & 2.03 &  &  & 2.28 &  &  & \ref{tab:ai_60_ew}, \ref{tab:cv_60_ew} \\ 
+		EW - 60 & VC & 2.20 &  &  &  &  &  &  \\ 
+		EW - 60 & PD & 0.89 &  &  &  & 1.53 &  &  \\ 
+		EW - 60 & RE & 0.56 &  &  &  &  & 3.14 &  \\ 
+		EW - 60 & NATRES & 1.37 &  &  &  &  &  &  \\ 
+		EW - 60 & INF & 1.58 &  &  &  &  &  &  \\ 
 		\hline
 		\hline
 	\end{tabular}
-	\caption{Summary of fundwise results for Bartlett kernel bandwidth $D=12$.}
+	\caption{Fundwise SDF models with best out-of-sample performance as determined by $hv$-block cross-validation. ID consists of cash flow weighting scheme - maximum quarter. FW denotes fund-size-weighting and EW equal-weighting.} 
 	\label{tab:result_summary}
 \end{table}
 
+\paragraph{Asymptotic vs. $hv-$block cross-validation standard errors}
 
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{lllrlllllr}
-		Weighting & Max. Q. & Bandwidth & Type & MKT & ME & IA & ROE & EG & Tables \\ 
-		\hline
-		\hline
-		Equal & 40 & $D=12$ & PE & 1.05 & 0 & 0 & 2.48 & 0 & \ref{tab:ai_40_ew_dep_vyp}, \ref{tab:cv_40_ew_dep_vyp} \\ 
-		Equal & 40 & $D=12$ & VC & 1.26 & 0 & 0 & 0 & 1.38 & \ref{tab:ai_40_ew_dep_vyp}, \ref{tab:cv_40_ew_dep_vyp} \\ 
-		Equal & 40 & $D=12$ & PD & 0.92 & 1.49 & 0 & 0 & 0 & \ref{tab:ai_40_ew_dep_vyp}, \ref{tab:cv_40_ew_dep_vyp} \\ 
-		Equal & 40 & $D=12$ & RE & 0.46 & 0 & 0 & 2.96 & 0 & \ref{tab:ai_40_ew_dep_vyp}, \ref{tab:cv_40_ew_dep_vyp} \\ 
-		Equal & 40 & $D=12$ & NATRES & 0.07 & 0 & 0 & 2.32 & 0 & \ref{tab:ai_40_ew_dep_vyp}, \ref{tab:cv_40_ew_dep_vyp} \\ 
-		Equal & 40 & $D=12$ & INF & 1.68 & 0 & 0 & 0 & 0 & \ref{tab:ai_40_ew_dep_vyp}, \ref{tab:cv_40_ew_dep_vyp} \\ 
-		\hline
-		Equal & 60 & $D=12$ & PE & 1.12 & 0 & 0 & 2.31 & 0 & \ref{tab:ai_60_ew_dep_vyp}, \ref{tab:cv_60_ew_dep_vyp} \\ 
-		Equal & 60 & $D=12$ & VC & 1.30 & 0 & 0 & 0 & 1.24 & \ref{tab:ai_60_ew_dep_vyp}, \ref{tab:cv_60_ew_dep_vyp} \\ 
-		Equal & 60 & $D=12$ & PD & 0.93 & 1.39 & 0 & 0 & 0 & \ref{tab:ai_60_ew_dep_vyp}, \ref{tab:cv_60_ew_dep_vyp} \\ 
-		Equal & 60 & $D=12$ & RE & 0.51 & 0 & 0 & 2.83 & 0 & \ref{tab:ai_60_ew_dep_vyp}, \ref{tab:cv_60_ew_dep_vyp} \\ 
-		Equal & 60 & $D=12$ & NATRES & 0.32 & 0 & 0 & 1.68 & 0 & \ref{tab:ai_60_ew_dep_vyp}, \ref{tab:cv_60_ew_dep_vyp} \\ 
-		Equal & 60 & $D=12$ & INF & 1.62 & 0 & 0 & 0 & 0 & \ref{tab:ai_60_ew_dep_vyp}, \ref{tab:cv_60_ew_dep_vyp} \\ 
-		\hline
-		\hline
-		Fund-size & 40 & $D=12$ & PE & 1.04 & 0 & 0 & 2.55 & 0 & \ref{tab:ai_40_fw_dep_vyp}, \ref{tab:cv_40_fw_dep_vyp} \\ 
-		Fund-size & 40 & $D=12$ & VC & 0.59 & 0 & 0 & 0 & 1.60 & \ref{tab:ai_40_fw_dep_vyp}, \ref{tab:cv_40_fw_dep_vyp} \\ 
-		Fund-size & 40 & $D=12$ & PD & 1.04 & 1.27 & 0 & 0 & 0 & \ref{tab:ai_40_fw_dep_vyp}, \ref{tab:cv_40_fw_dep_vyp} \\ 
-		Fund-size & 40 & $D=12$ & RE & 0.28 & 0 & 0 & 3.26 & 0 & \ref{tab:ai_40_fw_dep_vyp}, \ref{tab:cv_40_fw_dep_vyp} \\ 
-		Fund-size & 40 & $D=12$ & NATRES & -0.46 & 0 & 0 & 2.49 & 0 & \ref{tab:ai_40_fw_dep_vyp}, \ref{tab:cv_40_fw_dep_vyp} \\ 
-		Fund-size & 40 & $D=12$ & INF & 0.45 & 0 & 0 & 2.96 & 0 & \ref{tab:ai_40_fw_dep_vyp}, \ref{tab:cv_40_fw_dep_vyp} \\ 
-		\hline
-		Fund-size & 60 & $D=12$ & PE & 1.08 & 0 & 0 & 2.45 & 0 & \ref{tab:ai_60_fw_dep_vyp}, \ref{tab:cv_60_fw_dep_vyp} \\ 
-		Fund-size & 60 & $D=12$ & VC & 0.58 & 0 & 0 & 0 & 1.54 & \ref{tab:ai_60_fw_dep_vyp}, \ref{tab:cv_60_fw_dep_vyp} \\ 
-		Fund-size & 60 & $D=12$ & PD & 1.01 & 1.26 & 0 & 0 & 0 & \ref{tab:ai_60_fw_dep_vyp}, \ref{tab:cv_60_fw_dep_vyp} \\ 
-		Fund-size & 60 & $D=12$ & RE & 0.31 & 0 & 0 & 3.11 & 0 & \ref{tab:ai_60_fw_dep_vyp}, \ref{tab:cv_60_fw_dep_vyp} \\ 
-		Fund-size & 60 & $D=12$ & NATRES & -0.47 & 0 & 0 & 0 & 1.38 & \ref{tab:ai_60_fw_dep_vyp}, \ref{tab:cv_60_fw_dep_vyp} \\ 
-		Fund-size & 60 & $D=12$ & INF & 0.39 & 0 & 0 & 2.97 & 0 & \ref{tab:ai_60_fw_dep_vyp}, \ref{tab:cv_60_fw_dep_vyp} \\ 
-		\hline
-		\hline
-	\end{tabular}
-	\caption{Summary of vintage year portfolio results for Bartlett kernel bandwidth $D=12$.}
-	\label{tab:result_summary_vyp}
-\end{table}
+In tables \ref{tab:ai_40_fw}, \ref{tab:ai_60_fw}, \ref{tab:ai_40_ew}, and  \ref{tab:ai_60_ew}, all (!!) coefficient estimates seem to be statistically insignificant as their asymptotic standard errors (with $D=12$)  correspond to t-ratios smaller than two.
+The standard errors obtained by $hv-$block cross-validation, i.e., the empirical standard deviations of the estimates associated with the partitions defined in table \ref{tab:hv_block_cv}, exhibit t-ratios bigger than two for approximately 30\% of cases, especially for almost all single-factor MKT models.
+
+\paragraph{Fund-size- vs. equal-weighting}
+
+Here we compare table \ref{tab:ai_40_fw} to \ref{tab:ai_40_ew}, and table \ref{tab:ai_60_fw} to \ref{tab:ai_60_ew}.
+There is no clear tendency with respect to smaller or larger absolute values for neither coefficient estimates nor asymptotic coefficient standard error estimates.
 
 
-\subsubsection*{Cash flow equal-weighting, Bartlett kernel bandwidth $D=12$}
+\paragraph{Maximum quarter 40 vs. 60}
 
-According to the asymptotic standard error estimates from tables \ref{tab:ai_40_ew_dep} and \ref{tab:ai_60_ew_dep}, all two-factor models seem  to be highly insignificant for both maximum quarters.
+Here we compare table \ref{tab:ai_40_fw} to \ref{tab:ai_60_fw}, and table \ref{tab:ai_40_ew} to \ref{tab:ai_60_ew}.
+In both comparisons, for max quarter 60 almost all coefficient estimates are slightly smaller than for max quarter 40.
+This also means negative coefficient estimates tend to be even more negative for max quarter 60.
 
-For maximum quarter 40 and 60, the best models consistently contain the same coefficients for all fund type.
-Additionally, for maximum quarter 60 all coefficient estimates are slightly smaller than for 40, like the maximum quarter acts as regularization parameter.
+
+\paragraph{Two-factor models with MKT and Alpha}
+
+Although we explicitly average over the set $\mathcal{T}_{i}$ in equation \ref{eq:average_pricing_error} to mitigate the exploding Alpha issue previously mentioned in \cite{DLP12}, the intercept term results are not exploding but yet problematic.
+For almost all fund types, we observe large absolute values for the alpha coefficient estimates in combination with unreasonable estimates for MKT.
+Specifically, our estimator reveals a steady tendency to explain private equity cash flows with annualized alpha terms larger then 10\% p.a. and negative MKT coefficients.
+Unfortunately, the best SDF models in table \ref{tab:result_summary} for fund type PE exhibit annualized alphas of 11\%, 12\%, and 13\% and negative MKT coefficients in three out of four cases.
+Analyzing all Alpha models from tables \ref{tab:ai_40_fw}, \ref{tab:ai_60_fw}, \ref{tab:ai_40_ew}, and  \ref{tab:ai_60_ew}, only the results for fund type VC seem plausible with decent Alpha estimates and large positive MKT coefficient estimates.
 
 
-\subsubsection*{Cash flow fund-size-weighting, Bartlett kernel bandwidth $D=12$}
+\paragraph{Kernel bandwidth $D=12$ vs. independence between funds}
 
-According to the asymptotic standard error estimates from tables \ref{tab:ai_40_fw_dep} and \ref{tab:ai_60_fw_dep}, again all two-factor models seem to be highly insignificant for both maximum quarters.
-Compared to the already quite large asymptotic standard errors in the equal-weighted cash flow case, the asymptotic standard errors seem to be even more inflated in the fund-size-weighted case.
+In tables \ref{tab:ai_40_fw}, \ref{tab:ai_60_fw}, \ref{tab:ai_40_ew}, and  \ref{tab:ai_60_ew}, the columns "SE.MKT" and "SE.Coef" contain asymptotic standard error estimates for the realistic Bartlett kernel bandwidth of $D=12$ years.
+In this case, the standard errors seem (a) either to be overly conservative so that they are of little practical relevance, (b) or, if they offer a realistic assessment of statistical significance, the number of distinct vintages years $V$ and/or funds $n$ in our data set is too small for meaningful asymptotic approximations.
 
-For maximum quarter 40 and 60, consistently the same models are selected just for fund types VC, PD, and INF.
-For these models, the regularization effect for the larger maximum quarter of 60 is not as clear as in the equal-weighted cash flow case.
-Both NATRES models and the RE model for maximum quarter 40 exhibit negative, thus dubious, MKT coefficients estimates.
-
-\subsubsection*{Comparison: Bartlett kernel bandwidth $D=12$ and $D<1$}
-
-For the realistic Bartlett kernel bandwidth of $D=12$ years, the standard errors obtained by the spatial asymptotic inference framework from section \ref{sec:asymptotic_inference} seem (a) either to be overly conservative so that they are of little practical relevance, (b) or, if they offer a realistic assessment of statistical significance, the number of distinct vintages years $V$ and/or funds $n$ in our data set is too small for meaningful asymptotic approximations.
-
-The overly optimistic Bartlett kernel bandwidth of $D<1$ years corresponds to the case, when just funds of the same vintage year contribute to the asymptotic covariance matrix approximation in equation \ref{eq:hac}.
-In this case, we suppose to underestimate the asymptotic standard errors.
-The $D<1$ results are displayed in tables \ref{tab:ai_40_ew_indep}, \ref{tab:ai_60_ew_indep}, \ref{tab:ai_40_fw_indep}, and \ref{tab:ai_60_fw_indep}.
-However, even with the assumption of zero inter-vintage-year dependency, just the two-factor models for fund types BO and VC appear to be statistically significant for equal-weighted cash flows.
+The overly optimistic assumption of inter-fund independence corresponds to the case, when just funds with $i=j$ contribute to the asymptotic covariance matrix approximation in equation \ref{eq:hac}.
+As we suppose to underestimate the asymptotic standard errors here, the results of columns "SE.MKT.indep" and "SE.Coef.indep" may be interpreted as lower bounds for the asymptotic standard errors.
+However, even with the assumption of zero inter-vintage-year dependency, just the single-factor MKT models for fund types BO and VC appear to be statistically significant for equal-weighted cash flows.
 The standard error estimates for fund types NATRES and INF with few observations (small $n$) are still very high, which may indicate that we (just) need more fund data (larger $n$) to obtain more reliable results.
 Yet, the methodology developed in this paper may be generally valid.
 
 
-\subsubsection*{Comparison: Fundwise vs. vintage year portfolios}
+\subsubsection{Vintage year portfolios}
 
-Vintage year portfolio results are displayed in tables \ref{tab:ai_40_ew_dep_vyp} to \ref{tab:cv_60_fw_dep_vyp} and more compactly summarized in table \ref{tab:result_summary_vyp} which can be directly compared to the fundwise summary in table \ref{tab:result_summary}.
+We perform the same analyses as in subsection \ref{sec:results_fundwise}, but use vintage year portfolios instead of funds as cross-sectional units, which corresponds to the original \cite{DLP12} approach.
+As before the SDF models with best out-of-sample performance are summarized in table \ref{tab:result_summary_vyp}; the underlying data tables can be found in the Internet appendix. 
 
-Most prominently, the (absolute values of the) coefficient estimates for MKT are considerably smaller in the vintage year portfolio case.
-This can be perceived as yielding more conservative or well-behaved SDFs, but e.g., for the best funds-size-weighted VC models, the MKT coefficient estimates of $0.59$/$0.58$ appear to be unduly small.
-Next, the ROE factor seems to posses more explanatory power than in the fundwise case, since it is selected now for half of the fund types (mainly PE, RE, NATRES).
-Further, as expected, the asymptotic standard error estimates are extremely high for the vintage year portfolio data.
-However, the standard errors obtained by $hv$-block cross-validation uniformly seem reasonable.
-The computational advantage caused by the pooling of cash flows to vintage year portfolios is considerable, since the number of spatial units is reduced from  thousands of funds for the case of PE or VC to just about 30 vintage year portfolios.
-The price to be paid for this computational convenience is that the asymptotic inference formulations from subsection \ref{sec:asymptotic_inference} are rendered completely unusable (in the extremely small $n$ given with the substantial dependency between vintage years).
+For the coefficient estimates there is no clear tendency of smaller or larger (absolute) values as compared to the fundwise input data.
+As expected the asymptotic standard error estimates are now much larger as before.
+However, the $hv$-block cross-validation standard errors are in the same magnitude as in the fundwise case.
+
+% latex table generated in R 3.4.2 by xtable 1.8-4 package
+% Mon Apr 13 18:48:38 2020
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{llrrrrrrl}
+		\hline
+		ID & Type & MKT & Alpha.p.a. & ME & IA & ROE & EG & Tables \\ 
+		\hline
+		FW\_VYP - 40 & PE & 1.03 &  &  &  & 2.54 &  & Online \\ 
+		FW\_VYP - 40 & VC & 0.69 &  &  &  &  & 1.46 &  \\ 
+		FW\_VYP - 40 & PD & 0.96 &  & 1.37 &  &  &  &  \\ 
+		FW\_VYP - 40 & RE & 0.26 &  &  &  & 3.28 &  &  \\ 
+		FW\_VYP - 40 & NATRES & -2.42 & 0.08 &  &  &  &  &  \\ 
+		FW\_VYP - 40 & INF & -0.88 & 0.07 &  &  &  &  &  \\ 
+		\hline
+		FW\_VYP - 60 & PE & 1.10 &  &  &  & 2.40 &  & Online \\ 
+		FW\_VYP - 60 & VC & 1.14 &  &  & -2.63 &  &  &  \\ 
+		FW\_VYP - 60 & PD & 0.92 &  & 1.36 &  &  &  &  \\ 
+		FW\_VYP - 60 & RE & 0.31 &  &  &  & 3.08 &  &  \\ 
+		FW\_VYP - 60 & NATRES & -0.50 &  &  &  &  & 1.39 &  \\ 
+		FW\_VYP - 60 & INF & 0.38 &  &  &  & 2.89 &  &  \\ 
+		\hline
+		\hline
+		EW\_VYP - 40 & PE & 1.03 &  &  &  & 2.50 &  & Online \\ 
+		EW\_VYP - 40 & VC & 1.36 &  &  &  &  & 1.27 &  \\ 
+		EW\_VYP - 40 & PD & 0.92 &  & 1.51 &  &  &  &  \\ 
+		EW\_VYP - 40 & RE & 0.44 &  &  &  & 2.98 &  &  \\ 
+		EW\_VYP - 40 & NATRES & -0.02 &  &  &  & 2.47 &  &  \\ 
+		EW\_VYP - 40 & INF & 1.71 &  &  &  &  &  &  \\ 
+		\hline
+		EW\_VYP - 60 & PE & 1.16 &  &  &  & 2.22 &  & Online \\ 
+		EW\_VYP - 60 & VC & 1.34 &  &  &  &  & 1.14 &  \\ 
+		EW\_VYP - 60 & PD & 0.92 &  & 1.36 &  &  &  &  \\ 
+		EW\_VYP - 60 & RE & 0.50 &  &  &  & 2.82 &  &  \\ 
+		EW\_VYP - 60 & NATRES & 0.97 &  &  &  &  &  &  \\ 
+		EW\_VYP - 60 & INF & 1.61 &  &  &  &  &  &  \\ 
+		\hline
+		\hline
+	\end{tabular}
+	\caption{Vintage year portfolio SDF models with best out-of-sample performance as determined by $hv$-block cross-validation. ID consists of cash flow weighting - maximum quarter} 
+	\label{tab:result_summary_vyp}
+\end{table}
+
+
 
 \begin{figure}[h]
 	\centering
-	\includegraphics{eps/0_SDF_realizations_EW}
-	\caption{Cumulative log returns for the models displayed in tables \ref{tab:ai_40_ew_dep} and  \ref{tab:ai_60_ew_dep} that are estimated with equal-weighted cash flows.
-	For each $q$-factor SDF realization there are two lines for maximum quarter 40 and 60, respectively.	
+	\includegraphics{eps/0_SDF_realizations}
+	\caption{Cumulative log returns for the fundwise SDF models with best out-of-sample performance as displayed in table \ref{tab:result_summary}.
 }
-	\label{fig:NPV_historgram}
+	\label{fig:sdf_log_returns}
 \end{figure}
+
+
+\begin{figure}[h]
+	\centering
+	\includegraphics{eps/0_SDF_realizations_VYP}
+	\caption{Cumulative log returns for the vintage year portfolio SDF models with best out-of-sample performance as displayed in table \ref{tab:result_summary_vyp}.
+	}
+	\label{fig:sdf_log_returns_vyp}
+\end{figure}
+
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -529,6 +547,8 @@ Equipped with a case specific (economic) distance measure, our least-mean-distan
 As we are already in a spatial framework, we could refine the distance measure to multiple dimensions by, e.g., incorporating geographic and industry sector proximity.
 
 We advice to always challenge asymptotic inference results in the data-sparse private equity domain by bootstrapping or cross-validation analyses that are adapted to the dependency structure of overlapping fund cash flows.
+
+From a conservative viewpoint, we should rely on a simple one-factor MKT model, until we gathered considerably more data (preferably with respect to vintage years).
 
 
 %% References
@@ -544,1034 +564,407 @@ We advice to always challenge asymptotic inference results in the data-sparse pr
 \newpage
 
 
-% Fundwise, $D=12$
 
 % latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Wed Apr  8 11:36:03 2020
+% Mon Apr 13 13:15:14 2020
 \begin{table}[ht]
 	\centering
-	\begin{tabular}{lrrlrrr}
-		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & Wald.p.value.MKT\_1 \\ 
+	\begin{tabular}{lrrrlrrr}
 		\hline
+		Type & MKT & SE.MKT & SE.MKT.indep & Factor & Coef & SE.Coef & SE.Coef.indep \\ 
 		\hline
-		PE & 2.76 & 1.33 & MKT &  &  & 0.02 \\ 
-		PE & 1.63 & 3.02 & ME & 1.49 & 3.17 & 0.00 \\ 
-		PE & 2.34 & 1.08 & IA & 2.64 & 7.27 & 0.00 \\ 
-		PE & 2.08 & 2.25 & ROE & 2.22 & 3.57 & 0.00 \\ 
-		PE & 2.16 & 2.07 & EG & 2.83 & 6.61 & 0.00 \\
-		\hline
-		VC & 2.87 & 1.45 & MKT &  &  & 0.01 \\ 
-		VC & 3.71 & 5.72 & ME & -1.78 & 6.43 & 0.00 \\ 
-		VC & 2.79 & 1.40 & IA & -1.65 & 4.14 & 0.00 \\ 
-		VC & 3.09 & 1.69 & ROE & -1.09 & 3.57 & 0.00 \\ 
-		VC & 2.82 & 1.38 & EG & 0.95 & 5.50 & 0.00 \\ 
-		\hline
-		PD & 1.60 & 5.22 & MKT &  &  & 0.00 \\ 
-		PD & 0.46 & 14.43 & ME & 1.68 & 5.94 & 0.00 \\ 
-		PD & 1.17 & 6.95 & IA & 3.18 & 10.60 & 0.00 \\ 
-		PD & 1.26 & 4.71 & ROE & 1.98 & 8.58 & 0.00 \\ 
-		PD & 1.20 & 7.89 & EG & 3.24 & 3.20 & 0.00 \\ 
-		\hline
-		RE & 1.19 & 2.87 & MKT &  &  & 0.59 \\ 
-		RE & 0.13 & 7.29 & ME & 1.35 & 4.78 & 0.00 \\ 
-		RE & 0.95 & 2.32 & IA & 1.42 & 7.35 & 0.00 \\ 
-		RE & 0.76 & 3.13 & ROE & 2.75 & 3.57 & 0.00 \\ 
-		RE & 0.69 & 3.49 & EG & 3.69 & 6.54 & 0.00 \\ 
-		\hline
-		NATRES & 1.90 & 1.73 & MKT &  &  & 0.12 \\ 
-		NATRES & 0.84 & 1.49 & ME & 1.68 & 1.79 & 0.01 \\ 
-		NATRES & 1.64 & 1.52 & IA & 1.91 & 16.04 & 0.00 \\ 
-		NATRES & 1.56 & 1.15 & ROE & 2.18 & 4.29 & 0.00 \\ 
-		NATRES & 1.52 & 1.64 & EG & 2.28 & 18.23 & 0.00 \\ 
-		\hline
-		INF & 1.72 & 2.46 & MKT &  &  & 0.08 \\ 
-		INF & 0.75 & 11.62 & ME & 1.27 & 3.52 & 0.00 \\ 
-		INF & 1.73 & 3.79 & IA & -0.02 & 11.57 & 0.01 \\ 
-		INF & 1.08 & 8.99 & ROE & 4.65 & 23.92 & 0.00 \\ 
-		INF & 1.09 & 7.84 & EG & 3.97 & 4.13 & 0.00 \\ 
+		PE & 2.69 & 1.80 & 1.28 & MKT &  &  &  \\ 
+		PE & 1.60 & 3.26 & 1.93 & ME & 1.14 & 10.32 & 1.85 \\ 
+		PE & 1.98 & 2.38 & 1.11 & IA & 3.27 & 15.76 & 2.36 \\ 
+		PE & 2.20 & 2.14 & 1.53 & ROE & 3.13 & 4.04 & 0.96 \\ 
+		PE & 2.02 & 3.30 & 1.35 & EG & 3.48 & 7.70 & 1.82 \\ 
+		PE & -0.51 & 7.02 & 0.82 & Alpha & 0.03 & 0.05 & 0.00 \\ 
+		VC & 2.70 & 2.06 & 0.86 & MKT &  &  &  \\ 
+		VC & 3.64 & 8.07 & 1.20 & ME & -1.36 & 10.54 & 1.31 \\ 
+		VC & 2.76 & 1.97 & 0.91 & IA & -1.32 & 7.50 & 1.68 \\ 
+		VC & 2.76 & 1.98 & 0.88 & ROE & -0.41 & 4.54 & 0.98 \\ 
+		VC & 2.74 & 1.98 & 0.89 & EG & -0.33 & 11.41 & 2.09 \\ 
+		VC & 2.79 & 6.41 & 1.14 & Alpha & -0.00 & 0.11 & 0.01 \\ 
+		PD & 1.76 & 35.95 & 37.44 & MKT &  &  &  \\ 
+		PD & 1.37 & 37.36 & 29.40 & ME & 0.55 & 18.77 & 27.28 \\ 
+		PD & 1.67 & 15.07 & 5.13 & IA & 0.68 & 8.98 & 12.24 \\ 
+		PD & 1.99 & 8.87 & 2.74 & ROE & 2.48 & 16.81 & 7.18 \\ 
+		PD & 1.43 & 1.45 & 3.55 & EG & 3.83 & 16.98 & 9.35 \\ 
+		PD & 0.57 & 16.29 & 4.13 & Alpha & 0.02 & 0.02 & 0.01 \\ 
+		RE & 1.40 & 2.04 & 1.10 & MKT &  &  &  \\ 
+		RE & 0.11 & 7.49 & 1.60 & ME & 1.55 & 6.05 & 1.58 \\ 
+		RE & 1.23 & 3.32 & 2.15 & IA & 0.94 & 11.60 & 6.57 \\ 
+		RE & 1.25 & 2.08 & 1.65 & ROE & 3.45 & 3.17 & 1.08 \\ 
+		RE & 0.83 & 3.13 & 2.14 & EG & 4.30 & 2.71 & 4.61 \\ 
+		RE & -1.59 & 3.28 & 0.53 & Alpha & 0.03 & 0.02 & 0.00 \\ 
+		NATRES & -0.21 & 1.29 & 2.65 & MKT &  &  &  \\ 
+		NATRES & -1.10 & 8.57 & 3.15 & ME & 1.08 & 8.95 & 5.50 \\ 
+		NATRES & -0.97 & 2.92 & 2.33 & IA & 3.43 & 4.26 & 3.91 \\ 
+		NATRES & -0.31 & 1.71 & 2.51 & ROE & 3.15 & 3.05 & 3.02 \\ 
+		NATRES & -0.69 & 2.47 & 2.35 & EG & 4.06 & 2.94 & 2.84 \\ 
+		NATRES & -2.25 & 31.58 & 12.43 & Alpha & 0.02 & 0.30 & 0.13 \\ 
+		INF & 2.37 & 3.52 & 2.40 & MKT &  &  &  \\ 
+		INF & 4.08 & 53.41 & 19.62 & ME & -2.54 & 55.02 & 18.69 \\ 
+		INF & 1.62 & 1.00 & 2.04 & IA & 3.72 & 3.40 & 4.50 \\ 
+		INF & 1.35 & 12.95 & 8.12 & ROE & 5.82 & 25.40 & 28.23 \\ 
+		INF & 1.65 & 1.23 & 2.47 & EG & 5.40 & 1.64 & 5.71 \\ 
+		INF & -0.79 & 64.56 & 18.25 & Alpha & 0.03 & 0.21 & 0.07 \\ 
 		\hline
 	\end{tabular}
-	\caption{Asymptotic inference with equal-weighting, max quarter 40, and $D=12$. The Wald test null hypothesis is a MKT coefficient of one, and zeros for all other coefficients.} 
-		\label{tab:ai_40_ew_dep} 
+	\caption{Asymptotic inference with fund-size-weighting, max quarter 40, and $D=12$.} 
+	\label{tab:ai_40_fw}
 \end{table}
 
-
 % latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Wed Apr  8 11:37:43 2020
+% Mon Apr 13 13:15:14 2020
 \begin{table}[ht]
 	\centering
 	\begin{tabular}{lrrlrrl}
+		\hline
 		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & validation.error \\ 
 		\hline
-		\hline
-		INF & 2.00 & 0.73 & MKT &  &  & 3186* \\ 
-		INF & 1.27 & 1.14 & ME & 1.03 & 0.74 & 3333 \\ 
-		INF & 2.01 & 0.65 & IA & -0.55 & 1.26 & 3221 \\ 
-		INF & 1.36 & 0.68 & ROE & 4.57 & 2.07 & 3043 \\ 
-		INF & 1.52 & 0.91 & EG & 3.78 & 0.78 & 4307 \\ 
-		\hline
-		NATRES & 2.03 & 0.42 & MKT &  &  & 7340 \\ 
-		NATRES & 1.01 & 0.80 & ME & 1.80 & 0.63 & 9146 \\ 
-		NATRES & 1.83 & 0.49 & IA & 1.79 & 0.87 & 7670 \\ 
-		NATRES & 1.61 & 0.52 & ROE & 2.49 & 1.37 & 8183 \\ 
-		NATRES & 1.67 & 0.47 & EG & 2.26 & 0.40 & 6933* \\ 
-		\hline
-		PD & 1.50 & 0.46 & MKT &  &  & 3098 \\ 
-		PD & 0.50 & 0.29 & ME & 1.67 & 0.15 & 2998 \\ 
-		PD & 1.15 & 0.33 & IA & 3.13 & 0.52 & 2896 \\ 
-		PD & 1.16 & 0.53 & ROE & 2.05 & 0.36 & 2756* \\ 
-		PD & 1.13 & 0.40 & EG & 3.22 & 0.48 & 2906 \\ 
-		\hline
-		PE & 2.79 & 0.20 & MKT &  &  & 1108 \\ 
-		PE & 1.72 & 0.37 & ME & 1.57 & 0.24 & 1053 \\ 
-		PE & 2.42 & 0.24 & IA & 2.71 & 0.40 & 1013* \\ 
-		PE & 2.03 & 0.25 & ROE & 2.29 & 0.44 & 1297 \\ 
-		PE & 2.14 & 0.19 & EG & 2.84 & 0.26 & 1039 \\ 
-		\hline
-		RE & 1.39 & 0.79 & MKT &  &  & 1893 \\ 
-		RE & 0.38 & 0.64 & ME & 1.52 & 0.67 & 1723 \\ 
-		RE & 1.18 & 0.92 & IA & 1.85 & 0.62 & 1767 \\ 
-		RE & 0.77 & 0.43 & ROE & 2.94 & 1.03 & 1963 \\ 
-		RE & 0.87 & 0.67 & EG & 3.48 & 0.47 & 1221* \\ 
-		\hline
-		VC & 2.81 & 0.58 & MKT &  &  & 926* \\ 
-		VC & 3.39 & 0.76 & ME & -1.30 & 1.23 & 1110 \\ 
-		VC & 2.69 & 0.57 & IA & -1.08 & 1.34 & 961 \\ 
-		VC & 2.86 & 0.79 & ROE & -0.48 & 1.61 & 1126 \\ 
-		VC & 2.54 & 0.84 & EG & 1.44 & 1.58 & 984 \\ 
-		\hline
+		PE & -0.09 & 0.84 & Alpha & 0.03 & 0.00 & 800 \\ 
+		PE & 2.38 & 0.64 & EG & 3.28 & 0.40 & 1023 \\ 
+		PE & 2.50 & 0.87 & IA & 3.30 & 1.59 & 985 \\ 
+		PE & 2.21 & 0.83 & ME & 1.20 & 0.67 & 1064 \\ 
+		PE & 3.07 & 0.75 & MKT & 3.07 & 0.75 & 948 \\ 
+		PE & 2.30 & 0.25 & ROE & 3.11 & 0.57 & 1261 \\ 
+		VC & 3.28 & 1.12 & ME & -0.88 & 1.14 & 690 \\ 
+		VC & 2.70 & 0.63 & IA & -0.76 & 1.75 & 635 \\ 
+		VC & 2.80 & 0.59 & MKT & 2.80 & 0.59 & 592 \\ 
+		VC & 2.68 & 0.82 & EG & 0.18 & 1.91 & 653 \\ 
+		VC & 2.35 & 1.93 & Alpha & 0.00 & 0.02 & 798 \\ 
+		VC & 2.75 & 0.83 & ROE & 0.02 & 1.64 & 713 \\ 
+		PD & 0.37 & 0.39 & Alpha & 0.02 & 0.00 & 869 \\ 
+		PD & 1.38 & 0.20 & EG & 3.74 & 0.22 & 859 \\ 
+		PD & 1.60 & 0.32 & IA & 1.36 & 1.95 & 1074 \\ 
+		PD & 1.40 & 0.56 & ME & 0.61 & 0.92 & 1117 \\ 
+		PD & 1.67 & 0.35 & MKT & 1.67 & 0.35 & 1083 \\ 
+		PD & 1.75 & 0.48 & ROE & 2.54 & 0.18 & 1021 \\ 
+		RE & 1.36 & 1.41 & EG & 3.77 & 2.14 & 2275 \\ 
+		RE & -1.20 & 1.16 & Alpha & 0.03 & 0.01 & 2332 \\ 
+		RE & 1.53 & 1.70 & IA & 2.26 & 2.17 & 2650 \\ 
+		RE & 0.70 & 1.38 & ME & 1.67 & 0.69 & 2587 \\ 
+		RE & 1.94 & 1.33 & MKT & 1.94 & 1.33 & 2633 \\ 
+		RE & 1.51 & 0.94 & ROE & 3.46 & 1.34 & 3956 \\ 
+		NATRES & -2.01 & 0.87 & Alpha & 0.02 & 0.01 & 2823 \\ 
+		NATRES & -0.28 & 0.86 & EG & 3.78 & 1.13 & 2757 \\ 
+		NATRES & -0.09 & 0.57 & ROE & 3.15 & 0.54 & 3020 \\ 
+		NATRES & 0.20 & 0.80 & MKT & 0.20 & 0.80 & 2840 \\ 
+		NATRES & -0.42 & 1.01 & IA & 3.75 & 0.60 & 2902 \\ 
+		NATRES & -0.65 & 0.94 & ME & 1.04 & 0.61 & 2982 \\ 
+		INF & 0.10 & 1.06 & Alpha & 0.03 & 0.01 & 2931 \\ 
+		INF & 3.96 & 2.68 & ME & -1.47 & 1.61 & 3803 \\ 
+		INF & 2.51 & 1.52 & IA & 4.28 & 4.52 & 4911 \\ 
+		INF & 1.76 & 0.94 & ROE & 5.28 & 0.89 & 1896 \\ 
+		INF & 3.37 & 2.20 & MKT & 3.37 & 2.20 & 4539 \\ 
+		INF & 2.74 & 2.03 & EG & 5.13 & 1.24 & 4686 \\ 
 		\hline
 	\end{tabular}
-	\caption{$hv$-block cross-validation with max quarter 40 and equal-weighted cash flows.}
-	\label{tab:cv_40_ew_dep} 
+	\caption{$hv$-block cross-validation with fund-size-weighting and max quarter 40.} 
+	\label{tab:cv_40_fw}
 \end{table}
 
-
 % latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Wed Apr  8 11:36:03 2020
+% Mon Apr 13 13:15:14 2020
 \begin{table}[ht]
 	\centering
-	\begin{tabular}{lrrlrrr}
-		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & Wald.p.value.MKT\_1 \\ 
+	\begin{tabular}{lrrrlrrr}
 		\hline
+		Type & MKT & SE.MKT & SE.MKT.indep & Factor & Coef & SE.Coef & SE.Coef.indep \\ 
 		\hline
-		PE & 2.52 & 1.81 & MKT &  &  & 0.01 \\ 
-		PE & 1.59 & 3.43 & ME & 1.23 & 4.68 & 0.00 \\ 
-		PE & 2.15 & 2.34 & IA & 2.45 & 7.87 & 0.00 \\ 
-		PE & 1.94 & 3.56 & ROE & 1.81 & 5.17 & 0.00 \\ 
-		PE & 1.99 & 3.37 & EG & 2.48 & 6.69 & 0.00 \\ 
-		\hline
-		VC & 2.33 & 1.00 & MKT &  &  & 0.19 \\ 
-		VC & 3.48 & 5.71 & ME & -2.18 & 6.32 & 0.00 \\ 
-		VC & 2.20 & 1.05 & IA & -2.82 & 4.64 & 0.00 \\ 
-		VC & 2.77 & 1.55 & ROE & -1.92 & 3.49 & 0.00 \\ 
-		VC & 2.40 & 1.00 & EG & -0.89 & 5.65 & 0.00 \\ 
-		\hline
-		PD & 1.38 & 10.19 & MKT &  &  & 0.00 \\ 
-		PD & 0.36 & 28.10 & ME & 1.51 & 14.36 & 0.00 \\ 
-		PD & 0.98 & 13.30 & IA & 3.18 & 13.83 & 0.00 \\ 
-		PD & 1.07 & 6.03 & ROE & 1.68 & 10.56 & 0.00 \\ 
-		PD & 1.02 & 9.89 & EG & 2.86 & 5.77 & 0.00 \\ 
-		\hline
-		RE & 1.11 & 3.07 & MKT &  &  & 0.74 \\ 
-		RE & 0.16 & $0.02^{!!!}$ & ME & 1.19 & $0.03^{!!!}$ & $1.00^{!!!}$ \\ 
-		RE & 0.89 & 2.52 & IA & 1.31 & 7.36 & 0.00 \\ 
-		RE & 0.67 & 3.27 & ROE & 2.50 & 5.06 & 0.00 \\ 
-		RE & 0.62 & 4.35 & EG & 3.57 & 7.32 & 0.00 \\ 
-		\hline
-		NATRES & 1.61 & 1.23 & MKT &  &  & 0.45 \\ 
-		NATRES & 0.88 & 5.09 & ME & 1.17 & 7.58 & 0.00 \\ 
-		NATRES & 1.36 & 1.28 & IA & 1.96 & 15.53 & 0.00 \\ 
-		NATRES & 1.34 & 1.36 & ROE & 1.74 & 6.94 & 0.00 \\ 
-		NATRES & 1.27 & 1.54 & EG & 2.18 & 17.57 & 0.00 \\ 
-		\hline
-		INF & 1.65 & 2.44 & MKT &  &  & 0.11 \\ 
-		INF & 0.65 & 11.78 & ME & 1.32 & 3.48 & 0.00 \\ 
-		INF & 1.62 & 2.09 & IA & 0.21 & 5.14 & 0.18 \\ 
-		INF & 1.07 & 8.98 & ROE & 4.67 & 23.97 & 0.00 \\ 
-		INF & 1.09 & 7.85 & EG & 3.91 & 4.20 & 0.00 \\ 
-		\hline
+		PE & 2.51 & 1.89 & 1.48 & MKT &  &  &  \\ 
+		PE & 1.47 & 5.59 & 1.82 & ME & 1.07 & 10.74 & 1.80 \\ 
+		PE & 1.88 & 5.47 & 1.39 & IA & 2.81 & 18.45 & 2.45 \\ 
+		PE & 2.10 & 4.48 & 1.95 & ROE & 2.34 & 7.25 & 1.47 \\ 
+		PE & 1.97 & 3.85 & 1.70 & EG & 2.67 & 15.01 & 2.70 \\ 
+		PE & -0.29 & 8.45 & 1.22 & Alpha & 0.03 & 0.08 & 0.01 \\ 
+		VC & 2.12 & 1.43 & 0.94 & MKT &  &  &  \\ 
+		VC & 3.56 & 8.69 & 1.26 & ME & -1.78 & 11.52 & 1.32 \\ 
+		VC & 2.22 & 1.62 & 0.93 & IA & -2.11 & 8.48 & 1.60 \\ 
+		VC & 2.42 & 1.54 & 0.81 & ROE & -1.45 & 4.83 & 0.81 \\ 
+		VC & 2.44 & 1.93 & 0.89 & EG & -1.99 & 7.76 & 1.22 \\ 
+		VC & 2.92 & 10.44 & 1.57 & Alpha & -0.01 & 0.03 & 0.01 \\ 
+		PD & 1.67 & 14.12 & 11.35 & MKT &  &  &  \\ 
+		PD & 1.27 & 10.15 & 13.21 & ME & 0.56 & 134.15 & 31.84 \\ 
+		PD & 1.50 & 15.04 & 4.94 & IA & 1.31 & 9.34 & 12.21 \\ 
+		PD & 1.86 & 6.79 & 2.10 & ROE & 2.19 & 8.68 & 5.84 \\ 
+		PD & 1.38 & 1.44 & 3.55 & EG & 3.75 & 17.39 & 9.38 \\ 
+		PD & 0.53 & 33.47 & 9.06 & Alpha & 0.02 & 0.13 & 0.03 \\ 
+		RE & 1.30 & 2.58 & 1.82 & MKT &  &  &  \\ 
+		RE & 0.26 & 7.13 & 1.78 & ME & 1.25 & 5.02 & 1.76 \\ 
+		RE & 1.13 & 2.99 & 2.24 & IA & 0.86 & 10.15 & 6.38 \\ 
+		RE & 1.13 & 2.11 & 1.95 & ROE & 2.77 & 4.38 & 1.31 \\ 
+		RE & 0.74 & 3.45 & 2.27 & EG & 4.11 & 2.80 & 4.78 \\ 
+		RE & -1.32 & 11.78 & 2.36 & Alpha & 0.03 & 0.03 & 0.01 \\ 
+		NATRES & -0.32 & 1.75 & 2.62 & MKT &  &  &  \\ 
+		NATRES & -0.85 & 22.11 & 11.30 & ME & 0.64 & 27.06 & 16.10 \\ 
+		NATRES & -1.08 & 3.43 & 2.32 & IA & 3.40 & 4.46 & 3.86 \\ 
+		NATRES & -0.41 & 1.91 & 2.48 & ROE & 2.72 & 3.32 & 3.16 \\ 
+		NATRES & -0.73 & 2.63 & 2.40 & EG & 3.50 & 4.12 & 5.59 \\ 
+		NATRES & -2.10 & 29.82 & 12.47 & Alpha & 0.02 & 0.28 & 0.13 \\ 
+		INF & 2.27 & 3.12 & 2.32 & MKT &  &  &  \\ 
+		INF & 3.98 & 53.63 & 19.75 & ME & -2.55 & 53.93 & 18.29 \\ 
+		INF & 1.48 & 1.91 & 1.96 & IA & 4.03 & 2.43 & 4.20 \\ 
+		INF & 1.29 & 21.01 & 10.81 & ROE & 5.82 & 25.08 & 24.50 \\ 
+		INF & 1.61 & 1.61 & 3.02 & EG & 5.35 & 1.62 & 5.74 \\ 
+		INF & -0.68 & 57.21 & 17.12 & Alpha & 0.03 & 0.03 & 0.01 \\ 
 		\hline
 	\end{tabular}
-	\caption{
-		Asymptotic inference with max quarter 60 and equal-weighted cash flows.
-		Numerical issues within the asymptotic covariance matrix estimation seem to cause the dubious values with superscript $x^{!!!}$; the corresponding estimates for columns MKT and Coef are not affected and stay valid.
-	}
-	\label{tab:ai_60_ew_dep} 
+	\caption{Asymptotic inference with fund-size-weighting, max quarter 60, and $D=12$.} 
+	\label{tab:ai_60_fw}
 \end{table}
 
-
 % latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Wed Apr  8 11:37:43 2020
+% Mon Apr 13 13:15:14 2020
 \begin{table}[ht]
 	\centering
 	\begin{tabular}{lrrlrrl}
+		\hline
 		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & validation.error \\ 
 		\hline
-		\hline
-		INF & 1.95 & 0.76 & MKT &  &  & 3234* \\ 
-		INF & 1.18 & 1.20 & ME & 1.08 & 0.76 & 3400 \\ 
-		INF & 1.90 & 0.75 & IA & -0.21 & 1.24 & 3265 \\ 
-		INF & 1.38 & 0.69 & ROE & 4.50 & 2.20 & 3494 \\ 
-		INF & 1.56 & 1.00 & EG & 3.67 & 0.88 & 4872 \\ 
-		\hline
-		NATRES & 1.70 & 0.37 & MKT &  &  & 8055 \\ 
-		NATRES & 0.90 & 0.83 & ME & 1.31 & 0.56 & 10577 \\ 
-		NATRES & 1.50 & 0.46 & IA & 1.82 & 0.91 & 8414 \\ 
-		NATRES & 1.36 & 0.44 & ROE & 2.05 & 1.36 & 9469 \\ 
-		NATRES & 1.38 & 0.40 & EG & 2.15 & 0.39 & 7782* \\ 
-		\hline
-		PD & 1.24 & 0.58 & MKT &  &  & 3334 \\ 
-		PD & 0.32 & 0.34 & ME & 1.49 & 0.19 & 3403 \\ 
-		PD & 0.91 & 0.45 & IA & 3.05 & 0.43 & 3276 \\ 
-		PD & 0.94 & 0.60 & ROE & 1.72 & 0.32 & 3173* \\ 
-		PD & 0.92 & 0.50 & EG & 2.82 & 0.45 & 3458 \\ 
-		\hline
-		PE & 2.52 & 0.25 & MKT &  &  & 1199 \\ 
-		PE & 1.61 & 0.32 & ME & 1.29 & 0.24 & 1217 \\ 
-		PE & 2.17 & 0.21 & IA & 2.52 & 0.40 & 1132* \\ 
-		PE & 1.87 & 0.29 & ROE & 1.86 & 0.34 & 1380 \\ 
-		PE & 1.96 & 0.24 & EG & 2.51 & 0.24 & 1155 \\ 
-		\hline
-		RE & 1.27 & 0.79 & MKT &  &  & 1993 \\ 
-		RE & 0.37 & 0.58 & ME & 1.33 & 0.59 & 1871 \\ 
-		RE & 1.07 & 0.89 & IA & 1.70 & 0.60 & 1879 \\ 
-		RE & 0.68 & 0.45 & ROE & 2.70 & 0.96 & 1953 \\ 
-		RE & 0.78 & 0.66 & EG & 3.36 & 0.46 & 1262* \\
-		\hline
-		VC & 2.29 & 0.69 & MKT &  &  & 1017* \\ 
-		VC & 3.10 & 0.79 & ME & -1.70 & 1.24 & 1206 \\ 
-		VC & 2.11 & 0.67 & IA & -1.95 & 2.12 & 1101 \\ 
-		VC & 2.56 & 0.82 & ROE & -1.27 & 1.55 & 1275 \\ 
-		VC & 2.14 & 0.90 & EG & -0.15 & 1.98 & 1165 \\ 
-		\hline
+		PE & -0.09 & 0.54 & Alpha & 0.03 & 0.00 & 948 \\ 
+		PE & 2.07 & 0.34 & EG & 2.53 & 0.43 & 1138 \\ 
+		PE & 2.10 & 0.45 & IA & 2.63 & 1.60 & 1009 \\ 
+		PE & 1.83 & 0.58 & ME & 1.04 & 0.55 & 1063 \\ 
+		PE & 2.64 & 0.43 & MKT & 2.64 & 0.43 & 1015 \\ 
+		PE & 2.02 & 0.26 & ROE & 2.32 & 0.35 & 1560 \\ 
+		VC & 2.17 & 0.44 & MKT & 2.17 & 0.44 & 654 \\ 
+		VC & 2.29 & 0.61 & EG & -1.50 & 2.12 & 738 \\ 
+		VC & 2.40 & 1.81 & Alpha & -0.00 & 0.02 & 931 \\ 
+		VC & 3.14 & 1.01 & ME & -1.34 & 1.16 & 755 \\ 
+		VC & 2.08 & 0.50 & IA & -1.75 & 2.57 & 729 \\ 
+		VC & 2.33 & 0.64 & ROE & -1.00 & 1.58 & 800 \\ 
+		PD & 0.32 & 0.43 & Alpha & 0.02 & 0.00 & 1093 \\ 
+		PD & 1.27 & 0.31 & EG & 3.53 & 0.52 & 1084 \\ 
+		PD & 1.40 & 0.40 & IA & 1.80 & 1.53 & 1159 \\ 
+		PD & 1.32 & 0.71 & ME & 0.49 & 0.91 & 1256 \\ 
+		PD & 1.51 & 0.51 & MKT & 1.51 & 0.51 & 1233 \\ 
+		PD & 1.61 & 0.54 & ROE & 2.26 & 0.23 & 1289 \\ 
+		RE & 1.17 & 1.64 & IA & 2.15 & 2.44 & 2885 \\ 
+		RE & 0.63 & 1.19 & ME & 1.23 & 0.69 & 2770 \\ 
+		RE & 1.04 & 1.34 & EG & 3.58 & 1.91 & 2488 \\ 
+		RE & -1.12 & 1.03 & Alpha & 0.03 & 0.01 & 2949 \\ 
+		RE & 1.60 & 1.27 & MKT & 1.60 & 1.27 & 2839 \\ 
+		RE & 1.28 & 1.05 & ROE & 2.85 & 1.25 & 4120 \\ 
+		NATRES & -1.89 & 0.68 & Alpha & 0.02 & 0.00 & 3010 \\ 
+		NATRES & -0.44 & 0.68 & EG & 3.22 & 1.15 & 2880 \\ 
+		NATRES & -0.68 & 0.78 & IA & 3.62 & 0.46 & 2770 \\ 
+		NATRES & -0.56 & 0.72 & ME & 0.63 & 0.53 & 2882 \\ 
+		NATRES & -0.29 & 0.44 & ROE & 2.72 & 0.65 & 3567 \\ 
+		NATRES & -0.03 & 0.62 & MKT & -0.03 & 0.62 & 2793 \\ 
+		INF & 0.21 & 1.09 & Alpha & 0.03 & 0.01 & 3694 \\ 
+		INF & 1.72 & 0.95 & ROE & 5.22 & 0.95 & 2265 \\ 
+		INF & 3.33 & 2.26 & MKT & 3.33 & 2.26 & 4828 \\ 
+		INF & 2.73 & 2.08 & EG & 5.13 & 1.21 & 5396 \\ 
+		INF & 3.86 & 2.77 & ME & -1.43 & 1.68 & 4019 \\ 
+		INF & 2.35 & 1.65 & IA & 4.72 & 3.66 & 5131 \\ 
 		\hline
 	\end{tabular}
-	\caption{$hv$-block cross-validation with equal-weighting, max quarter 60, and $D=12$. The Wald test null hypothesis is a MKT coefficient of one, and zeros for all other coefficients.}
-	\label{tab:cv_60_ew_dep} 
+	\caption{$hv$-block cross-validation with fund-size-weighting and max quarter 60.} 
+	\label{tab:cv_60_fw}
 \end{table}
 
 
 
 % latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Wed Apr  8 21:59:13 2020
+% Mon Apr 13 15:21:32 2020
 \begin{table}[ht]
 	\centering
-	\begin{tabular}{lrrlrrr}
-		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & Wald.p.value.MKT\_1 \\ 
+	\begin{tabular}{lrrrlrrr}
 		\hline
+		Type & MKT & SE.MKT & SE.MKT.indep & Factor & Coef & SE.Coef & SE.Coef.indep \\ 
 		\hline
-		PE & 2.67 & 1.77 & MKT &  &  & 0.00 \\ 
-		PE & 1.39 & 8.25 & ME & 1.36 & 3.37 & 0.00 \\ 
-		PE & 1.97 & 2.54 & IA & 3.36 & 14.56 & 0.00 \\ 
-		PE & 2.20 & 2.26 & ROE & 3.15 & 3.48 & 0.00 \\ 
-		PE & 1.94 & 3.98 & EG & 3.83 & 5.89 & 0.00 \\ 
-		\hline
-		VC & 2.46 & 1.86 & MKT &  &  & 0.01 \\ 
-		VC & 3.30 & 7.04 & ME & -1.13 & 8.55 & 0.00 \\ 
-		VC & 2.48 & 1.92 & IA & -0.52 & 5.81 & 0.00 \\ 
-		VC & 2.48 & 1.85 & ROE & -0.10 & 4.12 & 0.02 \\ 
-		VC & 2.37 & 1.56 & EG & 0.67 & 9.13 & 0.00 \\ 
-		\hline
-		PD & 1.73 & 487.52 & MKT &  &  & 0.00 \\ 
-		PD & 1.33 & 70.41 & ME & 0.57 & 53.48 & 0.00 \\ 
-		PD & 1.64 & 33.58 & IA & 0.73 & 17.61 & 0.00 \\ 
-		PD & 2.01 & 114.44 & ROE & 2.57 & 159.48 & 0.00 \\ 
-		PD & 1.43 & 2.18 & EG & 3.96 & 20.34 & 0.00 \\ 
-		\hline
-		RE & 1.33 & 1.87 & MKT &  &  & 0.54 \\ 
-		RE & -0.36 & 8.88 & ME & 2.07 & 7.69 & 0.00 \\ 
-		RE & 1.12 & 2.10 & IA & 1.24 & 5.34 & 0.00 \\ 
-		RE & 1.14 & 2.11 & ROE & 3.68 & 2.68 & 0.00 \\ 
-		RE & 0.58 & 3.63 & EG & 6.60 & 6.63 & 0.00 \\ 
-		\hline
-		NATRES & -0.19 & 1.28 & MKT &  &  & 0.13 \\ 
-		NATRES & -1.56 & 16.46 & ME & 1.66 & 20.46 & 0.00 \\ 
-		NATRES & -0.95 & 2.91 & IA & 3.40 & 4.31 & 0.00 \\ 
-		NATRES & -0.31 & 1.90 & ROE & 3.37 & 3.19 & 0.00 \\ 
-		NATRES & -0.73 & 2.68 & EG & 4.72 & 3.05 & 0.00 \\ 
-		\hline
-		INF & 2.42 & 3.61 & MKT &  &  & 0.00 \\ 
-		INF & 3.96 & 63.33 & ME & -2.33 & 90.63 & 0.00 \\ 
-		INF & 1.72 & 1.24 & IA & 3.44 & 2.75 & 0.00 \\ 
-		INF & 1.31 & 8.31 & ROE & 6.08 & 62.75 & 0.00 \\ 
-		INF & 1.64 & 1.53 & EG & 5.96 & 4.80 & 0.00 \\ 
-		\hline
+		PE & 2.74 & 1.36 & 0.52 & MKT &  &  &  \\ 
+		PE & 1.66 & 0.04 & 0.00 & ME & 1.42 & 0.01 & 0.00 \\ 
+		PE & 2.33 & 1.09 & 0.42 & IA & 2.61 & 7.63 & 0.94 \\ 
+		PE & 2.06 & 2.59 & 0.65 & ROE & 2.19 & 4.07 & 0.61 \\ 
+		PE & 2.15 & 2.08 & 0.54 & EG & 2.70 & 6.66 & 1.10 \\ 
+		PE & -0.01 & 27.12 & 1.47 & Alpha & 0.03 & 0.09 & 0.01 \\ 
+		VC & 3.08 & 1.51 & 0.49 & MKT &  &  &  \\ 
+		VC & 3.50 & 4.31 & 0.69 & ME & -1.65 & 6.31 & 0.72 \\ 
+		VC & 2.91 & 1.38 & 0.56 & IA & -1.92 & 4.40 & 1.34 \\ 
+		VC & 3.23 & 1.74 & 0.52 & ROE & -1.29 & 3.49 & 0.79 \\ 
+		VC & 3.08 & 1.47 & 0.49 & EG & 0.18 & 7.47 & 1.65 \\ 
+		VC & 3.49 & 5.50 & 0.55 & Alpha & -0.01 & 0.03 & 0.00 \\ 
+		PD & 1.55 & 6.22 & 2.66 & MKT &  &  &  \\ 
+		PD & 0.50 & 22.42 & 4.84 & ME & 1.62 & 12.69 & 4.67 \\ 
+		PD & 1.13 & 8.42 & 2.05 & IA & 3.43 & 11.35 & 4.30 \\ 
+		PD & 1.21 & 4.93 & 2.39 & ROE & 1.98 & 7.79 & 2.76 \\ 
+		PD & 1.17 & 13.58 & 5.44 & EG & 3.16 & 10.23 & 10.14 \\ 
+		PD & -0.26 & 1.72 & 0.25 & Alpha & 0.02 & 0.01 & 0.00 \\ 
+		RE & 1.13 & 3.64 & 1.28 & MKT &  &  &  \\ 
+		RE & 0.17 & 7.75 & 1.38 & ME & 1.20 & 4.19 & 1.37 \\ 
+		RE & 0.92 & 2.74 & 1.13 & IA & 1.24 & 10.30 & 3.07 \\ 
+		RE & 0.71 & 4.01 & 1.43 & ROE & 2.68 & 3.81 & 0.97 \\ 
+		RE & 0.67 & 5.16 & 1.45 & EG & 3.27 & 3.75 & 2.83 \\ 
+		RE & -1.30 & 7.86 & 0.84 & Alpha & 0.03 & 0.03 & 0.00 \\ 
+		NATRES & 1.92 & 2.40 & 1.47 & MKT &  &  &  \\ 
+		NATRES & 1.01 & 8.90 & 11.40 & ME & 1.37 & 12.18 & 16.33 \\ 
+		NATRES & 1.61 & 18.93 & 13.81 & IA & 2.07 & 163.96 & 115.42 \\ 
+		NATRES & 1.59 & 1.43 & 1.76 & ROE & 1.92 & 4.67 & 3.46 \\ 
+		NATRES & 1.48 & 11.76 & 9.51 & EG & 2.27 & 85.24 & 71.19 \\ 
+		NATRES & -0.05 & 6.80 & 2.94 & Alpha & 0.02 & 0.08 & 0.04 \\ 
+		INF & 1.69 & 1.74 & 4.30 & MKT &  &  &  \\ 
+		INF & 0.90 & 8.81 & 4.23 & ME & 1.05 & 7.87 & 5.74 \\ 
+		INF & 1.71 & 3.83 & 6.06 & IA & -0.12 & 14.76 & 11.99 \\ 
+		INF & 1.20 & 9.61 & 4.51 & ROE & 3.92 & 27.10 & 15.10 \\ 
+		INF & 1.18 & 9.84 & 5.94 & EG & 3.35 & 11.00 & 17.20 \\ 
+		INF & -0.77 & 18.40 & 4.34 & Alpha & 0.03 & 0.01 & 0.00 \\ 
 		\hline
 	\end{tabular}
-	\caption{Asymptotic inference with fund-size-weighting, max quarter 40, and $D=12$. The Wald test null hypothesis is a MKT coefficient of one, and zeros for all other coefficients.}
-	\label{tab:ai_40_fw_dep}
+	\caption{Asymptotic inference with equal-weighting, max quarter 40, and $D=12$.} 
+	\label{tab:ai_40_ew}
 \end{table}
 
-
 % latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Wed Apr  8 21:59:13 2020
+% Mon Apr 13 15:21:32 2020
 \begin{table}[ht]
 	\centering
 	\begin{tabular}{lrrlrrl}
+		\hline
 		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & validation.error \\ 
 		\hline
-		\hline
-		INF & 3.19 & 1.96 & MKT &  &  & 3762 \\ 
-		INF & 3.81 & 2.34 & ME & -1.42 & 1.32 & 3160 \\ 
-		INF & 2.42 & 1.32 & IA & 4.16 & 4.75 & 4332 \\ 
-		INF & 1.56 & 0.81 & ROE & 5.65 & 1.10 & 1684* \\ 
-		INF & 2.67 & 1.93 & EG & 5.79 & 1.69 & 4603 \\ 
-		\hline
-		NATRES & 0.19 & 0.75 & MKT &  &  & 2792 \\ 
-		NATRES & -1.08 & 1.05 & ME & 1.61 & 0.68 & 3056 \\ 
-		NATRES & -0.44 & 0.92 & IA & 3.76 & 0.78 & 2830 \\ 
-		NATRES & -0.09 & 0.53 & ROE & 3.36 & 0.49 & 2866 \\ 
-		NATRES & -0.35 & 0.83 & EG & 4.56 & 1.07 & 2738* \\ 
-		\hline
-		PD & 1.64 & 0.40 & MKT &  &  & 1081 \\ 
-		PD & 1.38 & 0.56 & ME & 0.62 & 0.91 & 1132 \\ 
-		PD & 1.60 & 0.32 & IA & 1.44 & 1.94 & 1080 \\ 
-		PD & 1.79 & 0.46 & ROE & 2.61 & 0.21 & 991 \\ 
-		PD & 1.41 & 0.19 & EG & 3.87 & 0.21 & 834* \\ 
-		\hline
-		PE & 3.03 & 0.71 & MKT &  &  & 923* \\ 
-		PE & 1.99 & 0.84 & ME & 1.42 & 0.62 & 1018 \\ 
-		PE & 2.44 & 0.79 & IA & 3.45 & 1.43 & 944 \\ 
-		PE & 2.29 & 0.25 & ROE & 3.12 & 0.52 & 1253 \\ 
-		PE & 2.29 & 0.64 & EG & 3.61 & 0.44 & 1033 \\ 
-		\hline
-		RE & 1.79 & 1.34 & MKT &  &  & 2599 \\ 
-		RE & 0.17 & 1.52 & ME & 2.16 & 0.66 & 2558* \\ 
-		RE & 1.33 & 1.70 & IA & 2.53 & 2.47 & 2619 \\ 
-		RE & 1.39 & 0.96 & ROE & 3.69 & 1.41 & 4163 \\ 
-		RE & 1.10 & 1.43 & EG & 5.56 & 2.70 & 3836 \\ 
-		\hline
-		VC & 2.52 & 0.48 & MKT &  &  & 581* \\ 
-		VC & 2.88 & 1.25 & ME & -0.63 & 1.29 & 719 \\ 
-		VC & 2.41 & 0.57 & IA & -0.11 & 1.60 & 627 \\ 
-		VC & 2.42 & 0.75 & ROE & 0.34 & 1.57 & 700 \\ 
-		VC & 2.27 & 0.75 & EG & 1.12 & 1.79 & 633 \\ 
-		\hline
+		PE & -0.02 & 0.57 & Alpha & 0.03 & 0.00 & 980 \\ 
+		PE & 2.13 & 0.17 & EG & 2.73 & 0.20 & 1050 \\ 
+		PE & 2.40 & 0.22 & IA & 2.69 & 0.40 & 1039 \\ 
+		PE & 1.75 & 0.33 & ME & 1.50 & 0.24 & 1074 \\ 
+		PE & 2.77 & 0.17 & MKT & 2.77 & 0.17 & 1137 \\ 
+		PE & 2.00 & 0.26 & ROE & 2.27 & 0.45 & 1313 \\ 
+		VC & 3.35 & 0.83 & ME & -1.30 & 1.21 & 1215 \\ 
+		VC & 2.84 & 0.39 & IA & -1.51 & 1.43 & 1006 \\ 
+		VC & 2.99 & 0.48 & MKT & 2.99 & 0.48 & 946 \\ 
+		VC & 2.80 & 0.74 & EG & 0.72 & 1.75 & 1034 \\ 
+		VC & 2.84 & 1.67 & Alpha & -0.00 & 0.02 & 1293 \\ 
+		VC & 3.01 & 0.72 & ROE & -0.67 & 1.70 & 1161 \\ 
+		PD & -0.28 & 0.23 & Alpha & 0.02 & 0.00 & 2850 \\ 
+		PD & 1.08 & 0.40 & EG & 3.16 & 0.41 & 2956 \\ 
+		PD & 1.11 & 0.30 & IA & 3.35 & 0.61 & 2954 \\ 
+		PD & 0.52 & 0.25 & ME & 1.63 & 0.14 & 3040 \\ 
+		PD & 1.43 & 0.46 & MKT & 1.43 & 0.46 & 3209 \\ 
+		PD & 1.10 & 0.54 & ROE & 2.05 & 0.36 & 2893 \\ 
+		RE & 0.85 & 0.64 & EG & 3.06 & 0.37 & 1078 \\ 
+		RE & -1.09 & 0.71 & Alpha & 0.03 & 0.01 & 1725 \\ 
+		RE & 1.15 & 0.85 & IA & 1.65 & 0.60 & 1820 \\ 
+		RE & 0.42 & 0.58 & ME & 1.37 & 0.69 & 1779 \\ 
+		RE & 1.34 & 0.76 & MKT & 1.34 & 0.76 & 1919 \\ 
+		RE & 0.72 & 0.41 & ROE & 2.87 & 1.03 & 1902 \\ 
+		NATRES & 0.07 & 0.65 & Alpha & 0.02 & 0.00 & 8024 \\ 
+		NATRES & 1.63 & 0.47 & EG & 2.24 & 0.41 & 7108 \\ 
+		NATRES & 1.62 & 0.59 & ROE & 2.26 & 1.42 & 8287 \\ 
+		NATRES & 2.05 & 0.46 & MKT & 2.05 & 0.46 & 7672 \\ 
+		NATRES & 1.81 & 0.51 & IA & 1.93 & 0.86 & 7824 \\ 
+		NATRES & 1.21 & 0.76 & ME & 1.44 & 0.60 & 9138 \\ 
+		INF & -0.23 & 1.08 & Alpha & 0.03 & 0.01 & 4554 \\ 
+		INF & 1.61 & 1.42 & ME & 0.89 & 0.76 & 3526 \\ 
+		INF & 2.26 & 0.95 & IA & -0.60 & 1.26 & 3428 \\ 
+		INF & 1.56 & 0.97 & ROE & 3.81 & 2.19 & 3364 \\ 
+		INF & 2.21 & 1.01 & MKT & 2.21 & 1.01 & 3395 \\ 
+		INF & 1.73 & 1.08 & EG & 3.22 & 0.71 & 4197 \\ 
 		\hline
 	\end{tabular}
-	\caption{$hv$-block cross-validation with max quarter 40 and fund-size-weighting.}
-	\label{tab:cv_40_fw_dep}
+	\caption{$hv$-block cross-validation with equal-weighting and max quarter 40.} 
+	\label{tab:cv_40_ew}
 \end{table}
 
-
 % latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Wed Apr  8 21:59:13 2020
+% Mon Apr 13 15:21:32 2020
 \begin{table}[ht]
 	\centering
-	\begin{tabular}{lrrlrrr}
-		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & Wald.p.value.MKT\_1 \\ 
+	\begin{tabular}{lrrrlrrr}
 		\hline
+		Type & MKT & SE.MKT & SE.MKT.indep & Factor & Coef & SE.Coef & SE.Coef.indep \\ 
 		\hline
-		PE & 2.55 & 1.82 & MKT &  &  & 0.00 \\ 
-		PE & 1.28 & 11.10 & ME & 1.32 & 2.73 & 0.00 \\ 
-		PE & 1.92 & 4.04 & IA & 2.90 & 15.64 & 0.00 \\ 
-		PE & 2.11 & 3.82 & ROE & 2.63 & 4.89 & 0.00 \\ 
-		PE & 1.90 & 5.33 & EG & 3.30 & 8.52 & 0.00 \\ 
-		\hline
-		VC & 2.16 & 1.46 & MKT &  &  & 0.09 \\ 
-		VC & 3.25 & 7.13 & ME & -1.37 & 8.69 & 0.00 \\ 
-		VC & 2.21 & 1.55 & IA & -1.24 & 6.94 & 0.00 \\ 
-		VC & 2.33 & 1.54 & ROE & -0.78 & 4.44 & 0.00 \\ 
-		VC & 2.24 & 1.52 & EG & -0.52 & 8.67 & 0.00 \\ 
-		\hline
-		PD & 1.69 & 278.63 & MKT &  &  & 0.00 \\ 
-		PD & 1.30 & 46.16 & ME & 0.55 & 50.65 & 0.00 \\ 
-		PD & 1.52 & 32.87 & IA & 1.25 & 17.26 & 0.00 \\ 
-		PD & 1.92 & 16.68 & ROE & 2.38 & 25.01 & 0.00 \\ 
-		PD & 1.40 & 2.23 & EG & 3.95 & 20.71 & 0.00 \\ 
-		\hline
-		RE & 1.27 & 2.25 & MKT &  &  & 0.54 \\ 
-		RE & -0.27 & 8.46 & ME & 1.88 & 6.93 & 0.00 \\ 
-		RE & 1.07 & 2.15 & IA & 1.21 & 5.27 & 0.00 \\ 
-		RE & 1.04 & 2.17 & ROE & 3.23 & 3.28 & 0.00 \\ 
-		RE & 0.54 & 3.56 & EG & 6.04 & 4.42 & 0.00 \\ 
-		\hline
-		NATRES & -0.26 & 1.34 & MKT &  &  & 0.09 \\ 
-		NATRES & -1.49 & 16.31 & ME & 1.51 & 19.98 & 0.00 \\ 
-		NATRES & -1.00 & 3.57 & IA & 3.29 & 7.08 & 0.00 \\ 
-		NATRES & -0.37 & 1.99 & ROE & 3.16 & 3.30 & 0.00 \\ 
-		NATRES & -0.77 & 2.68 & EG & 4.55 & 3.09 & 0.00 \\ 
-		\hline
-		INF & 2.34 & 3.65 & MKT &  &  & 0.00 \\ 
-		INF & 3.85 & 65.89 & ME & -2.30 & 70.34 & 0.00 \\ 
-		INF & 1.59 & 1.31 & IA & 3.81 & 2.46 & 0.00 \\ 
-		INF & 1.22 & 12.07 & ROE & 6.13 & 17.26 & 0.00 \\ 
-		INF & 1.63 & 1.52 & EG & 5.79 & 4.83 & 0.00 \\ 
-		\hline
+		PE & 2.35 & 2.48 & 0.64 & MKT &  &  &  \\ 
+		PE & 1.59 & 3.45 & 0.62 & ME & 1.03 & 7.03 & 0.65 \\ 
+		PE & 2.03 & 3.80 & 0.57 & IA & 2.28 & 9.28 & 1.07 \\ 
+		PE & 1.83 & 5.48 & 0.87 & ROE & 1.61 & 6.39 & 0.88 \\ 
+		PE & 1.89 & 5.16 & 0.66 & EG & 2.19 & 8.27 & 1.18 \\ 
+		PE & 0.24 & 14.32 & 0.91 & Alpha & 0.02 & 0.05 & 0.01 \\ 
+		VC & 2.20 & 0.97 & 0.58 & MKT &  &  &  \\ 
+		VC & 3.24 & 4.77 & 0.68 & ME & -2.42 & 6.69 & 0.64 \\ 
+		VC & 1.93 & 1.24 & 0.56 & IA & -3.50 & 5.25 & 1.11 \\ 
+		VC & 2.67 & 1.31 & 0.47 & ROE & -2.50 & 3.38 & 0.80 \\ 
+		VC & 2.40 & 0.93 & 0.53 & EG & -2.42 & 5.26 & 0.98 \\ 
+		VC & 3.48 & 2.02 & 0.18 & Alpha & -0.02 & 0.01 & 0.00 \\ 
+		PD & 1.18 & 53.03 & 13.01 & MKT &  &  &  \\ 
+		PD & 0.30 & 48.26 & 12.32 & ME & 1.35 & 17.73 & 13.57 \\ 
+		PD & 0.80 & 45.54 & 8.13 & IA & 3.27 & 37.72 & 7.72 \\ 
+		PD & 0.89 & 13.97 & 2.80 & ROE & 1.53 & 15.14 & 3.06 \\ 
+		PD & 0.85 & 72.30 & 15.48 & EG & 2.52 & 12.41 & 10.47 \\ 
+		PD & -0.37 & 0.44 & 0.39 & Alpha & 0.02 & 0.02 & 0.00 \\ 
+		RE & 1.00 & 4.00 & 1.33 & MKT &  &  &  \\ 
+		RE & 0.20 & 8.59 & 1.70 & ME & 0.99 & 4.59 & 1.89 \\ 
+		RE & 0.81 & 3.45 & 1.28 & IA & 1.10 & 10.34 & 3.06 \\ 
+		RE & 0.58 & 5.57 & 1.81 & ROE & 2.33 & 7.17 & 1.74 \\ 
+		RE & 0.56 & 6.32 & 1.45 & EG & 3.14 & 5.26 & 3.12 \\ 
+		RE & -1.12 & 0.85 & 0.11 & Alpha & 0.02 & 0.00 & 0.00 \\ 
+		NATRES & 1.37 & 1.48 & 1.52 & MKT &  &  &  \\ 
+		NATRES & 0.96 & 6.20 & 4.07 & ME & 0.65 & 9.75 & 5.99 \\ 
+		NATRES & 1.10 & 15.72 & 11.67 & IA & 2.11 & 149.64 & 105.24 \\ 
+		NATRES & 1.19 & 1.56 & 1.63 & ROE & 1.20 & 8.96 & 5.16 \\ 
+		NATRES & 1.14 & 2.72 & 2.12 & EG & 1.48 & 26.71 & 18.94 \\ 
+		NATRES & 0.33 & 0.09 & 0.10 & Alpha & 0.01 & 0.00 & 0.00 \\ 
+		INF & 1.58 & 1.74 & 4.26 & MKT &  &  &  \\ 
+		INF & 0.82 & 9.28 & 4.18 & ME & 1.02 & 7.98 & 5.72 \\ 
+		INF & 1.58 & 3.19 & 5.87 & IA & 0.03 & 12.14 & 11.65 \\ 
+		INF & 1.16 & 9.56 & 4.52 & ROE & 3.77 & 30.53 & 14.73 \\ 
+		INF & 1.14 & 9.91 & 6.11 & EG & 3.19 & 12.07 & 18.98 \\ 
+		INF & -0.45 & 31.81 & 9.95 & Alpha & 0.02 & 0.21 & 0.09 \\ 
 		\hline
 	\end{tabular}
-	\caption{Asymptotic inference with fund-size-weighting, max quarter 60, and $D=12$. The Wald test null hypothesis is a MKT coefficient of one, and zeros for all other coefficients.}
-	\label{tab:ai_60_fw_dep}
+	\caption{Asymptotic inference with equal-weighting, max quarter 60, and $D=12$.} 
+	\label{tab:ai_60_ew}
 \end{table}
 
-
-
 % latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Wed Apr  8 21:59:13 2020
+% Mon Apr 13 15:21:32 2020
 \begin{table}[ht]
 	\centering
 	\begin{tabular}{lrrlrrl}
+		\hline
 		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & validation.error \\ 
 		\hline
-		\hline
-		INF & 3.15 & 2.00 & MKT &  &  & 3913 \\ 
-		INF & 3.69 & 2.46 & ME & -1.33 & 1.45 & 3301 \\ 
-		INF & 2.25 & 1.47 & IA & 4.78 & 3.86 & 4429 \\ 
-		INF & 1.54 & 0.83 & ROE & 5.67 & 1.03 & 1961* \\ 
-		INF & 2.65 & 1.98 & EG & 5.86 & 1.54 & 5111 \\ 
-		\hline
-		NATRES & 0.04 & 0.65 & MKT &  &  & 2771 \\ 
-		NATRES & -1.12 & 0.97 & ME & 1.47 & 0.64 & 3037 \\ 
-		NATRES & -0.59 & 0.79 & IA & 3.60 & 0.71 & 2725* \\ 
-		NATRES & -0.22 & 0.43 & ROE & 3.15 & 0.50 & 3140 \\ 
-		NATRES & -0.46 & 0.73 & EG & 4.39 & 1.02 & 2772 \\ 
-		\hline
-		PD & 1.57 & 0.46 & MKT &  &  & 1154 \\ 
-		PD & 1.35 & 0.63 & ME & 0.54 & 0.90 & 1205 \\ 
-		PD & 1.47 & 0.35 & IA & 1.82 & 1.63 & 1101 \\ 
-		PD & 1.69 & 0.49 & ROE & 2.43 & 0.25 & 1173 \\ 
-		PD & 1.34 & 0.25 & EG & 3.76 & 0.38 & 979* \\ 
-		\hline
-		PE & 2.74 & 0.50 & MKT &  &  & 970 \\ 
-		PE & 1.74 & 0.67 & ME & 1.31 & 0.55 & 1046 \\ 
-		PE & 2.19 & 0.50 & IA & 2.84 & 1.43 & 964* \\ 
-		PE & 2.11 & 0.20 & ROE & 2.60 & 0.37 & 1426 \\ 
-		PE & 2.09 & 0.44 & EG & 3.12 & 0.48 & 1127 \\ 
-		\hline
-		RE & 1.63 & 1.35 & MKT &  &  & 2759* \\ 
-		RE & 0.16 & 1.45 & ME & 1.89 & 0.72 & 2771 \\ 
-		RE & 1.15 & 1.71 & IA & 2.52 & 2.64 & 2803 \\ 
-		RE & 1.25 & 1.06 & ROE & 3.29 & 1.34 & 4445 \\ 
-		RE & 0.95 & 1.42 & EG & 5.11 & 2.60 & 4063 \\ 
-		\hline
-		VC & 2.20 & 0.43 & MKT &  &  & 626* \\ 
-		VC & 2.80 & 1.12 & ME & -0.90 & 1.25 & 779 \\ 
-		VC & 2.09 & 0.50 & IA & -0.88 & 2.10 & 692 \\ 
-		VC & 2.23 & 0.67 & ROE & -0.33 & 1.50 & 781 \\ 
-		VC & 2.09 & 0.68 & EG & -0.02 & 2.06 & 718 \\ 
-		\hline
-		\hline
-	\end{tabular}
-	\caption{$hv$-block cross-validation with max quarter 60 and fund-size-weighting.}
-	\label{tab:cv_60_fw_dep}
-\end{table}
-
-
-
-% Fundwise, $D<1$
-
-
-
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Fri Apr 10 10:55:27 2020
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{lrrlrrr}
-		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & Wald.p.value.MKT\_1 \\ 
-		\hline
-		\hline
-		PE & 2.76 & 0.46 & MKT &  &  & 0.41 \\ 
-		PE & 1.63 & 0.47 & ME & 1.49 & 0.47 & 0.84 \\ 
-		PE & 2.34 & 0.39 & IA & 2.64 & 0.89 & 0.07 \\ 
-		PE & 2.08 & 0.58 & ROE & 2.22 & 0.53 & 0.63 \\ 
-		PE & 2.16 & 0.50 & EG & 2.83 & 1.03 & 0.02 \\ 
-		\hline
-		VC & 2.87 & 0.51 & MKT &  &  & 0.34 \\ 
-		VC & 3.71 & 0.73 & ME & -1.78 & 0.63 & 0.02 \\ 
-		VC & 2.79 & 0.56 & IA & -1.65 & 1.19 & 0.08 \\ 
-		VC & 3.09 & 0.52 & ROE & -1.09 & 0.67 & 0.46 \\ 
-		VC & 2.82 & 0.48 & EG & 0.95 & 1.24 & 0.38 \\ 
-		\hline
-		PD & 1.60 & 2.12 & MKT &  &  & 0.21 \\ 
-		PD & 0.46 & 2.65 & ME & 1.68 & 2.29 & 0.00 \\ 
-		PD & 1.17 & 1.75 & IA & 3.18 & 3.58 & 0.00 \\ 
-		PD & 1.26 & 3.20 & ROE & 1.98 & 3.66 & 0.00 \\ 
-		PD & 1.20 & 2.70 & EG & 3.24 & 5.63 & 0.00 \\ 
-		\hline
-		RE & 1.19 & 0.94 & MKT &  &  & 0.86 \\ 
-		RE & 0.13 & 1.20 & ME & 1.35 & 1.23 & 0.04 \\ 
-		RE & 0.95 & 0.84 & IA & 1.42 & 2.15 & 0.01 \\ 
-		RE & 0.76 & 1.08 & ROE & 2.75 & 0.83 & 0.05 \\ 
-		RE & 0.69 & 0.96 & EG & 3.69 & 3.35 & 0.00 \\ 
-		\hline
-		NATRES & 1.90 & 1.33 & MKT &  &  & 0.23 \\ 
-		NATRES & 0.84 & 2.47 & ME & 1.68 & 3.40 & 0.00 \\ 
-		NATRES & 1.64 & 1.74 & IA & 1.91 & 11.79 & 0.00 \\ 
-		NATRES & 1.56 & 1.44 & ROE & 2.18 & 3.18 & 0.00 \\ 
-		NATRES & 1.52 & 1.86 & EG & 2.28 & 15.15 & 0.00 \\ 
-		\hline
-		INF & 1.72 & 5.43 & MKT &  &  & 0.00 \\ 
-		INF & 0.75 & 4.36 & ME & 1.27 & 2.89 & 0.00 \\ 
-		INF & 1.73 & 7.55 & IA & -0.02 & 11.12 & 0.00 \\ 
-		INF & 1.08 & 3.64 & ROE & 4.65 & 16.93 & 0.00 \\ 
-		INF & 1.09 & 3.58 & EG & 3.97 & 9.01 & 0.00 \\ 
-		\hline
+		PE & 0.18 & 0.47 & Alpha & 0.02 & 0.00 & 1310 \\ 
+		PE & 1.84 & 0.27 & EG & 2.22 & 0.18 & 1228 \\ 
+		PE & 2.02 & 0.22 & IA & 2.33 & 0.39 & 1226 \\ 
+		PE & 1.57 & 0.28 & ME & 1.08 & 0.26 & 1324 \\ 
+		PE & 2.30 & 0.29 & MKT & 2.30 & 0.29 & 1275 \\ 
+		PE & 1.74 & 0.32 & ROE & 1.66 & 0.31 & 1441 \\ 
+		VC & 2.13 & 0.66 & MKT & 2.13 & 0.66 & 1070 \\ 
+		VC & 2.14 & 0.76 & EG & -1.67 & 2.02 & 1223 \\ 
+		VC & 2.85 & 1.63 & Alpha & -0.01 & 0.02 & 1517 \\ 
+		VC & 2.95 & 0.78 & ME & -2.02 & 1.22 & 1247 \\ 
+		VC & 1.84 & 0.59 & IA & -2.63 & 2.64 & 1189 \\ 
+		VC & 2.48 & 0.71 & ROE & -1.88 & 1.54 & 1302 \\ 
+		PD & -0.45 & 0.35 & Alpha & 0.02 & 0.00 & 3550 \\ 
+		PD & 0.72 & 0.58 & EG & 2.48 & 0.40 & 3674 \\ 
+		PD & 0.68 & 0.52 & IA & 3.08 & 0.44 & 3595 \\ 
+		PD & 0.19 & 0.39 & ME & 1.32 & 0.24 & 3719 \\ 
+		PD & 1.00 & 0.66 & MKT & 1.00 & 0.66 & 3578 \\ 
+		PD & 0.75 & 0.65 & ROE & 1.57 & 0.30 & 3483 \\ 
+		RE & 0.95 & 0.81 & IA & 1.43 & 0.59 & 1992 \\ 
+		RE & 0.39 & 0.50 & ME & 1.10 & 0.58 & 1996 \\ 
+		RE & 0.69 & 0.62 & EG & 2.93 & 0.40 & 1104 \\ 
+		RE & -0.99 & 0.68 & Alpha & 0.02 & 0.01 & 2097 \\ 
+		RE & 1.14 & 0.74 & MKT & 1.14 & 0.74 & 2080 \\ 
+		RE & 0.57 & 0.42 & ROE & 2.55 & 0.96 & 2026 \\ 
+		NATRES & 0.35 & 0.71 & Alpha & 0.01 & 0.00 & 9920 \\ 
+		NATRES & 1.24 & 0.44 & EG & 1.45 & 0.43 & 9102 \\ 
+		NATRES & 1.23 & 0.50 & IA & 1.97 & 0.85 & 9111 \\ 
+		NATRES & 0.97 & 0.84 & ME & 0.76 & 0.65 & 11459 \\ 
+		NATRES & 1.17 & 0.48 & ROE & 1.55 & 1.40 & 10806 \\ 
+		NATRES & 1.44 & 0.39 & MKT & 1.44 & 0.39 & 8861 \\ 
+		INF & 0.02 & 1.24 & Alpha & 0.03 & 0.01 & 5912 \\ 
+		INF & 1.56 & 1.00 & ROE & 3.50 & 2.58 & 4003 \\ 
+		INF & 2.14 & 1.08 & MKT & 2.14 & 1.08 & 3510 \\ 
+		INF & 1.77 & 1.21 & EG & 2.97 & 0.97 & 4920 \\ 
+		INF & 1.56 & 1.48 & ME & 0.85 & 0.81 & 3660 \\ 
+		INF & 2.13 & 1.07 & IA & -0.31 & 1.19 & 3532 \\ 
 		\hline
 	\end{tabular}
-	\caption{Asymptotic inference with equal-weighting, max quarter 40, and $D<1$.. The Wald test null hypothesis is a MKT coefficient of one, and zeros for all other coefficients.}
-	\label{tab:ai_40_ew_indep}
-\end{table}
-
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Fri Apr 10 10:55:27 2020
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{lrrlrrr}
-		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & Wald.p.value.MKT\_1 \\ 
-		\hline
-		\hline
-		PE & 2.52 & 0.53 & MKT &  &  & 0.42 \\ 
-		PE & 1.59 & 0.52 & ME & 1.23 & 0.51 & 0.85 \\ 
-		PE & 2.15 & 0.45 & IA & 2.45 & 0.95 & 0.07 \\ 
-		PE & 1.94 & 0.67 & ROE & 1.81 & 0.67 & 0.58 \\ 
-		PE & 1.99 & 0.55 & EG & 2.48 & 1.04 & 0.05 \\ 
-		\hline
-		VC & 2.33 & 0.55 & MKT &  &  & 0.46 \\ 
-		VC & 3.48 & 0.73 & ME & -2.18 & 0.58 & 0.02 \\ 
-		VC & 2.20 & 0.55 & IA & -2.82 & 1.03 & 0.01 \\ 
-		VC & 2.77 & 0.46 & ROE & -1.92 & 0.66 & 0.28 \\ 
-		VC & 2.40 & 0.55 & EG & -0.89 & 0.99 & 0.50 \\ 
-		\hline
-		PD & 1.38 & 2.95 & MKT &  &  & 0.26 \\ 
-		PD & 0.36 & 5.60 & ME & 1.51 & 5.05 & 0.00 \\ 
-		PD & 0.98 & 2.90 & IA & 3.18 & 3.91 & 0.00 \\ 
-		PD & 1.07 & 3.68 & ROE & 1.68 & 4.32 & 0.00 \\ 
-		PD & 1.02 & 2.88 & EG & 2.86 & 5.56 & 0.00 \\ 
-		\hline
-		RE & 1.11 & 0.97 & MKT &  &  & 0.92 \\ 
-		RE & 0.16 & 0.01 & ME & 1.19 & 0.01 & 1.00 \\ 
-		RE & 0.89 & 0.87 & IA & 1.31 & 2.14 & 0.02 \\ 
-		RE & 0.67 & 1.23 & ROE & 2.50 & 1.19 & 0.01 \\ 
-		RE & 0.62 & 1.00 & EG & 3.57 & 3.39 & 0.00 \\ 
-		\hline
-		NATRES & 1.61 & 1.33 & MKT &  &  & 0.41 \\ 
-		NATRES & 0.88 & 3.54 & ME & 1.17 & 4.66 & 0.00 \\ 
-		NATRES & 1.36 & 1.73 & IA & 1.96 & 11.42 & 0.00 \\ 
-		NATRES & 1.34 & 1.41 & ROE & 1.74 & 3.99 & 0.00 \\ 
-		NATRES & 1.27 & 1.88 & EG & 2.18 & 14.70 & 0.00 \\ 
-		\hline
-		INF & 1.65 & 5.34 & MKT &  &  & 0.00 \\ 
-		INF & 0.65 & 4.33 & ME & 1.32 & 2.88 & 0.00 \\ 
-		INF & 1.62 & 4.90 & IA & 0.21 & 4.41 & 0.01 \\ 
-		INF & 1.07 & 3.63 & ROE & 4.67 & 16.96 & 0.00 \\ 
-		INF & 1.09 & 3.57 & EG & 3.91 & 9.17 & 0.00 \\ 
-		\hline
-		\hline
-	\end{tabular}
-	\caption{Asymptotic inference with equal-weighting, max quarter 60, and $D<1$. The Wald test null hypothesis is a MKT coefficient of one, and zeros for all other coefficients.}
-	\label{tab:ai_60_ew_indep}
-\end{table}
-
-
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Fri Apr 10 10:47:44 2020
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{lrrlrrr}
-		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & Wald.p.value.MKT\_1 \\ 
-		\hline
-		\hline
-		PE & 2.67 & 1.21 & MKT &  &  & 0.04 \\ 
-		PE & 1.39 & 1.45 & ME & 1.36 & 1.30 & 0.31 \\ 
-		PE & 1.97 & 1.03 & IA & 3.36 & 2.12 & 0.00 \\ 
-		PE & 2.20 & 1.48 & ROE & 3.15 & 0.86 & 0.17 \\ 
-		PE & 1.94 & 1.30 & EG & 3.83 & 1.64 & 0.00 \\ 
-		\hline
-		VC & 2.46 & 0.79 & MKT &  &  & 0.25 \\ 
-		VC & 3.30 & 1.14 & ME & -1.13 & 1.06 & 0.00 \\ 
-		VC & 2.48 & 0.84 & IA & -0.52 & 1.53 & 0.42 \\ 
-		VC & 2.48 & 0.78 & ROE & -0.10 & 0.82 & 0.52 \\ 
-		VC & 2.37 & 0.80 & EG & 0.67 & 1.73 & 0.20 \\ 
-		\hline
-		PD & 1.73 & 463.99 & MKT &  &  & 0.00 \\ 
-		PD & 1.33 & 114.73 & ME & 0.57 & 74.73 & 0.00 \\ 
-		PD & 1.64 & 15.65 & IA & 0.73 & 17.37 & 0.00 \\ 
-		PD & 2.01 & 40.83 & ROE & 2.57 & 59.09 & 0.00 \\ 
-		PD & 1.43 & 5.01 & EG & 3.96 & 12.80 & 0.00 \\ 
-		\hline
-		RE & 1.33 & 1.04 & MKT &  &  & 0.73 \\ 
-		RE & -0.36 & 1.75 & ME & 2.07 & 1.77 & 0.00 \\ 
-		RE & 1.12 & 1.46 & IA & 1.24 & 3.69 & 0.00 \\ 
-		RE & 1.14 & 1.70 & ROE & 3.68 & 1.00 & 0.00 \\ 
-		RE & 0.58 & 1.54 & EG & 6.60 & 3.74 & 0.00 \\
-		\hline 
-		NATRES & -0.19 & 2.28 & MKT &  &  & 0.01 \\ 
-		NATRES & -1.56 & 6.03 & ME & 1.66 & 8.34 & 0.00 \\ 
-		NATRES & -0.95 & 2.06 & IA & 3.40 & 3.67 & 0.00 \\ 
-		NATRES & -0.31 & 2.39 & ROE & 3.37 & 2.87 & 0.00 \\ 
-		NATRES & -0.73 & 2.17 & EG & 4.72 & 2.34 & 0.00 \\ 
-		\hline
-		INF & 2.42 & 2.55 & MKT &  &  & 0.00 \\ 
-		INF & 3.96 & 22.11 & ME & -2.33 & 31.17 & 0.00 \\ 
-		INF & 1.72 & 2.10 & IA & 3.44 & 3.82 & 0.00 \\ 
-		INF & 1.31 & 16.86 & ROE & 6.08 & 78.81 & 0.00 \\ 
-		INF & 1.64 & 2.15 & EG & 5.96 & 5.70 & 0.00 \\ 
-		\hline
-		\hline
-	\end{tabular}
-	\caption{Asymptotic inference with fund-size-weighting, max quarter 40, and $D<1$. The Wald test null hypothesis is a MKT coefficient of one, and zeros for all other coefficients.}
-	\label{tab:ai_40_fw_indep}
-\end{table}
-
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Fri Apr 10 10:47:44 2020
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{lrrlrrr}
-		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & Wald.p.value.MKT\_1 \\ 
-		\hline
-		\hline
-		PE & 2.55 & 1.32 & MKT &  &  & 0.04 \\ 
-		PE & 1.28 & 1.63 & ME & 1.32 & 1.31 & 0.30 \\ 
-		PE & 1.92 & 1.25 & IA & 2.90 & 2.17 & 0.00 \\ 
-		PE & 2.11 & 1.66 & ROE & 2.63 & 1.08 & 0.11 \\ 
-		PE & 1.90 & 1.49 & EG & 3.30 & 2.05 & 0.00 \\ 
-		\hline
-		VC & 2.16 & 0.83 & MKT &  &  & 0.34 \\ 
-		VC & 3.25 & 1.16 & ME & -1.37 & 1.03 & 0.00 \\ 
-		VC & 2.21 & 0.82 & IA & -1.24 & 1.40 & 0.14 \\ 
-		VC & 2.33 & 0.81 & ROE & -0.78 & 0.75 & 0.51 \\ 
-		VC & 2.24 & 0.82 & EG & -0.52 & 1.39 & 0.50 \\ 
-		\hline
-		PD & 1.69 & 255.77 & MKT &  &  & 0.00 \\ 
-		PD & 1.30 & 37.95 & ME & 0.55 & 20.26 & 0.01 \\ 
-		PD & 1.52 & 15.09 & IA & 1.25 & 16.89 & 0.00 \\ 
-		PD & 1.92 & 6.17 & ROE & 2.38 & 12.45 & 0.00 \\ 
-		PD & 1.40 & 5.00 & EG & 3.95 & 12.72 & 0.00 \\ 
-		\hline
-		RE & 1.27 & 1.49 & MKT &  &  & 0.68 \\ 
-		RE & -0.27 & 1.50 & ME & 1.88 & 1.59 & 0.00 \\ 
-		RE & 1.07 & 1.48 & IA & 1.21 & 3.65 & 0.00 \\ 
-		RE & 1.04 & 1.74 & ROE & 3.23 & 1.05 & 0.00 \\ 
-		RE & 0.54 & 1.59 & EG & 6.04 & 4.18 & 0.00 \\ 
-		\hline
-		NATRES & -0.26 & 2.26 & MKT &  &  & 0.00 \\ 
-		NATRES & -1.49 & 6.04 & ME & 1.51 & 8.18 & 0.00 \\ 
-		NATRES & -1.00 & 2.06 & IA & 3.29 & 5.74 & 0.00 \\ 
-		NATRES & -0.37 & 2.37 & ROE & 3.16 & 2.91 & 0.00 \\ 
-		NATRES & -0.77 & 2.14 & EG & 4.55 & 2.42 & 0.00 \\ 
-		\hline
-		INF & 2.34 & 2.61 & MKT &  &  & 0.00 \\ 
-		INF & 3.85 & 24.25 & ME & -2.30 & 24.97 & 0.00 \\ 
-		INF & 1.59 & 2.09 & IA & 3.81 & 3.76 & 0.00 \\ 
-		INF & 1.22 & 5.59 & ROE & 6.13 & 27.69 & 0.00 \\ 
-		INF & 1.63 & 2.17 & EG & 5.79 & 5.82 & 0.00 \\ 
-		\hline
-		\hline
-	\end{tabular}
-	\caption{Asymptotic inference with fund-size-weighting, max quarter 60, and $D<1$. The Wald test null hypothesis is a MKT coefficient of one, and zeros for all other coefficients.}
-	\label{tab:ai_60_fw_indep}
-\end{table}
-
-
-
-
-% Vintage year portfolios, $D=12$
-
-
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Fri Apr 10 12:06:25 2020
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{lrrlrrr}
-		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & Wald.p.value.MKT\_1 \\ 
-		\hline
-		\hline
-		PE & 2.28 & 4.40 & MKT &  &  & 0.00 \\ 
-		PE & 2.11 & 1579.54 & ME & 0.23 & 1867.70 & 0.00 \\ 
-		PE & 2.11 & 18.94 & IA & -1.22 & 8.49 & 0.00 \\ 
-		PE & 1.05 & 32.63 & ROE & 2.48 & 21.10 & 0.00 \\ 
-		PE & 1.29 & 75.16 & EG & 1.40 & 27.47 & 0.00 \\ 
-		\hline
-		VC & 1.98 & 9.02 & MKT &  &  & 0.00 \\ 
-		VC & 2.28 & 20.45 & ME & -0.56 & 8.05 & 0.00 \\ 
-		VC & 1.90 & 12.21 & IA & -0.50 & 8.79 & 0.00 \\ 
-		VC & 1.93 & 14.15 & ROE & 0.16 & 13.76 & 0.00 \\ 
-		VC & 1.26 & 143.33 & EG & 1.38 & 208.30 & 0.00 \\ 
-		\hline
-		PD & 1.97 & 5.81 & MKT &  &  & 0.00 \\ 
-		PD & 0.92 & 14.10 & ME & 1.49 & 10.69 & 0.00 \\ 
-		PD & 2.03 & 8.20 & IA & 1.19 & 20.40 & 0.00 \\ 
-		PD & 1.26 & 14.82 & ROE & 1.82 & 34.42 & 0.00 \\ 
-		PD & 1.56 & 7.11 & EG & 0.81 & 13.59 & 0.00 \\ 
-		\hline
-		RE & 1.71 & 28.40 & MKT &  &  & 0.00 \\ 
-		RE & 2.24 & 37.80 & ME & -0.75 & 22.48 & 0.00 \\ 
-		RE & 1.25 & 0.00 & IA & -2.61 & 0.00 & 1.00 \\ 
-		RE & 0.46 & 11022.51 & ROE & 2.96 & 70.00 & 0.00 \\ 
-		RE & 0.95 & 12.68 & EG & 1.25 & 28.41 & 0.00 \\ 
-		\hline
-		NATRES & 1.14 & 9.85 & MKT &  &  & 0.16 \\ 
-		NATRES & 0.18 & 7.51 & ME & 1.53 & 13.44 & 0.00 \\ 
-		NATRES & 1.16 & 3.65 & IA & 0.10 & 8.17 & 0.70 \\ 
-		NATRES & 0.07 & 78.37 & ROE & 2.32 & 512.84 & 0.00 \\ 
-		NATRES & 0.35 & 9.33 & EG & 1.17 & 12.99 & 0.00 \\ 
-		\hline
-		INF & 1.68 & 17.42 & MKT &  &  & 0.00 \\ 
-		INF & 0.92 & 10.75 & ME & 1.11 & 32.77 & 0.00 \\ 
-		INF & 1.60 & 9.97 & IA & -0.28 & 14.66 & 0.00 \\ 
-		INF & 0.41 & 3.91 & ROE & 2.85 & 27.78 & 0.00 \\ 
-		INF & 0.76 & 10.59 & EG & 1.23 & 13.54 & 0.00 \\ 
-		\hline
-		\hline
-	\end{tabular}
-	\caption{Asymptotic inference with equal-weighting, max quarter 40, $D=12$, and vintage year portfolios. The Wald test null hypothesis is a MKT coefficient of one, and zeros for all other coefficients.}
-	\label{tab:ai_40_ew_dep_vyp}
-\end{table}
-
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Fri Apr 10 12:06:25 2020
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{lrrlrrl}
-		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & validation.error \\ 
-		\hline
-		\hline
-		INF & 1.89 & 0.44 & MKT &  &  & 14252* \\ 
-		INF & 1.69 & 1.37 & ME & 0.30 & 1.43 & 14839 \\ 
-		INF & 2.04 & 1.21 & IA & 2.08 & 3.61 & 27483 \\ 
-		INF & 0.86 & 1.06 & ROE & 1.90 & 2.11 & 16325 \\ 
-		INF & 1.13 & 0.76 & EG & 0.74 & 0.82 & 15260 \\ 
-		\hline
-		NATRES & 1.46 & 0.85 & MKT &  &  & 17727 \\ 
-		NATRES & 0.47 & 0.97 & ME & 1.53 & 0.39 & 17588 \\ 
-		NATRES & 1.43 & 1.01 & IA & 0.27 & 1.46 & 21525 \\ 
-		NATRES & 0.40 & 1.02 & ROE & 2.17 & 0.78 & 16994* \\ 
-		NATRES & 0.73 & 0.97 & EG & 0.97 & 0.50 & 17854 \\ 
-		\hline
-		PD & 1.97 & 0.13 & MKT &  &  & 14930 \\ 
-		PD & 0.89 & 0.31 & ME & 1.56 & 0.35 & 12541* \\ 
-		PD & 2.04 & 0.34 & IA & 1.63 & 0.68 & 16842 \\ 
-		PD & 1.11 & 0.41 & ROE & 1.89 & 0.32 & 14847 \\ 
-		PD & 1.54 & 0.28 & EG & 0.89 & 0.34 & 14070 \\ 
-		\hline
-		PE & 2.40 & 0.37 & MKT &  &  & 79174 \\ 
-		PE & 2.30 & 0.64 & ME & 0.16 & 0.37 & 84220 \\ 
-		PE & 2.19 & 0.35 & IA & -1.14 & 0.87 & 103256 \\ 
-		PE & 1.18 & 0.39 & ROE & 2.32 & 0.67 & 61878* \\ 
-		PE & 1.51 & 0.38 & EG & 1.18 & 0.46 & 68779 \\ 
-		\hline
-		RE & 1.74 & 0.57 & MKT &  &  & 32924 \\ 
-		RE & 2.21 & 0.59 & ME & -0.69 & 0.58 & 34885 \\ 
-		RE & 1.46 & 0.56 & IA & -2.15 & 1.30 & 30658 \\ 
-		RE & 0.58 & 0.46 & ROE & 2.62 & 0.73 & 23821* \\ 
-		RE & 1.02 & 0.61 & EG & 1.07 & 0.31 & 30380 \\ 
-		\hline
-		VC & 2.10 & 0.63 & MKT &  &  & 17892 \\ 
-		VC & 2.82 & 1.08 & ME & -1.13 & 1.47 & 28733 \\ 
-		VC & 2.01 & 0.74 & IA & -0.60 & 0.89 & 19358 \\ 
-		VC & 2.01 & 0.59 & ROE & 0.23 & 0.61 & 18689 \\ 
-		VC & 1.41 & 0.75 & EG & 1.29 & 0.34 & 15879* \\ 
-		\hline
-		\hline
-	\end{tabular}
-	\caption{$hv$-block cross-validation with equal-weighting, max quarter 40, and vintage year portfolios.} 
-	\label{tab:cv_40_ew_dep_vyp}
-\end{table}
-
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Fri Apr 10 12:06:25 2020
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{lrrlrrr}
-		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & Wald.p.value.MKT\_1 \\ 
-		\hline
-		\hline
-		PE & 2.25 & 4.43 & MKT &  &  & 0.00 \\ 
-		PE & 2.08 & 9795.75 & ME & 0.25 & 11519.20 & 0.00 \\ 
-		PE & 2.07 & 19.82 & IA & -1.30 & 9.00 & 0.00 \\ 
-		PE & 1.12 & 31.03 & ROE & 2.31 & 20.79 & 0.00 \\ 
-		PE & 1.31 & 72.55 & EG & 1.37 & 25.92 & 0.00 \\ 
-		\hline
-		VC & 1.90 & 8.90 & MKT &  &  & 0.00 \\ 
-		VC & 2.44 & 26.84 & ME & -0.90 & 10.48 & 0.00 \\ 
-		VC & 1.76 & 4.45 & IA & -1.06 & 3.46 & 0.00 \\ 
-		VC & 2.00 & 131.26 & ROE & -0.29 & 157.09 & 0.00 \\ 
-		VC & 1.30 & 105.66 & EG & 1.24 & 151.22 & 0.00 \\ 
-		\hline
-		PD & 1.89 & 6.53 & MKT &  &  & 0.00 \\ 
-		PD & 0.93 & 12.92 & ME & 1.39 & 10.29 & 0.00 \\ 
-		PD & 1.94 & 7.80 & IA & 1.11 & 17.73 & 0.00 \\ 
-		PD & 1.25 & 13.49 & ROE & 1.64 & 43.79 & 0.00 \\ 
-		PD & 1.48 & 9.84 & EG & 0.81 & 30.35 & 0.00 \\ 
-		\hline
-		RE & 1.66 & 26.81 & MKT &  &  & 0.00 \\ 
-		RE & 2.31 & 34.40 & ME & -0.94 & 20.54 & 0.00 \\ 
-		RE & 1.26 & 23.84 & IA & -2.68 & 13.15 & 0.00 \\ 
-		RE & 0.51 & 119.90 & ROE & 2.83 & 42.03 & 0.00 \\ 
-		RE & 0.89 & 11.18 & EG & 1.33 & 15.93 & 0.00 \\ 
-		\hline
-		NATRES & 1.04 & 9.98 & MKT &  &  & 0.67 \\ 
-		NATRES & 0.23 & 9.28 & ME & 1.30 & 14.81 & 0.00 \\ 
-		NATRES & 1.06 & 3.73 & IA & 0.08 & 7.58 & 0.84 \\ 
-		NATRES & 0.32 & 79.46 & ROE & 1.68 & 211.29 & 0.00 \\ 
-		NATRES & 0.36 & 9.03 & EG & 1.05 & 12.83 & 0.00 \\ 
-		\hline
-		INF & 1.62 & 15.36 & MKT &  &  & 0.00 \\ 
-		INF & 0.86 & 10.75 & ME & 1.13 & 32.36 & 0.00 \\ 
-		INF & 1.53 & 9.27 & IA & -0.35 & 14.75 & 0.00 \\ 
-		INF & 0.40 & 4.07 & ROE & 2.77 & 27.53 & 0.00 \\ 
-		INF & 0.75 & 2.74 & EG & 1.21 & 15.51 & 0.00 \\ 
-		\hline
-		\hline
-	\end{tabular}
-	\caption{Asymptotic inference with equal-weighting, max quarter 60, $D=12$, and vintage year portfolios. The Wald test null hypothesis is a MKT coefficient of one, and zeros for all other coefficients.} 
-	\label{tab:ai_60_ew_dep_vyp}
-\end{table}
-
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Fri Apr 10 12:06:25 2020
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{lrrlrrl}
-		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & validation.error \\ 
-		\hline
-		\hline
-		INF & 1.85 & 0.47 & MKT &  &  & 15164* \\ 
-		INF & 1.65 & 1.37 & ME & 0.29 & 1.41 & 15575 \\ 
-		INF & 2.04 & 1.23 & IA & 1.84 & 3.13 & 27175 \\ 
-		INF & 0.88 & 1.05 & ROE & 1.76 & 2.19 & 17954 \\ 
-		INF & 1.15 & 0.77 & EG & 0.67 & 0.88 & 16357 \\ 
-		\hline
-		NATRES & 1.35 & 0.79 & MKT &  &  & 18639 \\ 
-		NATRES & 0.52 & 0.88 & ME & 1.30 & 0.38 & 18798 \\ 
-		NATRES & 1.32 & 0.94 & IA & 0.27 & 1.42 & 22268 \\ 
-		NATRES & 0.56 & 0.91 & ROE & 1.63 & 0.79 & 18479* \\ 
-		NATRES & 0.71 & 0.89 & EG & 0.85 & 0.54 & 18884 \\
-		\hline
-		PD & 1.88 & 0.11 & MKT &  &  & 15570 \\ 
-		PD & 0.86 & 0.28 & ME & 1.49 & 0.36 & 13673* \\ 
-		PD & 1.95 & 0.33 & IA & 1.56 & 0.68 & 17634 \\ 
-		PD & 1.10 & 0.41 & ROE & 1.72 & 0.31 & 16122 \\ 
-		PD & 1.45 & 0.25 & EG & 0.90 & 0.33 & 14878 \\ 
-		\hline
-		PE & 2.37 & 0.34 & MKT &  &  & 84022 \\ 
-		PE & 2.27 & 0.63 & ME & 0.16 & 0.40 & 92045 \\ 
-		PE & 2.15 & 0.34 & IA & -1.18 & 0.84 & 105675 \\ 
-		PE & 1.27 & 0.40 & ROE & 2.13 & 0.65 & 67564* \\ 
-		PE & 1.53 & 0.40 & EG & 1.15 & 0.49 & 75778 \\ 
-		\hline
-		RE & 1.69 & 0.56 & MKT &  &  & 35990 \\ 
-		RE & 2.23 & 0.55 & ME & -0.78 & 0.63 & 37346 \\ 
-		RE & 1.43 & 0.51 & IA & -2.27 & 1.27 & 31957 \\ 
-		RE & 0.60 & 0.48 & ROE & 2.54 & 0.75 & 27161* \\ 
-		RE & 0.97 & 0.62 & EG & 1.14 & 0.35 & 32993 \\ 
-		\hline
-		VC & 2.01 & 0.63 & MKT &  &  & 19416 \\ 
-		VC & 2.91 & 1.01 & ME & -1.35 & 1.35 & 28540 \\ 
-		VC & 1.88 & 0.73 & IA & -1.05 & 0.91 & 20302 \\ 
-		VC & 2.08 & 0.59 & ROE & -0.19 & 0.61 & 20653 \\ 
-		VC & 1.42 & 0.78 & EG & 1.18 & 0.44 & 18062* \\ 
-		\hline
-		\hline
-	\end{tabular}
-	\caption{$hv$-block cross-validation with equal-weighting, max quarter 60, and vintage year portfolios.} 
-	\label{tab:cv_60_ew_dep_vyp}
-\end{table}
-
-
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Fri Apr 10 11:27:57 2020
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{lrrlrrr}
-		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & Wald.p.value.MKT\_1 \\ 
-		\hline
-		\hline
-		PE & 2.28 & 3.81 & MKT &  &  & 0.00 \\ 
-		PE & 2.09 & 18.80 & ME & 0.26 & 20.13 & 0.00 \\ 
-		PE & 2.17 & 17.88 & IA & -1.37 & 8.26 & 0.00 \\ 
-		PE & 1.04 & 71.28 & ROE & 2.55 & 14.90 & 0.00 \\ 
-		PE & 1.35 & 122.18 & EG & 1.34 & 52.60 & 0.00 \\ 
-		\hline
-		VC & 1.50 & 4.82 & MKT &  &  & 0.02 \\ 
-		VC & 2.13 & 18.69 & ME & -1.01 & 21.09 & 0.00 \\ 
-		VC & 1.16 & 19.64 & IA & -1.84 & 20.82 & 0.00 \\ 
-		VC & 1.66 & 13.13 & ROE & -0.43 & 64.33 & 0.00 \\ 
-		VC & 0.59 & 18.53 & EG & 1.60 & 12.32 & 0.00 \\ 
-		\hline
-		PD & 1.91 & 2.93 & MKT &  &  & 0.01 \\ 
-		PD & 1.04 & 15.53 & ME & 1.27 & 29.89 & 0.00 \\ 
-		PD & 1.88 & 6.04 & IA & 1.44 & 15.40 & 0.00 \\ 
-		PD & 1.56 & 76.03 & ROE & 1.48 & 102.48 & 0.00 \\ 
-		PD & 1.55 & 6.43 & EG & 0.83 & 18.80 & 0.00 \\ 
-		\hline
-		RE & 1.41 & 44.90 & MKT &  &  & 0.00 \\ 
-		RE & 2.20 & 41.42 & ME & -1.09 & 18.84 & 0.00 \\ 
-		RE & 1.12 & 18.98 & IA & -3.13 & 120.64 & 0.00 \\ 
-		RE & 0.28 & 27.89 & ROE & 3.26 & 7.46 & 0.00 \\ 
-		RE & 0.44 & 135.89 & EG & 1.77 & 87.82 & 0.00 \\ 
-		\hline
-		NATRES & 0.46 & 9.99 & MKT &  &  & 0.00 \\ 
-		NATRES & -0.51 & 140.50 & ME & 1.46 & 246.81 & 0.00 \\ 
-		NATRES & 0.31 & 3.54 & IA & -1.18 & 3.48 & 0.00 \\ 
-		NATRES & -0.46 & 9.13 & ROE & 2.49 & 28.58 & 0.00 \\ 
-		NATRES & -0.46 & 37.86 & EG & 1.41 & 45.84 & 0.00 \\ 
-		\hline
-		INF & 1.98 & 379.18 & MKT &  &  & 0.00 \\ 
-		INF & 2.72 & 67.46 & ME & -1.27 & 13.57 & 0.00 \\ 
-		INF & 1.83 & 147.37 & IA & -0.44 & 9.84 & 0.00 \\ 
-		INF & 0.45 & 3.24 & ROE & 2.96 & 36.69 & 0.00 \\ 
-		INF & 1.18 & 19.61 & EG & 0.83 & 3.76 & 0.00 \\ 
-		\hline
-		\hline
-	\end{tabular}
-	\caption{Asymptotic inference with fund-size-weighting, max quarter 40, $D=12$, and vintage year portfolios. The Wald test null hypothesis is a MKT coefficient of one, and zeros for all other coefficients.} 
-	\label{tab:ai_40_fw_dep_vyp}
-\end{table}
-
-
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Fri Apr 10 11:27:57 2020
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{lrrlrrl}
-		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & validation.error \\ 
-		\hline
-		\hline
-		INF & 2.08 & 0.81 & MKT &  &  & 15380 \\ 
-		INF & 2.23 & 1.80 & ME & -0.34 & 1.71 & 16880 \\ 
-		INF & 2.14 & 1.31 & IA & 0.25 & 1.39 & 18450 \\ 
-		INF & 0.87 & 0.60 & ROE & 1.94 & 1.42 & 12890* \\ 
-		INF & 1.51 & 0.83 & EG & 0.59 & 0.60 & 14499 \\ 
-		\hline
-		NATRES & 0.82 & 0.80 & MKT &  &  & 11879 \\ 
-		NATRES & -0.10 & 0.79 & ME & 1.32 & 0.21 & 10895 \\ 
-		NATRES & 0.65 & 0.79 & IA & -0.56 & 1.37 & 13908 \\ 
-		NATRES & -0.23 & 0.68 & ROE & 2.27 & 0.56 & 8932* \\ 
-		NATRES & -0.10 & 0.81 & EG & 1.20 & 0.37 & 9120 \\ 
-		\hline
-		PD & 1.94 & 0.19 & MKT &  &  & 12004 \\ 
-		PD & 1.17 & 0.38 & ME & 1.14 & 0.30 & 10289* \\ 
-		PD & 1.92 & 0.29 & IA & 2.04 & 0.71 & 14191 \\ 
-		PD & 1.36 & 0.53 & ROE & 1.79 & 0.59 & 14520 \\ 
-		PD & 1.60 & 0.33 & EG & 0.91 & 0.26 & 11122 \\ 
-		\hline
-		PE & 2.50 & 0.49 & MKT &  &  & 97922 \\ 
-		PE & 2.46 & 0.83 & ME & 0.04 & 0.55 & 105182 \\ 
-		PE & 2.31 & 0.41 & IA & -1.21 & 0.97 & 119151 \\ 
-		PE & 1.17 & 0.29 & ROE & 2.49 & 0.50 & 64222* \\ 
-		PE & 1.62 & 0.47 & EG & 1.16 & 0.41 & 81627 \\ 
-		\hline
-		RE & 1.58 & 0.62 & MKT &  &  & 37931 \\ 
-		RE & 2.28 & 0.59 & ME & -0.98 & 0.92 & 42454 \\ 
-		RE & 1.38 & 0.56 & IA & -2.73 & 1.56 & 35778 \\ 
-		RE & 0.46 & 0.60 & ROE & 2.96 & 0.87 & 24838* \\ 
-		RE & 0.48 & 0.95 & EG & 1.91 & 1.15 & 35852 \\ 
-		\hline
-		VC & 1.61 & 0.73 & MKT &  &  & 19135 \\ 
-		VC & 2.60 & 1.08 & ME & -1.41 & 1.27 & 22275 \\ 
-		VC & 1.33 & 0.78 & IA & -1.83 & 0.94 & 20460 \\ 
-		VC & 1.70 & 0.66 & ROE & -0.19 & 1.17 & 21771 \\ 
-		VC & 0.77 & 0.72 & EG & 1.40 & 0.33 & 16196* \\ 
-		\hline
-		\hline
-	\end{tabular}
-	\caption{$hv$-block cross-validation with fund-size-weighting, max quarter 40, and vintage year portfolios.} 
-	\label{tab:cv_40_fw_dep_vyp}
-\end{table}
-
-
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Fri Apr 10 11:27:57 2020
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{lrrlrrr}
-		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & Wald.p.value.MKT\_1 \\ 
-		\hline
-		\hline
-		PE & 2.26 & 3.81 & MKT &  &  & 0.00 \\ 
-		PE & 2.04 & 19.00 & ME & 0.31 & 20.37 & 0.00 \\ 
-		PE & 2.15 & 17.90 & IA & -1.44 & 8.28 & 0.00 \\ 
-		PE & 1.08 & 70.21 & ROE & 2.45 & 12.82 & 0.00 \\ 
-		PE & 1.36 & 131.58 & EG & 1.32 & 58.02 & 0.00 \\ 
-		\hline
-		VC & 1.41 & 4.76 & MKT &  &  & 0.05 \\ 
-		VC & 2.33 & 34.43 & ME & -1.33 & 47.49 & 0.00 \\ 
-		VC & 1.07 & 77.86 & IA & -2.39 & 90.23 & 0.00 \\ 
-		VC & 1.74 & 23.65 & ROE & -0.80 & 103.23 & 0.00 \\ 
-		VC & 0.58 & 23.70 & EG & 1.54 & 15.09 & 0.00 \\ 
-		\hline
-		PD & 1.87 & 2.97 & MKT &  &  & 0.01 \\ 
-		PD & 1.01 & 15.47 & ME & 1.26 & 30.10 & 0.00 \\ 
-		PD & 1.85 & 5.81 & IA & 1.40 & 15.12 & 0.00 \\ 
-		PD & 1.55 & 177.76 & ROE & 1.33 & 298.50 & 0.00 \\ 
-		PD & 1.52 & 53.06 & EG & 0.82 & 38.17 & 0.00 \\ 
-		\hline
-		RE & 1.35 & 46.59 & MKT &  &  & 0.00 \\ 
-		RE & 2.28 & 41.50 & ME & -1.29 & 17.89 & 0.00 \\ 
-		RE & 1.12 & 19.66 & IA & -3.20 & 125.47 & 0.00 \\ 
-		RE & 0.31 & 29.30 & ROE & 3.11 & 5.33 & 0.00 \\ 
-		RE & 0.37 & 168.22 & EG & 1.86 & 108.78 & 0.00 \\ 
-		\hline
-		NATRES & 0.42 & 10.36 & MKT &  &  & 0.00 \\ 
-		NATRES & -0.42 & 41.62 & ME & 1.28 & 129.24 & 0.00 \\ 
-		NATRES & 0.26 & 3.51 & IA & -1.26 & 3.41 & 0.00 \\ 
-		NATRES & -0.46 & 9.58 & ROE & 2.38 & 28.76 & 0.00 \\ 
-		NATRES & -0.47 & 66.95 & EG & 1.38 & 29.77 & 0.00 \\ 
-		\hline
-		INF & 1.83 & 105.63 & MKT &  &  & 0.00 \\ 
-		INF & 2.46 & 63.06 & ME & -1.07 & 15.07 & 0.00 \\ 
-		INF & 1.66 & 80.40 & IA & -0.59 & 10.94 & 0.00 \\ 
-		INF & 0.39 & 2.82 & ROE & 2.97 & 35.93 & 0.00 \\ 
-		INF & 1.07 & 12.84 & EG & 0.87 & 11.93 & 0.00 \\ 
-		\hline
-		\hline
-	\end{tabular}
-	\caption{Asymptotic inference with fund-size-weighting, max quarter 60, $D=12$, and vintage year portfolios. The Wald test null hypothesis is a MKT coefficient of one, and zeros for all other coefficients.} 
-	\label{tab:ai_60_fw_dep_vyp}
-\end{table}
-
-
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Fri Apr 10 11:27:57 2020
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{lrrlrrl}
-		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & validation.error \\ 
-		\hline
-		\hline
-		INF & 2.02 & 0.83 & MKT &  &  & 16785 \\ 
-		INF & 2.17 & 1.80 & ME & -0.32 & 1.72 & 18321 \\ 
-		INF & 2.07 & 1.33 & IA & -0.10 & 1.54 & 21253 \\ 
-		INF & 0.83 & 0.61 & ROE & 1.99 & 1.37 & 13469* \\ 
-		INF & 1.46 & 0.83 & EG & 0.59 & 0.50 & 15135 \\ 
-		\hline
-		NATRES & 0.76 & 0.74 & MKT &  &  & 12301 \\ 
-		NATRES & -0.04 & 0.72 & ME & 1.14 & 0.18 & 11229 \\ 
-		NATRES & 0.56 & 0.70 & IA & -0.67 & 1.30 & 13694 \\ 
-		NATRES & -0.24 & 0.63 & ROE & 2.19 & 0.54 & 9349 \\ 
-		NATRES & -0.17 & 0.72 & EG & 1.22 & 0.32 & 8937* \\ 
-		\hline
-		PD & 1.89 & 0.16 & MKT &  &  & 12708 \\ 
-		PD & 1.12 & 0.33 & ME & 1.14 & 0.27 & 11200* \\ 
-		PD & 1.89 & 0.29 & IA & 2.02 & 0.73 & 15021 \\ 
-		PD & 1.35 & 0.53 & ROE & 1.67 & 0.59 & 15492 \\ 
-		PD & 1.54 & 0.29 & EG & 0.91 & 0.25 & 12027 \\ 
-		\hline
-		PE & 2.46 & 0.45 & MKT &  &  & 104440 \\ 
-		PE & 2.44 & 0.83 & ME & 0.04 & 0.57 & 113864 \\ 
-		PE & 2.27 & 0.40 & IA & -1.25 & 0.93 & 122284 \\ 
-		PE & 1.22 & 0.30 & ROE & 2.38 & 0.47 & 69318* \\ 
-		PE & 1.64 & 0.48 & EG & 1.14 & 0.43 & 89799 \\ 
-		\hline
-		RE & 1.52 & 0.62 & MKT &  &  & 42159 \\ 
-		RE & 2.28 & 0.49 & ME & -1.05 & 0.88 & 45271 \\ 
-		RE & 1.34 & 0.49 & IA & -2.90 & 1.51 & 36984 \\ 
-		RE & 0.47 & 0.61 & ROE & 2.84 & 0.88 & 29214* \\ 
-		RE & 0.43 & 0.95 & EG & 1.97 & 1.14 & 38428 \\ 
-		\hline
-		VC & 1.54 & 0.72 & MKT &  &  & 20926 \\ 
-		VC & 2.71 & 0.99 & ME & -1.59 & 1.17 & 22096 \\ 
-		VC & 1.26 & 0.71 & IA & -2.27 & 0.88 & 20110 \\ 
-		VC & 1.80 & 0.66 & ROE & -0.52 & 1.14 & 23514 \\ 
-		VC & 0.78 & 0.72 & EG & 1.33 & 0.41 & 17978* \\ 
-		\hline
-		\hline
-	\end{tabular}
-	\caption{$hv$-block cross-validation with fund-size-weighting, max quarter 60, and vintage year portfolios.} 
-	\label{tab:cv_60_fw_dep_vyp}
+	\caption{$hv$-block cross-validation with equal-weighting and max quarter 60.} 
+	\label{tab:cv_60_ew}
 \end{table}
 
 
