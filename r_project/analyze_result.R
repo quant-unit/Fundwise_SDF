@@ -5,7 +5,7 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
 
 list.cache <- list()
-dir.cache <- "data_out/cache_q_factors_EW_VYP"
+dir.cache <- "data_out/cache_q_factors_EW"
 for(file in list.files(dir.cache)) {
   if(substr(file,1,1) == 0) next
   df.f <- read.csv(paste0(dir.cache, "/", file))
@@ -85,6 +85,16 @@ df.cv.40 <- df.cv[df.cv$Max.Quarter == 40, ]
 df.cv.60 <- df.cv[df.cv$Max.Quarter == 60, ]
 df.cv.40$Max.Quarter <- df.cv.60$Max.Quarter <- NULL
 
+
+sum.abs <- function(df) {
+  df.out <- data.frame(apply(df, 2, function(x) {
+    sum(abs(as.numeric(x)))
+  }))
+  colnames(df.out) <- "sum.abs"
+  return(df.out)
+}
+
+write.csv(sum.abs(df.cv), paste0(dir.cache,"/0_cross_validation_sumabs.csv"))
 write.csv(df.cv, paste0(dir.cache,"/0_cross_validation_summary.csv"))
 
 
@@ -110,7 +120,6 @@ df.all40$max.quarter <- df.all60$max.quarter <- NULL
 
 
 
-
 print(xtable::xtable(df.all40, 
                      caption = "Asymptotic inference with XXX weighting, max quarter 40, and $D=12$.",
                      label = "tab:ai_40"), include.rownames=FALSE)
@@ -125,6 +134,7 @@ print(xtable::xtable(df.cv.60,
                      label = "tab:cv_60"), include.rownames=FALSE)
 
 
+write.csv(sum.abs(df.all), paste0(dir.cache,"/0_asymptotic_inference_sumabs.csv"))
 write.csv(df.all, paste0(dir.cache,"/0_asymptotic_inference_summary.csv"))
 
 
@@ -193,8 +203,8 @@ plot.log.return <- function(type, df.f) {
 }
 
 df.best1 <- df.best2 <- NULL
-df.best1 <- read.csv("data_out/cache_q_factors_EW_VYP/0_best_models_summary.csv")
-df.best2 <- read.csv("data_out/cache_q_factors_FW_VYP/0_best_models_summary.csv")
+df.best1 <- read.csv("data_out/cache_q_factors_EW/0_best_models_summary.csv")
+df.best2 <- read.csv("data_out/cache_q_factors_FW/0_best_models_summary.csv")
 df.best <- rbind(df.best1, df.best2)
 
 plot.log.return("VC", df.best)

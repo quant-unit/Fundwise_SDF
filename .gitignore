@@ -18,7 +18,5 @@ r_project/data_in/*
 r_project/data_out/*
 !r_project/data_out/cache_q_factors_EW
 !r_project/data_out/cache_q_factors_FW
-!r_project/data_out/cache_q_factors_EW_indep
-!r_project/data_out/cache_q_factors_FW_indep
 !r_project/data_out/cache_q_factors_EW_VYP
 !r_project/data_out/cache_q_factors_FW_VYP
