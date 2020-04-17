@@ -1,9 +1,2 @@
-"","sum.abs"
-"Type",NA
-"Max.Quarter",3600
-"MKT",104.59870426
-"SE.MKT",49.1780758
-"Factor",NA
-"Coef",82.023276788
-"SE.Coef",50.856365746
-"validation.error",2330757
+"","MKT","SE.MKT","Coef","SE.Coef","Weighting"
+"sum.abs",104.59870426,49.1780758,82.023276788,50.856365746,"EW_VYP"

@@ -39,7 +39,7 @@
 
 
 \section*{Keywords}
-Stochastic discount factor, Private equity fund, Fund level data set
+Stochastic discount factor, Semiparametric, M-estimation, Spatial inference, Private equity fund, Fund level data
 
 
 \section*{Acknowledgements}
@@ -61,29 +61,34 @@ The author alone is responsible for the content and writing of the paper.
 
 
 \begin{abstract}
-This paper proposes a new stochastic discount factor estimation methodology suited for private equity fund-level cash flow data.
-The asymptotic inference framework for our least-mean-distance estimator draws on a spatial notion, i.e., the idea that the economic distance between distinct private equity funds can be measured.
-We extensively test our new approach by empirically estimating several simple two-factor stochastic discount factor models for a variety of private equity fund types.
+This paper proposes a new stochastic discount factor estimation methodology suited for fund-level cash flow data of private equity funds.
+The asymptotic inference framework for this least-mean-distance estimator draws on a spatial notion, i.e., the idea that the economic distance between distinct private equity funds can be measured.
+We empirically test our new approach by estimating several simple stochastic discount factor models for a variety of private equity fund types.
+Since all two-factor SDF models appear statistically insignificant, we conjecture that naive semiparametric estimators like ours shall be exclusively used for single-factor models until considerably more vintage year information for private equity funds is available.
 \end{abstract}
+
 
 %% main text
 \section{Introduction}
-Do investments in private equity funds offer abnormal returns to fund investors when risk-adjusted to/for public market factors?
+
+Do investments in Private Equity (PE) funds offer abnormal returns to fund investors when risk-adjusted to/for public market factors?
 Currently, a popular approach to answer this question is to evaluate private equity fund cash flows by Stochastic Discount Factor (SDF) models that draw on public market return covariates.
 The basic idea for SDF model estimation is that the sum of all discounted fund net cash flows is zero when the true SDF is applied.
-Unfortunately, there is no conclusion about the best methodology to estimate these SDF models, as a variety of proposal coexists in the academic private equity fund literature \citep{DLP12,KN16,ACGP18,GSW19}.
+Unfortunately, there is no conclusion about the best methodology to estimate these SDF models, as a variety of proposals coexists in the academic private equity fund literature \citep{DLP12,KN16,ACGP18,GSW19}.
 
 
-Especially our conclusions from the \cite{DLP12} and \cite{KN16} approaches lead us to suggest a new least-mean-distance estimator for SDF models that is applicable to private equity fund-level cash flow data.
+Especially our conclusions from the \cite{DLP12} and \cite{KN16} approaches lead us to suggest a new least-mean-distance estimator for SDF models that applies to fund-level cash flow data of private equity funds.
 On the one hand, we provide asymptotic inference formulations that rely on the concept of spatial (near-epoch) dependency between funds comparable to \cite{KN16}.
 In this context, it is paramount to quantify the economic distance between funds by a measure like absolute vintage year difference or cash flow overlap\footnote{However, this economic inter-fund distance refers NOT to the term least-mean-distance estimator.}.
-On the other hand, our least-mean-distance estimator can be regarded as generalization of the \cite{DLP12} methodology, where we provide the asymptotic inference framework that was missing in the original paper.
+On the other hand, our least-mean-distance estimator arguably generalizes the \cite{DLP12} methodology, where we provide the asymptotic inference framework that was missing in the original paper.
 In contrast to \cite{DLP12}, we explicitly do not require the pooling of private equity fund cash flows to form vintage year portfolios.
-The increased number of cross-sectional units (in a fundwise approach) in turn decreases the asymptotic variance of coefficient estimates compared to the case when just a small number of vintage year portfolios is available.
+The increased number of cross-sectional units (in a fundwise approach), in turn, decreases the asymptotic variance of coefficient estimates compared to the case when just a small number of vintage year portfolios is available.
 
 In the empirical application of our new estimator, we estimate an exponentially affine SDF model that can draw on the five return factors associated with the $q^5$ investment factor model recently proposed by \cite{HXZ20}.
-We calculate asymptotic standard errors and a Wald test statistic for the model coefficients.
-Moreover, we assess the small-sample variance of coefficient estimates and the out-of-sample performance of the different SDF models by $hv$-block cross validation which accounts for the inter-vintage-year dependence of private equity funds \citep{R00}.
+Based on a Spatial Heteroskedasticity and Autocorrelation Consistent (SHAC) covariance matrix estimator, we calculate asymptotic standard errors for the model coefficients.
+Moreover, we assess the small-sample variance of coefficient estimates and the out-of-sample performance of the different SDF models by $hv$-block cross-validation, which accounts for the inter-vintage-year dependence of private equity funds \citep{R00}.
+We test one- and two-factor models for the following private equity fund types: Private Equity, Venture Capital, Private Debt, Real Estate, Natural Resources, and Infrastructure.
+All two-factor model results are devastating; only the single-market-factor model results appear to be statistically significant and reasonable.
 
 The paper is structured as follows. 
 Section \ref{sec:Methodology} introduces our fundwise least-mean-distance estimator and its corresponding asymptotic inference framework.
@@ -95,6 +100,7 @@ Section \ref{sec:conclusion} concludes.
 \label{sec:Methodology}
 
 \subsection{Fundwise least-mean-distance estimator}
+\label{sec:fundwise_lmd_estimator}
 
 Let fund $i=1,2,\dots,n$ be characterized by its (net) cash flows ${CF}_{t,i}$ and its net asset values ${NAV}_{t,i}$ with discrete time index $t=1,2,\dots,T$.
 The data generating processes for $CF$ and $NAV$ are left unspecified.
@@ -240,7 +246,7 @@ k_{i,j} \equiv K \left( \frac{d_{i,j}}{b_n} \right)
 \]
 with kernel function $K: \mathbb{R} \to [0,1]$ satisfies $K(0)=1$, $K(x)=K(-x)$, $\int_{-\infty}^{\infty} K^2(x) dx < \infty$, and $K(\cdot)$ continuous at zero and at all but a finite number of other points.
 A common choice is the Bartlett kernel $K_{BT}(x)= \max(0, 1-|x|)$; see equation 2.7 in \cite{A91} for other popular kernel choices.
-This means absolute vintage year differences larger than the bandwidth (or truncation) parameter $b_n=D$ are considered independent and are thus excluded from the $\hat{\Delta}$ estimation formula.
+This means, absolute vintage year differences larger than the bandwidth (or truncation) parameter $b_n=D$ are considered independent and are thus excluded from the $\hat{\Delta}$ estimation formula.
 
 In large samples, the parameter standard error vector can thus be estimated by
 \[
@@ -281,25 +287,30 @@ In empirical applications, the small sample behavior of an estimation method for
 Moreover, the standard asymptotic distribution associated with an estimator is generally not valid for post-model-selection inference, i.e., if a model selection procedure is applied to find the best model from a collection of competitors \citep{LP05}.
 
 
-\subsection{Comparison to other approaches}
+\subsection{Comparison to similar estimators}
 
-The estimator in equation \ref{eq:estimator} exhibits a cross-sectional nature, since it sums over all funds rather than constructing vintage year based time-series.
-This means, we intentionally opt against a framework compatible with classical, time-series GMM that requires the construction of stationary, ergodic time-series of moment conditions \citep{H82,H12}.
-These time-series (of random functions) are used to empirically estimate the expected value of pricing errors in equation \ref{eq:pricing_error}.
-The stationarity requirement of classical time-series GMM restrict us with respect to (i) more elaborate weighting-schemes for $w$, like fund-size weighting, and (ii) the usage of fund cash flows from non-realized vintages.
+Our least-mean-distance estimator developed in section \ref{sec:fundwise_lmd_estimator} belongs to the class of semiparametric nonlinear M-estimators as defined in \cite{PP97}.
+The estimator exhibits a cross-sectional nature since $S_n(\theta)$ in equation \ref{eq:estimator} takes the sample average with respect to funds rather than with respect to a vintage year based time-series.
+We intentionally opt against the most prominent semiparametric nonlinear M-estimator framework, i.e., classical time-series Generalized Method of Moments (GMM) \citep{H82,H12}.
+A classical GMM approach requires the construction of stationary, ergodic time-series of moment conditions that are used to empirically estimate the expected value of pricing errors in equation \ref{eq:pricing_error}.
+The stationarity requirement of classical time-series GMM restricts us with respect to (i) more elaborate weighting-schemes for $w$, like fund-size weighting, and (ii) the usage of fund cash flows from non-realized vintages.
 
-In contrast to our approach, the closely related method of \cite{DLP12} forms vintage year portfolios instead of using individual fund moments.
-Further, they discount all fund cash flows just to the first cash flow date (like in a classical net present value calculation) and we additionally average over all dates within $W_{i}$ to alleviate the exploding alpha issue mentioned in \cite{DLP12}.
-Although \cite{DLP12} describe their estimator as one-step GMM approach, it can be regarded very closely related to our least-mean-distance estimator.
-Especially, the asymptotic assumptions from subsection \ref{sec:asymptotic_framework} shall be likewise apply to their setting.
-Due to the fundwise nature of our approach it is more stable but slower than the vintage year pooling conducted in \cite{DLP12}.
-This stability results in smaller asymptotic standard errors for the coefficients.
+The \cite{DLP12} approach is most closely related to our methodology.
+However, they regard vintage year portfolios as their cross-sectional units; we use individual funds.
+The \cite{DLP12} asymptotic theory assumes the number of funds per vintage year portfolio to go to infinity.
+Our asymptotic theory lets both (1) the number of vintage years and (2) the number of funds go to infinity, but bounds the number of funds per vintage year.
+Further, \cite{DLP12} discount all fund cash flows just to the first cash flow date (like in a classical net present value calculation).
+In contrast, we additionally average over all dates within $\mathcal{T}_{i}$ to alleviate the exploding alpha issue briefly mentioned in their paper (and more thoroughly so in an earlier working paper version).
+Although \cite{DLP12} describe their estimator as a one-step GMM approach, we consider it as special case of our least-mean-distance estimator.
+Specifically, if someone accepts the assumptions from subsection \ref{sec:asymptotic_framework}, our asymptotic inference framework from subsection \ref{sec:asymptotic_inference} applies to their case without any significant modification.
 
-Similar to our ansatz, \cite{KN16} draw on a spatial framework to handle cross-sectional dependence between funds \citep{C99}.
+\cite{KN16} are the first who measure the economic distance between two private equity funds (by the degree of cash flow overlap) to account for the cross-sectional dependence between funds.
+Concretely, their asymptotic inference framework draws on the spatial HAC estimator of \cite{C99}.
 However, they ultimately utilize a classical GMM estimator, thus a time-series law of large numbers.
-To obtain their Generalized Public Market Equivalent (GPME) metric they opt for pricing public market cash flows that shall replicate PE funds instead of directly pricing the observed fund cash flows.
-Time-series GMM estimators always bear the risk of under-identification, if the corresponding time series are constructed by pooling all fund cash flows from a given fund type, since you end up with just one moment condition per fund type.
-
+Time-series GMM estimators inherently bear the risk of under-identification, if the corresponding time-series is constructed by pooling all fund cash flows from a given fund type, since this procedure yields just one moment condition per fund type.
+To elegantly avoid the under-identification issue, \cite{KN16} introduce the concept of Generalized Public Market Equivalent (GPME):
+First, a public market SDF model is estimated by pricing public trading strategies that shall replicate PE funds instead of directly pricing the observed PE fund cash flows.
+Only in a second step, these public market SDF models are applied to evaluate private equity fund cash flows.
 
 \section{Empirical estimation}
 \label{sec:empirical_estimation}
@@ -325,18 +336,18 @@ Their five factor model includes: MKT the market excess return, ME the size fact
 \subsection{Model and estimator specifications}
 \label{sec:model_selection}
 
-We use the exponential affine SDF analogously to \cite{KN16}
+We use an exponential affine SDF model similarly to \cite{KN16}
 \begin{equation}
 \label{eq:SDF}
 \Psi_{t,\tau} (\theta) = 
 \exp
 \left[
 -
-\sum_{h=\tau}^{t} \left( 1 + r_f + \sum_{j \in J} \theta_{j,h} \cdot F_{j,h} \right)
+\sum_{\tau=h}^{t} \left( 1 + r_h^{(\mathrm{free})} + \sum_{j \in J} \theta_{j} \cdot F_{j,h} \right)
 \right]
 \end{equation}
-with risk-free return $r_f$ and zero-net-investment portfolio returns $F_j$.
-To avoid overfitting, we just test five simple SDF models that contain \{MKT\} alone or \{MKT\} plus \{ME or IA or ROE or EG or Alpha\}.
+with risk-free return $r^{(\mathrm{free})}$ and zero-net-investment portfolio returns $F_j$.
+To avoid overfitting, we just test six simple SDF models that contain \{MKT\} alone or \{MKT\} plus \{ME or IA or ROE or EG or Alpha\}.
 We test two different sets for $\mathcal{T}_i$: they include all quarterly $\tau$ horizons smaller than $\{40, 60\}$ quarters, respectively.
 In equation \ref{eq:estimator}, we use the quadratic loss function $L(x)=x^2$.
 
@@ -344,7 +355,7 @@ To assess the parameter significance, we compute the asymptotic standard errors 
 The Bartlett kernel's bandwidth $b_n=D$ is selected as 12 years, i.e., funds with absolute vintage year differences larger than 12 years are assumed to be independent.
 
 Additionally, we want to test the finite - or more honestly small - sample parameter significance and the out-of-sample performance of our SDF models.
-Here we draw on $hv$-block cross validation to account for the dependency in our data set introduced by overlapping fund cash flows for funds from adjacent vintage years \citep{R00}. 
+Here we draw on $hv$-block cross validation to account for the dependency between funds from adjacent vintage years caused by overlapping fund cash flows \citep{R00}. 
 Therefore, we form three partitions for several vintage year groups. 
 As larger validation sets are preferred for model selection, the validation set ($v$-block) always contains funds of three neighboring vintage years (e.g. 2000, 2001, 2002). 
 To reduce the dependency between training and validation set, we remove all funds from three-year-adjacent vintage years, i.e., the $h$-block (e.g. 1997, 1998, 1999, 2003, 2004, 2005). 
@@ -385,6 +396,122 @@ We generally analyze the results in a two step procedure: For a given model spec
 Throughout this subsection, we sloppily define the statistical significance of coefficient estimates in terms of a t-ratio $\hat{\theta}[SE(\hat{\theta})]^{-1}$ greater than two.
 
 
+
+
+% latex table generated in R 3.4.2 by xtable 1.8-4 package
+% Tue Apr 14 12:45:27 2020
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{rrrrrl}
+		& MKT & SE.MKT & Coef & SE.Coef & Cash Flows \\ 
+		\hline
+		\hline
+		AI & 117.84 & 730.44 & 134.49 & 773.42 & FW\_fundwise \\ 
+		CV & 121.13 & 68.55 & 143.28 & 72.17 & FW\_fundwise \\ 
+		\hline
+		AI & 103.42 & 642.59 & 112.00 & 703.34 & EW\_fundwise \\ 
+		CV & 106.15 & 46.98 & 117.42 & 48.36 & EW\_fundwise \\ 
+		\hline
+		AI & 96.69 & 4233.90 & 111.66 & 3953.15 & FW\_VYP \\ 
+		CV & 99.09 & 50.86 & 87.40 & 48.04 & FW\_VYP \\ 
+		\hline
+		AI & 94.55 & 4445.19 & 107.09 & 4439.89 & EW\_VYP \\ 
+		CV & 104.60 & 49.18 & 82.02 & 50.86 & EW\_VYP \\ 
+		\hline
+		\hline
+	\end{tabular}
+	\caption{Sum of absolute values for selected columns from tables \ref{tab:ai_40_fw} to \ref{tab:ai_60_ew}. AI abbreviates asymptotic inference results, CV cross-validation, EW equal-weighting, FW fund-size-weighting, and VYP vintage year portfolios.} 
+	\label{tab:ai_sum_abs}
+\end{table}
+
+
+
+\paragraph{Asymptotic vs. $hv-$block cross-validation standard errors}
+
+In tables \ref{tab:ai_40_fw}, \ref{tab:ai_60_fw}, \ref{tab:ai_40_ew}, and  \ref{tab:ai_60_ew}, all (!!) coefficient estimates seem to be statistically insignificant as their asymptotic standard errors (with $D=12$)  correspond to t-ratios smaller than two.
+The standard errors obtained by $hv-$block cross-validation, i.e., the empirical standard deviations of the estimates associated with the partitions defined in table \ref{tab:hv_block_cv}, exhibit t-ratios bigger than two for approximately 30\% of cases, especially for almost all single-factor MKT models.
+
+\paragraph{Fund-size- vs. equal-weighting}
+
+Here we compare table \ref{tab:ai_40_fw} to \ref{tab:ai_40_ew}, and table \ref{tab:ai_60_fw} to \ref{tab:ai_60_ew}.
+The absolute values of coefficient estimates and also their standard errors seem to be slightly larger for fund-size-weighting than for equal-weighting. 
+This finding holds for both asymptotic and cross-validation results (cf. table \ref{tab:ai_sum_abs}).
+Roughly speaking, we think of equal-weighting as making the cash flow data stationary to obtain more well-behaved estimates.
+
+
+\paragraph{Maximum quarter 40 vs. 60}
+
+Here we compare table \ref{tab:ai_40_fw} to \ref{tab:ai_60_fw}, and table \ref{tab:ai_40_ew} to \ref{tab:ai_60_ew}.
+In both comparisons, for max quarter 60 almost all coefficient estimates are slightly smaller than for max quarter 40.
+This also means negative coefficient estimates tend to be even more negative for max quarter 60.
+
+
+\paragraph{Two-factor models with MKT and Alpha}
+
+Although we explicitly average over the set $\mathcal{T}_{i}$ in equation \ref{eq:average_pricing_error} to mitigate the exploding Alpha issue previously mentioned in \cite{DLP12}, the intercept term results are not exploding but yet problematic.
+For almost all fund types, we observe large absolute values for the alpha coefficient estimates in combination with unreasonable estimates for MKT.
+Specifically, our estimator reveals a steady tendency to explain private equity cash flows with annualized alpha terms larger then 10\% p.a. and negative MKT coefficients.
+Unfortunately, the best SDF models in table \ref{tab:result_summary} for fund type PE exhibit annualized alphas of 11\%, 12\%, and 13\% and negative MKT coefficients in three out of four cases.
+Analyzing all Alpha models from tables \ref{tab:ai_40_fw}, \ref{tab:ai_60_fw}, \ref{tab:ai_40_ew}, and  \ref{tab:ai_60_ew}, only the results for fund type VC seem plausible with decent Alpha estimates and large positive MKT coefficient estimates.
+For this reason we also include the model with second best out-of-sample performance in tables \ref{tab:result_summary} and \ref{tab:result_summary_vyp}, if Alpha is selected as best model.
+
+
+\paragraph{Kernel bandwidth $D=12$ vs. independence between funds}
+
+In tables \ref{tab:ai_40_fw}, \ref{tab:ai_60_fw}, \ref{tab:ai_40_ew}, and  \ref{tab:ai_60_ew}, the columns "SE.MKT" and "SE.Coef" contain asymptotic standard error estimates for the realistic Bartlett kernel bandwidth of $D=12$ years.
+In this case, the standard errors seem (a) either to be overly conservative so that they are of little practical relevance, (b) or, if they offer a realistic assessment of statistical significance, the number of distinct vintages years $V$ and/or funds $n$ in our data set is too small for meaningful asymptotic approximations.
+
+The overly optimistic assumption of inter-fund independence corresponds to the case, when just funds with $i=j$ contribute to the asymptotic covariance matrix approximation in equation \ref{eq:hac}.
+As we suppose to underestimate the asymptotic standard errors here, the results of columns "SE.MKT.indep" and "SE.Coef.indep" may be interpreted as lower bounds for the asymptotic standard errors.
+However, even with the assumption of zero inter-vintage-year dependency, just the single-factor MKT models for fund types BO and VC appear to be statistically significant for equal-weighted cash flows.
+The standard error estimates for fund types NATRES and INF with few observations (small $n$) are still very high, which may indicate that we (just) need more fund data (larger $n$) to obtain more reliable results.
+Yet, the methodology developed in this paper may be generally valid.
+
+
+\subsubsection{Vintage year portfolios}
+
+We perform the same analyses as in subsection \ref{sec:results_fundwise}, but use vintage year portfolios instead of funds as cross-sectional units which corresponds to the original \cite{DLP12} approach.
+As before the SDF models with best out-of-sample performance are summarized in table \ref{tab:result_summary_vyp}; the underlying data tables can be found in the Internet appendix. 
+
+As can be seen in table \ref{tab:ai_sum_abs}, for the coefficient estimates there is some tendency for smaller absolute values as compared to the fundwise results.
+As expected the asymptotic standard error estimates are now much larger as before, since our naive estimator does not account for the cash flow pooling of multiple funds.
+However, the $hv$-block cross-validation standard errors are in the same magnitude as in the fundwise case: for fund-size weighting they are smaller and for equal-weighting they are slightly larger (cf. table \ref{tab:ai_sum_abs}).
+
+When we compare the cumulative log return paths in figures \ref{fig:sdf_log_returns} and \ref{fig:sdf_log_returns_vyp} of the best SDF models outlined in tables \ref{tab:result_summary} and \ref{tab:result_summary_vyp}, we see that in both instances the return paths are rather smooth with small volatility.
+The best out-of-sample performance is apparently obtained by low volatility SDF models that presumably do not reflect the inherent risk associated with private equity fund investments.
+In accordance with the results from table \ref{tab:ai_sum_abs}, the cumulative SDF returns associated with vintage year portfolios in figure \ref{fig:sdf_log_returns_vyp} are smaller than the fundwise counterparts in figure \ref{fig:sdf_log_returns}.
+In table \ref{tab:result_summary_vyp} the models for fund types PE, PD, and RE tend to be very similar with respect to the factors selected and also their coefficient estimates, which yields very similar SDF paths for these fund types in figure \ref{fig:sdf_log_returns_vyp}.
+
+
+
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+Our least-mean-distance estimator can be easily generalized to estimate SDF models for all kinds of non-traded cash flows.
+If in data-rich environments asymptotic inference is deemed prudent, the economic distance measure essential for SHAC estimation can include multiple dimensions, e.g., temporal, geographic, and industry sector proximity.
+
+In the data-sparse private equity domain, we strongly advise to always challenge asymptotic inference results by resampling or cross-validation techniques that are adapted to the dependency structure of overlapping fund cash flows.
+However, even their conclusions have to be double-checked, since in our case model selection by $hv$-block cross-validation often chooses unreasonable models with large Alpha and negative MKT coefficients.
+
+Since all two-factor models appear statistically insignificant in our empirically analyses, we conjecture that naive semiparametric estimators like ours shall be exclusively used for a single-MKT-factor SDF until considerably more vintage year information for private equity funds is available.
+If someone wants to estimate more complex SDF models that incorporate additional factors, more structure is needed; e.g., in the form of parametric assumptions for the data generating process like in \cite{ACGP18} or \cite{GSW19}.
+A first modern approach to the same problem is the application of machine learning techniques that regularize/shrink all coefficients other than the MKT factor.
+Secondly, given our weak empirical results, machine learning methods that create a strong learner by combining multiple weak learners seem also worth considering.
+
+
+
+%% References
+\bibliographystyle{apalike}
+\bibliography{xfundwise_sdf}
+
+
+
+% Appendix
+
+
+\newpage
+
 % latex table generated in R 3.4.2 by xtable 1.8-4 package
 % Mon Apr 13 13:21:07 2020
 \begin{table}[ht]
@@ -393,14 +520,16 @@ Throughout this subsection, we sloppily define the statistical significance of c
 		ID & Type & MKT & Alpha.p.a. & ME & IA & ROE & EG & Tables \\ 
 		\hline
 		\hline
-		FW - 40 & PE & -0.51 & 0.13 &  &  &  &  & \ref{tab:ai_40_fw}, \ref{tab:cv_40_fw} \\ 
+		FW - 40 & PE & 2.69 &  &  &  &  &  & \ref{tab:ai_40_fw}, \ref{tab:cv_40_fw} \\ 
+		FW - 40 & PE & -0.51 & 0.13 &  &  &  &  &  \\ 
 		FW - 40 & VC & 2.70 &  &  &  &  &  &  \\ 
 		FW - 40 & PD & 1.43 &  &  &  &  & 3.83 &  \\ 
 		FW - 40 & RE & 0.83 &  &  &  &  & 4.30 &  \\ 
 		FW - 40 & NATRES & -0.69 &  &  &  &  & 4.06 &  \\ 
 		FW - 40 & INF & 1.35 &  &  &  & 5.82 &  &  \\ 
 		\hline
-		FW - 60 & PE & -0.29 & 0.11 &  &  &  &  & \ref{tab:ai_60_fw}, \ref{tab:cv_60_fw} \\ 
+		FW - 60 & PE & 1.88 &  &  & 2.81 &  &  & \ref{tab:ai_60_fw}, \ref{tab:cv_60_fw} \\ 
+		FW - 60 & PE & -0.29 & 0.11 &  &  &  &  &  \\ 
 		FW - 60 & VC & 2.12 &  &  &  &  &  &  \\ 
 		FW - 60 & PD & 1.38 &  &  &  &  & 3.75 &  \\ 
 		FW - 60 & RE & 0.74 &  &  &  &  & 4.11 &  \\ 
@@ -408,8 +537,10 @@ Throughout this subsection, we sloppily define the statistical significance of c
 		FW - 60 & INF & 1.29 &  &  &  & 5.82 &  &  \\ 
 		\hline
 		\hline
-		EW - 40 & PE & -0.01 & 0.12 &  &  &  &  & \ref{tab:ai_40_ew}, \ref{tab:cv_40_ew} \\ 
+		EW - 40 & PE & 2.33 &  &  & 2.61 &  &  & \ref{tab:ai_40_ew}, \ref{tab:cv_40_ew} \\ 
+		EW - 40 & PE & -0.01 & 0.12 &  &  &  &  &  \\ 
 		EW - 40 & VC & 3.08 &  &  &  &  &  &  \\ 
+		EW - 40 & PD & 1.21 &  &  &  & 1.98 &  &  \\ 
 		EW - 40 & PD & -0.26 & 0.10 &  &  &  &  &  \\ 
 		EW - 40 & RE & 0.67 &  &  &  &  & 3.27 &  \\ 
 		EW - 40 & NATRES & 1.48 &  &  &  &  & 2.27 &  \\ 
@@ -428,53 +559,7 @@ Throughout this subsection, we sloppily define the statistical significance of c
 	\label{tab:result_summary}
 \end{table}
 
-\paragraph{Asymptotic vs. $hv-$block cross-validation standard errors}
 
-In tables \ref{tab:ai_40_fw}, \ref{tab:ai_60_fw}, \ref{tab:ai_40_ew}, and  \ref{tab:ai_60_ew}, all (!!) coefficient estimates seem to be statistically insignificant as their asymptotic standard errors (with $D=12$)  correspond to t-ratios smaller than two.
-The standard errors obtained by $hv-$block cross-validation, i.e., the empirical standard deviations of the estimates associated with the partitions defined in table \ref{tab:hv_block_cv}, exhibit t-ratios bigger than two for approximately 30\% of cases, especially for almost all single-factor MKT models.
-
-\paragraph{Fund-size- vs. equal-weighting}
-
-Here we compare table \ref{tab:ai_40_fw} to \ref{tab:ai_40_ew}, and table \ref{tab:ai_60_fw} to \ref{tab:ai_60_ew}.
-There is no clear tendency with respect to smaller or larger absolute values for neither coefficient estimates nor asymptotic coefficient standard error estimates.
-
-
-\paragraph{Maximum quarter 40 vs. 60}
-
-Here we compare table \ref{tab:ai_40_fw} to \ref{tab:ai_60_fw}, and table \ref{tab:ai_40_ew} to \ref{tab:ai_60_ew}.
-In both comparisons, for max quarter 60 almost all coefficient estimates are slightly smaller than for max quarter 40.
-This also means negative coefficient estimates tend to be even more negative for max quarter 60.
-
-
-\paragraph{Two-factor models with MKT and Alpha}
-
-Although we explicitly average over the set $\mathcal{T}_{i}$ in equation \ref{eq:average_pricing_error} to mitigate the exploding Alpha issue previously mentioned in \cite{DLP12}, the intercept term results are not exploding but yet problematic.
-For almost all fund types, we observe large absolute values for the alpha coefficient estimates in combination with unreasonable estimates for MKT.
-Specifically, our estimator reveals a steady tendency to explain private equity cash flows with annualized alpha terms larger then 10\% p.a. and negative MKT coefficients.
-Unfortunately, the best SDF models in table \ref{tab:result_summary} for fund type PE exhibit annualized alphas of 11\%, 12\%, and 13\% and negative MKT coefficients in three out of four cases.
-Analyzing all Alpha models from tables \ref{tab:ai_40_fw}, \ref{tab:ai_60_fw}, \ref{tab:ai_40_ew}, and  \ref{tab:ai_60_ew}, only the results for fund type VC seem plausible with decent Alpha estimates and large positive MKT coefficient estimates.
-
-
-\paragraph{Kernel bandwidth $D=12$ vs. independence between funds}
-
-In tables \ref{tab:ai_40_fw}, \ref{tab:ai_60_fw}, \ref{tab:ai_40_ew}, and  \ref{tab:ai_60_ew}, the columns "SE.MKT" and "SE.Coef" contain asymptotic standard error estimates for the realistic Bartlett kernel bandwidth of $D=12$ years.
-In this case, the standard errors seem (a) either to be overly conservative so that they are of little practical relevance, (b) or, if they offer a realistic assessment of statistical significance, the number of distinct vintages years $V$ and/or funds $n$ in our data set is too small for meaningful asymptotic approximations.
-
-The overly optimistic assumption of inter-fund independence corresponds to the case, when just funds with $i=j$ contribute to the asymptotic covariance matrix approximation in equation \ref{eq:hac}.
-As we suppose to underestimate the asymptotic standard errors here, the results of columns "SE.MKT.indep" and "SE.Coef.indep" may be interpreted as lower bounds for the asymptotic standard errors.
-However, even with the assumption of zero inter-vintage-year dependency, just the single-factor MKT models for fund types BO and VC appear to be statistically significant for equal-weighted cash flows.
-The standard error estimates for fund types NATRES and INF with few observations (small $n$) are still very high, which may indicate that we (just) need more fund data (larger $n$) to obtain more reliable results.
-Yet, the methodology developed in this paper may be generally valid.
-
-
-\subsubsection{Vintage year portfolios}
-
-We perform the same analyses as in subsection \ref{sec:results_fundwise}, but use vintage year portfolios instead of funds as cross-sectional units, which corresponds to the original \cite{DLP12} approach.
-As before the SDF models with best out-of-sample performance are summarized in table \ref{tab:result_summary_vyp}; the underlying data tables can be found in the Internet appendix. 
-
-For the coefficient estimates there is no clear tendency of smaller or larger (absolute) values as compared to the fundwise input data.
-As expected the asymptotic standard error estimates are now much larger as before.
-However, the $hv$-block cross-validation standard errors are in the same magnitude as in the fundwise case.
 
 % latex table generated in R 3.4.2 by xtable 1.8-4 package
 % Mon Apr 13 18:48:38 2020
@@ -484,14 +569,16 @@ However, the $hv$-block cross-validation standard errors are in the same magnitu
 		\hline
 		ID & Type & MKT & Alpha.p.a. & ME & IA & ROE & EG & Tables \\ 
 		\hline
-		FW\_VYP - 40 & PE & 1.03 &  &  &  & 2.54 &  & Online \\ 
+		FW\_VYP - 40 & PE & 1.03 &  &  &  & 2.54 &  &  \\ 
 		FW\_VYP - 40 & VC & 0.69 &  &  &  &  & 1.46 &  \\ 
 		FW\_VYP - 40 & PD & 0.96 &  & 1.37 &  &  &  &  \\ 
 		FW\_VYP - 40 & RE & 0.26 &  &  &  & 3.28 &  &  \\ 
+		FW\_VYP - 40 & NATRES & -0.46 &  &  &  & 2.48 &  &  \\ 
 		FW\_VYP - 40 & NATRES & -2.42 & 0.08 &  &  &  &  &  \\ 
+		FW\_VYP - 40 & INF & 0.52 &  &  &  & 2.88 &  &  \\ 
 		FW\_VYP - 40 & INF & -0.88 & 0.07 &  &  &  &  &  \\ 
 		\hline
-		FW\_VYP - 60 & PE & 1.10 &  &  &  & 2.40 &  & Online \\ 
+		FW\_VYP - 60 & PE & 1.10 &  &  &  & 2.40 &  &  \\ 
 		FW\_VYP - 60 & VC & 1.14 &  &  & -2.63 &  &  &  \\ 
 		FW\_VYP - 60 & PD & 0.92 &  & 1.36 &  &  &  &  \\ 
 		FW\_VYP - 60 & RE & 0.31 &  &  &  & 3.08 &  &  \\ 
@@ -499,14 +586,14 @@ However, the $hv$-block cross-validation standard errors are in the same magnitu
 		FW\_VYP - 60 & INF & 0.38 &  &  &  & 2.89 &  &  \\ 
 		\hline
 		\hline
-		EW\_VYP - 40 & PE & 1.03 &  &  &  & 2.50 &  & Online \\ 
+		EW\_VYP - 40 & PE & 1.03 &  &  &  & 2.50 &  &  \\ 
 		EW\_VYP - 40 & VC & 1.36 &  &  &  &  & 1.27 &  \\ 
 		EW\_VYP - 40 & PD & 0.92 &  & 1.51 &  &  &  &  \\ 
 		EW\_VYP - 40 & RE & 0.44 &  &  &  & 2.98 &  &  \\ 
 		EW\_VYP - 40 & NATRES & -0.02 &  &  &  & 2.47 &  &  \\ 
 		EW\_VYP - 40 & INF & 1.71 &  &  &  &  &  &  \\ 
 		\hline
-		EW\_VYP - 60 & PE & 1.16 &  &  &  & 2.22 &  & Online \\ 
+		EW\_VYP - 60 & PE & 1.16 &  &  &  & 2.22 &  &  \\ 
 		EW\_VYP - 60 & VC & 1.34 &  &  &  &  & 1.14 &  \\ 
 		EW\_VYP - 60 & PD & 0.92 &  & 1.36 &  &  &  &  \\ 
 		EW\_VYP - 60 & RE & 0.50 &  &  &  & 2.82 &  &  \\ 
@@ -521,49 +608,29 @@ However, the $hv$-block cross-validation standard errors are in the same magnitu
 
 
 
+\newpage
+
+
+
 \begin{figure}[h]
 	\centering
-	\includegraphics{eps/0_SDF_realizations}
+	\includegraphics{eps/0_SDF_realizations_fundwise}
 	\caption{Cumulative log returns for the fundwise SDF models with best out-of-sample performance as displayed in table \ref{tab:result_summary}.
-}
+	}
 	\label{fig:sdf_log_returns}
 \end{figure}
 
 
 \begin{figure}[h]
 	\centering
-	\includegraphics{eps/0_SDF_realizations_VYP}
+	\includegraphics{eps/0_SDF_realizations_vyp}
 	\caption{Cumulative log returns for the vintage year portfolio SDF models with best out-of-sample performance as displayed in table \ref{tab:result_summary_vyp}.
 	}
 	\label{fig:sdf_log_returns_vyp}
 \end{figure}
 
 
-\section{Conclusion}
-\label{sec:conclusion}
-
-Equipped with a case specific (economic) distance measure, our least-mean-distance estimator can be easily generalized to estimate SDF models for all kinds of non-traded cash flows.
-
-As we are already in a spatial framework, we could refine the distance measure to multiple dimensions by, e.g., incorporating geographic and industry sector proximity.
-
-We advice to always challenge asymptotic inference results in the data-sparse private equity domain by bootstrapping or cross-validation analyses that are adapted to the dependency structure of overlapping fund cash flows.
-
-From a conservative viewpoint, we should rely on a simple one-factor MKT model, until we gathered considerably more data (preferably with respect to vintage years).
-
-If someone wants to incorporate more factors (or generally wants to estimate more complex models), more structure (e.g., in the form of parametric assumptions) is needed like in \cite{ACGP18} or \cite{GSW19}.
-
-%% References
-\bibliographystyle{apalike}
-\bibliography{xfundwise_sdf}
-
-
-
-% Appendix
-
-
-
 \newpage
-
 
 
 % latex table generated in R 3.4.2 by xtable 1.8-4 package

@@ -5,7 +5,8 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
 
 list.cache <- list()
-dir.cache <- "data_out/cache_q_factors_EW"
+suffix <- "EW"
+dir.cache <- paste0("data_out/cache_q_factors_", suffix)
 for(file in list.files(dir.cache)) {
   if(substr(file,1,1) == 0) next
   df.f <- read.csv(paste0(dir.cache, "/", file))
@@ -91,10 +92,14 @@ sum.abs <- function(df) {
     sum(abs(as.numeric(x)))
   }))
   colnames(df.out) <- "sum.abs"
+  df.out <- data.frame(t(df.out))
+  df.out <- df.out[, c("MKT", "SE.MKT", "Coef", "SE.Coef")]
+  df.out$Weighting <- suffix
   return(df.out)
 }
 
-write.csv(sum.abs(df.cv), paste0(dir.cache,"/0_cross_validation_sumabs.csv"))
+df.cv.abs <- sum.abs(df.cv)
+write.csv(df.cv.abs, paste0(dir.cache,"/0_cross_validation_sumabs.csv"))
 write.csv(df.cv, paste0(dir.cache,"/0_cross_validation_summary.csv"))
 
 
@@ -121,21 +126,28 @@ df.all40$max.quarter <- df.all60$max.quarter <- NULL
 
 
 print(xtable::xtable(df.all40, 
-                     caption = "Asymptotic inference with XXX weighting, max quarter 40, and $D=12$.",
-                     label = "tab:ai_40"), include.rownames=FALSE)
+                     caption = paste("Asymptotic inference with", weighting, "max quarter 40, and $D=12$."),
+                     label = paste0("tab:ai_40_", suffix)), include.rownames=FALSE)
 print(xtable::xtable(df.cv.40, 
-                     caption = "$hv$-block cross-validation with XXX weighting and max quarter 40.",
-                     label = "tab:cv_40"), include.rownames=FALSE)
+                     caption = paste("$hv$-block cross-validation with", suffix, "weighting and max quarter 40."),
+                     label = paste0("tab:cv_40_", suffix)), include.rownames=FALSE)
 print(xtable::xtable(df.all60, 
-                     caption = "Asymptotic inference with XXX weighting, max quarter 60, and $D=12$.",
-                     label = "tab:ai_60"), include.rownames=FALSE)
+                     caption = paste("Asymptotic inference with", suffix, "weighting, max quarter 60, and $D=12$."),
+                     label = paste0("tab:ai_60_", suffix)), include.rownames=FALSE)
 print(xtable::xtable(df.cv.60, 
-                     caption = "$hv$-block cross-validation with XXX weighting and max quarter 60.",
-                     label = "tab:cv_60"), include.rownames=FALSE)
+                     caption = paste("$hv$-block cross-validation with", suffix, "weighting and max quarter 60."),
+                     label = paste0("tab:cv_60_", suffix)), include.rownames=FALSE)
 
-
-write.csv(sum.abs(df.all), paste0(dir.cache,"/0_asymptotic_inference_sumabs.csv"))
+df.all.abs <- sum.abs(df.all)
+write.csv(df.all.abs, paste0(dir.cache,"/0_asymptotic_inference_sumabs.csv"))
 write.csv(df.all, paste0(dir.cache,"/0_asymptotic_inference_summary.csv"))
+
+
+df.abs <- rbind(df.all.abs, df.cv.abs)
+rownames(df.abs) <- c("AI", "CV")
+print(xtable::xtable(df.abs, 
+                     caption = "Sum of absolute values.",
+                     label = "tab:ai_sum_abs"), include.rownames=TRUE)
 
 
 # summarize both best ----
@@ -145,8 +157,14 @@ for(Type in df.cv$Type) {
   for(Max.Quarter in df.cv$Max.Quarter) {
     df.ss <- df.cv[(df.cv$Type == Type) & (df.cv$Max.Quarter == Max.Quarter), ]
     df.ss <- df.ss[df.ss$validation.error == min(df.ss$validation.error), ]
+
+    if(df.ss$Factor == "Alpha") {
+      df.ss <- df.cv[(df.cv$Type == Type) & (df.cv$Max.Quarter == Max.Quarter), ]
+      df.ss <- df.ss[df.ss$validation.error <= sort(df.ss$validation.error)[2], ]
+    }
     df.ss <- df.ss[, c("Type", "Max.Quarter", "Factor")]
     df.cv.best[[paste(Type, Max.Quarter)]] <- df.ss
+    
   }
 }
 df.cv.best <- data.frame(do.call(rbind, df.cv.best), row.names = NULL)
@@ -172,6 +190,7 @@ write.csv(df.best, paste0(dir.cache,"/0_best_models_summary.csv"))
 plot.log.return <- function(type, df.f) {
   df.f <- df.f[(df.f$Type == type), ]
   df.f <- df.f[(df.f$CV.key == "ALL"), ]
+  #df.f <- df.f[df.f$Factor != "Alpha", ]
   
   cols <- c("RF", "MKT", "ME", "IA", "ROE", "EG", "Alpha")
   cols <- cols[cols %in% colnames(df.f)]
@@ -203,6 +222,8 @@ plot.log.return <- function(type, df.f) {
 }
 
 df.best1 <- df.best2 <- NULL
+df.best1 <- read.csv("data_out/cache_q_factors_EW_VYP/0_best_models_summary.csv")
+df.best2 <- read.csv("data_out/cache_q_factors_FW_VYP/0_best_models_summary.csv")
 df.best1 <- read.csv("data_out/cache_q_factors_EW/0_best_models_summary.csv")
 df.best2 <- read.csv("data_out/cache_q_factors_FW/0_best_models_summary.csv")
 df.best <- rbind(df.best1, df.best2)
@@ -212,10 +233,10 @@ plot.log.return("VC", df.best)
 
 setEPS()
 postscript(paste0(dir.cache, "/", "0_SDF_realizations.eps"), 
-           width = 6, height = 4, family = "Helvetica", pointsize = 5)
-par(mfrow=c(2,2), cex=1.2, mar = c(4.1, 4.1, 3.1, 1.1))
+           width = 6, height = 7.5, family = "Helvetica", pointsize = 5)
+par(mfrow=c(3,2), cex=1.2, mar = c(4.1, 4.1, 3.1, 1.1))
 
-for(type in c("PE", "VC", "PD", "RE")) {
+for(type in c("PE", "VC", "PD", "RE", "NATRES", "INF")) {
   plot.log.return(type, df.best)
   abline(h=c(0), col = "grey", lty = 3)
 }
