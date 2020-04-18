@@ -206,7 +206,7 @@ In the general (time-series) near-epoch-dependent least-mean-distance literature
 \[
 \mathbf{\Sigma} = C^{-1} \Delta (C^{-1})^\top
 \]
-with expected hessian matrix converging to $C$ as $V,n \to \infty$
+with expected Hessian matrix converging to $C$ as $V,n \to \infty$
 \[
 E 
 \left(
@@ -224,7 +224,17 @@ n E
 \to \Delta
 \]
 Here, the gradient vector $\nabla_{\theta} S_n$ is denoted as column vector.
-We define the corresponding finite sample estimators analogously to \citet[Chapters 12, 13.1]{PP97} and numerically approximate the first and second derivatives by finite differences. $\hat{C}$ is relatively straightforward
+We define the corresponding finite sample estimators analogously to \citet[Chapters 12, 13.1]{PP97}, and numerically approximate the first and second partial derivatives by finite differences ($\delta \to 0$): 
+\[
+f_{x}(x,y) \approx \frac{f(x+\delta,y) - f(x-\delta,y)}{2\delta}
+\]
+\[
+f_{xx}(x,y) \approx \frac{f(x+\delta,y) + f(x-\delta,y) - 2  f(x,y)}{\delta^2}
+\]
+\[
+f_{xy}(x,y) \approx \frac{f(x+\delta,y+\delta) + f(x-\delta,y-\delta) -  f(x+\delta,y-\delta) - f(x-\delta,y+\delta)}{4\delta^2}
+\]
+$\hat{C}$ is relatively straightforward
 \[
 \hat{C} = \frac{1}{n} \sum_{i=1}^n \nabla_{\theta \theta} L \left( \epsilon_i \right)
 \]
