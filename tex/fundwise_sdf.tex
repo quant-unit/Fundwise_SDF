@@ -32,7 +32,6 @@
 \newtheorem{prop}{Proposition}
 \newtheorem{assume}{Assumption}
 
-
 \begin{document}
 
 \maketitle
@@ -61,10 +60,10 @@ The author alone is responsible for the content and writing of the paper.
 
 
 \begin{abstract}
-This paper proposes a new stochastic discount factor estimation methodology suited for fund-level cash flow data of private equity funds.
-The asymptotic inference framework for this least-mean-distance estimator draws on a spatial notion, i.e., the idea that the economic distance between distinct private equity funds can be measured.
+This paper proposes an improved stochastic discount factor estimation methodology suited for fund-level cash flows of private equity funds.
+The asymptotic inference framework for this semiparametric least-mean-distance estimator draws on a spatial notion, i.e., the idea that the economic distance between distinct private equity funds can be measured.
 We empirically test our new approach by estimating several simple stochastic discount factor models for a variety of private equity fund types.
-Since all two-factor SDF models appear statistically insignificant, we conjecture that naive semiparametric estimators like ours shall be exclusively used for single-factor models until considerably more vintage year information for private equity funds is available.
+Given the high estimator variance revealed by empirical and Monte Carlo simulation results, we conjecture that naive semiparametric M-estimators like ours shall be exclusively used for single-factor models until considerably more vintage year information for private equity funds is available.
 \end{abstract}
 
 
@@ -73,65 +72,68 @@ Since all two-factor SDF models appear statistically insignificant, we conjectur
 
 Do investments in Private Equity (PE) funds offer abnormal returns to fund investors when risk-adjusted to/for public market factors?
 Currently, a popular approach to answer this question is to evaluate private equity fund cash flows by Stochastic Discount Factor (SDF) models that draw on public market return covariates.
-The basic idea for SDF model estimation is that the sum of all discounted fund net cash flows is zero when the true SDF is applied.
-Unfortunately, there is no conclusion about the best methodology to estimate these SDF models, as a variety of proposals coexists in the academic private equity fund literature \citep{DLP12,KN16,ACGP18,GSW19}.
+The basic idea for SDF model estimation is that the sum of all discounted fund net cash flows is expected to be zero when the true SDF is applied.
+Unfortunately, there is no conclusion about the best methodology to estimate these SDF models, as a variety of proposals coexists in the academic private equity fund literature \citep{DLP12,B14,KN16,ACGP18,GSW19}.
 
-
-Especially our conclusions from the \cite{DLP12} and \cite{KN16} approaches lead us to suggest a new least-mean-distance estimator for SDF models that applies to fund-level cash flow data of private equity funds.
-On the one hand, we provide asymptotic inference formulations that rely on the concept of spatial (near-epoch) dependency between funds comparable to \cite{KN16}.
+This paper focuses on semiparametric approaches.
+Especially our conclusions from the insightful \cite{DLP12} and \cite{KN16} articles lead us to suggest an improved least-mean-distance estimator for SDF models.
+It can be applied to fund-level cash flow data of private equity funds.
+On the one hand, we provide asymptotic inference formulations that rely on the concept of spatial (near-epoch) dependency between funds following the pioneering idea in \cite{KN16}.
 In this context, it is paramount to quantify the economic distance between funds by a measure like absolute vintage year difference or cash flow overlap\footnote{However, this economic inter-fund distance refers NOT to the term least-mean-distance estimator.}.
 On the other hand, our least-mean-distance estimator arguably generalizes the \cite{DLP12} methodology, where we provide the asymptotic inference framework that was missing in the original paper.
-In contrast to \cite{DLP12}, we explicitly do not require the pooling of private equity fund cash flows to form vintage year portfolios.
-The increased number of cross-sectional units (in a fundwise approach), in turn, decreases the asymptotic variance of coefficient estimates compared to the case when just a small number of vintage year portfolios is available.
+Additionally, we propose a simple solution to the 'exploding alpha' issue briefly mentioned in their paper.
+Our Monte Carlo results suggest that the same modification dramatically reduces the inherent bias associated with the original \cite{DLP12} estimator.
 
-In the empirical application of our new estimator, we estimate an exponentially affine SDF model that can draw on the five return factors associated with the $q^5$ investment factor model recently proposed by \cite{HXZ20}.
+In the empirical application of our new estimator, we test simple linear and exponentially affine SDF models that can draw on the five return factors associated with the $q^5$ investment factor model recently proposed by \cite{HXZ20}.
 Based on a Spatial Heteroskedasticity and Autocorrelation Consistent (SHAC) covariance matrix estimator, we calculate asymptotic standard errors for the model coefficients.
 Moreover, we assess the small-sample variance of coefficient estimates and the out-of-sample performance of the different SDF models by $hv$-block cross-validation, which accounts for the inter-vintage-year dependence of private equity funds \citep{R00}.
 We test one- and two-factor models for the following private equity fund types: Private Equity, Venture Capital, Private Debt, Real Estate, Natural Resources, and Infrastructure.
-All two-factor model results are devastating; only the single-market-factor model results appear to be statistically significant and reasonable.
+All two-factor model results are devastating; not more than the single-market-factor model results may be reasonable given the high estimator variance.
 
 The paper is structured as follows. 
-Section \ref{sec:Methodology} introduces our fundwise least-mean-distance estimator and its corresponding asymptotic inference framework.
-Section \ref{sec:empirical_estimation} applies the method to estimate $q^5$-investment-factor SDFs for various private equity fund types.
+Section \ref{sec:Methodology} introduces our semiparametric least-mean-distance estimator and its corresponding asymptotic inference framework.
+Section \ref{sec:empirical_application} applies the method to estimate $q^5$-investment-factor SDFs for various private equity fund types using simulated and real-world cash flows.
 Section \ref{sec:conclusion} concludes.
 
 
 \section{Methodology}
 \label{sec:Methodology}
 
-\subsection{Fundwise least-mean-distance estimator}
+\subsection{Least-mean-distance estimator}
 \label{sec:fundwise_lmd_estimator}
 
 Let fund $i=1,2,\dots,n$ be characterized by its (net) cash flows ${CF}_{t,i}$ and its net asset values ${NAV}_{t,i}$ with discrete time index $t=1,2,\dots,T$.
 The data generating processes for $CF$ and $NAV$ are left unspecified.
-The stochastic discount factor $\Psi_{t,\tau}$ can be used to calculate the time-$\tau$ present value $P_{t,\tau,i}$ of a time-$t$ cash flow of any given PE fund $i$
+The stochastic discount factor $\Psi_{\tau,t}$ can be used to calculate the time-$\tau$ price $P_{\tau,t,i}$ of a time-$t$ cash flow of any given PE fund $i$
 \begin{equation}
 \label{eq:price}
-P_{t,\tau,i} = \Psi_{t,\tau} \cdot CF_{t,i}
+P_{\tau,t,i} = \Psi_{\tau,t} \cdot CF_{t,i}
 \end{equation}
 As SDFs are commonly parameterized by a vector $\theta \in \mathbb{R}^p$, i.e., $\Psi_{t,\tau} \equiv \Psi_{t,\tau} (\theta)$, our goal is to find an estimation method for the optimal $\theta$.
 For each fund $i$ and all points $\tau$ within a common fund lifetime, the pricing error $\epsilon_{\tau,i}$ of all fund cash flows is calculated as
 \begin{equation}
 \label{eq:pricing_error}
-\epsilon_{\tau,i} = \sum_{t=1}^T P_{t,\tau,i} 
+\epsilon_{\tau,i} = \sum_{t=1}^T P_{\tau,t,i} 
 \qquad \forall \quad \tau,i
 \end{equation}
-We define the $w$-weighted $\tau$-average fund pricing error as
+To decrease the bias and variance of the \cite{DLP12} estimator, we define the $w$-weighted $\tau$-average fund pricing error as
 \begin{equation}
 \label{eq:average_pricing_error}
 \bar{\epsilon}_{i} =
 w_{i} \cdot
-\frac{1}{\mathrm{card}( \mathcal{T}_{i}) }
+\frac{1}{ \mathrm{card}(\mathcal{T}_{i}) }
 \sum_{\tau \in \mathcal{T}_{i}}
 \epsilon_{\tau,i}
 \qquad \forall \quad i
 \end{equation}
-where $\mathcal{T}_i$ gives the set of relevant present value times $\tau$ for fund $i$, which can be thought of as all quarterly/yearly dates within the usual fund lifetime of ten to fifteen years.
+where $\mathcal{T}_i$ gives the set of relevant present value times $\tau$ for fund $i$.
+The cardinality $\mathrm{card}(\mathcal{T}_{i})$ simply gives the number of present value dates used for the $i$th fund.
+The smallest possible set $\mathcal{T}_i$ contains just a fund's starting date and the largest set contains all time periods bigger than the fund's starting date until now.
+The optimal set size of $\mathcal{T}$ is studied by Monte Carlo simulations in subsection \ref{sec:simulation_study}.
 Each fund $i$ is characterized by its vintage year which can be expressed by $v_{i}=\min(\mathcal{T}_i) \in 1,2,\dots,V$, where $V$ denotes the maximum vintage year used in a given data set.
-Here we implicitly assume that $\mathcal{T}_i$ always contains at least the fund's starting date.
 Finally, the scalar weighting factor $w_i$ can be (i) one divided by the fund's invested capital for equal weighting of funds, (ii) one divided by the vintage year sum of invested capital for vintage year weighting, (iii) the scalar one for fund-size weighting, or (iv) some macroeconomic deflator.
 
-Our least-mean-distance estimator minimizes the average loss of $\bar{\epsilon}$
+To find $\theta$, our least-mean-distance estimator minimizes the average loss of $\bar{\epsilon}$
 \begin{equation}
 \label{eq:estimator}
 \hat{\theta} = 
@@ -150,61 +152,108 @@ where $L$ denotes a loss function, e.g., $L(x)=(x-0)^2$.
 Throughout the paper, the weighted average fund pricing error $\bar{\epsilon} \equiv \bar{\epsilon}(\theta)$ is regarded as nonlinear random function of the SDF parameter $\theta$.
 
 
+\subsection{Cross-sectional unit: Individual fund vs. portfolio of funds}
+\label{sec:cross_sectional_unit}
+
+According to the classical value-additivity assumption in \cite{HR87} SDF models invariably shall hold for all pooled or unpooled assets.
+So in theory, it is not important if the test assets for our SDF are portfolio or individual fund cash flows..
+Practically it makes a difference and there are arguments both for and against portfolio formation.
+
+In the risk premium literature, portfolio formation mainly helps to attenuate the errors-in-variable bias connected to two-pass asset pricing methods \citep{JNPR19,PRS19}.
+As this is no issue in our case, we could use individual funds.
+\cite{C11} argues that portfolio sorting (seen as an auxiliary nonparametric regression that imposes linearity on the relationship between returns and characteristics) shall be replaced by multivariate panel models due to the curse of dimensionality.
+Following the same nonparametric regression viewpoint, \cite{CCF19} derive a nonparametric framework where the optimal number of portfolios sorts acts as data-dependent tuning parameter that grows with sample size.
+Generally, the larger the portfolios, the easier any given SDF can price their cash flows since fewer test assets remain.
+
+In the case of private equity funds, the pooling of fund cash flows helps to counter GP financial engineering\footnote{GPs may use bridge credit facilities below the hurdle rate to boost the fund's internal rate of return. This increases the probability of observing funds with only positive or only negative cash flows.}, which might both change and mask the true risk profile of observed LP cash flows.
+Especially for private equity funds, portfolio formation based on vintage year is compelling due to its time-series-like indexing as done by \cite{DLP12}.
+This procedure also offers large computational benefits as it drastically decreases the number of cross-sectional units.
+Further, as stated in \cite{ALS20}, portfolio formation allows more precise factor loading estimates  due to decreasing idiosyncratic risk, but at the expense of sacrificing cross-sectional information.
+Finally, small (or fixed) $T$ and large $N$ set-ups may face finite sample problems \citep{RRZ20}.
+
+\begin{assume}
+	\label{as:portfolio}
+	For each vintage year, we pool fund cash flows to form $n_v$ portfolios that serve as cross-sectional units.
+	The two boundary cases are (i) single fund portfolios and (ii) just one portfolio per vintage year. 
+\end{assume}
+Without loss of generality, we refer to our cross-sectional units as funds although this is just a special case of a size-$n_v$-portfolio.
+In the simulation study in subsection \ref{sec:simulation_study} we compare both boundary cases (i) individual funds and (ii) vintage year portfolios.
+
+
 \subsection{Asymptotic framework}
 \label{sec:asymptotic_framework}
 
+To allow for multiple funds from the same vintage year in assumption \ref{as:portfolio}, we employ an auxiliary 'spatial' notion as originally proposed by \cite{KN16}.
+The spatial viewpoint is just a technical means to switch from time-series-like to a more panel-data-like indexing.
+Unlike typical panel data we do not follow multiple subjects over time, but for each point in time we exclusively observe multiple cross-sectional units (funds from that vintage year).
+This unusual two-dimensional indexing causes problems in the PE literature as it neatly fits neither in the (i) time-series, (ii) cross-sectional, nor (iii) panel data literature.
+
+However, in this section, we basically follow the time-series asymptotic framework of \cite{PP97} since our 'spatial' distance measure is time and adaption to our case is thus straightforward.
+If we observe just one fund per vintage year (or, equivalently, form vintage year portfolios), it is easily seen that the framework of \cite{PP97} with time-series indexing can be directly applied (without any major modification).
+
+
 \subsubsection{Vintage year asymptotics}
-We employ a spatial framework, where we assume that the (spatial, i.e., economic) distance between cross-sectional units, i.e., private equity funds, can be measured in quantitative way.
+We assume that the ('spatial', i.e., economic) distance between cross-sectional units, i.e., private equity funds/portfolios, can be measured in a quantitative way.
 Here asymptotic results are derived for the case when the number of funds goes to infinity $n \to \infty$.
-However, to expose our SDF to enough distinct covariate realizations (economic conditions), identification of model parameters requires a sufficient number of funds from different vintage years in the fund-level data set used for model estimation \citep{DLP12,KN16}.
+However, to expose our SDF to enough distinct covariate realizations (economic conditions), identification of model parameters requires a sufficient number of funds from different vintage years in the fund-level data set used for model estimation as emphasized by \cite{DLP12} and \cite{KN16}.
 \begin{assume}
+	\label{as:vya}
 	(i) The number of vintage years $V \to \infty$ as $n \to \infty$.
 	(ii) The number of funds per vintage year is bounded by some positive constant.
 	(iii) The maximal fund lifetime is also bounded by a positive constant.
 	(iv) The economic distance between fund $i$ and $j$ is measured by the vintage year difference $d_{i,j}=v_i - v_j$.
 \end{assume}
+In terms of the spatial estimation literature, this assumption postulates increasing domain asymptotics and rules out so-called infill asymptotics. Infill asymptotics corresponds to the assumption of \cite{DLP12} that the number of funds per vintage tends to infinity.
+
 
 \subsubsection{Law of large numbers}
-The global moment condition underlying our estimation approach is that the ($i$-unconditional) expected value of $\bar{\epsilon}$ shall be zero, if we use the optimal SDF parameter $\theta_0$. 
-This also means, instead of applying a time-series law of large numbers, we rely on a spatial (cross-sectional) law of large numbers, but acknowledge the statistical dependence of  pricing errors with respect to vintage year differences between funds.
-\cite{JP12} develop an asymptotic inference framework for near-epoch dependent spatial processes that is instructive for our setting.
+The global moment condition underlying our estimation approach is that the expected value of $\bar{\epsilon}$ shall be zero, if we use the optimal SDF parameter $\theta_0$. 
+This technically means, instead of applying a time-series law of large numbers, we rely on a spatial (cross-sectional) law of large numbers, but acknowledge the statistical dependence of  pricing errors with respect to vintage year differences between funds.
 
 \begin{assume}
+	\label{as:lln}
 	The (i) time-trend and (ii) dependence structure of $\bar{\epsilon}$ shall allow
 	\[
 	n^{-1} \sum_{i=1}^n \overline{\epsilon}_i \overset{a.s.}\to E[\bar{\epsilon}]
 	\quad {as} \quad V,n \to \infty
 	\]
-	Specifically, the process $\overline{\epsilon}$ is spatial near-epoch dependent with respect to fund vintage years \citep{JP12}, i.e., two funds with distance $d_{i,j}>D$ are assumed to be independent.
+	Specifically, we assume the process $\overline{\epsilon}$ to be is spatial near-epoch dependent with respect to fund vintage years \citep{JP12}, i.e., two funds with distance $d_{i,j}>D$ are assumed to be independent.
 \end{assume}
 To satisfy the time trend part (i) of this law of large number assumption, the weighting factor $w$, introduced in equation \ref{eq:average_pricing_error}, can be used to make $\bar{\epsilon}$ stationary.
-Spatial near-epoch dependence with respect to fund vintage years formalizes the idea that two funds with a small absolute vintage year difference are supposed to be dependent (due to being exposed to the same macroeconomic condition), whereas two funds with a very large absolute vintage year difference can be assumed to be independent.
-In our framework, spatial distance is considered as economic distance between funds (represented by $\bar{\epsilon}$); our spatial space is thus of dimension one.
+Spatial near-epoch dependence with respect to fund vintage years formalizes the simple idea that two fund pricing errors $\bar{\epsilon}$ with a small absolute vintage year difference are supposed to be dependent sine they are exposed to the same macroeconomic conditions; whereas two funds with a very large absolute vintage year difference can be assumed independent.
 
 \subsubsection{Consistency}
 The estimator $\hat{\theta}$ shall converge in probability to the true parameter value $\theta_0$ as the number of distinct vintage years in our data set goes to infinity.
-Multiple funds for a specific vintage year are not necessarily required and are thus considered as additional, stabilizing moment conditions.
+Multiple funds for a specific vintage year are not necessarily required but, of course, provide additional information that should be exploited if available.
 
 \begin{assume}
+\label{as:consistency}
  Consistency of $\hat{\theta}$ requires $\hat{\theta} \overset{p}{\to} \theta_0$ as $V,n \to \infty$.
  Thus $E[\bar{\epsilon}]=0$ if and only if $\theta=\theta_0$.
  The parameter space is compact $\theta \in \Theta$.
 \end{assume}
-Compactness of $\Theta$ can be assured by lower and upper bounds for all parameters that can be justified by economic reasoning in our case, e.g., a market beta factor of ten seems implausible for PE funds because of the implied risk and return expectations.
+Compactness of $\Theta$ can be assured by lower and upper bounds for all parameters that can be justified by economic reasoning. In our case, e.g., a market beta factor of ten seems implausible for PE funds because of the implied risk and return expectations.
 
 \subsubsection{Central limit theorem}
 To assess the significance of our parameter estimates, we want to describe the asymptotic distribution of the parameter vector as a normal distribution.
 
 \begin{assume}
-	$\sqrt{n}(\hat{\theta} - \theta_0) \overset{d}{\to} \mathcal{N}(0,\mathbf{\Sigma})$ as $V,n \to \infty$ with covariance matrix $\mathbf{\Sigma}$.
+	\label{as:clt}
+	(i) $\sqrt{n}(\hat{\theta} - \theta_0) \overset{d}{\to} \mathcal{N}(0,\mathbf{\Sigma})$ as $V,n \to \infty$ with covariance matrix $\mathbf{\Sigma}$.
+	
+	(ii) The covariance matrix $\mathbf{\Sigma}$ can be characterized by \citet[Theorem 11.2.b, Theorem H.1]{PP97}.
 \end{assume}
 
-\subsection{Asymptotic inference}
+The formal proof of assumption \ref{as:clt} may be derived in analogy to the GMM case in \cite[Theorem 4]{JP12} that shows that the general structure of the \cite{PP97} framework also applies to the spatial near-epoch dependent case.
+
+
+
+\subsection{Large sample inference}
 \label{sec:asymptotic_inference}
 
-In the general (time-series) near-epoch-dependent least-mean-distance literature, $\mathbf{\Sigma}$ can be characterized according to \citet[Theorem 11.2.b, Theorem H.1]{PP97}:
+In the time-series near-epoch-dependent least-mean-distance literature, $\mathbf{\Sigma}$ can be characterized according to \citet[Theorem 11.2.b, Theorem H.1]{PP97}:
 \[
-\mathbf{\Sigma} = C^{-1} \Delta (C^{-1})^\top
+\mathbf{\Sigma} = C^{-1} \Lambda (C^{-1})^\top
 \]
 with expected Hessian matrix converging to $C$ as $V,n \to \infty$
 \[
@@ -214,14 +263,14 @@ E
 \right)
 \to C
 \]
-and the expected covariance matrix of gradients converging to $\Delta$ as $V,n \to \infty$
+and the expected covariance matrix of gradients converging to $\Lambda$ as $V,n \to \infty$
 \[
 n E 
 \left[
 \nabla_{\theta} S_n
 (\nabla_{\theta} S_n)^\top
 \right]
-\to \Delta
+\to \Lambda
 \]
 Here, the gradient vector $\nabla_{\theta} S_n$ is denoted as column vector.
 We define the corresponding finite sample estimators analogously to \citet[Chapters 12, 13.1]{PP97}, and numerically approximate the first and second partial derivatives by finite differences ($\delta \to 0$): 
@@ -238,10 +287,10 @@ $\hat{C}$ is relatively straightforward
 \[
 \hat{C} = \frac{1}{n} \sum_{i=1}^n \nabla_{\theta \theta} L \left( \epsilon_i \right)
 \]
-Due to the (spatial near-epoch) dependence, the involved and computationally intensive part is to consistently estimate $\hat{\Delta}$ by a Spatial Heteroskedasticity and Autocorrelation Consistent (SHAC) covariance matrix estimator \cite[equation 2]{KS11}
+Due to the spatial near-epoch dependence, the involved and computationally expensive part is to consistently estimate $\hat{\Lambda}$ by a Spatial Heteroskedasticity and Autocorrelation Consistent (SHAC) covariance matrix estimator \cite[equation 2]{KS11}
 \begin{equation}
 \label{eq:hac}
-\hat{\Delta} = \frac{1}{n} \sum_{i=1}^n \sum_{j=1}^n
+\hat{\Lambda} = \frac{1}{n} \sum_{i=1}^n \sum_{j=1}^n
 k_{i,j}
 \left[
 \nabla_{\theta} L \left( \epsilon_i \right)
@@ -256,25 +305,27 @@ k_{i,j} \equiv K \left( \frac{d_{i,j}}{b_n} \right)
 \]
 with kernel function $K: \mathbb{R} \to [0,1]$ satisfies $K(0)=1$, $K(x)=K(-x)$, $\int_{-\infty}^{\infty} K^2(x) dx < \infty$, and $K(\cdot)$ continuous at zero and at all but a finite number of other points.
 A common choice is the Bartlett kernel $K_{BT}(x)= \max(0, 1-|x|)$; see equation 2.7 in \cite{A91} for other popular kernel choices.
-This means, absolute vintage year differences larger than the bandwidth (or truncation) parameter $b_n=D$ are considered independent and are thus excluded from the $\hat{\Delta}$ estimation formula.
+This means, absolute vintage year differences larger than the bandwidth (or truncation) parameter $b_n=D$ are considered independent and are thus excluded from the $\hat{\Lambda}$ estimation formula.
 
-In large samples, the parameter standard error vector can thus be estimated by
+In large samples, the vector of parameter standard errors can thus be estimated by
 \[
 \mathrm{SE}(\hat{\theta}) = 
 \sqrt{
 	\mathrm{diag} \left[
 	n^{-\frac{1}{2}}
-	\hat{C}^{-1} \hat{\Delta} (\hat{C}^{-1})^\top
+	\hat{C}^{-1} \hat{\Lambda} (\hat{C}^{-1})^\top
 	(n^{-\frac{1}{2}})^\top
 	\right] 
 }
 =
 \sqrt{
 	\mathrm{diag} \left[
-	\frac{\hat{C}^{-1} \hat{\Delta} (\hat{C}^{-1})^\top}{n}
+	\hat{C}^{-1} \hat{\Lambda} (\hat{C}^{-1})^\top
 	\right] 
+	\cdot \frac{1}{n}
 }
 \]
+\iffalse
 The Wald test statistic for linear hypotheses $H_0: R \theta = r$ and $H_1: R \theta \neq r$ is constructed as
 \[
 W = 
@@ -291,7 +342,7 @@ R^\top
 where $\hat{\theta}$ is the $p \times 1$ parameter vector, $R$ is a $q \times p$ matrix, and $r$ is a $q \times 1$ vector.
 Usually, we select $R$ as $p \times p$ identity matrix, and $r$ as $p \times 1$ vector (e.g., of zeros).
 Under the null hypothesis, $W$ is chi-squared distributed with $q$ degrees of freedom. As large values of $W$ indicate the rejection of $H_0$, the corresponding p-value is calculated as $1 - F_{\chi_q^2}(W)$ where $F_{\chi_q^2}$ is the cumulative distribution function of a chi-squared random variable with $q$ degrees of freedom.
-
+\fi
 However, in view of the limited amount of available private equity data (typically the oldest vintages start in the 1980s), asymptotic characterizations of $\mathbf{\Sigma}$ and $\mathrm{SE}(\hat{\theta})$ are of limited importance. 
 In empirical applications, the small sample behavior of an estimation method for private equity data is more relevant than its asymptotic theory.
 Moreover, the standard asymptotic distribution associated with an estimator is generally not valid for post-model-selection inference, i.e., if a model selection procedure is applied to find the best model from a collection of competitors \citep{LP05}.
@@ -300,30 +351,34 @@ Moreover, the standard asymptotic distribution associated with an estimator is g
 \subsection{Comparison to similar estimators}
 
 Our least-mean-distance estimator developed in section \ref{sec:fundwise_lmd_estimator} belongs to the class of semiparametric nonlinear M-estimators as defined in \cite{PP97}.
-The estimator exhibits a cross-sectional nature since $S_n(\theta)$ in equation \ref{eq:estimator} takes the sample average with respect to funds rather than with respect to a vintage year based time-series.
+The estimator exhibits a cross-sectional nature since $S_n(\theta)$ in equation \ref{eq:estimator} takes the sample average with respect to funds rather than with respect to a vintage-year-based time-series.
 We intentionally opt against the most prominent semiparametric nonlinear M-estimator framework, i.e., classical time-series Generalized Method of Moments (GMM) \citep{H82,H12}.
 A classical GMM approach requires the construction of stationary, ergodic time-series of moment conditions that are used to empirically estimate the expected value of pricing errors in equation \ref{eq:pricing_error}.
 The stationarity requirement of classical time-series GMM restricts us with respect to (i) more elaborate weighting-schemes for $w$, like fund-size weighting, and (ii) the usage of fund cash flows from non-realized vintages.
 
 The \cite{DLP12} approach is most closely related to our methodology.
-However, they regard vintage year portfolios as their cross-sectional units; we use individual funds.
-The \cite{DLP12} asymptotic theory assumes the number of funds per vintage year portfolio to go to infinity.
-Our asymptotic theory lets both (1) the number of vintage years and (2) the number of funds go to infinity, but bounds the number of funds per vintage year.
+However, they regard vintage year portfolios as their cross-sectional units; we can also use individual funds.
+The \cite{DLP12} asymptotic theory assumes the number of funds (or deals) per vintage year portfolio to go to infinity.
+Our asymptotic theory lets both (i) the number of vintage years and (ii) the number of funds go to infinity, but bounds the number of funds per vintage year.
 Further, \cite{DLP12} discount all fund cash flows just to the first cash flow date (like in a classical net present value calculation).
 In contrast, we additionally average over all dates within $\mathcal{T}_{i}$ to alleviate the exploding alpha issue briefly mentioned in their paper (and more thoroughly so in an earlier working paper version).
 Although \cite{DLP12} describe their estimator as a one-step GMM approach, we consider it as special case of our least-mean-distance estimator.
-Specifically, if someone accepts the assumptions from subsection \ref{sec:asymptotic_framework}, our asymptotic inference framework from subsection \ref{sec:asymptotic_inference} applies to their case without any significant modification.
+Specifically, if someone accepts the assumptions from subsection \ref{sec:asymptotic_framework}, our large sample inference framework from subsection \ref{sec:asymptotic_inference} applies to their case without any significant modification.
 
-\cite{KN16} are the first who measure the economic distance between two private equity funds (by the degree of cash flow overlap) to account for the cross-sectional dependence between funds.
+\cite{KN16} first of all realized the usefulness of employing an auxiliary spatial framework to handle a fund-level panel dataset of private equity funds.
+They measure the economic distance between two private equity funds (by the degree of cash flow overlap) to account for the cross-sectional dependence between funds.
 Concretely, their asymptotic inference framework draws on the spatial HAC estimator of \cite{C99}.
 However, they ultimately utilize a classical GMM estimator, thus a time-series law of large numbers.
-Time-series GMM estimators inherently bear the risk of under-identification, if the corresponding time-series is constructed by pooling all fund cash flows from a given fund type, since this procedure yields just one moment condition per fund type.
-To elegantly avoid the under-identification issue, \cite{KN16} introduce the concept of Generalized Public Market Equivalent (GPME):
-First, a public market SDF model is estimated by pricing public trading strategies that shall replicate PE funds instead of directly pricing the observed PE fund cash flows.
+Time-series GMM estimators inherently bear the risk of under-identification, if the corresponding time-series is constructed by pooling all fund cash flows from a given fund type.
+To counter under-identification, additional characteristic based fund portfolios could be used to increase the number of moment conditions per fund type; also random portfolios in combination with bootstrapping make sense.
+Yet, \cite{KN16} take another approach and introduce the concept of Generalized Public Market Equivalent (GPME) which elegantly avoids the under-identification issue.
+Firstly, a public market SDF model is estimated by pricing public trading strategies that shall replicate PE funds instead of directly pricing the observed PE fund cash flows.
 Only in a second step, these public market SDF models are applied to evaluate private equity fund cash flows.
 
-\section{Empirical estimation}
-\label{sec:empirical_estimation}
+
+
+\section{Empirical application}
+\label{sec:empirical_application}
 
 \subsection{Data}
 
@@ -334,7 +389,7 @@ VC ("Venture Capital"; 871),
 RE ("Real Estate"; 742),
 PD ("Private Debt"; 441),
 INF ("Infrastructure", 144), 
-NATRES ("Natural Resources", 138).
+NR ("Natural Resources", 138).
 For these fund types we extract all (i) equal-weighted and (ii) fund-size-weighted cash flow series.
 For non-liquidated funds we treat the latest net asset value as final cash flow.
 We explicitly refrain from excluding the most recent vintage years.
@@ -345,20 +400,25 @@ Their five factor model includes: MKT the market excess return, ME the size fact
 
 \subsection{Model and estimator specifications}
 \label{sec:model_selection}
-
-We use an exponential affine SDF model similarly to \cite{KN16}
+We test a simple linear SDF model as in \cite{DLP12}
 \begin{equation}
-\label{eq:SDF}
-\Psi_{t,\tau} (\theta) = 
+\label{eq:linear_sdf}
+\Psi_{\tau,t}^{\mathrm{SL}} (\theta) = 
+\prod_{h=0}^{t}\ \left(1 + \alpha + r_{h} + \sum_j\ \beta_j\ F_{j,h} \right)^{-1}
+\prod_{h=0}^{\tau}\ \left(1 + \alpha + r_{h} + \sum_j\ \beta_j \ F_{j,h} \right)
+\end{equation}
+and an exponential affine SDF model adapted from \cite{KN16}
+\begin{equation}
+\label{eq:expaff_SDF}
+\Psi_{\tau,t}^{\mathrm{EA}} (\theta) = 
 \exp
 \left[
 -
-\sum_{\tau=h}^{t} \left( 1 + r_h^{(\mathrm{free})} + \sum_{j \in J} \theta_{j} \cdot F_{j,h} \right)
+\sum_{h=\tau}^{t} \left( \alpha + \log (1 + r_h) + \sum_{j \in J} \beta_{j} \cdot \log (1 + F_{j,h}) \right)
 \right]
 \end{equation}
-with risk-free return $r^{(\mathrm{free})}$ and zero-net-investment portfolio returns $F_j$.
+with (arithmetic) risk-free return $r$, (arithmetic) zero-net-investment portfolio returns $F_j$, and parameter vector $\theta=(\alpha,\beta)$.
 To avoid overfitting, we just test six simple SDF models that contain \{MKT\} alone or \{MKT\} plus \{ME or IA or ROE or EG or Alpha\}.
-We test two different sets for $\mathcal{T}_i$: they include all quarterly $\tau$ horizons smaller than $\{40, 60\}$ quarters, respectively.
 In equation \ref{eq:estimator}, we use the quadratic loss function $L(x)=x^2$.
 
 To assess the parameter significance, we compute the asymptotic standard errors as outlined in subsection \ref{sec:asymptotic_inference}.
@@ -371,12 +431,15 @@ As larger validation sets are preferred for model selection, the validation set 
 To reduce the dependency between training and validation set, we remove all funds from three-year-adjacent vintage years, i.e., the $h$-block (e.g. 1997, 1998, 1999, 2003, 2004, 2005). 
 Funds from the remaining vintage years enter the training set and are thus used for model estimation (e.g. 1985-1996, 2006-2019).
 We apply ten-fold cross validation using the ten validation sets described in table \ref{tab:hv_block_cv}.
-
+This means, we replace the bootstrap standard error calculation of \cite{DLP12} by $hv$-block cross validation since the new method focuses directly on the out-of-sample performance of the SDF models and, in addition to it, is computationally cheaper.
+ 
 \begin{table}[ht]
 	\centering
 	\begin{tabular}{lllll}
+		training.before & h.block.before & v.block & h.block.after & training.after \\ 
 		\hline
-		training.before & h.block.before & validation & h.block.after & training.after \\ 
+		estimation & remove & validation & remove & estimation \\ 
+		\hline
 		\hline
 		start-1984 & 1985,1986,1987 & 1988,1989,1990 & 1991,1992,1993 & 1994-end \\ 
 		start-1987 & 1988,1989,1990 & 1991,1992,1993 & 1994,1995,1996 & 1997-end \\ 
@@ -389,126 +452,168 @@ We apply ten-fold cross validation using the ten validation sets described in ta
 		start-2008 & 2009,2010,2011 & 2012,2013,2014 & 2015,2016,2017 & 2018-end \\ 
 		start-2011 & 2012,2013,2014 & 2015,2016,2017 & 2018,2019,2020 & 2021-end \\ 
 		\hline
+		\hline
 	\end{tabular}
 	\caption{Partitions used for $hv$-block cross validation.}
 	\label{tab:hv_block_cv}
 \end{table}
 
 
-\subsection{Results}
+\subsection{Simulation study}
+\label{sec:simulation_study}
 
-\subsubsection{Fundwise}
-\label{sec:results_fundwise}
-
-The SDF models estimated on fundwise data with best out-of-sample performance are summarized in table \ref{tab:result_summary}, which condenses the information from tables \ref{tab:ai_40_fw} to \ref{tab:cv_60_ew} that are displayed at the end of this paper.
-We generally analyze the results in a two step procedure: For a given model specification, we use the cross-validation error (i.e., the average out-of-sample error) to select the best model for each fund type, but analyze the corresponding coefficient estimates from the asymptotic inference tables (estimated on the total data set).
-
-Throughout this subsection, we sloppily define the statistical significance of coefficient estimates in terms of a t-ratio $\hat{\theta}[SE(\hat{\theta})]^{-1}$ greater than two.
-
+Our Monte Carlo experiments examine the following questions related to the bias and variance of our estimation methodology in finite samples.
+Is it beneficial to use vintage year portfolios instead of individual funds?
+Which SDF model performs better when we also use the corresponding data generating process (i.e., assume correct model specification)?
+How is estimator precision affected by varying numbers of vintage years or cross-sectional units?
+Which is the optimal set of present value times $\mathcal{T}$?
 
 
+We use historical $q$-investment factors from period 1986 to 2005 and simulate 20 funds for each of these 20 vintage years.
+Each fund contains 15 deals with equal investment amounts and exactly one divestment cash flow.
+Deals are entered within the first five years of fund lifetime following a discrete uniform distribution and afterwards held between one to ten years again uniformly distributed.
+The deal returns are generated by the simple linear or exponential affine SDF models described in equations \ref{eq:linear_sdf} and \ref{eq:expaff_SDF}.
+In the base case, we just use the MKT factor with $\beta_{\mathrm{MKT}}=1$ and in each month add a normal i.i.d. error term with standard deviation $\sigma=0.2$ and zero mean.
+Additionally, we test an intercept term $\alpha$ of -0.25\% per month and a high $\beta_{\mathrm{MKT}}$ of 2.5.
+In the exponential affine case, we adjust the log-normally distributed error mean to zero by subtracting $0.5 \sigma^2$.
+If a negative return exceeds -100\%, the company defaults with a zero exit cash flow.
+In contrast, the error term in the simulations of \cite{DLP12} is more well-behaved as it follows a shifted lognormal distribution that, even with arbitrarily high error term variance, just allows for returns below say -99\%, if the market return is close to its lower bound (see equation 9 in their online appendix).
+In our base case, the set of present value dates $\mathcal{T}$ contains all months from the first cash flow to maximum month 180.
+To assess the bias and variance of our estimator, we simulate 1,000 test scenarios for vintage year portfolios and just 200 test cases when using individual funds due to memory restrictions. 
 
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Tue Apr 14 12:45:27 2020
+
+\paragraph{Cross-sectional unit $i$:}
+As presumed in subsection \ref{sec:cross_sectional_unit}, vintage year portfolio results appear to have lower bias and variance when compared to individual funds.
+For the simple linear SDF and maximum month 180, the mean and standard deviation of the coefficient estimate $\hat{\beta}_{\mathrm{MKT}}$ is 1.016 (0.2) for the vintage year portfolio and 1.096 (0.376) for individual funds. However, for individual funds we just simulate 200 iterations due to the high computational cost.
+
+\paragraph{SDF model $\Psi$:}
+In our base case with vintage year portfolios, the exponential affine SDF shows a mean and standard deviation of 1.011 (0.175) compared to the 1.016 (0.2) achieved by the simple linear SDF.
+Generally, the exponential affine SDF model and the simple linear SDF model exhibit similar bias and variance when comparing panels A and B in table \ref{tab:simulation_study}.
+This indicates that the results are not overly sensitive to the choice of SDF model.
+
+Moreover, the perceived superiority of exponential affine SDFs is probably rather theoretical than practical as other proponents also emphasize their universality mainly from a mathematical perspective without providing supportive empirical or simulation results \citep{GM07,BMP08}.
+%As a side note, the parameter $a$ in the original \cite{KN16} SDF is not the coefficient of constant abnormal performance but used to price the risk-free rate.
+
+\paragraph{Varying vintages $V$ and portfolio sizes $n/V$:}
+To test the effect of varying data sizes available for MKT factor estimation, we in/decrease the (i) number of vintage years and (ii) the number of funds per vintage year (cf. table \ref{tab:simulation_study_size}).
+Here we use vintage year portfolios and the simple linear SDF.
+Increasing the number of deals/funds per vintage year portfolio appears to decrease the estimator's variance more effectively than adding more vintage years.
+However, the bias is almost the same for all tested specifications.
+Generally, we seem to need many new data points to assure a reasonable variance of our estimator.
+
 \begin{table}[ht]
 	\centering
-	\begin{tabular}{rrrrrl}
-		& MKT & SE.MKT & Coef & SE.Coef & Cash Flows \\ 
+	\begin{tabular}{rrrrrrr}
+		& Base & Big $n/V$ & Big $V$ & Big $V$ & Small $V$ & Small $V$ \\ 
 		\hline
 		\hline
-		AI & 117.84 & 730.44 & 134.49 & 773.42 & FW\_fundwise \\ 
-		CV & 121.13 & 68.55 & 143.28 & 72.17 & FW\_fundwise \\ 
+		Start vintage & 1986 & 1986 & 1967 & 1967 & 1986 & 1996 \\ 
+		End vintage & 2005 & 2005 & 2005 & 2005 & 1995 & 2005 \\ 
+		\#Funds per vintage & 20 & 40 & 10 & 20 & 20 & 20 \\ 
 		\hline
-		AI & 103.42 & 642.59 & 112.00 & 703.34 & EW\_fundwise \\ 
-		CV & 106.15 & 46.98 & 117.42 & 48.36 & EW\_fundwise \\ 
-		\hline
-		AI & 96.69 & 4233.90 & 111.66 & 3953.15 & FW\_VYP \\ 
-		CV & 99.09 & 50.86 & 87.40 & 48.04 & FW\_VYP \\ 
-		\hline
-		AI & 94.55 & 4445.19 & 107.09 & 4439.89 & EW\_VYP \\ 
-		CV & 104.60 & 49.18 & 82.02 & 50.86 & EW\_VYP \\ 
+		Mean $\beta_{\mathrm{MKT}}$ & 1.011 & 1.020 & 0.993 & 1.015 & 1.027 & 0.934 \\ 
+		Stdv $\beta_{\mathrm{MKT}}$ & 0.187 & 0.133 & 0.263 & 0.227 & 0.232 & 0.418 \\ 
 		\hline
 		\hline
 	\end{tabular}
-	\caption{Sum of absolute values for selected columns from tables \ref{tab:ai_40_fw} to \ref{tab:ai_60_ew}. AI abbreviates asymptotic inference results, CV cross-validation, EW equal-weighting, FW fund-size-weighting, and VYP vintage year portfolios.} 
-	\label{tab:ai_sum_abs}
+	\caption{Simulation study for varying  number of vintages and number of funds per vintage with true $\beta_{\mathrm{MKT}}=1$, maximum month 180, and 500 simulation iterations.} 
+	\label{tab:simulation_study_size}
 \end{table}
 
 
 
-\paragraph{Asymptotic vs. $hv-$block cross-validation standard errors}
+\paragraph{Size of set $\mathcal{T}$:}
+The results in table \ref{tab:simulation_study} indicate that we can control the bias by 
+an appropriate choice of the set $\mathcal{T}$.
+The bias almost vanishes when we average over all present value dates in the maximal fund lifetime of 180 months. 
+For smaller or larger sets for $\mathcal{T}$ we find increasing bias.
+As outlined in the online appendix, this also holds when we reduce the maximal fund lifetime to 10 years; in this case, the smallest bias is obtained for maximum month 120.
 
-In tables \ref{tab:ai_40_fw}, \ref{tab:ai_60_fw}, \ref{tab:ai_40_ew}, and  \ref{tab:ai_60_ew}, all (!!) coefficient estimates seem to be statistically insignificant as their asymptotic standard errors (with $D=12$)  correspond to t-ratios smaller than two.
-The standard errors obtained by $hv-$block cross-validation, i.e., the empirical standard deviations of the estimates associated with the partitions defined in table \ref{tab:hv_block_cv}, exhibit t-ratios bigger than two for approximately 30\% of cases, especially for almost all single-factor MKT models.
+In table \ref{tab:simulation_study} for both true and false model specifications, the $\alpha$ standard deviation is very high compared to its mean value.
+This may indicate it is rather delicate to empirically determine private equity's historical outperformance by our semiparametric estimator. \newline
 
-\paragraph{Fund-size- vs. equal-weighting}
-
-Here we compare table \ref{tab:ai_40_fw} to \ref{tab:ai_40_ew}, and table \ref{tab:ai_60_fw} to \ref{tab:ai_60_ew}.
-The absolute values of coefficient estimates and also their standard errors seem to be slightly larger for fund-size-weighting than for equal-weighting. 
-This finding holds for both asymptotic and cross-validation results (cf. table \ref{tab:ai_sum_abs}).
-Roughly speaking, we think of equal-weighting as making the cash flow data stationary to obtain more well-behaved estimates.
-
-
-\paragraph{Maximum quarter 40 vs. 60}
-
-Here we compare table \ref{tab:ai_40_fw} to \ref{tab:ai_60_fw}, and table \ref{tab:ai_40_ew} to \ref{tab:ai_60_ew}.
-In both comparisons, for max quarter 60 almost all coefficient estimates are slightly smaller than for max quarter 40.
-This also means negative coefficient estimates tend to be even more negative for max quarter 60.
+To conclude, our simulations study rationalizes two key practices from the \cite{DLP12} paper: (i) vintage year portfolio formation helps to improve estimator precision and (ii) increasing the number of funds per vintage seems to be more effective in controlling estimator variance that increasing the number of vintages\footnote{Finding (ii) may explain the choice of \cite{DLP12} to employ an asymptotic law that lets the number of deals/funds per vintage tend to infinity.}.
+However, our examples with correct specification cannot support the assumption of \cite{KN16} that (iii) the exponential affine SDF is (clearly) superior to the simple liner SDF in a multi-period framework; actually their bias and variances are quite equal.
+Moreover, our simulation study suggests that (iv) averaging pricing errors over multiple dates strikingly reduces the bias inherent to the original procedure of \cite{DLP12} that just discounts all cash flows to the fund inception date.
+Actually, choosing the set $\mathcal{T}$ according to the fund lifetime seems to decrease the bias (and to a lesser extend also the variance) more effectively than all other measures combined.
 
 
-\paragraph{Two-factor models with MKT and Alpha}
 
-Although we explicitly average over the set $\mathcal{T}_{i}$ in equation \ref{eq:average_pricing_error} to mitigate the exploding Alpha issue previously mentioned in \cite{DLP12}, the intercept term results are not exploding but yet problematic.
-For almost all fund types, we observe large absolute values for the alpha coefficient estimates in combination with unreasonable estimates for MKT.
-Specifically, our estimator reveals a steady tendency to explain private equity cash flows with annualized alpha terms larger then 10\% p.a. and negative MKT coefficients.
-Unfortunately, the best SDF models in table \ref{tab:result_summary} for fund type PE exhibit annualized alphas of 11\%, 12\%, and 13\% and negative MKT coefficients in three out of four cases.
-Analyzing all Alpha models from tables \ref{tab:ai_40_fw}, \ref{tab:ai_60_fw}, \ref{tab:ai_40_ew}, and  \ref{tab:ai_60_ew}, only the results for fund type VC seem plausible with decent Alpha estimates and large positive MKT coefficient estimates.
-For this reason we also include the model with second best out-of-sample performance in tables \ref{tab:result_summary} and \ref{tab:result_summary_vyp}, if Alpha is selected as best model.
+\subsection{Empirical results}
 
+Following the conclusions from the previous subsection, we use vintage year portfolios to estimate simple linear SDF models with maximum month 180.
+Asymptotic inference results for the full dataset are exhibited in table \ref{tab:ai_180_FW_VYP_SL} for fund-size weighting and in table \ref{tab:ai_180_EW_VYP_SL} for equal weighting.
+The results for $hv$-block cross-validation are displayed in table \ref{tab:cv_180_FW_VYP_SL} for fund-size weighting and in table \ref{tab:cv_180_EW_VYP_SL} for equal weighting.
+We generally analyze the results in a two step procedure: For a given model specification, we use the cross-validation error (i.e., the average out-of-sample error) to select the best model for each fund type, but analyze the corresponding coefficient estimates from the asymptotic inference tables (estimated on the total data set).
+Therefore, for each fund type the SDF models in the asymptotic inference tables \ref{tab:ai_180_FW_VYP_SL} and \ref{tab:ai_180_EW_VYP_SL} are sorted by the corresponding cross-validation error.
+Throughout this subsection, we define the statistical significance of coefficient estimates in terms of a $t$-ratio $\hat{\theta}[SE(\hat{\theta})]^{-1}$ greater than 1.96.
 
-\paragraph{Kernel bandwidth $D=12$ vs. independence between funds}
+% latex table generated in R 3.4.2 by xtable 1.8-4 package
+% Mon Jun  8 20:27:19 2020
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{rrrrrrrl}
+		& \multicolumn{3}{l}{MKT Factor} & \multicolumn{3}{l}{2nd Factor} &  \\ 
+		& Estim. & SE & SE.indep & Estim. & SE & SE.indep & Weighting \\ 
+		\hline
+		\hline
+		AI & 0.75 & 27.06 & 19.73 & 0.80 & 28.95 & 20.94 & FW\_VYP\_SL \\ 
+		CV & 0.85 & 0.38 &  & 0.59 & 0.51 &  & FW\_VYP\_SL \\ 
+		\hline
+		AI & 0.76 & 26.75 & 16.16 & 0.76 & 11.25 & 6.69 & EW\_VYP\_SL \\ 
+		CV & 0.84 & 0.34 &  & 0.62 & 0.50 &  & EW\_VYP\_SL \\ 
+		\hline
+		\hline
+	\end{tabular}
+	\caption{
+		Top-level overview over tables \ref{tab:ai_180_FW_VYP_SL} to \ref{tab:cv_180_EW_VYP_SL}: Averages of absolute coefficient estimates and standard errors.} 
+	\label{tab:ai_sum_abs}
+\end{table}
 
-In tables \ref{tab:ai_40_fw}, \ref{tab:ai_60_fw}, \ref{tab:ai_40_ew}, and  \ref{tab:ai_60_ew}, the columns "SE.MKT" and "SE.Coef" contain asymptotic standard error estimates for the realistic Bartlett kernel bandwidth of $D=12$ years.
-In this case, the standard errors seem (a) either to be overly conservative so that they are of little practical relevance, (b) or, if they offer a realistic assessment of statistical significance, the number of distinct vintages years $V$ and/or funds $n$ in our data set is too small for meaningful asymptotic approximations.
+Table \ref{tab:ai_sum_abs} helps to get a rough overview over tables \ref{tab:ai_180_FW_VYP_SL} to \ref{tab:cv_180_EW_VYP_SL} as it summarizes their absolute column means.
+We see that the standard errors (SEs) implied by $hv-$block cross-validation are considerably smaller than the asymptotic results.
+Just looking at asymptotic standard errors, fund-size weighting exhibits substantially larger SEs than fund equal-weighting.
+Assuming independence between funds from different vintages decreases asymptotic SEs by approximately 30-40\% when compared to a realistic kernel bandwidth of $D=12$.
+But even these independent SEs rarely imply statistical significance coefficient estimates with $t$-ratios bigger than 1.96.
+In table \ref{tab:ai_180_FW_VYP_SL} with fund-size weighting, just one out of 36 models exhibit significant MKT and second factor estimates.
+In the case of equal-weighting, table \ref{tab:ai_180_EW_VYP_SL} also shows just one significant models out of 36.
 
-The overly optimistic assumption of inter-fund independence corresponds to the case, when just funds with $i=j$ contribute to the asymptotic covariance matrix approximation in equation \ref{eq:hac}.
-As we suppose to underestimate the asymptotic standard errors here, the results of columns "SE.MKT.indep" and "SE.Coef.indep" may be interpreted as lower bounds for the asymptotic standard errors.
-However, even with the assumption of zero inter-vintage-year dependency, just the single-factor MKT models for fund types BO and VC appear to be statistically significant for equal-weighted cash flows.
-The standard error estimates for fund types NATRES and INF with few observations (small $n$) are still very high, which may indicate that we (just) need more fund data (larger $n$) to obtain more reliable results.
-Yet, the methodology developed in this paper may be generally valid.
+In summary, the results reveal very weak two-factor models with MKT plus a second $q$-investment factor.
+As also the simulation results from the previous subsection indicate rather high variance associated with our semiparametric estimator (given the amount of data typically available), we recommend to focus on single MKT factor models even when their asymptotic t-ratios are below 1.96.
+At least the $hv$-block cross validation results imply significant one-factor MKT models for fund types PE, VC, PD, INF. 
+In contrast, RE is just significant for equal-weighting and NR is insignificant for both weighting schemes.
 
+\paragraph{Focus on PE and VC}
 
-\subsubsection{Vintage year portfolios}
-
-We perform the same analyses as in subsection \ref{sec:results_fundwise}, but use vintage year portfolios instead of funds as cross-sectional units which corresponds to the original \cite{DLP12} approach.
-As before the SDF models with best out-of-sample performance are summarized in table \ref{tab:result_summary_vyp}; the underlying data tables can be found in the Internet appendix. 
-
-As can be seen in table \ref{tab:ai_sum_abs}, for the coefficient estimates there is some tendency for smaller absolute values as compared to the fundwise results.
-As expected the asymptotic standard error estimates are now much larger as before, since our naive estimator does not account for the cash flow pooling of multiple funds.
-However, the $hv$-block cross-validation standard errors are in the same magnitude as in the fundwise case: for fund-size weighting they are smaller and for equal-weighting they are slightly larger (cf. table \ref{tab:ai_sum_abs}).
-
-When we compare the cumulative log return paths in figures \ref{fig:sdf_log_returns} and \ref{fig:sdf_log_returns_vyp} of the best SDF models outlined in tables \ref{tab:result_summary} and \ref{tab:result_summary_vyp}, we see that in both instances the return paths are rather smooth with small volatility.
-The best out-of-sample performance is apparently obtained by low volatility SDF models that presumably do not reflect the inherent risk associated with private equity fund investments.
-In accordance with the results from table \ref{tab:ai_sum_abs}, the cumulative SDF returns associated with vintage year portfolios in figure \ref{fig:sdf_log_returns_vyp} are smaller than the fundwise counterparts in figure \ref{fig:sdf_log_returns}.
-In table \ref{tab:result_summary_vyp} the models for fund types PE, PD, and RE tend to be very similar with respect to the factors selected and also their coefficient estimates, which yields very similar SDF paths for these fund types in figure \ref{fig:sdf_log_returns_vyp}.
-
-
+Here, we briefly summarize the one-factor MKT and the two-factor Alpha model estimates for fund types PE (i.e., mainly Buyout and Growth) and VC.
+For PE, all one-factor MKT model $\beta_{\mathrm{MKT}}$ estimates fall in the range from 1.13 to 1.28. 
+If we add an $\alpha$ term, all $\beta_{\mathrm{MKT}}$ estimates decrease to the range 0.61 to 0.77 with annualized $\alpha$ coefficients of approximately positive 4-5\% per year.
+For VC, the one-factor MKT model $\beta_{\mathrm{MKT}}$ estimates are in the range from 0.80 to 1.14.
+If we add an $\alpha$ term, all $\beta_{\mathrm{MKT}}$ estimates strongly increase to the range 1.81 to 2.06 with annualized $\alpha$ coefficients of approximately negative 6-7\% per year.
+These results at least weakly indicate - given the insignificant asymptotic standard errors - that PE funds outperform public markets with a market beta coefficient of less than one which suggest low market risk.
+On the other hand, VC underperforms public markets with market beta coefficients of roughly two which implies high market risk.
 
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-Our least-mean-distance estimator can be easily generalized to estimate SDF models for all kinds of non-traded cash flows.
+Theoretically, our least-mean-distance estimator can be easily generalized to estimate SDF models for all kinds of non-traded cash flows.
 If in data-rich environments asymptotic inference is deemed prudent, the economic distance measure essential for SHAC estimation can include multiple dimensions, e.g., temporal, geographic, and industry sector proximity.
 
-In the data-sparse private equity domain, we strongly advise to always challenge asymptotic inference results by resampling or cross-validation techniques that are adapted to the dependency structure of overlapping fund cash flows.
-However, even their conclusions have to be double-checked, since in our case model selection by $hv$-block cross-validation often chooses unreasonable models with large Alpha and negative MKT coefficients.
+Practically, in the data-sparse private equity domain, we strongly advise to always challenge asymptotic inference results by resampling or cross-validation techniques that are adapted to the dependency structure of overlapping fund cash flows.
+However, even their conclusions should be double-checked, to avoid unreasonable instances,  e.g., where $hv$-block cross-validation chooses  dubious models with negative MKT factor estimates.
 
-Since all two-factor models appear statistically insignificant in our empirically analyses, we conjecture that naive semiparametric estimators like ours shall be exclusively used for a single-MKT-factor SDF until considerably more vintage year information for private equity funds is available.
-If someone wants to estimate more complex SDF models that incorporate additional factors, more structure is needed; e.g., in the form of parametric assumptions for the data generating process like in \cite{ACGP18} or \cite{GSW19}.
-A first modern approach to the same problem is the application of machine learning techniques that regularize/shrink all coefficients other than the MKT factor.
-Secondly, given our weak empirical results, machine learning methods that create a strong learner by combining multiple weak learners seem also worth considering.
+Semiparametric estimators commonly exhibit problematic small sample behavior.
+In accordance, our simulation results prompt us to conclude that the closely related \cite{DLP12} estimator may exhibit more bias and variance than assumed in the original paper.
+Fortunately, at least the bias can be easily reduced by averaging pricing errors over all dates within the fund lifetime.
+Given the amount of currently available data, the fund-level data generating process still seems to be too complex for naive semiparametric estimators like the one analyzed in this paper. 
+Since (basically) all two-factor models' asymptotic standard errors appear statistically insignificant in our empirically analyses, we conjecture that our SDF method shall be exclusively used for a single-MKT-factor SDF until considerably more vintage year information for private equity funds is available.
 
+If someone wants to estimate more complex SDF models that incorporate additional factors, more structure is needed.
+This can be parametric assumptions for the data generating process \citep{ACGP18} or to extract additional information from intermediate net asset values \citep{GSW19,BGG20}.
+A first 'modern' approach to the same problem is the application of machine learning techniques that regularize/shrink all coefficients other than the MKT factor.
+Secondly, given the high estimator variance revealed in the simulation study, machine learning methods that create a strong learner by combining multiple weak learners seem also worth considering (boosting, bagging, model averaging).
+%However, as our least-mean-distance estimator can be perceived as a simple special case of a GMM estimator (with ex-ante fixed identity weighting matrix), we cannot recommend GMM application in our context since even the simpler version delivers merely weak results.
 
 
 %% References
@@ -522,528 +627,309 @@ Secondly, given our weak empirical results, machine learning methods that create
 
 \newpage
 
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Mon Apr 13 13:21:07 2020
+
 \begin{table}[ht]
 	\centering
-	\begin{tabular}{llrrrrrrl}
-		ID & Type & MKT & Alpha.p.a. & ME & IA & ROE & EG & Tables \\ 
+	\begin{tabular}{lrrrrrr}
+		Model==DGP & True & \multicolumn{2}{c}{False} & False & \multicolumn{2}{c}{True} \\
 		\hline
 		\hline
-		FW - 40 & PE & 2.69 &  &  &  &  &  & \ref{tab:ai_40_fw}, \ref{tab:cv_40_fw} \\ 
-		FW - 40 & PE & -0.51 & 0.13 &  &  &  &  &  \\ 
-		FW - 40 & VC & 2.70 &  &  &  &  &  &  \\ 
-		FW - 40 & PD & 1.43 &  &  &  &  & 3.83 &  \\ 
-		FW - 40 & RE & 0.83 &  &  &  &  & 4.30 &  \\ 
-		FW - 40 & NATRES & -0.69 &  &  &  &  & 4.06 &  \\ 
-		FW - 40 & INF & 1.35 &  &  &  & 5.82 &  &  \\ 
-		\hline
-		FW - 60 & PE & 1.88 &  &  & 2.81 &  &  & \ref{tab:ai_60_fw}, \ref{tab:cv_60_fw} \\ 
-		FW - 60 & PE & -0.29 & 0.11 &  &  &  &  &  \\ 
-		FW - 60 & VC & 2.12 &  &  &  &  &  &  \\ 
-		FW - 60 & PD & 1.38 &  &  &  &  & 3.75 &  \\ 
-		FW - 60 & RE & 0.74 &  &  &  &  & 4.11 &  \\ 
-		FW - 60 & NATRES & -1.08 &  &  & 3.40 &  &  &  \\ 
-		FW - 60 & INF & 1.29 &  &  &  & 5.82 &  &  \\ 
+		\multicolumn{7}{l}{} \\
+		\multicolumn{7}{l}{Panel A: simple linear SDF} \\
+		MaxMonth & $\beta=1$ & $\alpha=0$ & $\beta=1$ & $\beta=2.5$ & $\alpha=-0.25$ & $\beta=2.5$ \\ 
 		\hline
 		\hline
-		EW - 40 & PE & 2.33 &  &  & 2.61 &  &  & \ref{tab:ai_40_ew}, \ref{tab:cv_40_ew} \\ 
-		EW - 40 & PE & -0.01 & 0.12 &  &  &  &  &  \\ 
-		EW - 40 & VC & 3.08 &  &  &  &  &  &  \\ 
-		EW - 40 & PD & 1.21 &  &  &  & 1.98 &  &  \\ 
-		EW - 40 & PD & -0.26 & 0.10 &  &  &  &  &  \\ 
-		EW - 40 & RE & 0.67 &  &  &  &  & 3.27 &  \\ 
-		EW - 40 & NATRES & 1.48 &  &  &  &  & 2.27 &  \\ 
-		EW - 40 & INF & 1.20 &  &  &  & 3.92 &  &  \\ 
+		1 - mean & 1.168 & 1625 & 0.003 & 2.023 & 5879 & -16.711 \\ 
+		1 - stdv & 0.269 & 2792 & 9.968 & 0.342 & 866 & 13.347 \\ 
 		\hline
-		EW - 60 & PE & 2.03 &  &  & 2.28 &  &  & \ref{tab:ai_60_ew}, \ref{tab:cv_60_ew} \\ 
-		EW - 60 & VC & 2.20 &  &  &  &  &  &  \\ 
-		EW - 60 & PD & 0.89 &  &  &  & 1.53 &  &  \\ 
-		EW - 60 & RE & 0.56 &  &  &  &  & 3.14 &  \\ 
-		EW - 60 & NATRES & 1.37 &  &  &  &  &  &  \\ 
-		EW - 60 & INF & 1.58 &  &  &  &  &  &  \\ 
+		60 - mean & 1.129 & 0.138 & 0.933 & 2.103 & -0.086 & 2.285 \\ 
+		60 - stdv & 0.242 & 0.245 & 0.363 & 0.302 & 0.253 & 0.406 \\ 
+		\hline
+		120 - mean & 1.058 & 0.112 & 0.906 & 2.063 & -0.085 & 2.239 \\ 
+		120 - stdv & 0.200 & 0.214 & 0.313 & 0.253 & 0.239 & 0.385 \\ 
+		\hline
+		180 - mean & 1.016 & 0.041 & 0.965 & 2.052 & -0.161 & 2.370 \\ 
+		180 - stdv & 0.200 & 0.172 & 0.334 & 0.277 & 0.173 & 0.403 \\ 
+		\hline
+		240 - mean & 0.987 & -0.053 & 1.077 & 2.072 & -0.277 & 2.589 \\ 
+		240 - stdv & 0.223 & 0.162 & 0.361 & 0.326 & 0.118 & 0.375 \\
+		\hline 
+		300 - mean & 0.946 & -0.149 & 1.175 & 2.080 & -0.357 & 2.714 \\ 
+		300 - stdv & 0.235 & 0.174 & 0.377 & 0.398 & 0.114 & 0.366 \\ 
+		\hline
+		360 - mean & 0.895 & -0.245 & 1.269 & 2.048 & -0.461 & 2.859 \\ 
+		360 - stdv & 0.268 & 0.201 & 0.399 & 0.551 & 0.140 & 0.386 \\ 
+		\hline
+		\hline
+		\multicolumn{7}{l}{} \\
+		\multicolumn{7}{l}{Panel B: exponential affine SDF} \\
+		MaxMonth & $\beta=1$ & $\alpha=0$ & $\beta=1$ & $\beta=2.5$ & $\alpha=-0.25$ & $\beta=2.5$ \\ 
+		\hline
+		\hline
+		1 - mean & 1.207 & 203 & 1.276 & 2.256 & 692 & 1.704 \\ 
+		1 - stdv & 0.344 & 314 & 0.710 & 0.290 & 13 & 1.666 \\ 
+		\hline
+		60 - mean & 1.146 & 0.126 & 0.941 & 2.264 & -0.018 & 2.277 \\ 
+		60 - stdv & 0.275 & 0.264 & 0.386 & 0.256 & 0.370 & 0.473 \\ 
+		\hline
+		120 - mean & 1.062 & 0.107 & 0.908 & 2.221 & 0.009 & 2.205 \\ 
+		120 - stdv & 0.200 & 0.237 & 0.333 & 0.187 & 0.357 & 0.448 \\ 
+		\hline
+		180 - mean & 1.011 & 0.027 & 0.971 & 2.182 & -0.136 & 2.358 \\ 
+		180 - stdv & 0.175 & 0.211 & 0.366 & 0.168 & 0.344 & 0.505 \\ 
+		\hline
+		240 - mean & 0.972 & -0.088 & 1.095 & 2.144 & -0.441 & 2.723 \\ 
+		240 - stdv & 0.174 & 0.224 & 0.406 & 0.178 & 0.317 & 0.503 \\ 
+		\hline
+		300 - mean & 0.928 & -0.202 & 1.203 & 2.083 & -0.717 & 2.985 \\ 
+		300 - stdv & 0.181 & 0.253 & 0.426 & 0.254 & 0.340 & 0.513 \\ 
+		\hline
+		360 - mean & 0.874 & -0.319 & 1.304 & 1.685 & -1.095 & 3.272 \\ 
+		360 - stdv & 0.208 & 0.291 & 0.447 & 0.772 & 0.374 & 0.586 \\ 
 		\hline
 		\hline
 	\end{tabular}
-	\caption{Fundwise SDF models with best out-of-sample performance as determined by $hv$-block cross-validation. ID consists of cash flow weighting scheme - maximum quarter. FW denotes fund-size-weighting and EW equal-weighting.} 
-	\label{tab:result_summary}
+	\caption{
+		Simulation study to compare the simple linear with the exponential affine SDF and to determine the optimal size of the set $\mathcal{T}$.
+		Here we always use vintage year portfolios and 1000 simulation iterations.
+		For better readability, $\beta_{\mathrm{MKT}}=\beta$ and all monthly $\alpha$ values are multiplied by 100.
+	} 
+	\label{tab:simulation_study}
 \end{table}
 
 
 
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Mon Apr 13 18:48:38 2020
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{llrrrrrrl}
-		\hline
-		ID & Type & MKT & Alpha.p.a. & ME & IA & ROE & EG & Tables \\ 
-		\hline
-		FW\_VYP - 40 & PE & 1.03 &  &  &  & 2.54 &  &  \\ 
-		FW\_VYP - 40 & VC & 0.69 &  &  &  &  & 1.46 &  \\ 
-		FW\_VYP - 40 & PD & 0.96 &  & 1.37 &  &  &  &  \\ 
-		FW\_VYP - 40 & RE & 0.26 &  &  &  & 3.28 &  &  \\ 
-		FW\_VYP - 40 & NATRES & -0.46 &  &  &  & 2.48 &  &  \\ 
-		FW\_VYP - 40 & NATRES & -2.42 & 0.08 &  &  &  &  &  \\ 
-		FW\_VYP - 40 & INF & 0.52 &  &  &  & 2.88 &  &  \\ 
-		FW\_VYP - 40 & INF & -0.88 & 0.07 &  &  &  &  &  \\ 
-		\hline
-		FW\_VYP - 60 & PE & 1.10 &  &  &  & 2.40 &  &  \\ 
-		FW\_VYP - 60 & VC & 1.14 &  &  & -2.63 &  &  &  \\ 
-		FW\_VYP - 60 & PD & 0.92 &  & 1.36 &  &  &  &  \\ 
-		FW\_VYP - 60 & RE & 0.31 &  &  &  & 3.08 &  &  \\ 
-		FW\_VYP - 60 & NATRES & -0.50 &  &  &  &  & 1.39 &  \\ 
-		FW\_VYP - 60 & INF & 0.38 &  &  &  & 2.89 &  &  \\ 
-		\hline
-		\hline
-		EW\_VYP - 40 & PE & 1.03 &  &  &  & 2.50 &  &  \\ 
-		EW\_VYP - 40 & VC & 1.36 &  &  &  &  & 1.27 &  \\ 
-		EW\_VYP - 40 & PD & 0.92 &  & 1.51 &  &  &  &  \\ 
-		EW\_VYP - 40 & RE & 0.44 &  &  &  & 2.98 &  &  \\ 
-		EW\_VYP - 40 & NATRES & -0.02 &  &  &  & 2.47 &  &  \\ 
-		EW\_VYP - 40 & INF & 1.71 &  &  &  &  &  &  \\ 
-		\hline
-		EW\_VYP - 60 & PE & 1.16 &  &  &  & 2.22 &  &  \\ 
-		EW\_VYP - 60 & VC & 1.34 &  &  &  &  & 1.14 &  \\ 
-		EW\_VYP - 60 & PD & 0.92 &  & 1.36 &  &  &  &  \\ 
-		EW\_VYP - 60 & RE & 0.50 &  &  &  & 2.82 &  &  \\ 
-		EW\_VYP - 60 & NATRES & 0.97 &  &  &  &  &  &  \\ 
-		EW\_VYP - 60 & INF & 1.61 &  &  &  &  &  &  \\ 
-		\hline
-		\hline
-	\end{tabular}
-	\caption{Vintage year portfolio SDF models with best out-of-sample performance as determined by $hv$-block cross-validation. ID consists of cash flow weighting - maximum quarter} 
-	\label{tab:result_summary_vyp}
-\end{table}
-
-
-
-\newpage
-
-
-
-\begin{figure}[h]
-	\centering
-	\includegraphics{eps/0_SDF_realizations_fundwise}
-	\caption{Cumulative log returns for the fundwise SDF models with best out-of-sample performance as displayed in table \ref{tab:result_summary}.
-	}
-	\label{fig:sdf_log_returns}
-\end{figure}
-
-
-\begin{figure}[h]
-	\centering
-	\includegraphics{eps/0_SDF_realizations_vyp}
-	\caption{Cumulative log returns for the vintage year portfolio SDF models with best out-of-sample performance as displayed in table \ref{tab:result_summary_vyp}.
-	}
-	\label{fig:sdf_log_returns_vyp}
-\end{figure}
-
-
-\newpage
-
 
 % latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Mon Apr 13 13:15:14 2020
+% Mon Jun  8 17:19:54 2020
 \begin{table}[ht]
 	\centering
 	\begin{tabular}{lrrrlrrr}
+		 & \multicolumn{3}{l}{MKT Factor} & & \multicolumn{3}{l}{2nd Factor} \\ 
+		Type & Estim. & SE & SE.indep & Factor & Estim. & SE & SE.indep \\ 
 		\hline
-		Type & MKT & SE.MKT & SE.MKT.indep & Factor & Coef & SE.Coef & SE.Coef.indep \\ 
 		\hline
-		PE & 2.69 & 1.80 & 1.28 & MKT &  &  &  \\ 
-		PE & 1.60 & 3.26 & 1.93 & ME & 1.14 & 10.32 & 1.85 \\ 
-		PE & 1.98 & 2.38 & 1.11 & IA & 3.27 & 15.76 & 2.36 \\ 
-		PE & 2.20 & 2.14 & 1.53 & ROE & 3.13 & 4.04 & 0.96 \\ 
-		PE & 2.02 & 3.30 & 1.35 & EG & 3.48 & 7.70 & 1.82 \\ 
-		PE & -0.51 & 7.02 & 0.82 & Alpha & 0.03 & 0.05 & 0.00 \\ 
-		VC & 2.70 & 2.06 & 0.86 & MKT &  &  &  \\ 
-		VC & 3.64 & 8.07 & 1.20 & ME & -1.36 & 10.54 & 1.31 \\ 
-		VC & 2.76 & 1.97 & 0.91 & IA & -1.32 & 7.50 & 1.68 \\ 
-		VC & 2.76 & 1.98 & 0.88 & ROE & -0.41 & 4.54 & 0.98 \\ 
-		VC & 2.74 & 1.98 & 0.89 & EG & -0.33 & 11.41 & 2.09 \\ 
-		VC & 2.79 & 6.41 & 1.14 & Alpha & -0.00 & 0.11 & 0.01 \\ 
-		PD & 1.76 & 35.95 & 37.44 & MKT &  &  &  \\ 
-		PD & 1.37 & 37.36 & 29.40 & ME & 0.55 & 18.77 & 27.28 \\ 
-		PD & 1.67 & 15.07 & 5.13 & IA & 0.68 & 8.98 & 12.24 \\ 
-		PD & 1.99 & 8.87 & 2.74 & ROE & 2.48 & 16.81 & 7.18 \\ 
-		PD & 1.43 & 1.45 & 3.55 & EG & 3.83 & 16.98 & 9.35 \\ 
-		PD & 0.57 & 16.29 & 4.13 & Alpha & 0.02 & 0.02 & 0.01 \\ 
-		RE & 1.40 & 2.04 & 1.10 & MKT &  &  &  \\ 
-		RE & 0.11 & 7.49 & 1.60 & ME & 1.55 & 6.05 & 1.58 \\ 
-		RE & 1.23 & 3.32 & 2.15 & IA & 0.94 & 11.60 & 6.57 \\ 
-		RE & 1.25 & 2.08 & 1.65 & ROE & 3.45 & 3.17 & 1.08 \\ 
-		RE & 0.83 & 3.13 & 2.14 & EG & 4.30 & 2.71 & 4.61 \\ 
-		RE & -1.59 & 3.28 & 0.53 & Alpha & 0.03 & 0.02 & 0.00 \\ 
-		NATRES & -0.21 & 1.29 & 2.65 & MKT &  &  &  \\ 
-		NATRES & -1.10 & 8.57 & 3.15 & ME & 1.08 & 8.95 & 5.50 \\ 
-		NATRES & -0.97 & 2.92 & 2.33 & IA & 3.43 & 4.26 & 3.91 \\ 
-		NATRES & -0.31 & 1.71 & 2.51 & ROE & 3.15 & 3.05 & 3.02 \\ 
-		NATRES & -0.69 & 2.47 & 2.35 & EG & 4.06 & 2.94 & 2.84 \\ 
-		NATRES & -2.25 & 31.58 & 12.43 & Alpha & 0.02 & 0.30 & 0.13 \\ 
-		INF & 2.37 & 3.52 & 2.40 & MKT &  &  &  \\ 
-		INF & 4.08 & 53.41 & 19.62 & ME & -2.54 & 55.02 & 18.69 \\ 
-		INF & 1.62 & 1.00 & 2.04 & IA & 3.72 & 3.40 & 4.50 \\ 
-		INF & 1.35 & 12.95 & 8.12 & ROE & 5.82 & 25.40 & 28.23 \\ 
-		INF & 1.65 & 1.23 & 2.47 & EG & 5.40 & 1.64 & 5.71 \\ 
-		INF & -0.79 & 64.56 & 18.25 & Alpha & 0.03 & 0.21 & 0.07 \\ 
+PE & 0.709 & 2.470 & 1.153 & EG & 0.807 & 4.693 & 1.960 \\ 
+PE & 0.770 & 7.976 & 3.348 & ROE & 1.540 & 5.140 & 3.499 \\ 
+PE & 1.126 & 1.003 & 0.868 & MKT & 1.126 & 1.003 & 0.868 \\ 
+PE & 0.644 & 1.234 & 0.585 & Alpha & 0.003 & 0.036 & 0.013 \\ 
+PE & 1.121 & 1.023 & 0.897 & ME & 0.074 & 2.021 & 0.915 \\ 
+PE & 1.158 & 1.125 & 1.068 & IA & -0.338 & 2.499 & 1.259 \\
+\hline 
+VC & 1.053 & 4.150 & 2.733 & IA & -1.959 & 2.100 & 1.767 \\ 
+VC & 1.114 & 3.861 & 2.894 & ME & -1.383 & 5.102 & 2.211 \\ 
+VC & 1.806 & 11.391 & 4.279 & Alpha & -0.006 & 0.124 & 0.046 \\ 
+VC & 0.801 & 704.455 & 561.598 & MKT & 0.801 & 704.455 & 561.598 \\ 
+VC & 1.429 & 8.073 & 3.219 & ROE & -1.306 & 18.055 & 6.919 \\ 
+VC & 1.507 & 17.322 & 6.966 & EG & -0.904 & 15.344 & 5.737 \\ 
+\hline
+PD & 0.885 & 1.040 & 1.242 & MKT & 0.885 & 1.040 & 1.242 \\ 
+PD & 0.660 & 0.095 & 0.039 & Alpha & 0.002 & 0.001 & 0.000 \\ 
+PD & 0.826 & 1.707 & 1.443 & EG & 0.143 & 20.341 & 7.506 \\ 
+PD & 0.849 & 2.921 & 2.146 & ME & 0.301 & 2.739 & 1.518 \\ 
+PD & 0.887 & 1.378 & 1.244 & ROE & -0.023 & 6.925 & 2.553 \\ 
+PD & 0.863 & 2.942 & 2.224 & IA & 0.247 & 5.306 & 3.607 \\ 
+\hline
+RE & 0.578 & 1.827 & 1.196 & MKT & 0.578 & 1.827 & 1.196 \\ 
+RE & 1.303 & 5.463 & 2.259 & Alpha & -0.006 & 0.088 & 0.034 \\ 
+RE & 0.200 & 2.598 & 1.356 & ROE & 3.118 & 2.579 & 6.629 \\ 
+RE & 0.202 & 3.297 & 1.965 & EG & 0.844 & 2.478 & 1.828 \\ 
+RE & 0.756 & 3.043 & 2.192 & IA & -1.938 & 1.879 & 0.783 \\ 
+RE & 0.887 & 1.167 & 0.858 & ME & -2.059 & 1.300 & 0.563 \\ 
+\hline
+NR & -0.215 & 2.367 & 1.976 & EG & 0.909 & 14.505 & 7.475 \\ 
+NR & 0.191 & 3.136 & 4.242 & MKT & 0.191 & 3.136 & 4.242 \\ 
+NR & -0.674 & 58.003 & 24.234 & Alpha & 0.008 & 0.230 & 0.098 \\ 
+NR & -0.020 & 0.954 & 2.210 & ROE & 1.128 & 4.830 & 5.066 \\ 
+NR & 0.143 & 3.236 & 4.116 & IA & -0.768 & 1.808 & 2.154 \\ 
+NR & 0.212 & 4.209 & 5.450 & ME & -0.575 & 1.603 & 1.252 \\ 
+\hline
+INF & 0.824 & 3.201 & 2.815 & MKT & 0.824 & 3.201 & 2.815 \\ 
+INF & 0.190 & 7.133 & 3.288 & Alpha & 0.005 & 0.030 & 0.025 \\ 
+INF & 0.317 & 23.904 & 10.658 & EG & 0.848 & 45.836 & 20.176 \\ 
+INF & 0.470 & 9.316 & 4.237 & ROE & 1.245 & 5.531 & 6.134 \\ 
+INF & 0.778 & 5.951 & 5.424 & ME & -0.811 & 3.712 & 4.349 \\ 
+INF & 0.661 & 61.329 & 33.819 & IA & -1.108 & 150.713 & 85.733 \\ 
+		\hline
 		\hline
 	\end{tabular}
-	\caption{Asymptotic inference with fund-size-weighting, max quarter 40, and $D=12$.} 
-	\label{tab:ai_40_fw}
+	\caption{Asymptotic inference with FW-VYP-SL max month 180, and $D=12$.} 
+	\label{tab:ai_180_FW_VYP_SL}
 \end{table}
 
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Mon Apr 13 13:15:14 2020
+
 \begin{table}[ht]
 	\centering
-	\begin{tabular}{lrrlrrl}
+	\begin{tabular}{lrrlrrr}
+		 & \multicolumn{2}{l}{MKT Factor} & & \multicolumn{2}{l}{2nd Factor} & \\ 
+		Type & Mean & SD & Factor & Mean & SD & CV-error \\ 
 		\hline
-		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & validation.error \\ 
 		\hline
-		PE & -0.09 & 0.84 & Alpha & 0.03 & 0.00 & 800 \\ 
-		PE & 2.38 & 0.64 & EG & 3.28 & 0.40 & 1023 \\ 
-		PE & 2.50 & 0.87 & IA & 3.30 & 1.59 & 985 \\ 
-		PE & 2.21 & 0.83 & ME & 1.20 & 0.67 & 1064 \\ 
-		PE & 3.07 & 0.75 & MKT & 3.07 & 0.75 & 948 \\ 
-		PE & 2.30 & 0.25 & ROE & 3.11 & 0.57 & 1261 \\ 
-		VC & 3.28 & 1.12 & ME & -0.88 & 1.14 & 690 \\ 
-		VC & 2.70 & 0.63 & IA & -0.76 & 1.75 & 635 \\ 
-		VC & 2.80 & 0.59 & MKT & 2.80 & 0.59 & 592 \\ 
-		VC & 2.68 & 0.82 & EG & 0.18 & 1.91 & 653 \\ 
-		VC & 2.35 & 1.93 & Alpha & 0.00 & 0.02 & 798 \\ 
-		VC & 2.75 & 0.83 & ROE & 0.02 & 1.64 & 713 \\ 
-		PD & 0.37 & 0.39 & Alpha & 0.02 & 0.00 & 869 \\ 
-		PD & 1.38 & 0.20 & EG & 3.74 & 0.22 & 859 \\ 
-		PD & 1.60 & 0.32 & IA & 1.36 & 1.95 & 1074 \\ 
-		PD & 1.40 & 0.56 & ME & 0.61 & 0.92 & 1117 \\ 
-		PD & 1.67 & 0.35 & MKT & 1.67 & 0.35 & 1083 \\ 
-		PD & 1.75 & 0.48 & ROE & 2.54 & 0.18 & 1021 \\ 
-		RE & 1.36 & 1.41 & EG & 3.77 & 2.14 & 2275 \\ 
-		RE & -1.20 & 1.16 & Alpha & 0.03 & 0.01 & 2332 \\ 
-		RE & 1.53 & 1.70 & IA & 2.26 & 2.17 & 2650 \\ 
-		RE & 0.70 & 1.38 & ME & 1.67 & 0.69 & 2587 \\ 
-		RE & 1.94 & 1.33 & MKT & 1.94 & 1.33 & 2633 \\ 
-		RE & 1.51 & 0.94 & ROE & 3.46 & 1.34 & 3956 \\ 
-		NATRES & -2.01 & 0.87 & Alpha & 0.02 & 0.01 & 2823 \\ 
-		NATRES & -0.28 & 0.86 & EG & 3.78 & 1.13 & 2757 \\ 
-		NATRES & -0.09 & 0.57 & ROE & 3.15 & 0.54 & 3020 \\ 
-		NATRES & 0.20 & 0.80 & MKT & 0.20 & 0.80 & 2840 \\ 
-		NATRES & -0.42 & 1.01 & IA & 3.75 & 0.60 & 2902 \\ 
-		NATRES & -0.65 & 0.94 & ME & 1.04 & 0.61 & 2982 \\ 
-		INF & 0.10 & 1.06 & Alpha & 0.03 & 0.01 & 2931 \\ 
-		INF & 3.96 & 2.68 & ME & -1.47 & 1.61 & 3803 \\ 
-		INF & 2.51 & 1.52 & IA & 4.28 & 4.52 & 4911 \\ 
-		INF & 1.76 & 0.94 & ROE & 5.28 & 0.89 & 1896 \\ 
-		INF & 3.37 & 2.20 & MKT & 3.37 & 2.20 & 4539 \\ 
-		INF & 2.74 & 2.03 & EG & 5.13 & 1.24 & 4686 \\ 
+PE & 0.867 & 0.276 & EG & 0.720 & 0.137 & 112808.000 \\ 
+PE & 0.927 & 0.305 & ROE & 1.375 & 0.420 & 126801.000 \\ 
+PE & 1.276 & 0.296 & MKT & 1.276 & 0.296 & 151964.000 \\ 
+PE & 0.772 & 0.238 & Alpha & 0.004 & 0.002 & 154805.000 \\ 
+PE & 1.317 & 0.396 & ME & 0.236 & 0.664 & 209319.000 \\ 
+PE & 1.311 & 0.370 & IA & 0.014 & 0.703 & 210650.000 \\ 
+\hline
+VC & 1.045 & 0.126 & IA & -1.890 & 0.238 & 11858.000 \\ 
+VC & 1.172 & 0.126 & ME & -1.448 & 0.263 & 13301.000 \\ 
+VC & 1.930 & 0.356 & Alpha & -0.005 & 0.001 & 17723.000 \\ 
+VC & 0.804 & 0.363 & MKT & 0.804 & 0.363 & 21852.000 \\ 
+VC & 1.527 & 0.517 & ROE & -0.972 & 0.679 & 26680.000 \\ 
+VC & 1.646 & 0.678 & EG & -0.644 & 0.556 & 32730.000 \\ 
+\hline
+PD & 0.887 & 0.039 & MKT & 0.887 & 0.039 & 7368.000 \\ 
+PD & 0.567 & 0.202 & Alpha & 0.003 & 0.001 & 7917.000 \\ 
+PD & 0.763 & 0.113 & EG & 0.229 & 0.141 & 8758.000 \\ 
+PD & 0.862 & 0.103 & ME & 0.342 & 0.256 & 9834.000 \\ 
+PD & 0.812 & 0.153 & ROE & 0.258 & 0.394 & 11522.000 \\ 
+PD & 0.914 & 0.211 & IA & 0.472 & 0.424 & 18096.000 \\
+\hline 
+RE & 0.722 & 0.392 & MKT & 0.722 & 0.392 & 50900.000 \\ 
+RE & 1.288 & 0.345 & Alpha & -0.004 & 0.005 & 51437.000 \\ 
+RE & 0.389 & 0.446 & ROE & 2.333 & 1.507 & 54689.000 \\ 
+RE & 0.465 & 0.470 & EG & 0.448 & 0.629 & 59316.000 \\ 
+RE & 0.847 & 0.411 & IA & -1.262 & 1.160 & 65835.000 \\ 
+RE & 0.983 & 0.350 & ME & -1.467 & 1.298 & 66827.000 \\ 
+\hline
+NR & -0.047 & 0.421 & EG & 0.657 & 0.557 & 10559.000 \\ 
+NR & 0.318 & 0.321 & MKT & 0.318 & 0.321 & 11480.000 \\ 
+NR & -0.335 & 0.763 & Alpha & 0.006 & 0.005 & 11854.000 \\ 
+NR & 0.136 & 0.466 & ROE & 0.844 & 1.062 & 13296.000 \\ 
+NR & 0.270 & 0.508 & IA & -0.288 & 1.124 & 14479.000 \\ 
+NR & 0.416 & 0.587 & ME & 0.032 & 1.079 & 15789.000 \\ 
+\hline
+INF & 0.862 & 0.320 & MKT & 0.862 & 0.320 & 14551.000 \\ 
+INF & 0.639 & 0.753 & Alpha & 0.002 & 0.004 & 15069.000 \\ 
+INF & 0.766 & 0.626 & EG & 0.258 & 0.495 & 16004.000 \\ 
+INF & 0.837 & 0.504 & ROE & 0.090 & 0.939 & 18472.000 \\ 
+INF & 0.868 & 0.412 & ME & 0.078 & 0.643 & 18514.000 \\ 
+INF & 0.892 & 0.561 & IA & 0.081 & 1.073 & 23162.000 \\ 
 		\hline
-	\end{tabular}
-	\caption{$hv$-block cross-validation with fund-size-weighting and max quarter 40.} 
-	\label{tab:cv_40_fw}
-\end{table}
-
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Mon Apr 13 13:15:14 2020
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{lrrrlrrr}
-		\hline
-		Type & MKT & SE.MKT & SE.MKT.indep & Factor & Coef & SE.Coef & SE.Coef.indep \\ 
-		\hline
-		PE & 2.51 & 1.89 & 1.48 & MKT &  &  &  \\ 
-		PE & 1.47 & 5.59 & 1.82 & ME & 1.07 & 10.74 & 1.80 \\ 
-		PE & 1.88 & 5.47 & 1.39 & IA & 2.81 & 18.45 & 2.45 \\ 
-		PE & 2.10 & 4.48 & 1.95 & ROE & 2.34 & 7.25 & 1.47 \\ 
-		PE & 1.97 & 3.85 & 1.70 & EG & 2.67 & 15.01 & 2.70 \\ 
-		PE & -0.29 & 8.45 & 1.22 & Alpha & 0.03 & 0.08 & 0.01 \\ 
-		VC & 2.12 & 1.43 & 0.94 & MKT &  &  &  \\ 
-		VC & 3.56 & 8.69 & 1.26 & ME & -1.78 & 11.52 & 1.32 \\ 
-		VC & 2.22 & 1.62 & 0.93 & IA & -2.11 & 8.48 & 1.60 \\ 
-		VC & 2.42 & 1.54 & 0.81 & ROE & -1.45 & 4.83 & 0.81 \\ 
-		VC & 2.44 & 1.93 & 0.89 & EG & -1.99 & 7.76 & 1.22 \\ 
-		VC & 2.92 & 10.44 & 1.57 & Alpha & -0.01 & 0.03 & 0.01 \\ 
-		PD & 1.67 & 14.12 & 11.35 & MKT &  &  &  \\ 
-		PD & 1.27 & 10.15 & 13.21 & ME & 0.56 & 134.15 & 31.84 \\ 
-		PD & 1.50 & 15.04 & 4.94 & IA & 1.31 & 9.34 & 12.21 \\ 
-		PD & 1.86 & 6.79 & 2.10 & ROE & 2.19 & 8.68 & 5.84 \\ 
-		PD & 1.38 & 1.44 & 3.55 & EG & 3.75 & 17.39 & 9.38 \\ 
-		PD & 0.53 & 33.47 & 9.06 & Alpha & 0.02 & 0.13 & 0.03 \\ 
-		RE & 1.30 & 2.58 & 1.82 & MKT &  &  &  \\ 
-		RE & 0.26 & 7.13 & 1.78 & ME & 1.25 & 5.02 & 1.76 \\ 
-		RE & 1.13 & 2.99 & 2.24 & IA & 0.86 & 10.15 & 6.38 \\ 
-		RE & 1.13 & 2.11 & 1.95 & ROE & 2.77 & 4.38 & 1.31 \\ 
-		RE & 0.74 & 3.45 & 2.27 & EG & 4.11 & 2.80 & 4.78 \\ 
-		RE & -1.32 & 11.78 & 2.36 & Alpha & 0.03 & 0.03 & 0.01 \\ 
-		NATRES & -0.32 & 1.75 & 2.62 & MKT &  &  &  \\ 
-		NATRES & -0.85 & 22.11 & 11.30 & ME & 0.64 & 27.06 & 16.10 \\ 
-		NATRES & -1.08 & 3.43 & 2.32 & IA & 3.40 & 4.46 & 3.86 \\ 
-		NATRES & -0.41 & 1.91 & 2.48 & ROE & 2.72 & 3.32 & 3.16 \\ 
-		NATRES & -0.73 & 2.63 & 2.40 & EG & 3.50 & 4.12 & 5.59 \\ 
-		NATRES & -2.10 & 29.82 & 12.47 & Alpha & 0.02 & 0.28 & 0.13 \\ 
-		INF & 2.27 & 3.12 & 2.32 & MKT &  &  &  \\ 
-		INF & 3.98 & 53.63 & 19.75 & ME & -2.55 & 53.93 & 18.29 \\ 
-		INF & 1.48 & 1.91 & 1.96 & IA & 4.03 & 2.43 & 4.20 \\ 
-		INF & 1.29 & 21.01 & 10.81 & ROE & 5.82 & 25.08 & 24.50 \\ 
-		INF & 1.61 & 1.61 & 3.02 & EG & 5.35 & 1.62 & 5.74 \\ 
-		INF & -0.68 & 57.21 & 17.12 & Alpha & 0.03 & 0.03 & 0.01 \\ 
 		\hline
 	\end{tabular}
-	\caption{Asymptotic inference with fund-size-weighting, max quarter 60, and $D=12$.} 
-	\label{tab:ai_60_fw}
-\end{table}
-
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Mon Apr 13 13:15:14 2020
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{lrrlrrl}
-		\hline
-		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & validation.error \\ 
-		\hline
-		PE & -0.09 & 0.54 & Alpha & 0.03 & 0.00 & 948 \\ 
-		PE & 2.07 & 0.34 & EG & 2.53 & 0.43 & 1138 \\ 
-		PE & 2.10 & 0.45 & IA & 2.63 & 1.60 & 1009 \\ 
-		PE & 1.83 & 0.58 & ME & 1.04 & 0.55 & 1063 \\ 
-		PE & 2.64 & 0.43 & MKT & 2.64 & 0.43 & 1015 \\ 
-		PE & 2.02 & 0.26 & ROE & 2.32 & 0.35 & 1560 \\ 
-		VC & 2.17 & 0.44 & MKT & 2.17 & 0.44 & 654 \\ 
-		VC & 2.29 & 0.61 & EG & -1.50 & 2.12 & 738 \\ 
-		VC & 2.40 & 1.81 & Alpha & -0.00 & 0.02 & 931 \\ 
-		VC & 3.14 & 1.01 & ME & -1.34 & 1.16 & 755 \\ 
-		VC & 2.08 & 0.50 & IA & -1.75 & 2.57 & 729 \\ 
-		VC & 2.33 & 0.64 & ROE & -1.00 & 1.58 & 800 \\ 
-		PD & 0.32 & 0.43 & Alpha & 0.02 & 0.00 & 1093 \\ 
-		PD & 1.27 & 0.31 & EG & 3.53 & 0.52 & 1084 \\ 
-		PD & 1.40 & 0.40 & IA & 1.80 & 1.53 & 1159 \\ 
-		PD & 1.32 & 0.71 & ME & 0.49 & 0.91 & 1256 \\ 
-		PD & 1.51 & 0.51 & MKT & 1.51 & 0.51 & 1233 \\ 
-		PD & 1.61 & 0.54 & ROE & 2.26 & 0.23 & 1289 \\ 
-		RE & 1.17 & 1.64 & IA & 2.15 & 2.44 & 2885 \\ 
-		RE & 0.63 & 1.19 & ME & 1.23 & 0.69 & 2770 \\ 
-		RE & 1.04 & 1.34 & EG & 3.58 & 1.91 & 2488 \\ 
-		RE & -1.12 & 1.03 & Alpha & 0.03 & 0.01 & 2949 \\ 
-		RE & 1.60 & 1.27 & MKT & 1.60 & 1.27 & 2839 \\ 
-		RE & 1.28 & 1.05 & ROE & 2.85 & 1.25 & 4120 \\ 
-		NATRES & -1.89 & 0.68 & Alpha & 0.02 & 0.00 & 3010 \\ 
-		NATRES & -0.44 & 0.68 & EG & 3.22 & 1.15 & 2880 \\ 
-		NATRES & -0.68 & 0.78 & IA & 3.62 & 0.46 & 2770 \\ 
-		NATRES & -0.56 & 0.72 & ME & 0.63 & 0.53 & 2882 \\ 
-		NATRES & -0.29 & 0.44 & ROE & 2.72 & 0.65 & 3567 \\ 
-		NATRES & -0.03 & 0.62 & MKT & -0.03 & 0.62 & 2793 \\ 
-		INF & 0.21 & 1.09 & Alpha & 0.03 & 0.01 & 3694 \\ 
-		INF & 1.72 & 0.95 & ROE & 5.22 & 0.95 & 2265 \\ 
-		INF & 3.33 & 2.26 & MKT & 3.33 & 2.26 & 4828 \\ 
-		INF & 2.73 & 2.08 & EG & 5.13 & 1.21 & 5396 \\ 
-		INF & 3.86 & 2.77 & ME & -1.43 & 1.68 & 4019 \\ 
-		INF & 2.35 & 1.65 & IA & 4.72 & 3.66 & 5131 \\ 
-		\hline
-	\end{tabular}
-	\caption{$hv$-block cross-validation with fund-size-weighting and max quarter 60.} 
-	\label{tab:cv_60_fw}
+	\caption{$hv$-block cross-validation with FW-VYP-SL weighting and max month 180.} 
+	\label{tab:cv_180_FW_VYP_SL}
 \end{table}
 
 
-
 % latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Mon Apr 13 15:21:32 2020
+% Mon Jun  8 17:44:27 2020
 \begin{table}[ht]
 	\centering
 	\begin{tabular}{lrrrlrrr}
+		 & \multicolumn{3}{l}{MKT Factor} & & \multicolumn{3}{l}{2nd Factor} \\ 
+		Type & Estim. & SE & SE.indep & Factor & Estim. & SE & SE.indep \\ 
 		\hline
-		Type & MKT & SE.MKT & SE.MKT.indep & Factor & Coef & SE.Coef & SE.Coef.indep \\ 
 		\hline
-		PE & 2.74 & 1.36 & 0.52 & MKT &  &  &  \\ 
-		PE & 1.66 & 0.04 & 0.00 & ME & 1.42 & 0.01 & 0.00 \\ 
-		PE & 2.33 & 1.09 & 0.42 & IA & 2.61 & 7.63 & 0.94 \\ 
-		PE & 2.06 & 2.59 & 0.65 & ROE & 2.19 & 4.07 & 0.61 \\ 
-		PE & 2.15 & 2.08 & 0.54 & EG & 2.70 & 6.66 & 1.10 \\ 
-		PE & -0.01 & 27.12 & 1.47 & Alpha & 0.03 & 0.09 & 0.01 \\ 
-		VC & 3.08 & 1.51 & 0.49 & MKT &  &  &  \\ 
-		VC & 3.50 & 4.31 & 0.69 & ME & -1.65 & 6.31 & 0.72 \\ 
-		VC & 2.91 & 1.38 & 0.56 & IA & -1.92 & 4.40 & 1.34 \\ 
-		VC & 3.23 & 1.74 & 0.52 & ROE & -1.29 & 3.49 & 0.79 \\ 
-		VC & 3.08 & 1.47 & 0.49 & EG & 0.18 & 7.47 & 1.65 \\ 
-		VC & 3.49 & 5.50 & 0.55 & Alpha & -0.01 & 0.03 & 0.00 \\ 
-		PD & 1.55 & 6.22 & 2.66 & MKT &  &  &  \\ 
-		PD & 0.50 & 22.42 & 4.84 & ME & 1.62 & 12.69 & 4.67 \\ 
-		PD & 1.13 & 8.42 & 2.05 & IA & 3.43 & 11.35 & 4.30 \\ 
-		PD & 1.21 & 4.93 & 2.39 & ROE & 1.98 & 7.79 & 2.76 \\ 
-		PD & 1.17 & 13.58 & 5.44 & EG & 3.16 & 10.23 & 10.14 \\ 
-		PD & -0.26 & 1.72 & 0.25 & Alpha & 0.02 & 0.01 & 0.00 \\ 
-		RE & 1.13 & 3.64 & 1.28 & MKT &  &  &  \\ 
-		RE & 0.17 & 7.75 & 1.38 & ME & 1.20 & 4.19 & 1.37 \\ 
-		RE & 0.92 & 2.74 & 1.13 & IA & 1.24 & 10.30 & 3.07 \\ 
-		RE & 0.71 & 4.01 & 1.43 & ROE & 2.68 & 3.81 & 0.97 \\ 
-		RE & 0.67 & 5.16 & 1.45 & EG & 3.27 & 3.75 & 2.83 \\ 
-		RE & -1.30 & 7.86 & 0.84 & Alpha & 0.03 & 0.03 & 0.00 \\ 
-		NATRES & 1.92 & 2.40 & 1.47 & MKT &  &  &  \\ 
-		NATRES & 1.01 & 8.90 & 11.40 & ME & 1.37 & 12.18 & 16.33 \\ 
-		NATRES & 1.61 & 18.93 & 13.81 & IA & 2.07 & 163.96 & 115.42 \\ 
-		NATRES & 1.59 & 1.43 & 1.76 & ROE & 1.92 & 4.67 & 3.46 \\ 
-		NATRES & 1.48 & 11.76 & 9.51 & EG & 2.27 & 85.24 & 71.19 \\ 
-		NATRES & -0.05 & 6.80 & 2.94 & Alpha & 0.02 & 0.08 & 0.04 \\ 
-		INF & 1.69 & 1.74 & 4.30 & MKT &  &  &  \\ 
-		INF & 0.90 & 8.81 & 4.23 & ME & 1.05 & 7.87 & 5.74 \\ 
-		INF & 1.71 & 3.83 & 6.06 & IA & -0.12 & 14.76 & 11.99 \\ 
-		INF & 1.20 & 9.61 & 4.51 & ROE & 3.92 & 27.10 & 15.10 \\ 
-		INF & 1.18 & 9.84 & 5.94 & EG & 3.35 & 11.00 & 17.20 \\ 
-		INF & -0.77 & 18.40 & 4.34 & Alpha & 0.03 & 0.01 & 0.00 \\ 
+PE & 0.775 & 0.638 & 0.550 & EG & 0.667 & 5.558 & 2.125 \\ 
+PE & 0.610 & 1.064 & 0.387 & Alpha & 0.004 & 0.006 & 0.002 \\ 
+PE & 0.826 & 20.352 & 8.308 & ROE & 1.087 & 33.514 & 12.143 \\ 
+PE & 1.134 & 1.050 & 0.694 & MKT & 1.134 & 1.050 & 0.694 \\ 
+PE & 1.146 & 1.001 & 0.638 & IA & -0.386 & 1.909 & 0.813 \\ 
+PE & 1.134 & 1.048 & 0.702 & ME & -0.014 & 1.797 & 0.736 \\ 
+\hline
+VC & 1.181 & 24.418 & 16.693 & ME & -1.277 & 4.928 & 4.352 \\ 
+VC & 1.137 & 7.259 & 6.057 & IA & -1.553 & 3.716 & 2.139 \\ 
+VC & 1.956 & 4.189 & 1.520 & Alpha & -0.006 & 0.335 & 0.117 \\ 
+VC & 1.034 & 2.205 & 1.758 & MKT & 1.034 & 2.205 & 1.758 \\ 
+VC & 1.488 & 1.801 & 0.941 & ROE & -1.148 & 4.060 & 1.424 \\ 
+VC & 1.535 & 2.821 & 1.336 & EG & -0.754 & 3.626 & 1.260 \\ 
+\hline
+PD & 0.844 & 1.245 & 0.856 & MKT & 0.844 & 1.245 & 0.856 \\ 
+PD & 0.502 & 0.044 & 0.015 & Alpha & 0.003 & 0.000 & 0.000 \\ 
+PD & 0.791 & 2.478 & 1.557 & ROE & 0.222 & 5.024 & 1.966 \\ 
+PD & 0.736 & 2.230 & 1.303 & EG & 0.213 & 6.296 & 2.374 \\ 
+PD & 0.844 & 1.150 & 0.837 & IA & 0.076 & 2.543 & 1.416 \\ 
+PD & 0.833 & 1.978 & 1.362 & ME & 0.323 & 1.845 & 0.986 \\ 
+\hline
+RE & 0.743 & 3.471 & 2.075 & MKT & 0.743 & 3.471 & 2.075 \\ 
+RE & 1.265 & 7.581 & 3.331 & Alpha & -0.004 & 0.046 & 0.017 \\ 
+RE & 0.145 & 3.486 & 1.614 & ROE & 3.202 & 17.447 & 7.413 \\ 
+RE & 0.400 & 50.493 & 31.818 & EG & 0.700 & 48.813 & 29.195 \\ 
+RE & 0.884 & 4.928 & 2.813 & ME & -1.782 & 1.474 & 0.605 \\ 
+RE & 0.795 & 18.146 & 10.282 & IA & -1.712 & 13.199 & 7.657 \\ 
+\hline
+NR & -0.056 & 3.693 & 1.897 & ROE & 1.934 & 3.154 & 2.287 \\ 
+NR & 0.000 & 4.771 & 2.368 & EG & 0.814 & 1.368 & 1.753 \\ 
+NR & 0.425 & 3.370 & 5.178 & MKT & 0.425 & 3.370 & 5.178 \\ 
+NR & -0.272 & 39.463 & 16.698 & Alpha & 0.006 & 0.202 & 0.081 \\ 
+NR & 0.394 & 0.871 & 1.401 & IA & -0.319 & 1.734 & 1.169 \\ 
+NR & 0.453 & 15.719 & 24.377 & ME & 0.432 & 5.574 & 8.016 \\ 
+\hline
+INF & 0.098 & 0.055 & 0.025 & Alpha & 0.006 & 0.001 & 0.000 \\ 
+INF & 0.280 & 20.158 & 8.983 & EG & 0.893 & 21.368 & 9.700 \\ 
+INF & 0.775 & 19.273 & 22.509 & MKT & 0.775 & 19.273 & 22.509 \\ 
+INF & 0.469 & 26.226 & 12.751 & ROE & 1.030 & 30.728 & 16.129 \\ 
+INF & 0.758 & 33.453 & 36.239 & ME & -0.804 & 16.214 & 16.161 \\ 
+INF & 0.664 & 630.801 & 351.730 & IA & -0.929 & 137.937 & 75.628 \\ 
+		\hline
 		\hline
 	\end{tabular}
-	\caption{Asymptotic inference with equal-weighting, max quarter 40, and $D=12$.} 
-	\label{tab:ai_40_ew}
+	\caption{Asymptotic inference with EW-VYP-SL max month 180, and $D=12$.} 
+	\label{tab:ai_180_EW_VYP_SL}
 \end{table}
 
 % latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Mon Apr 13 15:21:32 2020
+% Mon Jun  8 17:44:27 2020
 \begin{table}[ht]
 	\centering
-	\begin{tabular}{lrrlrrl}
+	\begin{tabular}{lrrlrrr}
+		 & \multicolumn{2}{l}{MKT Factor} & & \multicolumn{2}{l}{2nd Factor} & \\ 
+		Type & Mean & SD & Factor & Mean & SD & CV-error \\ 
 		\hline
-		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & validation.error \\ 
 		\hline
-		PE & -0.02 & 0.57 & Alpha & 0.03 & 0.00 & 980 \\ 
-		PE & 2.13 & 0.17 & EG & 2.73 & 0.20 & 1050 \\ 
-		PE & 2.40 & 0.22 & IA & 2.69 & 0.40 & 1039 \\ 
-		PE & 1.75 & 0.33 & ME & 1.50 & 0.24 & 1074 \\ 
-		PE & 2.77 & 0.17 & MKT & 2.77 & 0.17 & 1137 \\ 
-		PE & 2.00 & 0.26 & ROE & 2.27 & 0.45 & 1313 \\ 
-		VC & 3.35 & 0.83 & ME & -1.30 & 1.21 & 1215 \\ 
-		VC & 2.84 & 0.39 & IA & -1.51 & 1.43 & 1006 \\ 
-		VC & 2.99 & 0.48 & MKT & 2.99 & 0.48 & 946 \\ 
-		VC & 2.80 & 0.74 & EG & 0.72 & 1.75 & 1034 \\ 
-		VC & 2.84 & 1.67 & Alpha & -0.00 & 0.02 & 1293 \\ 
-		VC & 3.01 & 0.72 & ROE & -0.67 & 1.70 & 1161 \\ 
-		PD & -0.28 & 0.23 & Alpha & 0.02 & 0.00 & 2850 \\ 
-		PD & 1.08 & 0.40 & EG & 3.16 & 0.41 & 2956 \\ 
-		PD & 1.11 & 0.30 & IA & 3.35 & 0.61 & 2954 \\ 
-		PD & 0.52 & 0.25 & ME & 1.63 & 0.14 & 3040 \\ 
-		PD & 1.43 & 0.46 & MKT & 1.43 & 0.46 & 3209 \\ 
-		PD & 1.10 & 0.54 & ROE & 2.05 & 0.36 & 2893 \\ 
-		RE & 0.85 & 0.64 & EG & 3.06 & 0.37 & 1078 \\ 
-		RE & -1.09 & 0.71 & Alpha & 0.03 & 0.01 & 1725 \\ 
-		RE & 1.15 & 0.85 & IA & 1.65 & 0.60 & 1820 \\ 
-		RE & 0.42 & 0.58 & ME & 1.37 & 0.69 & 1779 \\ 
-		RE & 1.34 & 0.76 & MKT & 1.34 & 0.76 & 1919 \\ 
-		RE & 0.72 & 0.41 & ROE & 2.87 & 1.03 & 1902 \\ 
-		NATRES & 0.07 & 0.65 & Alpha & 0.02 & 0.00 & 8024 \\ 
-		NATRES & 1.63 & 0.47 & EG & 2.24 & 0.41 & 7108 \\ 
-		NATRES & 1.62 & 0.59 & ROE & 2.26 & 1.42 & 8287 \\ 
-		NATRES & 2.05 & 0.46 & MKT & 2.05 & 0.46 & 7672 \\ 
-		NATRES & 1.81 & 0.51 & IA & 1.93 & 0.86 & 7824 \\ 
-		NATRES & 1.21 & 0.76 & ME & 1.44 & 0.60 & 9138 \\ 
-		INF & -0.23 & 1.08 & Alpha & 0.03 & 0.01 & 4554 \\ 
-		INF & 1.61 & 1.42 & ME & 0.89 & 0.76 & 3526 \\ 
-		INF & 2.26 & 0.95 & IA & -0.60 & 1.26 & 3428 \\ 
-		INF & 1.56 & 0.97 & ROE & 3.81 & 2.19 & 3364 \\ 
-		INF & 2.21 & 1.01 & MKT & 2.21 & 1.01 & 3395 \\ 
-		INF & 1.73 & 1.08 & EG & 3.22 & 0.71 & 4197 \\ 
+PE & 0.886 & 0.262 & EG & 0.614 & 0.217 & 101444.000 \\ 
+PE & 0.719 & 0.205 & Alpha & 0.004 & 0.001 & 105842.000 \\ 
+PE & 0.948 & 0.267 & ROE & 0.975 & 0.407 & 110926.000 \\ 
+PE & 1.250 & 0.262 & MKT & 1.250 & 0.262 & 127589.000 \\ 
+PE & 1.247 & 0.274 & IA & -0.183 & 0.598 & 157037.000 \\ 
+PE & 1.281 & 0.323 & ME & 0.048 & 0.644 & 169552.000 \\ 
+\hline
+VC & 1.250 & 0.153 & ME & -1.292 & 0.234 & 16305.000 \\ 
+VC & 1.183 & 0.169 & IA & -1.507 & 0.327 & 16449.000 \\ 
+VC & 2.052 & 0.257 & Alpha & -0.006 & 0.001 & 18666.000 \\ 
+VC & 1.138 & 0.341 & MKT & 1.138 & 0.341 & 25321.000 \\ 
+VC & 1.610 & 0.431 & ROE & -0.946 & 0.426 & 26618.000 \\ 
+VC & 1.688 & 0.505 & EG & -0.616 & 0.331 & 30392.000 \\ 
+\hline
+PD & 0.838 & 0.029 & MKT & 0.838 & 0.029 & 11290.000 \\ 
+PD & 0.458 & 0.151 & Alpha & 0.003 & 0.001 & 11568.000 \\ 
+PD & 0.770 & 0.058 & ROE & 0.232 & 0.111 & 11572.000 \\ 
+PD & 0.707 & 0.086 & EG & 0.224 & 0.091 & 12194.000 \\ 
+PD & 0.825 & 0.083 & IA & 0.158 & 0.305 & 15071.000 \\ 
+PD & 0.837 & 0.098 & ME & 0.358 & 0.328 & 15441.000 \\ 
+\hline
+RE & 0.803 & 0.336 & MKT & 0.803 & 0.336 & 43486.000 \\ 
+RE & 1.191 & 0.363 & Alpha & -0.003 & 0.004 & 45310.000 \\ 
+RE & 0.341 & 0.402 & ROE & 2.275 & 1.558 & 52822.000 \\ 
+RE & 0.559 & 0.379 & EG & 0.397 & 0.503 & 52867.000 \\ 
+RE & 0.929 & 0.339 & ME & -1.287 & 1.174 & 57341.000 \\ 
+RE & 0.852 & 0.372 & IA & -1.129 & 1.025 & 57662.000 \\ 
+\hline
+NR & -0.009 & 0.203 & ROE & 1.880 & 0.562 & 15631.000 \\ 
+NR & 0.200 & 0.510 & EG & 0.681 & 0.372 & 18981.000 \\ 
+NR & 0.572 & 0.400 & MKT & 0.572 & 0.400 & 20006.000 \\ 
+NR & -0.065 & 0.729 & Alpha & 0.006 & 0.004 & 20880.000 \\ 
+NR & 0.596 & 0.567 & IA & -0.060 & 0.869 & 24766.000 \\ 
+NR & 0.769 & 0.771 & ME & 0.666 & 1.062 & 27238.000 \\ 
+\hline
+INF & 0.124 & 0.608 & Alpha & 0.007 & 0.006 & 14995.000 \\ 
+INF & 0.613 & 0.393 & EG & 0.402 & 0.496 & 15758.000 \\ 
+INF & 0.862 & 0.281 & MKT & 0.862 & 0.281 & 15820.000 \\ 
+INF & 0.627 & 0.360 & ROE & 0.577 & 1.374 & 18297.000 \\ 
+INF & 0.810 & 0.315 & ME & -0.129 & 1.109 & 19641.000 \\ 
+INF & 0.797 & 0.842 & IA & 0.051 & 2.180 & 33661.000 \\ 
+		\hline
 		\hline
 	\end{tabular}
-	\caption{$hv$-block cross-validation with equal-weighting and max quarter 40.} 
-	\label{tab:cv_40_ew}
+	\caption{$hv$-block cross-validation with EW-VYP-SL weighting and max month 180.} 
+	\label{tab:cv_180_EW_VYP_SL}
 \end{table}
 
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Mon Apr 13 15:21:32 2020
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{lrrrlrrr}
-		\hline
-		Type & MKT & SE.MKT & SE.MKT.indep & Factor & Coef & SE.Coef & SE.Coef.indep \\ 
-		\hline
-		PE & 2.35 & 2.48 & 0.64 & MKT &  &  &  \\ 
-		PE & 1.59 & 3.45 & 0.62 & ME & 1.03 & 7.03 & 0.65 \\ 
-		PE & 2.03 & 3.80 & 0.57 & IA & 2.28 & 9.28 & 1.07 \\ 
-		PE & 1.83 & 5.48 & 0.87 & ROE & 1.61 & 6.39 & 0.88 \\ 
-		PE & 1.89 & 5.16 & 0.66 & EG & 2.19 & 8.27 & 1.18 \\ 
-		PE & 0.24 & 14.32 & 0.91 & Alpha & 0.02 & 0.05 & 0.01 \\ 
-		VC & 2.20 & 0.97 & 0.58 & MKT &  &  &  \\ 
-		VC & 3.24 & 4.77 & 0.68 & ME & -2.42 & 6.69 & 0.64 \\ 
-		VC & 1.93 & 1.24 & 0.56 & IA & -3.50 & 5.25 & 1.11 \\ 
-		VC & 2.67 & 1.31 & 0.47 & ROE & -2.50 & 3.38 & 0.80 \\ 
-		VC & 2.40 & 0.93 & 0.53 & EG & -2.42 & 5.26 & 0.98 \\ 
-		VC & 3.48 & 2.02 & 0.18 & Alpha & -0.02 & 0.01 & 0.00 \\ 
-		PD & 1.18 & 53.03 & 13.01 & MKT &  &  &  \\ 
-		PD & 0.30 & 48.26 & 12.32 & ME & 1.35 & 17.73 & 13.57 \\ 
-		PD & 0.80 & 45.54 & 8.13 & IA & 3.27 & 37.72 & 7.72 \\ 
-		PD & 0.89 & 13.97 & 2.80 & ROE & 1.53 & 15.14 & 3.06 \\ 
-		PD & 0.85 & 72.30 & 15.48 & EG & 2.52 & 12.41 & 10.47 \\ 
-		PD & -0.37 & 0.44 & 0.39 & Alpha & 0.02 & 0.02 & 0.00 \\ 
-		RE & 1.00 & 4.00 & 1.33 & MKT &  &  &  \\ 
-		RE & 0.20 & 8.59 & 1.70 & ME & 0.99 & 4.59 & 1.89 \\ 
-		RE & 0.81 & 3.45 & 1.28 & IA & 1.10 & 10.34 & 3.06 \\ 
-		RE & 0.58 & 5.57 & 1.81 & ROE & 2.33 & 7.17 & 1.74 \\ 
-		RE & 0.56 & 6.32 & 1.45 & EG & 3.14 & 5.26 & 3.12 \\ 
-		RE & -1.12 & 0.85 & 0.11 & Alpha & 0.02 & 0.00 & 0.00 \\ 
-		NATRES & 1.37 & 1.48 & 1.52 & MKT &  &  &  \\ 
-		NATRES & 0.96 & 6.20 & 4.07 & ME & 0.65 & 9.75 & 5.99 \\ 
-		NATRES & 1.10 & 15.72 & 11.67 & IA & 2.11 & 149.64 & 105.24 \\ 
-		NATRES & 1.19 & 1.56 & 1.63 & ROE & 1.20 & 8.96 & 5.16 \\ 
-		NATRES & 1.14 & 2.72 & 2.12 & EG & 1.48 & 26.71 & 18.94 \\ 
-		NATRES & 0.33 & 0.09 & 0.10 & Alpha & 0.01 & 0.00 & 0.00 \\ 
-		INF & 1.58 & 1.74 & 4.26 & MKT &  &  &  \\ 
-		INF & 0.82 & 9.28 & 4.18 & ME & 1.02 & 7.98 & 5.72 \\ 
-		INF & 1.58 & 3.19 & 5.87 & IA & 0.03 & 12.14 & 11.65 \\ 
-		INF & 1.16 & 9.56 & 4.52 & ROE & 3.77 & 30.53 & 14.73 \\ 
-		INF & 1.14 & 9.91 & 6.11 & EG & 3.19 & 12.07 & 18.98 \\ 
-		INF & -0.45 & 31.81 & 9.95 & Alpha & 0.02 & 0.21 & 0.09 \\ 
-		\hline
-	\end{tabular}
-	\caption{Asymptotic inference with equal-weighting, max quarter 60, and $D=12$.} 
-	\label{tab:ai_60_ew}
-\end{table}
 
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Mon Apr 13 15:21:32 2020
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{lrrlrrl}
-		\hline
-		Type & MKT & SE.MKT & Factor & Coef & SE.Coef & validation.error \\ 
-		\hline
-		PE & 0.18 & 0.47 & Alpha & 0.02 & 0.00 & 1310 \\ 
-		PE & 1.84 & 0.27 & EG & 2.22 & 0.18 & 1228 \\ 
-		PE & 2.02 & 0.22 & IA & 2.33 & 0.39 & 1226 \\ 
-		PE & 1.57 & 0.28 & ME & 1.08 & 0.26 & 1324 \\ 
-		PE & 2.30 & 0.29 & MKT & 2.30 & 0.29 & 1275 \\ 
-		PE & 1.74 & 0.32 & ROE & 1.66 & 0.31 & 1441 \\ 
-		VC & 2.13 & 0.66 & MKT & 2.13 & 0.66 & 1070 \\ 
-		VC & 2.14 & 0.76 & EG & -1.67 & 2.02 & 1223 \\ 
-		VC & 2.85 & 1.63 & Alpha & -0.01 & 0.02 & 1517 \\ 
-		VC & 2.95 & 0.78 & ME & -2.02 & 1.22 & 1247 \\ 
-		VC & 1.84 & 0.59 & IA & -2.63 & 2.64 & 1189 \\ 
-		VC & 2.48 & 0.71 & ROE & -1.88 & 1.54 & 1302 \\ 
-		PD & -0.45 & 0.35 & Alpha & 0.02 & 0.00 & 3550 \\ 
-		PD & 0.72 & 0.58 & EG & 2.48 & 0.40 & 3674 \\ 
-		PD & 0.68 & 0.52 & IA & 3.08 & 0.44 & 3595 \\ 
-		PD & 0.19 & 0.39 & ME & 1.32 & 0.24 & 3719 \\ 
-		PD & 1.00 & 0.66 & MKT & 1.00 & 0.66 & 3578 \\ 
-		PD & 0.75 & 0.65 & ROE & 1.57 & 0.30 & 3483 \\ 
-		RE & 0.95 & 0.81 & IA & 1.43 & 0.59 & 1992 \\ 
-		RE & 0.39 & 0.50 & ME & 1.10 & 0.58 & 1996 \\ 
-		RE & 0.69 & 0.62 & EG & 2.93 & 0.40 & 1104 \\ 
-		RE & -0.99 & 0.68 & Alpha & 0.02 & 0.01 & 2097 \\ 
-		RE & 1.14 & 0.74 & MKT & 1.14 & 0.74 & 2080 \\ 
-		RE & 0.57 & 0.42 & ROE & 2.55 & 0.96 & 2026 \\ 
-		NATRES & 0.35 & 0.71 & Alpha & 0.01 & 0.00 & 9920 \\ 
-		NATRES & 1.24 & 0.44 & EG & 1.45 & 0.43 & 9102 \\ 
-		NATRES & 1.23 & 0.50 & IA & 1.97 & 0.85 & 9111 \\ 
-		NATRES & 0.97 & 0.84 & ME & 0.76 & 0.65 & 11459 \\ 
-		NATRES & 1.17 & 0.48 & ROE & 1.55 & 1.40 & 10806 \\ 
-		NATRES & 1.44 & 0.39 & MKT & 1.44 & 0.39 & 8861 \\ 
-		INF & 0.02 & 1.24 & Alpha & 0.03 & 0.01 & 5912 \\ 
-		INF & 1.56 & 1.00 & ROE & 3.50 & 2.58 & 4003 \\ 
-		INF & 2.14 & 1.08 & MKT & 2.14 & 1.08 & 3510 \\ 
-		INF & 1.77 & 1.21 & EG & 2.97 & 0.97 & 4920 \\ 
-		INF & 1.56 & 1.48 & ME & 0.85 & 0.81 & 3660 \\ 
-		INF & 2.13 & 1.07 & IA & -0.31 & 1.19 & 3532 \\ 
-		\hline
-	\end{tabular}
-	\caption{$hv$-block cross-validation with equal-weighting and max quarter 60.} 
-	\label{tab:cv_60_ew}
-\end{table}
+
 
 
 \end{document}

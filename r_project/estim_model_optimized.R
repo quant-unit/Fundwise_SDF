@@ -14,18 +14,22 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
 
 # 1.1) PARAMETERS ----
-weighting <- "FW"
-use.vintage.year.pfs <- FALSE
+weighting <- "EW"
+use.vintage.year.pfs <- TRUE
+use.simulation <- FALSE
+do.cross.validation <- TRUE
+do.cache <- TRUE
+
 if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
 public.filename <- "public_returns"
 public.filename <- "msci_market_factors"
 public.filename <- "q_factors"
 
 error.function <- "L2_Lasso"
-sdf.model <- "exp.aff"
+sdf.model <- "linear"
+#sdf.model <- "exp.aff"
 
-do.cache <- TRUE
-max.quarters <- c(40, 60)
+max.months <- 15 * 12 # c(1/12, 5 , 10, 15, 20, 25, 30) * 12
 lambdas <- 0 # L2_Lasso
 kernel.bandwidth <- 12
 
@@ -36,17 +40,41 @@ if(public.filename == "msci_market_factors") {
 }
 
 # 1.2) load data -----
-
-df.preqin <- read.csv(paste0("data_prepared/preqin_cashflows_", weighting, ".csv"))
-table(df.preqin$type[!duplicated(df.preqin$Fund.ID)])
 df.public <- read.csv(paste0("data_prepared/", public.filename, ".csv"))
-
-df.preqin$Date <- as.Date(df.preqin$Date)
 df.public$Date <- as.Date(df.public$Date)
+
+if(!use.simulation) {
+  df.preqin0 <- read.csv(paste0("data_prepared/preqin_cashflows_", weighting, ".csv"))
+} else {
+  df.preqin0 <- read.csv(paste0("data_prepared/simulated_cashflows_", weighting, ".csv"))
+}
+df.preqin0$Date <- as.Date(df.preqin0$Date)
+
+to.monthly <- function(df.ss) {
+  # fill zero cash flows (necessary for estimation)
+  max.date <- max(df.ss$Date) + 1
+  #max.date <- as.Date("2020-01-01")
+  df.m <- data.frame(Date = seq(min(df.ss$Date) + 1, max.date, by = "month") - 1)
+  df.ss <- merge(df.ss, df.m, by = "Date", all = TRUE)
+  df.ss$CF[is.na(df.ss$CF)] <- 0
+  for(col in c("type", "Vintage", "Fund.ID")) df.ss[, col] <- df.ss[1, col]
+  return(df.ss)
+}
+
+df.preqin <- as.data.frame(data.table::rbindlist(lapply(split(df.preqin0, df.preqin0$Fund.ID), to.monthly)))
+rm(df.preqin0)
+df.preqin$type <- as.factor(as.character(df.preqin$type))
+df.preqin$Fund.ID <- as.factor(as.character(df.preqin$Fund.ID))
+length(levels(df.preqin$type))
+
+df.ss <- df.preqin[df.preqin$Fund.ID == levels(df.preqin$Fund.ID)[5], ]
+#View(df.ss)
+rm(df.ss)
 
 df0 <- merge(df.preqin, df.public, by="Date")
 df0$Fund.ID <- as.factor(df0$Fund.ID)
 df0$Alpha <- 1
+rm(df.preqin)
 
 # 1.3) rbind.all ----
 rbind.all.columns <- function(x, y) {
@@ -65,11 +93,11 @@ rbind.all.columns <- function(x, y) {
 library(Rcpp)
 
 Rcpp::cppFunction("
-    double getNPVs(NumericVector cf, NumericVector ret, int max_quarter){
+    double getNPVs(NumericVector cf, NumericVector ret, int max_month){
     double DCF = sum(cf / ret);
 
     int n = cf.length();
-    int i_max = std::min(max_quarter, n);
+    int i_max = std::min(max_month, n);
     NumericVector VectorOut(i_max, 0.0);
     
     for(int i = 0; i < i_max; i++) {
@@ -86,25 +114,26 @@ getNPVs(rep(1,n), seq(1,n,1), n)
 # 2.2) err.sqr.calc function ----
 
 if(sdf.model == "linear") {
-  f1 <- function(df.ss, max.quarter, par0) {
+  f1 <- function(df.ss, max.month, par0) {
     return(getNPVs(df.ss$CF, 
                    exp(cumsum(log(1 + (as.matrix(df.ss[, names(par0)]) %*% par0)))), 
-                   max.quarter))
+                   max.month))
   }
 }
 
 if(sdf.model == "exp.aff") {
-  f1 <- function(df.ss, max.quarter, par0) {
+  f1 <- function(df.ss, max.month, par0) {
+    df.ss$Alpha <- exp(1) - 1
     return(getNPVs(df.ss$CF, 
-                   exp(cumsum(as.matrix(df.ss[, names(par0)]) %*% par0)), 
-                   max.quarter))
+                   exp(cumsum(as.matrix(log(1 + df.ss[, names(par0)])) %*% par0)), 
+                   max.month))
   }
 }
 
 if(error.function == "L2_Lasso") {
-  err.sqr.calc <- function(par, max.quarter, lambda, df) {
+  err.sqr.calc <- function(par, max.month, lambda, df) {
     dfx <- split(df, df$Fund.ID)
-    npvs <- sapply(dfx, f1, max.quarter=max.quarter, par0=c("RF" = 1, par))
+    npvs <- sapply(dfx, f1, max.month=max.month, par0=c("RF" = 1, par))
     return(
       sqrt(sum(npvs^2)) / length(npvs) # + lambda / length(par[-1]) * sum(abs(par[-1]))
     )
@@ -112,29 +141,30 @@ if(error.function == "L2_Lasso") {
 }
 
 if(error.function == "L1_Ridge") {
-  err.sqr.calc <- function(par, max.quarter, lambda, df) {
+  err.sqr.calc <- function(par, max.month, lambda, df) {
     dfx <- split(df, df$Fund.ID)
-    npvs <- sapply(dfx, f1, max.quarter=max.quarter, par0=c("RF" = 1, par))
+    npvs <- sapply(dfx, f1, max.month=max.month, par0=c("RF" = 1, par))
     return(
       sum(abs(npvs)) / length(npvs) + lambda / length(par) * sum(par^2)
     )
   }
 }
 
-max.quarter <- 40
+max.month <- 40
 lambda <- 0
 par <- c(MKT = 1, EG = 0)
-df.in <- df0[df0$type == "PE", ]
+type <- levels(df0$type)[1]
+df.in <- df0[df0$type == type, ]
 df.in$Fund.ID <- (as.character(df.in$Fund.ID))
 system.time(
-  print(err.sqr.calc(par, df=df.in, lambda=lambda, max.quarter=max.quarter))
+  print(err.sqr.calc(par, df=df.in, lambda=lambda, max.month=max.month))
 )
 
 # 2.3 Asymptotic gradient hessian -----
-if(TRUE) {
+if(FALSE) {
   res <- optimx::optimx(par, err.sqr.calc, 
                         lambda = 0,
-                        max.quarter = max.quarter,
+                        max.month = max.month,
                         df = df.in,
                         #method = "nlminb"
                         method = "Nelder-Mead"
@@ -161,7 +191,7 @@ get.grad.per.fund <- function(df.ss, par) {
     p.plus <- par[x] + delta
     p.minus <- par[x] - delta
     return(
-      (err.sqr.calc(p.plus, max.quarter, lambda, df.ss) - err.sqr.calc(p.minus, max.quarter, lambda, df.ss)) / (2 * delta)
+      (err.sqr.calc(p.plus, max.month, lambda, df.ss) - err.sqr.calc(p.minus, max.month, lambda, df.ss)) / (2 * delta)
     )
   }
   return(sapply(names(par), f2))
@@ -224,8 +254,8 @@ get.hess.per.fund <- function(df.ss, par) {
         p.p[i] <- p.p[i] + delta
         p.m[j] <- p.m[j] - delta
         
-        #out <- f1(df.ss, max.quarter, p.p) + f1(df.ss, max.quarter, p.m) - 2 * f1(df.ss, max.quarter, par)
-        out <- err.sqr.calc(p.p, max.quarter, lambda, df.ss) + err.sqr.calc(p.m, max.quarter, lambda, df.ss) - 2 * err.sqr.calc(par, max.quarter, lambda, df.ss)
+        #out <- f1(df.ss, max.month, p.p) + f1(df.ss, max.month, p.m) - 2 * f1(df.ss, max.month, par)
+        out <- err.sqr.calc(p.p, max.month, lambda, df.ss) + err.sqr.calc(p.m, max.month, lambda, df.ss) - 2 * err.sqr.calc(par, max.month, lambda, df.ss)
         out <- out / (delta * delta)
       }
       
@@ -237,11 +267,11 @@ get.hess.per.fund <- function(df.ss, par) {
         p.p[i] <- p.p[i] + delta
         p.m[j] <- p.m[j] - delta
         
-        out <- - f1(df.ss, max.quarter, p.pp)
-        out <- out + 16 * err.sqr.calc(p.p, max.quarter, lambda, df.ss)
-        out <- out - 30 * err.sqr.calc(par, max.quarter, lambda, df.ss)
-        out <- out + 16 * err.sqr.calc(p.m, max.quarter, lambda, df.ss)
-        out <- out - err.sqr.calc(p.mm, max.quarter, lambda, df.ss)
+        out <- - f1(df.ss, max.month, p.pp)
+        out <- out + 16 * err.sqr.calc(p.p, max.month, lambda, df.ss)
+        out <- out - 30 * err.sqr.calc(par, max.month, lambda, df.ss)
+        out <- out + 16 * err.sqr.calc(p.m, max.month, lambda, df.ss)
+        out <- out - err.sqr.calc(p.mm, max.month, lambda, df.ss)
         
         out <- out / (12 * delta * delta)
       }
@@ -256,7 +286,7 @@ get.hess.per.fund <- function(df.ss, par) {
         p.mp[i] <- p.mp[i] - delta
         p.mp[j] <- p.mp[j] + delta
         
-        out <- err.sqr.calc(p.pp, max.quarter, lambda, df.ss) - err.sqr.calc(p.pm, max.quarter, lambda, df.ss) - err.sqr.calc(p.mp, max.quarter, lambda, df.ss) + err.sqr.calc(p.mm, max.quarter, lambda, df.ss)
+        out <- err.sqr.calc(p.pp, max.month, lambda, df.ss) - err.sqr.calc(p.pm, max.month, lambda, df.ss) - err.sqr.calc(p.mp, max.month, lambda, df.ss) + err.sqr.calc(p.mm, max.month, lambda, df.ss)
         out <- out  / (4 * delta * delta)
       }
       
@@ -310,37 +340,40 @@ out
 
 vintage.blocks <- list()
 
-for(year in seq(1988, 2015, by=3)) {
-  validate <- year:(year + 2)
-  block <- (year - 3):(year - 1)
-  block <- c(block, (year + 3):(year + 5))
-  
-  estimate <- 1980:2020
-  estimate <- estimate[!(estimate %in% validate)]
-  estimate <- estimate[!(estimate %in% block)]
-  
-  vintage.blocks[[paste(year)]] <- list(validate=validate, block=block, estimate=estimate)
-}
-
-for(year in names(vintage.blocks)) {
-  for(key in c("estimate", "validate")) {
-    vintage.blocks[[year]][[paste0("df.", key)]] <- df0[df0$Vintage %in% vintage.blocks[[year]][[key]], ]
-    vintage.blocks[[year]][["cv.year"]] <- year
-  }
-}
-
-viblo.list <- list()
-for(block in vintage.blocks) {
-  viblo.list[[paste(block$validate[1])]] <- data.frame(
-    training.before = paste0("start-", block$block[1]-1),
-    h.block.before = paste(block$block[1:3], collapse = ","), 
-    validation = paste(block$validate, collapse = ","), 
-    h.block.after =paste(block$block[4:6], collapse = ","),
-    training.after = paste0(block$block[6]+1, "-end")
+if (do.cross.validation) {
+  for(year in seq(1988, 2015, by=3)) {
+    validate <- year:(year + 2)
+    block <- (year - 3):(year - 1)
+    block <- c(block, (year + 3):(year + 5))
     
-  )
+    estimate <- 1980:2020
+    estimate <- estimate[!(estimate %in% validate)]
+    estimate <- estimate[!(estimate %in% block)]
+    
+    vintage.blocks[[paste(year)]] <- list(validate=validate, block=block, estimate=estimate)
+  }
+  
+  for(year in names(vintage.blocks)) {
+    for(key in c("estimate", "validate")) {
+      vintage.blocks[[year]][[paste0("df.", key)]] <- df0[df0$Vintage %in% vintage.blocks[[year]][[key]], ]
+      vintage.blocks[[year]][["cv.year"]] <- year
+    }
+  }
+  
+  viblo.list <- list()
+  for(block in vintage.blocks) {
+    viblo.list[[paste(block$validate[1])]] <- data.frame(
+      training.before = paste0("start-", block$block[1]-1),
+      h.block.before = paste(block$block[1:3], collapse = ","), 
+      validation = paste(block$validate, collapse = ","), 
+      h.block.after =paste(block$block[4:6], collapse = ","),
+      training.after = paste0(block$block[6]+1, "-end")
+      
+    )
+  }
+  print(xtable::xtable(data.frame(do.call(rbind, viblo.list))), include.rownames = FALSE)
+  
 }
-print(xtable::xtable(data.frame(do.call(rbind, viblo.list))), include.rownames = FALSE)
 
 vintage.blocks[["ALL"]] <- list(df.estimate = df0, df.validate = df0, cv.year = "ALL")
 
@@ -364,17 +397,20 @@ iter.run <- function(input.list) {
   }
   if (public.filename == "q_factors") {
     factors <- colnames(df.public)[2:6] # q_factors
+    #factors <- "MKT"
+    #factors <- "Alpha"
     factors <- c(factors, "Alpha")
+    #factors <- c("ALL", factors)
     
-    #factors <- c( "ALL", factors)
     types <- c("PE", "VC", "PD", "RE", "NATRES", "INF") # asset classes
+    #types <- levels(df0$type)
   }
   
   # 2) RUNNER
   l <- list()
   for (lambda in lambdas) {
-    for(max.quarter in max.quarters) {
-      print(paste("Max.Q", max.quarter, "Lambda", lambda))
+    for(max.month in max.months) {
+      print(paste("Max.M", max.month, "Lambda", lambda))
       
       do.parallel <- TRUE
       if(do.parallel) {
@@ -410,7 +446,7 @@ iter.run <- function(input.list) {
           if (TRUE) {
             res <- optimx::optimx(par, err.sqr.calc, 
                                   lambda = lambda,
-                                  max.quarter = max.quarter,
+                                  max.month = max.month,
                                   df = df.optim.in,
                                   method = "Nelder-Mead" # "nlminb"
             )
@@ -419,7 +455,7 @@ iter.run <- function(input.list) {
             if(sum(res[1, names(par)] - par) < 0.001) {
               res <- optimx::optimx(par, err.sqr.calc, 
                                     lambda = lambda,
-                                    max.quarter = max.quarter,
+                                    max.month = max.month,
                                     df = df.optim.in,
                                     itnmax = 1000,
                                     method = "Nelder-Mead"
@@ -446,7 +482,7 @@ iter.run <- function(input.list) {
           print(res)
           res$Factor <- factor
           res$Type <- type
-          res$max.quarter <- max.quarter
+          res$max.month <- max.month
           res$lambda <- lambda
           res$kernel.bandwidth <- kernel.bandwidth
           res$CV.key <- input.list$cv.year
@@ -457,7 +493,7 @@ iter.run <- function(input.list) {
           
           # validation error
           res$validation.error <- err.sqr.calc(par, 
-                                               max.quarter = max.quarter, 
+                                               max.month = max.month, 
                                                lambda = 0, # set to zero
                                                df = df.val)
           
@@ -476,7 +512,7 @@ iter.run <- function(input.list) {
       }
       
       print(output)
-      l[[paste0(max.quarter, lambda)]] <- output
+      l[[paste0(max.month, lambda)]] <- output
       
       if(do.parallel) parallel::stopCluster(cl)
     }
@@ -485,11 +521,9 @@ iter.run <- function(input.list) {
   return(df.res)
 }
 
-#system.time(df.res <- iter.run(vintage.blocks$ALL))
-#tag <- paste0("_50_2019_L1_", weighting)
-#file.out <- paste0("data_out/result_", public.filename, tag, ".csv")
-#write.csv(df.res, file.out, row.names = FALSE)
+if(do.cross.validation) {
+  for(v in names(vintage.blocks)) df.res <- iter.run(vintage.blocks[[v]])
+} else {
+  system.time(df.res <- iter.run(vintage.blocks$ALL))
+}
 
-for(v in names(vintage.blocks)) df.res <- iter.run(vintage.blocks[[v]])
-#system.time(out.list <- lapply(vintage.blocks, iter.run))
-#saveRDS(out.list, "data_out/out_list_40_FW.RDS")

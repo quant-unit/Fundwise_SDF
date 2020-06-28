@@ -5,7 +5,7 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
 
 list.cache <- list()
-suffix <- "EW"
+suffix <- "FW_VYP_SL"
 dir.cache <- paste0("data_out/cache_q_factors_", suffix)
 for(file in list.files(dir.cache)) {
   if(substr(file,1,1) == 0) next
@@ -44,11 +44,11 @@ q.factors <- levels(df.f$Factor)
 cv.res <- list()
 for(Factor in q.factors) {
   df <- df.f[(df.f$CV.key != "ALL") & (df.f$Factor == Factor), 
-             c("MKT", Factor, "Type", "max.quarter", "validation.error")]
+             c("MKT", Factor, "Type", "max.month", "validation.error")]
   ddf <- df[, !is.na(df[1, ])]
-  df$id <- paste0(df$Type, "_", df$max.quarter)
+  df$id <- paste0(df$Type, "_", df$max.month)
   df$Type <- NULL
-  df$max.quarter <- NULL
+  df$max.month <- NULL
   
   if( is.data.frame(df) ) {
     m <-   aggregate(. ~ id, mean, data = df)
@@ -75,108 +75,127 @@ df.cv <- data.frame(Reduce(rbind.all.columns, cv.res))
 df.cv$validation.error <- as.character(round(df.cv$validation.error))
 for(i in 1:nrow(df.cv)) {
   df.cv[i, "Type"] <- strsplit(df.cv$id, "_")[[i]][1]
-  df.cv[i, "Max.Quarter"] <- strsplit(df.cv$id, "_")[[i]][2]
+  df.cv[i, "max.month"] <- strsplit(df.cv$id, "_")[[i]][2]
 }
-df.cv <- df.cv[, c("Type", "Max.Quarter", "MKT", "SE.MKT", "Factor", "Coef", "SE.Coef", "validation.error")]
+df.cv <- df.cv[, c("Type", "max.month", "MKT", "SE.MKT", "Factor", "Coef", "SE.Coef", "validation.error")]
 df.order <- data.frame(Type = c("PE", "VC", "PD", "RE", "NATRES", "INF"), Order = seq(1,6))
 df.cv <- merge(df.cv, df.order, by ="Type")
-df.cv <- df.cv[order(df.cv$Order, df.cv$Max.Quarter), ]
+df.cv$validation.error <- as.numeric(df.cv$validation.error)
+df.cv <- df.cv[order(df.cv$Order, df.cv$validation.error), ]
 df.cv$Order <- NULL
-df.cv.40 <- df.cv[df.cv$Max.Quarter == 40, ]
-df.cv.60 <- df.cv[df.cv$Max.Quarter == 60, ]
-df.cv.40$Max.Quarter <- df.cv.60$Max.Quarter <- NULL
 
 
+df.cv.rank <- df.cv
+df.cv.rank$key <- paste(df.cv.rank$Type, df.cv.rank$max.month, df.cv.rank$Factor)
+df.cv.rank <- df.cv.rank[, c("key", "validation.error")]
+
+
+# summarize all coefs ----
+df.all <- df.f[(df.f$CV.key == "ALL"), ]
+for(i in 1:nrow(df.all)) {
+  factor <- as.character(df.all$Factor[i])
+  df.all[i, "Coef"] <- df.all[i, factor]
+  df.all[i, "SE.Coef"] <- df.all[i, paste0("SE.", factor)]
+  df.all[i, "SE.Coef.indep"] <- df.all[i, paste0("SE.", factor, ".indep")] 
+}
+df.all <- df.all[, c("Type", "max.month", "MKT", "SE.MKT", "SE.MKT.indep", 
+                     "Factor", "Coef", "SE.Coef", "SE.Coef.indep")]
+
+df.all$key <- paste(df.all$Type, df.all$max.month, df.all$Factor)
+df.all <- merge(df.all, df.cv.rank, by = "key")
+df.all <- df.all[order(df.all$Type, df.all$validation.error), ]
+df.all$max.month <- df.all$key <- df.all$validation.error <- NULL
+
+df.all <- merge(df.all, df.order, by ="Type")
+df.all <- df.all[order(df.all$Order), ]
+df.all$Order <- NULL
+
+
+spec <- paste0(strsplit(suffix, "_")[[1]], collapse = "-")
+print(xtable::xtable(df.all[, colnames(df.all) != "max.month"], 
+                     caption = paste("Asymptotic inference with", spec, "max month 180, and $D=12$."),
+                     label = paste0("tab:ai_180_", suffix), digits = 3), include.rownames=FALSE)
+print(xtable::xtable(df.cv[, colnames(df.cv) != "max.month"], 
+                     caption = paste("$hv$-block cross-validation with", spec, "weighting and max month 180"),
+                     label = paste0("tab:cv_180_", suffix), digits = 3), include.rownames=FALSE)
+
+# abs summary ----
 sum.abs <- function(df) {
   df.out <- data.frame(apply(df, 2, function(x) {
-    sum(abs(as.numeric(x)))
+    sum(abs(as.numeric(x))) / nrow(df)
   }))
   colnames(df.out) <- "sum.abs"
   df.out <- data.frame(t(df.out))
-  df.out <- df.out[, c("MKT", "SE.MKT", "Coef", "SE.Coef")]
+  
+  if ("SE.MKT.indep" %in% colnames(df)) {
+    cols <- c("MKT", "SE.MKT", "SE.MKT.indep", "Coef", "SE.Coef", "SE.Coef.indep")
+  } else {
+    cols <- c("MKT", "SE.MKT", "Coef", "SE.Coef")
+  }
+  df.out <- df.out[, cols]
   df.out$Weighting <- suffix
   return(df.out)
 }
 
 df.cv.abs <- sum.abs(df.cv)
-write.csv(df.cv.abs, paste0(dir.cache,"/0_cross_validation_sumabs.csv"))
-write.csv(df.cv, paste0(dir.cache,"/0_cross_validation_summary.csv"))
-
-
-
-
-# summarize all coefs ----
-df.all <- df.f[(df.f$CV.key == "ALL"), ]
-for(factor in q.factors) {
-  for(i in 1:nrow(df.all)) {
-    if(!is.na(df.all[i, factor])) {
-      df.all[i, "Coef"] <- df.all[i, factor]
-      df.all[i, "SE.Coef"] <- df.all[i, paste0("SE.", factor)]
-      df.all[i, "SE.Coef.indep"] <- df.all[i, paste0("SE.", factor, ".indep")] 
-    }
-  }
-}
-df.all <- df.all[, c("Type", "max.quarter", "MKT", "SE.MKT", "SE.MKT.indep", 
-                     "Factor", "Coef", "SE.Coef", "SE.Coef.indep")]
-
-df.all40 <- df.all[df.all$max.quarter == 40, ]
-df.all60 <- df.all[df.all$max.quarter == 60, ]
-df.all40$max.quarter <- df.all60$max.quarter <- NULL
-
-
-
-print(xtable::xtable(df.all40, 
-                     caption = paste("Asymptotic inference with", weighting, "max quarter 40, and $D=12$."),
-                     label = paste0("tab:ai_40_", suffix)), include.rownames=FALSE)
-print(xtable::xtable(df.cv.40, 
-                     caption = paste("$hv$-block cross-validation with", suffix, "weighting and max quarter 40."),
-                     label = paste0("tab:cv_40_", suffix)), include.rownames=FALSE)
-print(xtable::xtable(df.all60, 
-                     caption = paste("Asymptotic inference with", suffix, "weighting, max quarter 60, and $D=12$."),
-                     label = paste0("tab:ai_60_", suffix)), include.rownames=FALSE)
-print(xtable::xtable(df.cv.60, 
-                     caption = paste("$hv$-block cross-validation with", suffix, "weighting and max quarter 60."),
-                     label = paste0("tab:cv_60_", suffix)), include.rownames=FALSE)
-
 df.all.abs <- sum.abs(df.all)
-write.csv(df.all.abs, paste0(dir.cache,"/0_asymptotic_inference_sumabs.csv"))
-write.csv(df.all, paste0(dir.cache,"/0_asymptotic_inference_summary.csv"))
 
-
-df.abs <- rbind(df.all.abs, df.cv.abs)
+df.abs <- rbind.all.columns(df.all.abs, df.cv.abs)
 rownames(df.abs) <- c("AI", "CV")
 print(xtable::xtable(df.abs, 
                      caption = "Sum of absolute values.",
                      label = "tab:ai_sum_abs"), include.rownames=TRUE)
+## write csvs ----
+write.csv(df.cv.abs, paste0(dir.cache,"/0_cross_validation_sumabs.csv"))
+write.csv(df.all.abs, paste0(dir.cache,"/0_asymptotic_inference_sumabs.csv"))
+
+
+df.cv$t.MKT <- df.cv$MKT / df.cv$SE.MKT
+df.cv$t.Coef <- df.cv$Coef / df.cv$SE.Coef
+df.cv$sig <- ((abs(df.cv$t.MKT) > 1.96) & (abs(df.cv$t.Coef) > 1.96))
+sum(df.cv$sig) ; nrow(df.cv)
+
+write.csv(df.cv, paste0(dir.cache,"/0_cross_validation_summary.csv"))
+
+df.all$t.MKT <- df.all$MKT / df.all$SE.MKT
+df.all$t.MKT.indep <- df.all$MKT / df.all$SE.MKT.indep
+df.all$t.Coef <- df.all$MKT / df.all$SE.Coef
+df.all$t.Coef.indep <- df.all$MKT / df.all$SE.Coef.indep
+df.all$sig <- ((abs(df.all$t.MKT) > 1.96) & (abs(df.all$t.Coef) > 1.96))
+sum(df.all$sig) ; nrow(df.all)
+df.all$sig.indep <- ((abs(df.all$t.MKT.indep) > 1.96) & (abs(df.all$t.Coef.indep) > 1.96))
+sum(df.all$sig.indep) ; nrow(df.all)
+#View(df.all[df.all$Factor == "MKT", ])
+
+write.csv(df.all, paste0(dir.cache,"/0_asymptotic_inference_summary.csv"))
 
 
 # summarize both best ----
-df.cv$validation.error <- as.numeric(df.cv$validation.error)
 df.cv.best <- list()
 for(Type in df.cv$Type) {
-  for(Max.Quarter in df.cv$Max.Quarter) {
-    df.ss <- df.cv[(df.cv$Type == Type) & (df.cv$Max.Quarter == Max.Quarter), ]
+  for(max.month in df.cv$max.month) {
+    df.ss <- df.cv[(df.cv$Type == Type) & (df.cv$max.month == max.month), ]
     df.ss <- df.ss[df.ss$validation.error == min(df.ss$validation.error), ]
-
+    
     if(df.ss$Factor == "Alpha") {
-      df.ss <- df.cv[(df.cv$Type == Type) & (df.cv$Max.Quarter == Max.Quarter), ]
+      df.ss <- df.cv[(df.cv$Type == Type) & (df.cv$max.month == max.month), ]
       df.ss <- df.ss[df.ss$validation.error <= sort(df.ss$validation.error)[2], ]
     }
-    df.ss <- df.ss[, c("Type", "Max.Quarter", "Factor")]
-    df.cv.best[[paste(Type, Max.Quarter)]] <- df.ss
+    df.ss <- df.ss[, c("Type", "max.month", "Factor")]
+    df.cv.best[[paste(Type, max.month)]] <- df.ss
     
   }
 }
 df.cv.best <- data.frame(do.call(rbind, df.cv.best), row.names = NULL)
-df.cv.best$best.key <- paste(df.cv.best$Type, df.cv.best$Max.Quarter, df.cv.best$Factor)
+df.cv.best$best.key <- paste(df.cv.best$Type, df.cv.best$max.month, df.cv.best$Factor)
 
 
 df.best <- df.f[(df.f$CV.key == "ALL"), ]
-df.best$best.key <- paste(df.best$Type, df.best$max.quarter, df.best$Factor)
+df.best$best.key <- paste(df.best$Type, df.best$max.month, df.best$Factor)
 df.best <- df.best[df.best$best.key %in% df.cv.best$best.key, ]
 df.best$Tables <- NA
 df.best$Alpha.p.a. <- (1 + df.best$Alpha)^4 - 1
-df.best$ID <- paste(df.best$weighting, df.best$max.quarter, sep = " - ")
+df.best$ID <- paste(df.best$weighting, df.best$max.month, sep = " - ")
 cols <- c("ID", "Type", "MKT", "Alpha.p.a.", "ME", "IA", "ROE", "EG", "Tables")
 
 print(xtable::xtable(df.best[, cols], 
@@ -203,7 +222,7 @@ plot.log.return <- function(type, df.f) {
   df <- data.frame((as.matrix(df.q[, cols])) %*% t(as.matrix(
     df.f[, cols]
   )))
-  colnames(df) <- paste(df.f$Factor, df.f$max.quarter, df.f$weighting)
+  colnames(df) <- paste(df.f$Factor, df.f$max.month, df.f$weighting)
   cols <- colnames(df)
   
   df$Date <- df.q$Date
@@ -222,10 +241,10 @@ plot.log.return <- function(type, df.f) {
 }
 
 df.best1 <- df.best2 <- NULL
-df.best1 <- read.csv("data_out/cache_q_factors_EW_VYP/0_best_models_summary.csv")
-df.best2 <- read.csv("data_out/cache_q_factors_FW_VYP/0_best_models_summary.csv")
-df.best1 <- read.csv("data_out/cache_q_factors_EW/0_best_models_summary.csv")
-df.best2 <- read.csv("data_out/cache_q_factors_FW/0_best_models_summary.csv")
+df.best1 <- read.csv("data_out/cache_q_factors_EW_VYP_SL/0_best_models_summary.csv")
+df.best2 <- read.csv("data_out/cache_q_factors_FW_VYP_SL/0_best_models_summary.csv")
+#df.best1 <- read.csv("data_out/cache_q_factors_EW/0_best_models_summary.csv")
+#df.best2 <- read.csv("data_out/cache_q_factors_FW/0_best_models_summary.csv")
 df.best <- rbind(df.best1, df.best2)
 
 plot.log.return("VC", df.best)

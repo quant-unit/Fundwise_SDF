@@ -104,3 +104,13 @@ df.q <- df.q[, setdiff(colnames(df.q), cols.before)]
 apply(df.q[, 1:6], 2, function(x) prod(1+x))
 
 write.csv(df.q, "data_prepared/q_factors.csv", row.names = FALSE)
+
+# add future (yiels worse results)
+if (FALSE) {
+  df.q2 <- df.q
+  df.q2$Date <- seq(as.Date("2020-02-01"), by = "month", length.out = nrow(df.q)) - 1
+  df.q <- data.frame(rbind(df.q, df.q2))
+  write.csv(df.q, "data_prepared/q_factors.csv", row.names = FALSE)
+}
+
+
