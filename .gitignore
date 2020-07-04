@@ -10,6 +10,7 @@
 
 # literature folder
 /literatur/*
+/submission/*
 
 # R related
 *.Rhistory

@@ -21,7 +21,7 @@
 \usepackage{natbib}
 \usepackage{graphics}
 % use smaller margins
-\usepackage[margin=1.25in]{geometry} % 1.25in
+\usepackage[margin=1.0in]{geometry} % 1.25in
 % use double spacing
 \usepackage{setspace}
 \usepackage{amsthm}
@@ -51,7 +51,7 @@ The author alone is responsible for the content and writing of the paper.
 
 
 \newpage
-%\doublespacing
+\doublespacing
 
 \begin{center} 
 \section*{A spatial stochastic discount factor estimator for private equity funds}
@@ -62,7 +62,6 @@ The author alone is responsible for the content and writing of the paper.
 \begin{abstract}
 This paper proposes an improved stochastic discount factor estimation methodology suited for fund-level cash flows of private equity funds.
 The asymptotic inference framework for this semiparametric least-mean-distance estimator draws on a spatial notion, i.e., the idea that the economic distance between distinct private equity funds can be measured.
-We empirically test our new approach by estimating several simple stochastic discount factor models for a variety of private equity fund types.
 The empirical and Monte Carlo simulation results reveal high estimator variance for typical data sizes.
 Thus, we conjecture that naive semiparametric M-estimators like ours shall be exclusively used for single-factor models until considerably more vintage year information for private equity funds is available.
 \end{abstract}
@@ -71,7 +70,7 @@ Thus, we conjecture that naive semiparametric M-estimators like ours shall be ex
 %% main text
 \section{Introduction}
 
-Do investments in Private Equity (PE) funds offer abnormal returns to fund investors when risk-adjusted to/for public market factors?
+Do investments in Private Equity (PE) funds offer abnormal returns to fund investors when risk-adjusted for public market factors?
 Currently, a popular approach to answer this question is to evaluate private equity fund cash flows by Stochastic Discount Factor (SDF) models that draw on public market return covariates.
 The basic idea for SDF model estimation is that the sum of all discounted fund net cash flows is expected to be zero when the true SDF is applied.
 Unfortunately, there is no conclusion about the best methodology to estimate these SDF models, as a variety of proposals coexists in the academic private equity fund literature \citep{DLP12,B14,KN16,ACGP18,GSW19}.
@@ -532,7 +531,8 @@ The results in table \ref{tab:simulation_study} indicate that we can control the
 an appropriate choice of the set $\mathcal{T}$.
 The bias almost vanishes when we average over all present value dates in the maximal fund lifetime of 180 months. 
 For smaller or larger sets for $\mathcal{T}$, we find increasing bias.
-This also holds when we limit the maximal fund lifetime to 10 years by reducing the maximum deal holding period from ten to five years. 
+
+This also holds when we limit the maximal fund lifetime to ten years by reducing the maximum deal holding period from ten to five years. 
 Here, under correct model specification with $\beta_{\mathrm{MKT}}=1$ , the smallest bias is obtained for maximum month 120:
 for max. month 60 we get 1.028 (0.116), for max. month 120 we get 1.005 (0.116), and for max. month 180 we get 0.969 (0.13).
 
@@ -605,6 +605,12 @@ These results at least weakly indicate - given their insignificant asymptotic st
 On the other hand, VC underperforms public markets with market beta coefficients of roughly two, which implies high market risk.
 So, even \cite{DLP12} use the problematic since biased TVE dataset for their empirical analysis, we obtain similar qualitative results using Preqin data: (i) the market beta of VC seems to be higher than that of PE and (ii) VC, in contrast to PE, appears to exhibit a negative abnormal performance $\alpha$.
 
+As a robustness check, we reestimate all SDF models on a dataset that just contains funds from vintages older or equal than 2011.
+Interestingly, the PE and VC results regarding $\beta_{\mathrm{MKT}}$ and $\alpha$ can be qualitatively and also quantitatively confirmed on this 'mostly-liquidated' dataset\footnote{All R code and data is available in an online repository. %\url{https://github.com/quant-unit/Fundwise_SDF/tree/master/r_project}
+}.
+
+
+
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -613,10 +619,10 @@ Theoretically, our least-mean-distance estimator can be easily generalized to es
 Practically, semiparametric estimators commonly exhibit problematic small sample behavior.
 Given the amount of currently available private equity fund data, our estimator's variance seems quite large, even for simple SDF model specifications.
 Specifically, our Monte Carlo simulation results prompt us to conclude that the closely related \cite{DLP12} estimator may exhibit more bias and variance than originally assumed in their paper.
-Especially, the variance of $\alpha$ estimates seem to be too high to allow reliable abnormal performance conclusions.
+Especially, the variance of $\alpha$ estimates seems to be too high to allow reliable abnormal performance conclusions.
 Fortunately, we show that at least the bias can be easily reduced by averaging pricing errors over all dates within the fund lifetime.
 
-In the data-sparse private equity domain with only 20-40 cross-sectional units (i.e., vintage year portfolios) available for estimation, asymptotic inference seems not to be overly useful.
+In the data-sparse private equity domain with only 20-40 cross-sectional units (i.e., vintage year portfolios) currently available for estimation, asymptotic inference seems not to be overly useful.
 Thus, we strongly advise to always challenge asymptotic inference results by resampling or cross-validation techniques that are adapted to the dependence structure of overlapping fund cash flows.
 However, even their conclusions should be double-checked, to avoid unreasonable instances, e.g., when $hv$-block cross-validation chooses dubious models with negative MKT factor estimates.
 Since, in our empirical analyses, basically all two-factor models' asymptotic standard errors appear statistically insignificant, we conjecture that naive versions of our SDF estimator shall be exclusively used for a single-MKT-factor model until considerably more vintage year information for private equity funds is available.
@@ -624,7 +630,7 @@ Since, in our empirical analyses, basically all two-factor models' asymptotic st
 If someone wants to estimate more complex SDF models that incorporate additional factors, more structure is needed.
 This can be parametric assumptions for the data generating process \citep{ACGP18} or to extract additional information from intermediate net asset values \citep{GSW19,BGG20}.
 A first 'modern' approach to the same problem is applying machine learning techniques that regularize/shrink all coefficients other than the MKT factor.
-Secondly, given the high estimator variance revealed in the simulation study, machine learning methods that create a strong learner by combining multiple weak learners seem also worth considering (boosting, bagging, model averaging).
+Secondly, given the high estimator variance revealed in the simulation study, statistical learning methods that create a strong learner by combining multiple weak learners seem also worth considering (boosting, bagging, model averaging).
 %However, as our least-mean-distance estimator can be perceived as a simple special case of a GMM estimator (with ex-ante fixed identity weighting matrix), we cannot recommend GMM application in our context since even the simpler version delivers merely weak results.
 
 
