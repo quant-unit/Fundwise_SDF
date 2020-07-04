@@ -120,7 +120,7 @@ print(xtable::xtable(df.cv[, colnames(df.cv) != "max.month"],
                      label = paste0("tab:cv_180_", suffix), digits = 3), include.rownames=FALSE)
 
 # abs summary ----
-sum.abs <- function(df) {
+sum.abs <- function(df, inference="") {
   df.out <- data.frame(apply(df, 2, function(x) {
     sum(abs(as.numeric(x))) / nrow(df)
   }))
@@ -134,17 +134,19 @@ sum.abs <- function(df) {
   }
   df.out <- df.out[, cols]
   df.out$Weighting <- suffix
+  df.out$Inference <- inference
+  df.out <- df.out[, c("Weighting", "Inference", cols)]
   return(df.out)
 }
 
-df.cv.abs <- sum.abs(df.cv)
-df.all.abs <- sum.abs(df.all)
+df.cv.abs <- sum.abs(df.cv, "cross-validation")
+df.all.abs <- sum.abs(df.all, "asymptotic")
 
 df.abs <- rbind.all.columns(df.all.abs, df.cv.abs)
-rownames(df.abs) <- c("AI", "CV")
+
 print(xtable::xtable(df.abs, 
                      caption = "Sum of absolute values.",
-                     label = "tab:ai_sum_abs"), include.rownames=TRUE)
+                     label = "tab:ai_sum_abs"), include.rownames=FALSE)
 ## write csvs ----
 write.csv(df.cv.abs, paste0(dir.cache,"/0_cross_validation_sumabs.csv"))
 write.csv(df.all.abs, paste0(dir.cache,"/0_asymptotic_inference_sumabs.csv"))

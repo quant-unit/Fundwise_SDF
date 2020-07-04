@@ -19,25 +19,22 @@ use.vintage.year.pfs <- TRUE
 use.simulation <- FALSE
 do.cross.validation <- TRUE
 do.cache <- TRUE
-
+do.parallel <- ifelse(.Platform$OS.type == "windows", FALSE, TRUE)
 if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
+
 public.filename <- "public_returns"
 public.filename <- "msci_market_factors"
 public.filename <- "q_factors"
 
+error.function <- "L1_Ridge"
 error.function <- "L2_Lasso"
+
 sdf.model <- "linear"
 #sdf.model <- "exp.aff"
 
-max.months <- 15 * 12 # c(1/12, 5 , 10, 15, 20, 25, 30) * 12
-lambdas <- 0 # L2_Lasso
+max.months <- 180 # c(12.5, 15, 17.5) * 12 # c(1/12, 5 , 10, 15, 20, 25, 30) * 12
+lambdas <- 0
 kernel.bandwidth <- 12
-
-if(public.filename == "msci_market_factors") {
-  error.function <- "L1_Ridge"
-  sdf.model <- "linear"
-  lambdas <- seq(0.045, 0.05, 0.005) # L1_Ridge
-}
 
 # 1.2) load data -----
 df.public <- read.csv(paste0("data_prepared/", public.filename, ".csv"))
@@ -75,6 +72,11 @@ df0 <- merge(df.preqin, df.public, by="Date")
 df0$Fund.ID <- as.factor(df0$Fund.ID)
 df0$Alpha <- 1
 rm(df.preqin)
+
+#df0 <- df0[df0$Vintage <= 2011, ]
+aggregate(Vintage ~ type , df0, min)
+no.of.vin <- function(x) length(table(x))
+aggregate(Vintage ~ type , df0, no.of.vin)
 
 # 1.3) rbind.all ----
 rbind.all.columns <- function(x, y) {
@@ -134,8 +136,9 @@ if(error.function == "L2_Lasso") {
   err.sqr.calc <- function(par, max.month, lambda, df) {
     dfx <- split(df, df$Fund.ID)
     npvs <- sapply(dfx, f1, max.month=max.month, par0=c("RF" = 1, par))
+    p <- ifelse(length(par) == 1, par, par[-1])
     return(
-      sqrt(sum(npvs^2)) / length(npvs) # + lambda / length(par[-1]) * sum(abs(par[-1]))
+      sqrt(sum(npvs^2)) / length(npvs) + lambda / length(p) * sum(abs(p))
     )
   }
 }
@@ -144,26 +147,28 @@ if(error.function == "L1_Ridge") {
   err.sqr.calc <- function(par, max.month, lambda, df) {
     dfx <- split(df, df$Fund.ID)
     npvs <- sapply(dfx, f1, max.month=max.month, par0=c("RF" = 1, par))
+    p <- ifelse(length(par) == 1, par, par[-1])
     return(
-      sum(abs(npvs)) / length(npvs) + lambda / length(par) * sum(par^2)
+      sum(abs(npvs)) / length(npvs) + lambda / length(p) * sum(p^2)
     )
   }
 }
 
-max.month <- 40
+max.month <- 180
 lambda <- 0
-par <- c(MKT = 1, EG = 0)
+par <- c(MKT = 1, Alpha = 0)
 type <- levels(df0$type)[1]
 df.in <- df0[df0$type == type, ]
+
 df.in$Fund.ID <- (as.character(df.in$Fund.ID))
 system.time(
   print(err.sqr.calc(par, df=df.in, lambda=lambda, max.month=max.month))
 )
 
 # 2.3 Asymptotic gradient hessian -----
-if(FALSE) {
+if(TRUE) {
   res <- optimx::optimx(par, err.sqr.calc, 
-                        lambda = 0,
+                        lambda = lambda,
                         max.month = max.month,
                         df = df.in,
                         #method = "nlminb"
@@ -179,7 +184,7 @@ if(FALSE) {
 
 # Test Data
 dfx <- split(df.in, df.in$Fund.ID)
-df.ss <- dfx[[2]]
+df.ss <- dfx[[1]]
 delta <- 0.0001
 
 
@@ -412,7 +417,6 @@ iter.run <- function(input.list) {
     for(max.month in max.months) {
       print(paste("Max.M", max.month, "Lambda", lambda))
       
-      do.parallel <- TRUE
       if(do.parallel) {
         cl <- parallel::makeForkCluster(3)
         doParallel::registerDoParallel(cl)    
