@@ -12,7 +12,7 @@ if(!dir.exists("data_prepared")) dir.create("data_prepared")
 path <- "data_in/Preqin_Cashflow_export-26_Feb_20e003d5aa-5a18-4c12-aba8-7586a7435ac9.xlsx"
 sheet <- "Preqin_Export"
 df.xl <- data.frame(readxl::read_excel(path = path, sheet = sheet))
-
+table(df.xl$PRIMARY.GEOGRAPHIC.FOCUS) 
 colnames(df.xl)
 
 #df <- df.xl
@@ -127,6 +127,8 @@ make.preqin.csv <- function(fund.size.weighting) {
     df0 = make.preqin.df(
       fund.size.weighting = fund.size.weighting,
       acs.filter = acs[[i]],
+      region.filter = "Europe",
+      vin.year.pfs = TRUE,
       out.name = i)
     l[[i]] <- df0
   }
@@ -137,7 +139,7 @@ make.preqin.csv <- function(fund.size.weighting) {
   } else {
     tag <- "EW"
   }
-  file = paste0("data_prepared/preqin_cashflows_", tag, ".csv")
+  file = paste0("data_prepared/preqin_cashflows_", tag, "_Europe.csv")
   write.csv(df.out, file, row.names = FALSE)
   
 }

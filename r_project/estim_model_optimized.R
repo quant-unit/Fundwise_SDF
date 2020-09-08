@@ -17,22 +17,22 @@ getwd()
 weighting <- "EW"
 use.vintage.year.pfs <- TRUE
 use.simulation <- FALSE
-do.cross.validation <- TRUE
+do.cross.validation <- FALSE
 do.cache <- TRUE
 do.parallel <- ifelse(.Platform$OS.type == "windows", FALSE, TRUE)
 if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
 
-public.filename <- "public_returns"
-public.filename <- "msci_market_factors"
+#public.filename <- "public_returns"
+#public.filename <- "msci_market_factors"
 public.filename <- "q_factors"
 
-error.function <- "L1_Ridge"
+#error.function <- "L1_Ridge"
 error.function <- "L2_Lasso"
 
 sdf.model <- "linear"
 #sdf.model <- "exp.aff"
 
-max.months <- 180 # c(12.5, 15, 17.5) * 12 # c(1/12, 5 , 10, 15, 20, 25, 30) * 12
+max.months <- c(10, 20) * 12 # c(12.5, 15, 17.5) * 12 # c(1/12, 5 , 10, 15, 20, 25, 30) * 12
 lambdas <- 0
 kernel.bandwidth <- 12
 
@@ -46,6 +46,7 @@ if(!use.simulation) {
   df.preqin0 <- read.csv(paste0("data_prepared/simulated_cashflows_", weighting, ".csv"))
 }
 df.preqin0$Date <- as.Date(df.preqin0$Date)
+df.preqin0$Fund.ID <- as.factor(paste(df.preqin0$Fund.ID, df.preqin0$type, sep = "_"))
 
 to.monthly <- function(df.ss) {
   # fill zero cash flows (necessary for estimation)
@@ -64,10 +65,6 @@ df.preqin$type <- as.factor(as.character(df.preqin$type))
 df.preqin$Fund.ID <- as.factor(as.character(df.preqin$Fund.ID))
 length(levels(df.preqin$type))
 
-df.ss <- df.preqin[df.preqin$Fund.ID == levels(df.preqin$Fund.ID)[5], ]
-#View(df.ss)
-rm(df.ss)
-
 df0 <- merge(df.preqin, df.public, by="Date")
 df0$Fund.ID <- as.factor(df0$Fund.ID)
 df0$Alpha <- 1
@@ -75,8 +72,17 @@ rm(df.preqin)
 
 #df0 <- df0[df0$Vintage <= 2011, ]
 aggregate(Vintage ~ type , df0, min)
-no.of.vin <- function(x) length(table(x))
-aggregate(Vintage ~ type , df0, no.of.vin)
+number.of <- function(x) length(table(x))
+aggregate(Vintage ~ type , df0, number.of)
+aggregate(as.character(Fund.ID) ~ type , df0, number.of)
+
+df1 <- df0
+df1 <- df1[!duplicated(df1$Fund.ID), ]
+df1 <- as.data.frame.matrix(table(df1$Vintage, df1$type))
+df1 <- df1[, colnames(df1) %in% c("BO", "DD", "INF", "MEZZ", "NATRES", "PD", "RE", "VC")]
+df1["Total", ] <- as.integer(colSums(df1))
+print(xtable::xtable(df1, caption = "Number of funds per vintage year.", label = "tab:preqin_data"), include.rownames = TRUE)
+rm(df1)
 
 # 1.3) rbind.all ----
 rbind.all.columns <- function(x, y) {
@@ -422,7 +428,7 @@ iter.run <- function(input.list) {
         doParallel::registerDoParallel(cl)    
       }
 
-      output <- foreach (type = types, .combine = "rbind", .verbose = FALSE) %dopar% {
+      output <- foreach (type = types, .combine = "rbind", .verbose = FALSE) %do% {
         df.optim.in <- df.estimate[df.estimate$type == type, ]
         df.optim.in$Fund.ID <- (as.character(df.optim.in$Fund.ID))
         df.val <- df.validate[df.validate$type == type, ]
@@ -432,7 +438,13 @@ iter.run <- function(input.list) {
         for (factor in factors) {
           if(nrow(df.optim.in) == 0 | nrow(df.val) == 0) next
           
-          par <- c("MKT" = 1)
+          if(FALSE) {
+            # two factor model
+            par <- c("MKT" = 1)
+          } else {
+            # three factor model
+            par <- c("MKT" = 1, "Alpha"=0)
+          }
           
           if(factor == "ALL") {
             for(fac in setdiff(factors, "ALL")) {

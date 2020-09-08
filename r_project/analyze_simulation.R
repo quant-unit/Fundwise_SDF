@@ -58,6 +58,43 @@ l$sl_120$funds <- bivar(c("2020-06-19_162009_cached_res", "2020-06-19_215546_cac
 l$sl_180$funds <- bivar(c("2020-06-19_170444_cached_res", "2020-06-19_223843_cached_res", "2020-06-20_055215_cached_res", "2020-06-20_200707_cached_res")) # 180
 l$sl_240$funds <- bivar(c("2020-06-19_182159_cached_res", "2020-06-19_232145_cached_res", "2020-06-20_065156_cached_res", "2020-06-20_210719_cached_res")) # 240
 
+
+# Aggregate for plotting
+months <- c(1, 60, 120, 180, 240)
+df1 <- data.frame(
+  months = months,
+  VYP_mean = sapply(months, function(x) (l[[paste0("sl_", x)]]$one$MKT$MKT$Mean)),
+  VYP_sd = sapply(months, function(x) (l[[paste0("sl_", x)]]$one$MKT$MKT$SD)),
+  Funds_mean = sapply(months, function(x) (l[[paste0("sl_", x)]]$funds$MKT$MKT$Mean)),
+  Funds_sd = sapply(months, function(x) (l[[paste0("sl_", x)]]$funds$MKT$MKT$SD))
+)
+df1
+
+
+# Plot
+do.eps <- TRUE
+if(do.eps) {
+  setEPS()
+  postscript("chart/Simulation_funds_vs_vyps.eps", 
+             width = 5.5, height = 3, 
+             family = "Helvetica", pointsize = 10)
+}
+
+par( mar = c(4.2, 4.2, 1, 1) )
+
+plot(df1$months, df1$VYP_mean, ylim = c(0, 2), type = "b",
+     xlab = "Max Months", ylab = "Mean and Stdv of Estimates")
+lines(df1$months, df1$Funds_mean, type = "b", col = "blue")
+lines(df1$months, df1$VYP_sd, type = "b", lty = 3)
+lines(df1$months, df1$Funds_sd, type = "b", lty = 3, col = "blue")
+abline(h=c(0, 1), col="grey")
+legend("topright", bty = "n", legend = c("Mean Funds", "Mean VYP", "Stdv Funds", "Stdv VYP"), 
+       col = c("blue", "black"), lty = c(1,1,3,3), cex = 0.8)
+
+if(do.eps){ 
+  dev.off() 
+}
+
 ## Shorter fund lifetime max(5 + 5) ----
 l$sl_1$short <- bivar("2020-06-22_143545_cached_res") # 1
 l$sl_60$short <- bivar("2020-06-22_150254_cached_res") # 60
@@ -98,60 +135,99 @@ l$ea_300$high <- bivar("2020-06-25_161423_cached_res") # 300
 l$ea_360$high <- bivar("2020-06-25_165925_cached_res") # 360
 
 ## Sim Lin & Exp aff summary ------
-df <- data.frame(MaxMonth = c(1, 1, 60, 60, 120, 120, 180, 180, 240, 240, 300, 300, 360, 360))
-df$MaxMonth <- paste(df$MaxMonth, "-", unlist(lapply(1:(nrow(df)/2), function(x) return(c("mean", "stdv")))))
-m <- "sl"
-# beta 1
-df$beta1true <- c(l[[paste0(m, "_1")]]$one$MKT$MKT$Mean, l[[paste0(m, "_1")]]$one$MKT$MKT$SD,
-                  l[[paste0(m, "_60")]]$one$MKT$MKT$Mean, l[[paste0(m, "_60")]]$one$MKT$MKT$SD,
-                  l[[paste0(m, "_120")]]$one$MKT$MKT$Mean, l[[paste0(m, "_120")]]$one$MKT$MKT$SD,
-                  l[[paste0(m, "_180")]]$one$MKT$MKT$Mean, l[[paste0(m, "_180")]]$one$MKT$MKT$SD,
-                  l[[paste0(m, "_240")]]$one$MKT$MKT$Mean, l[[paste0(m, "_240")]]$one$MKT$MKT$SD,
-                  l[[paste0(m, "_300")]]$one$MKT$MKT$Mean, l[[paste0(m, "_300")]]$one$MKT$MKT$SD,
-                  l[[paste0(m, "_360")]]$one$MKT$MKT$Mean, l[[paste0(m, "_360")]]$one$MKT$MKT$SD)
 
-df$alpha1false <- c(l[[paste0(m, "_1")]]$one$Alpha$Alpha$Mean, l[[paste0(m, "_1")]]$one$Alpha$Alpha$SD,
-                  l[[paste0(m, "_60")]]$one$Alpha$Alpha$Mean, l[[paste0(m, "_60")]]$one$Alpha$Alpha$SD,
-                  l[[paste0(m, "_120")]]$one$Alpha$Alpha$Mean, l[[paste0(m, "_120")]]$one$Alpha$Alpha$SD,
-                  l[[paste0(m, "_180")]]$one$Alpha$Alpha$Mean, l[[paste0(m, "_180")]]$one$Alpha$Alpha$SD,
-                  l[[paste0(m, "_240")]]$one$Alpha$Alpha$Mean, l[[paste0(m, "_240")]]$one$Alpha$Alpha$SD,
-                  l[[paste0(m, "_300")]]$one$Alpha$Alpha$Mean, l[[paste0(m, "_300")]]$one$Alpha$Alpha$SD,
-                  l[[paste0(m, "_360")]]$one$Alpha$Alpha$Mean, l[[paste0(m, "_360")]]$one$Alpha$Alpha$SD)
+make.df <- function(m = c("sl", "ea")) {
+  months <- c(1, 1, 60, 60, 120, 120, 180, 180, 240, 240, 300, 300, 360, 360)
+  df <- data.frame(MaxMonth = months)
+  mean.sd <- unlist(lapply(1:(nrow(df)/2), function(x) return(c("mean", "stdv"))))
+  df$MaxMonth <- paste(df$MaxMonth, "-", mean.sd)
+  
+  # beta 1
+  df$beta1true <- c(l[[paste0(m, "_1")]]$one$MKT$MKT$Mean, l[[paste0(m, "_1")]]$one$MKT$MKT$SD,
+                    l[[paste0(m, "_60")]]$one$MKT$MKT$Mean, l[[paste0(m, "_60")]]$one$MKT$MKT$SD,
+                    l[[paste0(m, "_120")]]$one$MKT$MKT$Mean, l[[paste0(m, "_120")]]$one$MKT$MKT$SD,
+                    l[[paste0(m, "_180")]]$one$MKT$MKT$Mean, l[[paste0(m, "_180")]]$one$MKT$MKT$SD,
+                    l[[paste0(m, "_240")]]$one$MKT$MKT$Mean, l[[paste0(m, "_240")]]$one$MKT$MKT$SD,
+                    l[[paste0(m, "_300")]]$one$MKT$MKT$Mean, l[[paste0(m, "_300")]]$one$MKT$MKT$SD,
+                    l[[paste0(m, "_360")]]$one$MKT$MKT$Mean, l[[paste0(m, "_360")]]$one$MKT$MKT$SD)
+  
+  df$alpha1false <- c(l[[paste0(m, "_1")]]$one$Alpha$Alpha$Mean, l[[paste0(m, "_1")]]$one$Alpha$Alpha$SD,
+                      l[[paste0(m, "_60")]]$one$Alpha$Alpha$Mean, l[[paste0(m, "_60")]]$one$Alpha$Alpha$SD,
+                      l[[paste0(m, "_120")]]$one$Alpha$Alpha$Mean, l[[paste0(m, "_120")]]$one$Alpha$Alpha$SD,
+                      l[[paste0(m, "_180")]]$one$Alpha$Alpha$Mean, l[[paste0(m, "_180")]]$one$Alpha$Alpha$SD,
+                      l[[paste0(m, "_240")]]$one$Alpha$Alpha$Mean, l[[paste0(m, "_240")]]$one$Alpha$Alpha$SD,
+                      l[[paste0(m, "_300")]]$one$Alpha$Alpha$Mean, l[[paste0(m, "_300")]]$one$Alpha$Alpha$SD,
+                      l[[paste0(m, "_360")]]$one$Alpha$Alpha$Mean, l[[paste0(m, "_360")]]$one$Alpha$Alpha$SD)
+  
+  df$beta1false <- c(l[[paste0(m, "_1")]]$one$Alpha$MKT$Mean, l[[paste0(m, "_1")]]$one$Alpha$MKT$SD,
+                     l[[paste0(m, "_60")]]$one$Alpha$MKT$Mean, l[[paste0(m, "_60")]]$one$Alpha$MKT$SD,
+                     l[[paste0(m, "_120")]]$one$Alpha$MKT$Mean, l[[paste0(m, "_120")]]$one$Alpha$MKT$SD,
+                     l[[paste0(m, "_180")]]$one$Alpha$MKT$Mean, l[[paste0(m, "_180")]]$one$Alpha$MKT$SD,
+                     l[[paste0(m, "_240")]]$one$Alpha$MKT$Mean, l[[paste0(m, "_240")]]$one$Alpha$MKT$SD,
+                     l[[paste0(m, "_300")]]$one$Alpha$MKT$Mean, l[[paste0(m, "_300")]]$one$Alpha$MKT$SD,
+                     l[[paste0(m, "_360")]]$one$Alpha$MKT$Mean, l[[paste0(m, "_360")]]$one$Alpha$MKT$SD)
+  
+  # high beta
+  df$beta25false <- c(l[[paste0(m, "_1")]]$high$MKT$MKT$Mean, l[[paste0(m, "_1")]]$high$MKT$MKT$SD,
+                      l[[paste0(m, "_60")]]$high$MKT$MKT$Mean, l[[paste0(m, "_60")]]$high$MKT$MKT$SD,
+                      l[[paste0(m, "_120")]]$high$MKT$MKT$Mean, l[[paste0(m, "_120")]]$high$MKT$MKT$SD,
+                      l[[paste0(m, "_180")]]$high$MKT$MKT$Mean, l[[paste0(m, "_180")]]$high$MKT$MKT$SD,
+                      l[[paste0(m, "_240")]]$high$MKT$MKT$Mean, l[[paste0(m, "_240")]]$high$MKT$MKT$SD,
+                      l[[paste0(m, "_300")]]$high$MKT$MKT$Mean, l[[paste0(m, "_300")]]$high$MKT$MKT$SD,
+                      l[[paste0(m, "_360")]]$high$MKT$MKT$Mean, l[[paste0(m, "_360")]]$high$MKT$MKT$SD)
+  
+  df$alpha25true <- c(l[[paste0(m, "_1")]]$high$Alpha$Alpha$Mean, l[[paste0(m, "_1")]]$high$Alpha$Alpha$SD,
+                      l[[paste0(m, "_60")]]$high$Alpha$Alpha$Mean, l[[paste0(m, "_60")]]$high$Alpha$Alpha$SD,
+                      l[[paste0(m, "_120")]]$high$Alpha$Alpha$Mean, l[[paste0(m, "_120")]]$high$Alpha$Alpha$SD,
+                      l[[paste0(m, "_180")]]$high$Alpha$Alpha$Mean, l[[paste0(m, "_180")]]$high$Alpha$Alpha$SD,
+                      l[[paste0(m, "_240")]]$high$Alpha$Alpha$Mean, l[[paste0(m, "_240")]]$high$Alpha$Alpha$SD,
+                      l[[paste0(m, "_300")]]$high$Alpha$Alpha$Mean, l[[paste0(m, "_300")]]$high$Alpha$Alpha$SD,
+                      l[[paste0(m, "_360")]]$high$Alpha$Alpha$Mean, l[[paste0(m, "_360")]]$high$Alpha$Alpha$SD)
+  
+  df$beta25true <- c(l[[paste0(m, "_1")]]$high$Alpha$MKT$Mean, l[[paste0(m, "_1")]]$high$Alpha$MKT$SD,
+                     l[[paste0(m, "_60")]]$high$Alpha$MKT$Mean, l[[paste0(m, "_60")]]$high$Alpha$MKT$SD,
+                     l[[paste0(m, "_120")]]$high$Alpha$MKT$Mean, l[[paste0(m, "_120")]]$high$Alpha$MKT$SD,
+                     l[[paste0(m, "_180")]]$high$Alpha$MKT$Mean, l[[paste0(m, "_180")]]$high$Alpha$MKT$SD,
+                     l[[paste0(m, "_240")]]$high$Alpha$MKT$Mean, l[[paste0(m, "_240")]]$high$Alpha$MKT$SD,
+                     l[[paste0(m, "_300")]]$high$Alpha$MKT$Mean, l[[paste0(m, "_300")]]$high$Alpha$MKT$SD,
+                     l[[paste0(m, "_360")]]$high$Alpha$MKT$Mean, l[[paste0(m, "_360")]]$high$Alpha$MKT$SD)
+  
+  print(xtable::xtable(df, digits = 3, caption = "Simulation study for max month, exp aff.", label = "tab:simulation_study_max_month"), include.rownames=FALSE)
+  
+  df$months <- months
+  df$mean.sd <- mean.sd
+  invisible(df)
+}
 
-df$beta1false <- c(l[[paste0(m, "_1")]]$one$Alpha$MKT$Mean, l[[paste0(m, "_1")]]$one$Alpha$MKT$SD,
-                    l[[paste0(m, "_60")]]$one$Alpha$MKT$Mean, l[[paste0(m, "_60")]]$one$Alpha$MKT$SD,
-                    l[[paste0(m, "_120")]]$one$Alpha$MKT$Mean, l[[paste0(m, "_120")]]$one$Alpha$MKT$SD,
-                    l[[paste0(m, "_180")]]$one$Alpha$MKT$Mean, l[[paste0(m, "_180")]]$one$Alpha$MKT$SD,
-                    l[[paste0(m, "_240")]]$one$Alpha$MKT$Mean, l[[paste0(m, "_240")]]$one$Alpha$MKT$SD,
-                    l[[paste0(m, "_300")]]$one$Alpha$MKT$Mean, l[[paste0(m, "_300")]]$one$Alpha$MKT$SD,
-                    l[[paste0(m, "_360")]]$one$Alpha$MKT$Mean, l[[paste0(m, "_360")]]$one$Alpha$MKT$SD)
+df.sl <- make.df("sl")
+df.ea <- make.df("ea")
 
-# high beta
-df$beta25false <- c(l[[paste0(m, "_1")]]$high$MKT$MKT$Mean, l[[paste0(m, "_1")]]$high$MKT$MKT$SD,
-                  l[[paste0(m, "_60")]]$high$MKT$MKT$Mean, l[[paste0(m, "_60")]]$high$MKT$MKT$SD,
-                  l[[paste0(m, "_120")]]$high$MKT$MKT$Mean, l[[paste0(m, "_120")]]$high$MKT$MKT$SD,
-                  l[[paste0(m, "_180")]]$high$MKT$MKT$Mean, l[[paste0(m, "_180")]]$high$MKT$MKT$SD,
-                  l[[paste0(m, "_240")]]$high$MKT$MKT$Mean, l[[paste0(m, "_240")]]$high$MKT$MKT$SD,
-                  l[[paste0(m, "_300")]]$high$MKT$MKT$Mean, l[[paste0(m, "_300")]]$high$MKT$MKT$SD,
-                  l[[paste0(m, "_360")]]$high$MKT$MKT$Mean, l[[paste0(m, "_360")]]$high$MKT$MKT$SD)
+# plot
+do.eps <- TRUE
+if(do.eps) {
+  setEPS()
+  postscript("chart/Simulation_expaff_vs_simlin.eps", 
+             width = 5.5, height = 3, 
+             family = "Helvetica", pointsize = 10)
+}
 
-df$alpha25true <- c(l[[paste0(m, "_1")]]$high$Alpha$Alpha$Mean, l[[paste0(m, "_1")]]$high$Alpha$Alpha$SD,
-                    l[[paste0(m, "_60")]]$high$Alpha$Alpha$Mean, l[[paste0(m, "_60")]]$high$Alpha$Alpha$SD,
-                    l[[paste0(m, "_120")]]$high$Alpha$Alpha$Mean, l[[paste0(m, "_120")]]$high$Alpha$Alpha$SD,
-                    l[[paste0(m, "_180")]]$high$Alpha$Alpha$Mean, l[[paste0(m, "_180")]]$high$Alpha$Alpha$SD,
-                    l[[paste0(m, "_240")]]$high$Alpha$Alpha$Mean, l[[paste0(m, "_240")]]$high$Alpha$Alpha$SD,
-                    l[[paste0(m, "_300")]]$high$Alpha$Alpha$Mean, l[[paste0(m, "_300")]]$high$Alpha$Alpha$SD,
-                    l[[paste0(m, "_360")]]$high$Alpha$Alpha$Mean, l[[paste0(m, "_360")]]$high$Alpha$Alpha$SD)
+par( mar = c(4.2, 4.2, 1, 1) )
 
-df$beta25true <- c(l[[paste0(m, "_1")]]$high$Alpha$MKT$Mean, l[[paste0(m, "_1")]]$high$Alpha$MKT$SD,
-                   l[[paste0(m, "_60")]]$high$Alpha$MKT$Mean, l[[paste0(m, "_60")]]$high$Alpha$MKT$SD,
-                   l[[paste0(m, "_120")]]$high$Alpha$MKT$Mean, l[[paste0(m, "_120")]]$high$Alpha$MKT$SD,
-                   l[[paste0(m, "_180")]]$high$Alpha$MKT$Mean, l[[paste0(m, "_180")]]$high$Alpha$MKT$SD,
-                   l[[paste0(m, "_240")]]$high$Alpha$MKT$Mean, l[[paste0(m, "_240")]]$high$Alpha$MKT$SD,
-                   l[[paste0(m, "_300")]]$high$Alpha$MKT$Mean, l[[paste0(m, "_300")]]$high$Alpha$MKT$SD,
-                   l[[paste0(m, "_360")]]$high$Alpha$MKT$Mean, l[[paste0(m, "_360")]]$high$Alpha$MKT$SD)
+plot(df.sl[df.sl$mean.sd == "mean", c("months", "beta1true")], ylim = c(0,2), type = "b",
+     xlab = "Max Months", ylab = "Mean and Stdv of Estimates")
+abline(h = c(0,1), col = "grey")
 
-print(xtable::xtable(df, digits = 3, caption = "Simulation study for max month, exp aff.", label = "tab:simulation_study_max_month"), include.rownames=FALSE)
+lines(df.sl[df.sl$mean.sd == "stdv", c("months", "beta1true")], type = "b", lty = 3)
+lines(df.ea[df.ea$mean.sd == "mean", c("months", "beta1true")], type = "b", col = "red")
+lines(df.ea[df.ea$mean.sd == "stdv", c("months", "beta1true")], type = "b", lty = 3, col = "red")
+
+legend("topright", bty = "n", 
+       legend = c("Mean Exp.Aff. SDF", "Mean Linear SDF", "Stdv Exp.Aff. SDF", "Stdv Linear SDF"), 
+       col = c("red", "black"), lty = c(1,1,3,3), cex = 0.8)
+
+if(do.eps){ 
+  dev.off() 
+}
 
 ## Double half models (500 iter) ----
 h <- list()
