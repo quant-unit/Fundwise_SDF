@@ -42,7 +42,7 @@ Stochastic discount factor, Semiparametric, M-estimation, Spatial inference, Pri
 
 
 \section*{Acknowledgements}
-I thank Hsin-Chih Ma, Stefan Mittnik, Daniel Schalk, Nicolas D\"{u}tsch and all participants of the LMU econometrics research seminar SS 2019 for helpful discussions and support.
+I thank Hsin-Chih Ma, Stefan Mittnik, Daniel Schalk, Nicolas D\"{u}tsch, Jiaojiao Zhao and all participants in the LMU econometrics research seminar SS 2019 for helpful discussions and support.
 
 
 \section*{Declaration of interest}
@@ -62,7 +62,7 @@ The author alone is responsible for the content and writing of the paper.
 \begin{abstract}
 This paper proposes an improved stochastic discount factor estimation methodology suited for fund-level cash flows of private equity funds.
 The asymptotic inference framework for this semiparametric least-mean-distance estimator draws on a spatial notion, i.e., the idea that the economic distance between distinct private equity funds can be measured.
-The empirical and Monte Carlo simulation results reveal high estimator variance for typical data sizes.
+The empirical and Monte Carlo simulation results indicate (i) that our method can improve the popular \cite{DLP12} approach, but (ii) that estimator variance for typical data sizes is still high.
 Thus, we conjecture that naive semiparametric M-estimators like ours shall be exclusively used for single-factor models until considerably more vintage year information for private equity funds is available.
 \end{abstract}
 
@@ -70,13 +70,15 @@ Thus, we conjecture that naive semiparametric M-estimators like ours shall be ex
 %% main text
 \section{Introduction}
 
+Given the massive rise in private capital investments over the last years with now 5.1 trillion dollars in assets under management and another 2.7 trillion dollar in dry powder (source Preqin, as of March 2020), there is one important question every investor should ask:
 Do investments in Private Equity (PE) funds offer abnormal returns to fund investors when risk-adjusted for public market factors?
 Currently, a popular approach to answer this question is to evaluate private equity fund cash flows by Stochastic Discount Factor (SDF) models that draw on public market return covariates.
 The basic idea for SDF model estimation is that the sum of all discounted fund net cash flows is expected to be zero when the true SDF is applied.
 Unfortunately, there is no conclusion about the best methodology to estimate these SDF models, as a variety of proposals coexists in the academic private equity fund literature \citep{DLP12,B14,KN16,ACGP18,GSW19}.
 
 This paper aims to revise and enhance existing semiparametric approaches.
-Especially our conclusions from the insightful \cite{DLP12} and \cite{KN16} articles lead us to suggest an improved Least-Mean-Distance (LMD) estimator for SDF models.
+Especially our conclusions from the insightful \cite{DLP12} and \cite{KN16} articles lead us to suggest an improved estimator for SDF models.
+The estimator is from the class of Least-Mean-Distance (LMD) estimators as generically defined by \cite{PP97}.
 It can be applied to fund-level cash flow data of private equity funds.
 On the one hand, we provide asymptotic inference formulations that rely on the concept of spatial (near-epoch) dependence between funds following the pioneering idea in \cite{KN16}.
 In this context, it is paramount to quantify the economic distance between funds by a measure like absolute vintage year difference or cash flow overlap\footnote{However, this economic inter-fund \emph{distance} refers \textbf{not} to the term Least-Mean-\emph{Distance} estimator.}.
@@ -106,7 +108,7 @@ Our general SDF setting is similar to that of \cite{DLP12} and \cite{KN16}; the 
 
 Let fund $i=1,2,\dots,n$ be characterized by its net cash flows ${CF}_{t,i}$ (i.e., distributions minus contributions) and its net asset values ${NAV}_{t,i}$ with discrete time index $t=1,2,\dots,T$.
 The data generating processes (DGPs) for $CF$ and $NAV$ are left unspecified.
-For a non-liquidated fund we treat the most recent NAV as final distribution cash flow.
+For a non-liquidated fund, we treat the most recent NAV as final distribution cash flow.
 The stochastic discount factor $\Psi_{\tau,t}$ can be used to calculate the (realized) time-$\tau$ price $P_{\tau,t,i}$ of a \textbf{single} time-$t$ cash flow of any given PE fund $i$
 \begin{equation}
 \label{eq:price}
@@ -120,7 +122,8 @@ For each fund $i$ and all points $\tau$ within a common fund lifetime, the prici
 \epsilon_{\tau,i} = \sum_{t=1}^T P_{\tau,t,i} 
 \qquad \forall \quad \tau,i
 \end{equation}
-We define the $w_i$-weighted and $\mathcal{T}_i$-averaged fund pricing error as
+We are now ready to introduce this paper's main contribution that aims to improve the estimator of \cite{DLP12} in terms of small-sample bias and variance:
+The following equation \ref{eq:average_pricing_error} defines the ($w_i$-weighted) average pricing error $\bar{\epsilon}_{i}$ that averages over the set $\mathcal{T}_i$
 \begin{equation}
 \label{eq:average_pricing_error}
 \bar{\epsilon}_{i} =
@@ -137,10 +140,11 @@ The smallest possible set $\mathcal{T}_i$ contains just a fund's starting date; 
 The largest set contains all time periods bigger than the fund's starting date until now.
 The optimal set size of $\mathcal{T}$ is studied by Monte Carlo simulations in subsection \ref{sec:simulation_study}.
 There we show that controlling for the optimal size of $\mathcal{T}$ decreases the small-sample bias and variance of the original \cite{DLP12} estimator that just discounts all cash flows to the fund inception date.
+
 Additionally, each fund $i$ is characterized by its vintage year which can be expressed by $v_{i}=\min(\mathcal{T}_i) \in 1,2,\dots,V$, where $V$ denotes the maximum vintage year used in a given data set.
 Finally, the scalar weighting factor $w_i$ can be (i) one divided by the fund's invested capital for equal weighting of funds, (ii) one divided by the vintage year sum of invested capital for vintage year weighting, (iii) the scalar one for fund-size weighting, or (iv) some macroeconomic deflator.
 
-To find $\theta$, our LMD estimator minimizes the average loss of $\bar{\epsilon}$
+To find $\theta$, our LMD estimator \citep{PP97} minimizes the average loss of $\bar{\epsilon}$
 \begin{equation}
 \label{eq:estimator}
 \hat{\theta} = 
@@ -173,7 +177,7 @@ Throughout the paper, the weighted average fund pricing error $\bar{\epsilon} \e
 \subsection{Cross-sectional unit: Individual fund vs. portfolio of funds}
 \label{sec:cross_sectional_unit}
 
-According to the classical value-additivity assumption in \cite{HR87} SDF models invariably shall hold for all pooled or unpooled assets.
+According to the classical value-additivity assumption in \cite{HR87}, SDF models invariably shall hold for all pooled or unpooled assets.
 So, in theory, it is not important if the test assets for our SDF are portfolio or individual fund cash flows.
 Practically it makes a difference and there are arguments both for and against portfolio formation.
 
@@ -184,7 +188,7 @@ Following the same nonparametric regression viewpoint, \cite{CCF19} derive a non
 Generally, the larger the portfolios, the easier any given SDF can price their cash flows since fewer test assets remain.
 
 In the case of private equity funds, the pooling of fund cash flows helps to counter GP financial engineering\footnote{GPs may use bridge credit facilities below the hurdle rate to boost the fund's internal rate of return. This increases the probability of observing funds with only positive or only negative cash flows. Yet, we want to avoid (the possibility of) cross-sectional units that exhibit just cash flows with the same algebraic sign. Realistic SDFs never can price these cash flow streams.}, which might both change and mask the true risk profile of observed LP cash flows.
-Especially for private equity funds, portfolio formation based on vintage year is compelling due to its time-series-like indexing as done by \cite{DLP12}.
+Especially for private equity funds, portfolio formation based on vintage years is compelling due to its time-series-like indexing as done by \cite{DLP12}.
 This procedure also offers substantial computational benefits as it drastically decreases the number of cross-sectional units.
 Further, as stated in \cite{ALS20}, portfolio formation allows more precise factor loading estimates  due to decreasing idiosyncratic risk, but at the expense of sacrificing cross-sectional information.
 Finally, small (or fixed) $T$ and large $N$ set-ups may face finite sample problems \citep{RRZ20}.
@@ -197,6 +201,9 @@ Finally, small (or fixed) $T$ and large $N$ set-ups may face finite sample probl
 Without loss of generality, we refer to our cross-sectional units as funds, although this is just a special case of a size-$n_v$-portfolio.
 In the simulation study in subsection \ref{sec:simulation_study}, we compare both boundary cases (i) individual funds and (ii) vintage year portfolios.
 
+Thinking more broadly, we could even imagine more extreme boundary cases: 
+(iii) on the one hand, we could pool \emph{all} fund cash flows to form just \emph{one} global moment condition like \cite{KN16} and  accept potential under-identification; 
+(iv) on the other hand, we could operate on underlying deal level like \cite{B14,B16} and use gross-of-fee cash flows.
 
 \subsection{Asymptotic framework}
 \label{sec:asymptotic_framework}
@@ -407,8 +414,10 @@ Specifically, we obtain the estimator of \cite[equation 18]{KN16} in our framewo
 	\quad
 	\mathrm{with}
 	\quad
-	L(x)=x^2
+	L(x) = x^{\top} W x = x^{\top} I x
 \end{equation}
+with identity matrix $I$ as weighting matrix $W$.
+
 Time-series GMM estimators inherently bear the risk of under-identification, if the corresponding time-series is constructed by pooling all fund cash flows from a given fund type.
 Exactly this happens in equation \ref{eq:kn16_estimator} where we consequentially obtain a GMM estimator with just one moment condition.
 To counter under-identification, additional characteristic-based fund portfolios could be formed to increase the number of moment conditions per fund type; also, random portfolios combined with bootstrapping make sense.
@@ -458,7 +467,7 @@ Table \ref{tab:comparison} summarizes the most prominent distinctions between th
 
 \subsection{Data}
 
-We use the Preqin cash flow data set as of 26th February 2020.
+We use the Preqin cash flow data set as of 26th February 2020 that is well known in the academic private equity literature \citep{HJK14,KN16,ACGP18}.
 We pool all regions and analyze the following fund types (using the Preqin asset class classification):
 PE ("Private Equity"; 2248 distinct funds in data set; 36 vintage years),
 VC ("Venture Capital"; 871; 36),
@@ -718,6 +727,7 @@ Fortunately, we show that at least the bias can be easily reduced by averaging p
 In the data-sparse private equity domain with only 20-40 cross-sectional units (i.e., vintage year portfolios) currently available for estimation, asymptotic inference seems not to be overly useful.
 Thus, we strongly advise to always challenge asymptotic inference results by resampling or cross-validation techniques that are adapted to the dependence structure of overlapping fund cash flows.
 However, even their conclusions should be double-checked, to avoid unreasonable instances, e.g., when $hv$-block cross-validation chooses dubious models with negative MKT factor estimates.
+Unfortunately, using individual funds instead of vintage year portfolios, which yields smaller asymptotic standard errors, constitutes no viable resolution as individual funds show considerably larger small-sample bias and variance in our Monte Carlo example.
 Since, in our empirical analyses, basically all two-factor models' asymptotic standard errors appear statistically insignificant, we conjecture that naive versions of our SDF estimator shall be exclusively used for a single-MKT-factor model until considerably more vintage year information for private equity funds is available.
 
 If someone wants to estimate more complex SDF models that incorporate additional factors, more structure is needed.
