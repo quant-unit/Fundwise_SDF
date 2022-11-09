@@ -114,3 +114,125 @@ if (FALSE) {
 }
 
 
+
+###### BOND FACTORS ------
+# load Excel ------
+library(readxl)
+library(tidyr)
+
+filename <- "data_in/Bond Indices iBoxx - large coverage.xlsx"
+df.eur <- data.frame(readxl::read_excel(filename, sheet = "EuroData"))
+df.usd <- data.frame(readxl::read_excel(filename, sheet = "USDData"))
+
+# calculate returns -----------
+make.return.df <- function(df) {
+  # Extend date axis (to all daily dates)
+  colnames(df)[colnames(df) == "Name"] <- "Date"
+  df$Date <- as.Date(df$Date)
+  min.date <- min(df$Date)
+  # min.date <- as.Date("1969-12-31")
+  df.date <- data.frame(Date = seq(min.date, max(df$Date),by ="day"))
+  df <- merge(df, df.date, by = "Date", all.y=TRUE)
+  
+  # Forward fill all columns
+  for (col in colnames(df)){
+    df <-  df %>% fill(col, .direction = "down")
+  }
+  
+  # select month end dates
+  df$YearMonth <- format(df$Date, "%Y-%m")
+  df <- df[!duplicated(df$YearMonth, fromLast=TRUE), ]
+  
+  # Return calculation
+  calc.return <- function(x) {
+    x <- as.numeric(x)
+    y <- c(NA, x[-1] / x[1:(length(x)- 1)])
+    # y <- y - 1
+    return(y)
+  }
+  
+  cols <- colnames(df)
+  cols <- cols[!(cols %in% c("Date", "YearMonth"))]
+  for (col in cols) {
+    try(df[, col] <- calc.return(df[, col]))
+  }
+  
+  # sort cols by number of missing values
+  cols <- names(sort(apply(df, 2, function(x) sum(is.na(x)))))
+  df <- df[, cols]
+  
+  ####
+  return(df)
+}
+
+df.eur <- make.return.df(df.eur)
+df.usd <- make.return.df(df.usd)
+
+# calculate factors ------
+colnames(df.usd)
+apply(df.usd, 2, function(x) sum(is.na(x)))
+
+fac.eur <- list(
+  RF.long = "IBOXX.EURO.SOVEREIGNS.1.3...Tot..Rtn.Idx.Today",
+  Term.long = "IBOXX.EURO.SOVEREIGNS.7.10...Tot..Rtn.Idx.Today",
+  Corp.long = "IBOXX.EURO.CORPORATES.1.3...Tot..Rtn.Idx.Today",
+  Corp.BBB.long = "IBOXX.EURO.CORPORATES.BBB.1.3...Tot..Rtn.Idx.Today",
+  Liq.BBB.long =  "IBOXX.EURO.CORPORATES.BBB...Tot..Rtn.Idx.Today",
+  Liq.BBB.short = "IBOXX.EURO.LIQUID.CORPORATES.BBB...Tot..Rtn.Idx.Today"
+)
+
+fac.usd <- list(
+  RF.long = "IBOXX...SOVEREIGNS.1.3Y...Tot..Rtn.Idx.Today",
+  Term.long = "IBOXX...SOVEREIGNS.7.10Y...Tot..Rtn.Idx.Today",
+  Corp.long = "IBOXX...CORPORATES.1.3Y...Tot..Rtn.Idx.Today",
+  Corp.BBB.long = "IBOXX...CORPORATES.BBB.1.3Y...Tot..Rtn.Idx.Today",
+  Liq.BBB.long =  "IBOXX...CORPORATES.BBB...Tot..Rtn.Idx.Today" ,
+  Liq.BBB.short = "IBOXX...LIQUID.INVESTMENT.GRADE.BBB.INDEX...Tot..Rtn.Idx.Today"
+)
+
+
+make.factors <- function(df, fac) {
+  df$RF <- df[, fac$RF.long] - 1
+  df$TERM <- df[, fac$Term.long] - df[, fac$RF.long]
+  df$CORP <- df[, fac$Corp.long] - df[, fac$RF.long]
+  df$HY <- df[, fac$Corp.BBB.long] - df[, fac$Corp.long]
+  df$LIQ <- df[, fac$Liq.BBB.long] - df[, fac$Liq.BBB.short]
+  
+  rownames(df) <- df$Date
+  cols <- c("RF", "TERM", "CORP", "HY", "LIQ")
+  df <- df[, cols]
+  
+  return(df)
+}
+
+df.eur.fac <- make.factors(df.eur, fac.eur)
+df.usd.fac <- make.factors(df.usd, fac.usd)
+
+rownames2col <- function(df) {
+  df <- cbind(Date = row.names(df), df)
+  return(df)
+}
+
+write.csv(rownames2col(df.eur.fac), file = "data_prepared/DebtFactorsEUR.csv", row.names = FALSE)
+write.csv(rownames2col(df.usd.fac), file = "data_prepared/DebtFactorsUSD.csv", row.names = FALSE)
+
+# analyze factors ------
+factor.summary <- function(df) {
+  y <- apply(df, 2, function(x) {
+    x[is.na(x)] <- 0
+    y <- prod(1 + x)
+    return(y)
+  })
+  
+  return(y)
+}
+
+factor.summary(df.eur.fac)
+factor.summary(df.usd.fac)
+
+var(df.eur.fac, na.rm = TRUE)
+var(df.usd.fac, na.rm = TRUE)
+
+cor(df.eur.fac, use = "pairwise.complete.obs")
+cor(df.usd.fac, use = "pairwise.complete.obs")
+

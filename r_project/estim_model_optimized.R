@@ -25,6 +25,7 @@ if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
 #public.filename <- "public_returns"
 #public.filename <- "msci_market_factors"
 public.filename <- "q_factors"
+public.filename <- "DebtFactorsUSD"
 
 #error.function <- "L1_Ridge"
 error.function <- "L2_Lasso"
@@ -39,6 +40,18 @@ kernel.bandwidth <- 12
 # 1.2) load data -----
 df.public <- read.csv(paste0("data_prepared/", public.filename, ".csv"))
 df.public$Date <- as.Date(df.public$Date)
+if (public.filename == "DebtFactorsUSD") {
+  df.public <- df.public[complete.cases(df.public[, 2:5]), ]
+  df.public[is.na(df.public)] <- 0
+  public.equity <- "msci_market_factors"
+  df.pubeq <- read.csv(paste0("data_prepared/", public.equity, ".csv"))
+  df.pubeq$Date <- as.Date(df.pubeq$Date)
+  
+  df.public$RF <- NULL
+  df.public <- merge(df.public, df.pubeq[, c("Date", "RF", "MKT")], by = "Date", all.x = TRUE)
+  remove(df.pubeq)
+  df.public <- df.public[df.public$Date > as.Date("2000-01-31"), ]
+}
 
 if(!use.simulation) {
   df.preqin0 <- read.csv(paste0("data_prepared/preqin_cashflows_", weighting, ".csv"))
@@ -98,24 +111,42 @@ rbind.all.columns <- function(x, y) {
 }
 
 # 2.1) getNPVs function ----
-library(Rcpp)
+if (FALSE) {
+  library(Rcpp)
+  
+  Rcpp::cppFunction("
+                    double getNPVs(NumericVector cf, NumericVector ret, int max_month){
+                    double DCF = sum(cf / ret);
+                    
+                    int n = cf.length();
+                    int i_max = std::min(max_month, n);
+                    NumericVector VectorOut(i_max, 0.0);
+                    
+                    for(int i = 0; i < i_max; i++) {
+                    VectorOut[i] = DCF * ret[i];
+                    }
+                    
+                    double y = mean(VectorOut);
+                    return y;
+                    }")
+n <- 13
+getNPVs(rep(1,n), seq(1,n,1), n)
+}
 
-Rcpp::cppFunction("
-    double getNPVs(NumericVector cf, NumericVector ret, int max_month){
-    double DCF = sum(cf / ret);
 
-    int n = cf.length();
-    int i_max = std::min(max_month, n);
-    NumericVector VectorOut(i_max, 0.0);
-    
-    for(int i = 0; i < i_max; i++) {
-      VectorOut[i] = DCF * ret[i];
-    }
-
-    double y = mean(VectorOut);
-    return y;
-    }
-                      ")
+getNPVs <- function(cf, ret, max_month) {
+  DCF = sum(cf / ret)
+  
+  n = length(cf)
+  i_max = min(max_month, n)
+  VectorOut = c()
+  
+  for(i in 0:i_max) {
+    VectorOut <- c(VectorOut, DCF * ret[i])
+  }
+  y <- mean(VectorOut)
+  return(y)
+}
 n <- 13
 getNPVs(rep(1,n), seq(1,n,1), n)
 
@@ -415,6 +446,11 @@ iter.run <- function(input.list) {
     
     types <- c("PE", "VC", "PD", "RE", "NATRES", "INF") # asset classes
     #types <- levels(df0$type)
+  }
+  if (public.filename == "DebtFactorsUSD") {
+    factors <- c("TERM", "CORP", "HY", "LIQ")
+    types <- levels(df0$type)
+    # types <- c("PD", "DD", "MEZZ")
   }
   
   # 2) RUNNER
