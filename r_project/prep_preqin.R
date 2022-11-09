@@ -18,9 +18,35 @@ colnames(df.xl)
 #df <- df.xl
 table(df.xl$ASSET.CLASS[!duplicated(df.xl$FUND.ID)])
 table(df.xl$STRATEGY[!duplicated(df.xl$FUND.ID)])
-for(asset.class in c("Private Equity", "Venture Capital", "Private Debt")) {
-  print(table(df.xl$STRATEGY[df.xl$ASSET.CLASS == asset.class]))
+table(df.xl$VINTAGE...INCEPTION.YEAR[!duplicated(df.xl$FUND.ID)])
+
+
+
+
+make.strategy.summary <- function() {
+  l <- list()
+  for(asset.class in levels(as.factor(df.xl$ASSET.CLASS))) {
+    #print(asset.class)
+    #print(table(df.xl$STRATEGY[df.xl$ASSET.CLASS == asset.class]))
+    df <- data.frame(table(df.xl$STRATEGY[(df.xl$ASSET.CLASS == asset.class) & (!duplicated(df.xl$FUND.ID))]))
+    colnames(df) <- c("Strategy", "Fund Count")
+    df["Asset Class"] <- asset.class
+    df <- df[, c(3,1,2)]
+    l[[asset.class]] <- df
+  }
+  df <- data.frame(do.call(rbind, l))
+  
+  print(
+    xtable::xtable(df, caption = "Summary of asset classes in Preqin dataset.", 
+                   digits=3, label = "tab:summary_preqin_strategy"), 
+    include.rownames=FALSE
+    #, format.args = list(big.mark = ",")
+  )
+  return(df)
 }
+make.strategy.summary()
+
+
 
 make.preqin.df <- function(
   df = df.xl,
@@ -100,8 +126,8 @@ make.preqin.df <- function(
   
   return(df)
 }
-df <- make.preqin.df()
-
+df <- make.preqin.df(acs.filter = "Natural Resources")
+length(df$Fund.ID[!duplicated(df$Fund.ID)])
 
 # run ----
 

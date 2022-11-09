@@ -61,8 +61,8 @@ The author alone is responsible for the content and writing of the paper.
 
 \begin{abstract}
 This paper proposes an improved stochastic discount factor estimation methodology suited for fund-level cash flows of private equity funds.
-The asymptotic inference framework for this semiparametric least-mean-distance estimator draws on a spatial notion, i.e., the idea that the economic distance between distinct private equity funds can be measured.
-The empirical and Monte Carlo simulation results indicate (i) that our method can improve the popular \cite{DLP12} approach, but (ii) that estimator variance for typical data sizes is still high.
+The asymptotic inference framework for our semiparametric nonlinear least squares estimator draws on a spatial notion, i.e., the idea that the economic distance between distinct private equity funds can be measured.
+The empirical and Monte Carlo simulation results indicate (i) that our method can improve the popular Generalized Method of Moments approach of \cite{DLP12}, but (ii) that estimator variance for typical data sizes is still high.
 Thus, we conjecture that naive semiparametric M-estimators like ours shall be exclusively used for single-factor models until considerably more vintage year information for private equity funds is available.
 \end{abstract}
 
@@ -70,7 +70,7 @@ Thus, we conjecture that naive semiparametric M-estimators like ours shall be ex
 %% main text
 \section{Introduction}
 
-Given the massive rise in private capital investments over the last years with now 5.1 trillion dollars in assets under management and another 2.7 trillion dollar in dry powder (source Preqin, as of March 2020), there is one important question every investor should ask:
+Given the massive rise in private capital investments over the last years with now 5.1 trillion dollars in unrealized fund net asset values and another 2.7 trillion dollar in dry powder (source Preqin, as of March 2020), there is one important question every investor should ask:
 Do investments in Private Equity (PE) funds offer abnormal returns to fund investors when risk-adjusted for public market factors?
 Currently, a popular approach to answer this question is to evaluate private equity fund cash flows by Stochastic Discount Factor (SDF) models that draw on public market return covariates.
 The basic idea for SDF model estimation is that the sum of all discounted fund net cash flows is expected to be zero when the true SDF is applied.
@@ -78,13 +78,13 @@ Unfortunately, there is no conclusion about the best methodology to estimate the
 
 This paper aims to revise and enhance existing semiparametric approaches.
 Especially our conclusions from the insightful \cite{DLP12} and \cite{KN16} articles lead us to suggest an improved estimator for SDF models.
-The estimator is from the class of Least-Mean-Distance (LMD) estimators as generically defined by \cite{PP97}.
+Our nonlinear least squares estimator is from the class of Least-Mean-Distance (LMD) estimators which are easier to handle than traditional Generalized Method of Moments (GMM) approaches \citep{PP97}.
 It can be applied to fund-level cash flow data of private equity funds.
-On the one hand, we provide asymptotic inference formulations that rely on the concept of spatial (near-epoch) dependence between funds following the pioneering idea in \cite{KN16}.
+Our LMD estimator arguably both simplifies and generalizes the GMM methodology of \cite{DLP12}, where we provide the asymptotic inference framework that was missing in the original paper.
+The asymptotic inference formulations rely on the concept of spatial (near-epoch) dependence between funds as proposed by \cite{KN16}.
 In this context, it is paramount to quantify the economic distance between funds by a measure like absolute vintage year difference or cash flow overlap\footnote{However, this economic inter-fund \emph{distance} refers \textbf{not} to the term Least-Mean-\emph{Distance} estimator.}.
-On the other hand, our LMD estimator arguably generalizes the \cite{DLP12} methodology, where we provide the asymptotic inference framework that was missing in the original paper.
-Additionally, we propose a simple solution to the 'exploding alpha' issue briefly mentioned in their paper.
-Our Monte Carlo results suggest that the same modification dramatically reduces the inherent small-sample bias associated with the original \cite{DLP12} estimator.
+Additionally, we propose a simple solution to the 'exploding alpha' issue briefly mentioned in the \cite{DLP12} paper.
+Our Monte Carlo results suggest that the same modification (that solves the 'exploding alpha' issue) dramatically reduces the inherent small-sample bias associated with the original \cite{DLP12} estimator.
 
 In the empirical application of our new estimator, we test simple linear and exponentially affine SDF models that can draw on the five return factors associated with the $q^5$ investment factor model recently proposed by \cite{HXZ20}.
 Based on a Spatial Heteroskedasticity and Autocorrelation Consistent (SHAC) covariance matrix estimator, we calculate asymptotic standard errors for the model coefficients.
@@ -104,9 +104,9 @@ Section \ref{sec:conclusion} concludes.
 \subsection{Least-Mean-Distance estimator}
 \label{sec:fundwise_lmd_estimator}
 
-Our general SDF setting is similar to that of \cite{DLP12} and \cite{KN16}; the subtle differences are discussed in section \ref{sec:comparison_to_similar_estimators}.
+Our general SDF estimation setting is similar to that of \cite{DLP12} and \cite{KN16}; the subtle differences are discussed in section \ref{sec:comparison_to_similar_estimators}.
 
-Let fund $i=1,2,\dots,n$ be characterized by its net cash flows ${CF}_{t,i}$ (i.e., distributions minus contributions) and its net asset values ${NAV}_{t,i}$ with discrete time index $t=1,2,\dots,T$.
+Let fund $i=1,2,\dots,n$ be characterized by its (net-of-fees) net cash flows ${CF}_{t,i}$ (i.e., distributions minus contributions) and its net asset values ${NAV}_{t,i}$ with discrete time index $t=1,2,\dots,T$.
 The data generating processes (DGPs) for $CF$ and $NAV$ are left unspecified.
 For a non-liquidated fund, we treat the most recent NAV as final distribution cash flow.
 The stochastic discount factor $\Psi_{\tau,t}$ can be used to calculate the (realized) time-$\tau$ price $P_{\tau,t,i}$ of a \textbf{single} time-$t$ cash flow of any given PE fund $i$
@@ -144,7 +144,7 @@ There we show that controlling for the optimal size of $\mathcal{T}$ decreases t
 Additionally, each fund $i$ is characterized by its vintage year which can be expressed by $v_{i}=\min(\mathcal{T}_i) \in 1,2,\dots,V$, where $V$ denotes the maximum vintage year used in a given data set.
 Finally, the scalar weighting factor $w_i$ can be (i) one divided by the fund's invested capital for equal weighting of funds, (ii) one divided by the vintage year sum of invested capital for vintage year weighting, (iii) the scalar one for fund-size weighting, or (iv) some macroeconomic deflator.
 
-To find $\theta$, our LMD estimator \citep{PP97} minimizes the average loss of $\bar{\epsilon}$
+To find $\theta$, our LMD estimator \cite[equation 7.1]{PP97} minimizes the average loss of $\bar{\epsilon}$
 \begin{equation}
 \label{eq:estimator}
 \hat{\theta} = 
@@ -159,7 +159,7 @@ S_n(\theta) =
 \sum_{i=1}^n
 L \left( \bar{\epsilon}_{i} \right) 
 \end{equation}
-where $L$ denotes a loss function, e.g., $L(x)=(x-0)^2$.
+where $L: \mathbb{R}^{n \times T} \times \Theta \rightarrow \mathbb{R}^1$ denotes a loss function, e.g., $L(x)=(x-0)^2$ in the case of nonlinear least squares.
 Throughout the paper, the weighted average fund pricing error $\bar{\epsilon} \equiv \bar{\epsilon}(\theta)$ is regarded as nonlinear random function of the SDF parameter $\theta$.
 
 \begin{figure}[ht]
@@ -202,7 +202,7 @@ Without loss of generality, we refer to our cross-sectional units as funds, alth
 In the simulation study in subsection \ref{sec:simulation_study}, we compare both boundary cases (i) individual funds and (ii) vintage year portfolios.
 
 Thinking more broadly, we could even imagine more extreme boundary cases: 
-(iii) on the one hand, we could pool \emph{all} fund cash flows to form just \emph{one} global moment condition like \cite{KN16} and  accept potential under-identification; 
+(iii) on the one hand, we could pool \emph{all} fund cash flows to form just \emph{one} global moment condition for private equity similar to \cite{KN16} and accept potential under-identification; 
 (iv) on the other hand, we could operate on underlying deal level like \cite{B14,B16} and use gross-of-fee cash flows.
 
 \subsection{Asymptotic framework}
@@ -214,13 +214,14 @@ Unlike typical panel data, we do not follow multiple subjects over time, but for
 This unusual two-dimensional indexing causes problems in the PE literature as it neatly fits neither in the (i) time-series, (ii) cross-sectional, nor (iii) panel data literature.
 
 However, in this section, we mainly follow the time-series asymptotic framework of \cite{PP97} since our 'spatial' distance measure is time and adaption to our case is thus straightforward.
-If we observe just one fund per vintage year (or, equivalently, form vintage year portfolios), we can easily see that the framework of \cite{PP97} with time-series indexing can be directly applied (without any major modification).
+If we observe just one fund per vintage year (or, equivalently, form vintage year portfolios), we can easily see that the framework of \cite{PP97} with time-series indexing can be applied without any major modification.
 
 
 \subsubsection{Vintage year asymptotics}
 We assume that the 'spatial' (i.e., economic) distance between cross-sectional units, i.e., private equity funds/portfolios, can be measured quantitatively\footnote{Generally, the economic distance measure could include multiple dimensions, e.g., temporal, geographic, and industry sector proximity.}.
 Here our asymptotic theory lets the number of funds go to infinity $n \to \infty$.
-However, to expose our SDF to enough distinct covariate realizations (economic conditions), identification of model parameters requires a sufficient number of funds from different vintage years in the fund-level data set used for model estimation as emphasized by \cite{DLP12} and \cite{KN16}.
+However, empirical identification of model parameters requires a sufficient number of funds from different vintage years in the fund-level data set used for model estimation as emphasized by \cite{DLP12} and \cite{KN16}.
+To expose our SDF to many distinct covariate realizations (economic conditions), we also want the number of vintages to increase asymptotically.
 \begin{assume}
 	\label{as:vya}
 	(i) The number of vintage years $V \to \infty$ as $n \to \infty$.
@@ -237,12 +238,13 @@ This technically means, instead of applying a time-series law of large numbers, 
 
 \begin{assume}
 	\label{as:lln}
-	The (i) time-trend and (ii) dependence structure of $\bar{\epsilon}$ shall allow
+	The (i) time-trend and (ii) dependence structure of $\bar{\epsilon}$ shall allow\footnote{Alternatively, \cite[equation 6]{JP09}: $\sup_{\theta in \Theta} \left| n^{-1} \sum_{i=1}^n \overline{\epsilon}_i -  E[\bar{\epsilon}]
+		\right| \overset{i.p.}\to 0$ as $V,n \to \infty$.}
 	\[
 	n^{-1} \sum_{i=1}^n \overline{\epsilon}_i \overset{a.s.}\to E[\bar{\epsilon}]
 	\quad {as} \quad V,n \to \infty
 	\]
-	Specifically, we assume the process $\overline{\epsilon}$ to be is spatial near-epoch dependent with respect to fund vintage years \citep{JP12}, i.e., two funds with distance $d_{i,j}>D$ are assumed to be independent.
+	Specifically, we assume the random function $\overline{\epsilon}$ to be spatial near-epoch dependent with respect to fund vintage years \citep{JP09,JP12}, i.e., two funds with distance $d_{i,j}>D$ are assumed to be independent.
 \end{assume}
 To satisfy the time trend part (i) of this law of large number assumption, the weighting factor $w$, introduced in equation \ref{eq:average_pricing_error}, can be used to make $\bar{\epsilon}$ stationary.
 Spatial near-epoch dependence with respect to fund vintage years formalizes the simple idea that two fund pricing errors $\bar{\epsilon}$ with a small absolute vintage year difference are supposed to be dependent sine they are exposed to the same macroeconomic conditions.
@@ -265,9 +267,9 @@ To assess the large-sample significance of our parameter estimates (in the follo
 
 \begin{assume}
 	\label{as:clt}
-	(i) $\sqrt{n}(\hat{\theta} - \theta_0) \overset{d}{\to} \mathcal{N}(0,\mathbf{\Sigma})$ as $V,n \to \infty$ with covariance matrix $\mathbf{\Sigma}$.
+	(i) $\sqrt{n}(\hat{\theta} - \theta_0) \overset{d}{\to} \mathcal{N}(0,\Sigma)$ as $V,n \to \infty$ with covariance matrix ${\Sigma}$.
 	
-	(ii) The covariance matrix $\mathbf{\Sigma}$ can be characterized by \citet[Theorem 11.2.b, Theorem H.1]{PP97}.
+	(ii) The covariance matrix ${\Sigma}$ can be characterized by \citet[Theorem 11.2.b, Theorem H.1]{PP97}.
 \end{assume}
 
 The formal proof of assumption \ref{as:clt} may be derived in analogy to the GMM case in \cite[Theorem 4]{JP12} that shows that the general structure of the \cite{PP97} framework also applies to the spatial near-epoch dependent case.
@@ -279,7 +281,7 @@ The formal proof of assumption \ref{as:clt} may be derived in analogy to the GMM
 
 In the time-series near-epoch-dependent LMD literature, the covariance matrix $\mathbf{\Sigma}$ can be characterized according to \citet[Theorem 11.2.b, Theorem H.1]{PP97}:
 \[
-\mathbf{\Sigma} = C^{-1} \Lambda (C^{-1})^\top
+{\Sigma} = C^{-1} \Lambda (C^{-1})^\top
 \]
 with expected Hessian matrix converging to $C$ as $V,n \to \infty$
 \[
@@ -377,18 +379,23 @@ Moreover, the standard asymptotic distribution associated with an estimator is g
 \subsection{Comparison to similar estimators}
 \label{sec:comparison_to_similar_estimators}
 
-Our Least-Mean-Distance (LMD) estimator developed in section \ref{sec:fundwise_lmd_estimator} belongs to the class of semiparametric nonlinear M-estimators as defined in \cite{PP97}.
+Our Least-Mean-Distance (LMD) estimator introduced in section \ref{sec:fundwise_lmd_estimator} belongs to the class of semiparametric nonlinear M-estimators as defined in \cite{PP97} which are extremum estimators.
 %The estimator exhibits a cross-sectional nature since $S_n(\theta)$ in equation \ref{eq:estimator} takes the sample average with respect to funds rather than with respect to a vintage-year-based time-series.
-We intentionally opt against the most prominent semiparametric nonlinear M-estimator framework, i.e., classical time-series Generalized Method of Moments (GMM) \citep{H82,H12}.
+To gain more flexibility and avoid unneeded complexity, we intentionally opt against the most prominent semiparametric nonlinear M-estimator framework, i.e., classical time-series Generalized Method of Moments (GMM) \citep{H82,H12}.
 A classical GMM approach requires the construction of stationary, ergodic time-series of moment conditions that are used to empirically estimate the expected value of pricing errors in equation \ref{eq:pricing_error}.
 The stationarity requirement of classical time-series GMM limits (i) more elaborate weighting-schemes for $w$, like fund-size weighting, and (ii) the usage of fund cash flows from non-realized vintages.
 
 \subsubsection{\cite{DLP12}}
 
 The \cite{DLP12} approach is most closely related to our methodology.
-However, they regard vintage year portfolios as their cross-sectional units; we can also use individual funds.
-The \cite{DLP12} asymptotic theory assumes the number of funds (or deals) per vintage year portfolio to go to infinity.
+
+One important difference is that we select a simpler and more flexible LMD estimator instead of a cross-sectional GMM approach.
+In our view, the choice of the more complex cross-sectional GMM just causes some conceptional issues whereas the underlying formulas are basically the same as for our LMD estimator\footnote{The formulas are so similar since \cite{DLP12} use the identity matrix as GMM weighting matrix and skip the second GMM step.}.
+As a first limitation, they have to regard vintage year portfolios as their cross-sectional units; we can also use individual funds.
+Second, the \cite{DLP12} asymptotic theory assumes the number of funds (or deals) per vintage year portfolio to go to infinity.
+To comply with standard GMM assumptions, the number of vintage years, which corresponds to the number of moment conditions in their approach, must be considered fixed and thus cannot grow asymptotically \citep{NW09}.
 Our asymptotic theory lets both (i) the number of vintage years and (ii) the number of funds go to infinity, but bounds the number of funds per vintage year.
+
 Further, \cite{DLP12} discount all fund cash flows just to the first cash flow date (like in a classical net present value calculation).
 In contrast, we additionally average over all dates within $\mathcal{T}_{i}$ to alleviate the exploding alpha issue briefly mentioned in their paper (and more thoroughly so in an earlier working paper version).
 Although \cite{DLP12} describe their estimator as a one-step GMM approach, we consider it a special case of our LMD estimator.
@@ -419,7 +426,7 @@ Specifically, we obtain the estimator of \cite[equation 18]{KN16} in our framewo
 with identity matrix $I$ as weighting matrix $W$.
 
 Time-series GMM estimators inherently bear the risk of under-identification, if the corresponding time-series is constructed by pooling all fund cash flows from a given fund type.
-Exactly this happens in equation \ref{eq:kn16_estimator} where we consequentially obtain a GMM estimator with just one moment condition.
+Exactly this happens in equation \ref{eq:kn16_estimator} where we consequentially obtain a GMM estimator with just one moment condition\footnote{In contrast, our estimator corresponds to the opposite edge case with asymptotically an infinite number of moment conditions as we let $V \to \infty$.}.
 To counter under-identification, additional characteristic-based fund portfolios could be formed to increase the number of moment conditions per fund type; also, random portfolios combined with bootstrapping make sense.
 Yet, \cite{KN16} take another approach and introduce the concept of Generalized Public Market Equivalent (GPME), which elegantly avoids the under-identification issue.
 Firstly, a public market SDF model is estimated by pricing public trading strategies that shall replicate PE funds instead of directly pricing the observed PE fund cash flows.
@@ -436,8 +443,8 @@ Table \ref{tab:comparison} summarizes the most prominent distinctions between th
 		 & \cite{DLP12} & \cite{KN16} & Our approach \\ 
 		\hline
 		\hline
-		M-estimator & Least-Mean- & Generalized Method & Least-Mean-  \\
-		& Distance & of Moments & Distance \\
+		M-estimator & Cross-sectional Generalized & Time-series Generalized  & Least-Mean-  \\
+		& Method of Moments & Method of Moments & Distance \\
 		\hline
 		Pricing error averaging & No & No & Yes \\
 		\hline
@@ -561,7 +568,7 @@ Deals are entered within the first five years of fund lifetime following a discr
 The deal returns are generated by the simple linear or exponential affine SDF models described in equations \ref{eq:linear_sdf} and \ref{eq:expaff_SDF}.
 In the base case, we just use the MKT factor with $\beta_{\mathrm{MKT}}=1$ and in each month add a normal i.i.d. error term with standard deviation $\sigma=0.2$ and zero mean.
 Additionally, we test an intercept term $\alpha$ of -0.25\% per month and a high $\beta_{\mathrm{MKT}}$ of 2.5.
-In the exponential affine case, we adjust the log-normally distributed error mean to zero by subtracting $0.5 \sigma^2$.
+In the exponential affine case, we adjust the lognormally distributed error mean to zero by subtracting $0.5 \sigma^2$.
 If a negative return exceeds -100\%, the company defaults with a zero exit cash flow.
 In contrast, the error term in the simulations of \cite{DLP12} is more well-behaved as it follows a shifted lognormal distribution that, even with arbitrarily high error term variance, just allows for returns below say -99\%, if the market return is close to its lower bound (see equation 9 in their online appendix).
 In our base case, the set of present value dates $\mathcal{T}$ contains all months from the first cash flow to maximum month 180.
@@ -705,7 +712,7 @@ For VC, the one-factor MKT model $\beta_{\mathrm{MKT}}$ estimates are in the ran
 If we add an $\alpha$ term, all $\beta_{\mathrm{MKT}}$ estimates strongly increase to the range 1.81 to 2.06 with annualized $\alpha$ coefficients of approximately negative 6-7\% per year.
 These results at least weakly indicate - given their insignificant asymptotic standard errors - that PE funds outperform public markets with a market beta coefficient of less than one, which suggests low market risk.
 On the other hand, VC underperforms public markets with market beta coefficients of roughly two, which implies high market risk.
-So, even \cite{DLP12} use the problematic Thomson Venture Economics (TVE) dataset for their empirical analysis\footnote{\cite{HJK14} discuss the potential downward bias of the TVE dataset.}, we obtain similar qualitative results using Preqin data: (i) the market beta of VC seems to be higher than that of PE and (ii) VC, in contrast to PE, appears to exhibit a negative abnormal performance $\alpha$.
+So, even \cite{DLP12} use the problematic Thomson Venture Economics (TVE) dataset for their empirical analysis\footnote{\cite{HJK14} discuss the potential downward bias of the TVE dataset.}, we obtain similar quantitative and qualitative results using Preqin data: (i) the market beta of VC seems to be higher than that of PE and (ii) VC, in contrast to PE, appears to exhibit a negative abnormal performance $\alpha$\footnote{Similarly, \cite[exhibit 4.6]{MY10} find high beta coefficients (1.63 and 2.04) and small to negative alphas (-2.11\% and 0.13\%) for VC funds in their lag-return regression.}.
 
 As a robustness check, we reestimate all SDF models on a dataset that just contains funds from vintages older or equal than 2011.
 Interestingly, the PE and VC results regarding $\beta_{\mathrm{MKT}}$ and $\alpha$ can be qualitatively and also quantitatively confirmed on this 'mostly-liquidated' dataset\footnote{All R code and data is available in an online repository. %\url{https://github.com/quant-unit/Fundwise_SDF/tree/master/r_project}
