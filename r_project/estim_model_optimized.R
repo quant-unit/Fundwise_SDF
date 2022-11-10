@@ -14,7 +14,7 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
 
 # 1.1) PARAMETERS ----
-weighting <- "EW"
+weighting <- "EW" # "FW"
 use.vintage.year.pfs <- TRUE
 use.simulation <- FALSE
 do.cross.validation <- FALSE
@@ -24,7 +24,7 @@ if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
 
 #public.filename <- "public_returns"
 #public.filename <- "msci_market_factors"
-public.filename <- "q_factors"
+#public.filename <- "q_factors"
 public.filename <- "DebtFactorsUSD"
 
 #error.function <- "L1_Ridge"
@@ -33,7 +33,9 @@ error.function <- "L2_Lasso"
 sdf.model <- "linear"
 #sdf.model <- "exp.aff"
 
-max.months <- c(10, 20) * 12 # c(12.5, 15, 17.5) * 12 # c(1/12, 5 , 10, 15, 20, 25, 30) * 12
+max.months <- c(120, 150, 180, 210, 240) # c(10, 20) * 12 # c(12.5, 15, 17.5) * 12
+
+include.alpha.term <- FALSE
 lambdas <- 0
 kernel.bandwidth <- 12
 
@@ -474,7 +476,7 @@ iter.run <- function(input.list) {
         for (factor in factors) {
           if(nrow(df.optim.in) == 0 | nrow(df.val) == 0) next
           
-          if(FALSE) {
+          if(!include.alpha.term) {
             # two factor model
             par <- c("MKT" = 1)
           } else {
