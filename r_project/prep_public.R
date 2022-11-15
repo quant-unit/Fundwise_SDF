@@ -1,4 +1,10 @@
 ## prepare public market data
+# prolog ----
+if(sys.nframe() == 0L) rm(list = ls())
+
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+getwd()
+
 # load data -----
 library(readxl)
 
@@ -123,6 +129,7 @@ library(tidyr)
 filename <- "data_in/Bond Indices iBoxx - large coverage.xlsx"
 df.eur <- data.frame(readxl::read_excel(filename, sheet = "EuroData"))
 df.usd <- data.frame(readxl::read_excel(filename, sheet = "USDData"))
+df.eur.usd <- data.frame(readxl::read_excel(filename, sheet = "EuroDataUSD"))
 
 # calculate returns -----------
 make.return.df <- function(df) {
@@ -167,6 +174,7 @@ make.return.df <- function(df) {
 
 df.eur <- make.return.df(df.eur)
 df.usd <- make.return.df(df.usd)
+df.eur.usd <- make.return.df(df.eur.usd)
 
 # calculate factors ------
 colnames(df.usd)
@@ -179,6 +187,16 @@ fac.eur <- list(
   Corp.BBB.long = "IBOXX.EURO.CORPORATES.BBB.1.3...Tot..Rtn.Idx.Today",
   Liq.BBB.long =  "IBOXX.EURO.CORPORATES.BBB...Tot..Rtn.Idx.Today",
   Liq.BBB.short = "IBOXX.EURO.LIQUID.CORPORATES.BBB...Tot..Rtn.Idx.Today"
+)
+
+colnames(df.eur.usd)
+fac.eur.usd <- list(
+RF.long = "IBOXX.EURO.SOVEREIGNS.1.3...Tot..Rtn.Idx.Today...TOT.RETURN.IND" ,
+Term.long = "IBOXX.EURO.SOVEREIGNS.7.10...Tot..Rtn.Idx.Today...TOT.RETURN.IND",
+Corp.long = "IBOXX.EURO.CORPORATES.1.3...Tot..Rtn.Idx.Today...TOT.RETURN.IND",
+Corp.BBB.long = "IBOXX.EURO.CORPORATES.BBB.1.3...Tot..Rtn.Idx.Today...TOT.RETURN.IND",
+Liq.BBB.long =  "IBOXX.EURO.CORPORATES.BBB...Tot..Rtn.Idx.Today...TOT.RETURN.IND",
+Liq.BBB.short = "IBOXX.EURO.LIQUID.CORPORATES.BBB...Tot..Rtn.Idx.Today...TOT.RETURN.IND"
 )
 
 fac.usd <- list(
@@ -207,6 +225,8 @@ make.factors <- function(df, fac) {
 
 df.eur.fac <- make.factors(df.eur, fac.eur)
 df.usd.fac <- make.factors(df.usd, fac.usd)
+df.eur.usd.fac <- make.factors(df.eur.usd, fac.eur.usd)
+
 
 rownames2col <- function(df) {
   df <- cbind(Date = row.names(df), df)
@@ -215,6 +235,7 @@ rownames2col <- function(df) {
 
 write.csv(rownames2col(df.eur.fac), file = "data_prepared/DebtFactorsEUR.csv", row.names = FALSE)
 write.csv(rownames2col(df.usd.fac), file = "data_prepared/DebtFactorsUSD.csv", row.names = FALSE)
+write.csv(rownames2col(df.eur.usd.fac), file = "data_prepared/DebtFactorsEURUSD.csv", row.names = FALSE)
 
 # analyze factors ------
 factor.summary <- function(df) {
@@ -228,11 +249,14 @@ factor.summary <- function(df) {
 }
 
 factor.summary(df.eur.fac)
+factor.summary(df.eur.usd.fac)
 factor.summary(df.usd.fac)
 
 var(df.eur.fac, na.rm = TRUE)
+var(df.eur.usd.fac, na.rm = TRUE)
 var(df.usd.fac, na.rm = TRUE)
 
 cor(df.eur.fac, use = "pairwise.complete.obs")
+cor(df.eur.usd.fac, use = "pairwise.complete.obs")
 cor(df.usd.fac, use = "pairwise.complete.obs")
 
