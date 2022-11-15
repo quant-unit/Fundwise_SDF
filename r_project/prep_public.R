@@ -1,5 +1,5 @@
 ## prepare public market data
-# prolog ----
+# prologue ----
 if(sys.nframe() == 0L) rm(list = ls())
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))

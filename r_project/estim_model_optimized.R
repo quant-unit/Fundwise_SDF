@@ -14,19 +14,20 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
 
 # 1.1) PARAMETERS ----
-weighting <- "EW" # "FW"
 use.vintage.year.pfs <- TRUE
 use.simulation <- FALSE
 do.cross.validation <- FALSE
 do.cache <- TRUE
 do.parallel <- ifelse(.Platform$OS.type == "windows", FALSE, TRUE)
-if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
 
 #public.filename <- "public_returns"
 #public.filename <- "msci_market_factors"
 #public.filename <- "q_factors"
-public.filename <- "DebtFactorsUSD"
+public.filename <- "DebtFactorsEURUSD"
 
+# CHOICES
+#weighting <- "EW" 
+weighting <- "FW"
 #error.function <- "L1_Ridge"
 error.function <- "L2_Lasso"
 
@@ -38,11 +39,12 @@ max.months <- c(120, 150, 180, 210, 240) # c(10, 20) * 12 # c(12.5, 15, 17.5) * 
 include.alpha.term <- FALSE
 lambdas <- 0
 kernel.bandwidth <- 12
+if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
 
 # 1.2) load data -----
 df.public <- read.csv(paste0("data_prepared/", public.filename, ".csv"))
 df.public$Date <- as.Date(df.public$Date)
-if (public.filename == "DebtFactorsUSD") {
+if (public.filename %in% c("DebtFactorsUSD", "DebtFactorsEUR", "DebtFactorsEURUSD") ) {
   df.public <- df.public[complete.cases(df.public[, 2:5]), ]
   df.public[is.na(df.public)] <- 0
   public.equity <- "msci_market_factors"
@@ -449,7 +451,7 @@ iter.run <- function(input.list) {
     types <- c("PE", "VC", "PD", "RE", "NATRES", "INF") # asset classes
     #types <- levels(df0$type)
   }
-  if (public.filename == "DebtFactorsUSD") {
+  if (public.filename %in% c("DebtFactorsUSD", "DebtFactorsEUR", "DebtFactorsEURUSD")) {
     factors <- c("TERM", "CORP", "HY", "LIQ")
     types <- levels(df0$type)
     # types <- c("PD", "DD", "MEZZ")
