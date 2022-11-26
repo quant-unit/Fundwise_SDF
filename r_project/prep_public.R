@@ -83,11 +83,19 @@ factor.df <- function(df = list.xl[["msci_market_factors"]]) {
   df$LOV <- df$Low.Volatility.World - df$Market.World
   
   df <- df[, c("Date", setdiff(colnames(df), col.before))]
+  df$Date <- as.Date(df$Date)
 
   return(df)
 }
 
 df <- factor.df()
+
+s.date <- as.Date("1975-11-30") # not ESG, SMB, HDY, LOV
+s.date <- as.Date("2000-12-31")
+s.date <- as.Date("1995-06-30") # not ESG
+e.date <- as.Date("2020-01-01")
+apply(df[(df$Date > s.date) & (df$Date < e.date), -1], 2, function(x) prod(1+x))
+cor(df[(df$Date > s.date) & (df$Date < e.date), -1])
 
 write.csv(df, "data_prepared/msci_market_factors.csv", row.names = FALSE)
 
