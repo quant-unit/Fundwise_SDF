@@ -87,12 +87,21 @@ df0$Fund.ID <- as.factor(df0$Fund.ID)
 df0$Alpha <- 1
 rm(df.preqin)
 
+# check if we have enough public data
+min(df0$Vintage)
+min(df0$Date)
+
+if (public.filename %in% c("DebtFactorsUSD", "DebtFactorsEUR", "DebtFactorsEURUSD") ) {
+  df0 <- df0[df0$Vintage > 2000, ]  
+}
+
 #df0 <- df0[df0$Vintage <= 2011, ]
 aggregate(Vintage ~ type , df0, min)
 number.of <- function(x) length(table(x))
 aggregate(Vintage ~ type , df0, number.of)
 aggregate(as.character(Fund.ID) ~ type , df0, number.of)
 
+# print summary: funds per vintage
 df1 <- df0
 df1 <- df1[!duplicated(df1$Fund.ID), ]
 df1 <- as.data.frame.matrix(table(df1$Vintage, df1$type))
@@ -115,7 +124,9 @@ rbind.all.columns <- function(x, y) {
 }
 
 # 2.1) getNPVs function ----
-if (FALSE) {
+use.cpp <- FALSE
+
+if (use.cpp) {
   library(Rcpp)
   
   Rcpp::cppFunction("
@@ -134,25 +145,35 @@ if (FALSE) {
                     return y;
                     }")
 n <- 13
-getNPVs(rep(1,n), seq(1,n,1), n)
-}
+system.time(
+  replicate(10000, getNPVs(rep(1,n), seq(1,n,1), n))
+)
 
-
-getNPVs <- function(cf, ret, max_month) {
-  DCF = sum(cf / ret)
+} else {
+  # use R function instead
   
-  n = length(cf)
-  i_max = min(max_month, n)
-  VectorOut = c()
-  
-  for(i in 0:i_max) {
-    VectorOut <- c(VectorOut, DCF * ret[i])
+  getNPVs <- function(cf, ret, max_month) {
+    DCF = sum(cf / ret)
+    
+    n = length(cf)
+    i_max = min(max_month, n)
+    VectorOut = c()
+    
+    for(i in 0:i_max) {
+      VectorOut <- c(VectorOut, DCF * ret[i])
+    }
+    y <- mean(VectorOut)
+    return(y)
   }
-  y <- mean(VectorOut)
-  return(y)
+  
+  n <- 13
+  system.time(
+    replicate(10000, getNPVs(rep(1,n), seq(1,n,1), n))
+  )
 }
-n <- 13
-getNPVs(rep(1,n), seq(1,n,1), n)
+
+
+
 
 # 2.2) err.sqr.calc function ----
 
@@ -205,6 +226,255 @@ df.in$Fund.ID <- (as.character(df.in$Fund.ID))
 system.time(
   print(err.sqr.calc(par, df=df.in, lambda=lambda, max.month=max.month))
 )
+
+
+# 2.2 new) alpha return component -------------
+
+# IMPORTANT: this is an alternative way to determine the alpha term
+# this method here is conditional a factor model that has no intercept (= alpha term)
+
+# make df.idi
+df.idi <- data.frame(Date = unique(df0$Date),
+                     idi.return = 0)
+df.idi$date.chr <- as.character(df.idi$Date)
+
+# linear SDF
+f1.alpha <- function(df.ss, max.month, par0, par.alpha, df.idi) {
+  
+  # where to place small return?
+  df.ss <- merge(df.ss, df.idi, by = "Date")
+  df.ss$idi.return = par.alpha
+  
+  return(getNPVs(df.ss$CF, 
+                 exp(cumsum(log(
+                   1 + (as.matrix(df.ss[, names(par0)]) %*% par0)
+                   + df.ss$idi.return
+                 ))), 
+                 max.month))
+}
+
+# L2 lasso
+err.sqr.calc.alpha <- function(par, max.month, lambda, df, df.idi, par.factor) {
+  dfx <- split(df, df$Fund.ID)
+  npvs <- sapply(dfx, f1.alpha, max.month=max.month, par0=c("RF" = 1, par.factor), 
+                 par.alpha=par, df.idi)
+  p <- ifelse(length(par) == 1, par, par[-1])
+  return(
+    sqrt(sum(npvs^2)) / length(npvs) + lambda / length(p) * sum(abs(p))
+  )
+}
+
+# optimize alpha
+res.alpha <- optimize(err.sqr.calc.alpha, 
+                interval = c(-1, 1),
+                lambda = lambda,
+                max.month = max.month,
+                df = df.in,
+                par.factor = par,
+                df.idi = df.idi)
+res.alpha
+
+# 2.2.new) idiosyncratic return component ------
+
+# make df.idi
+df.idi <- data.frame(Date = unique(df0$Date),
+                     idi.return = 0)
+df.idi$date.chr <- as.character(df.idi$Date)
+
+# linear SDF
+f1.idi <- function(df.ss, max.month, par0, par.idi.date, par.idi, df.idi) {
+
+  # where to place small return?
+  df.ss <- merge(df.ss, df.idi, by = "Date")
+  df.ss$idi.return[df.ss$Date == par.idi.date] = df.ss$idi.return[df.ss$Date == par.idi.date] + par.idi
+  
+  return(getNPVs(df.ss$CF, 
+                 exp(cumsum(log(
+                   1 + (as.matrix(df.ss[, names(par0)]) %*% par0)
+                   + df.ss$idi.return
+                 ))), 
+                 max.month))
+}
+
+# L2 lasso
+err.sqr.calc.idi <- function(par, max.month, lambda, df, par.idi.date, df.idi, par.factor) {
+  dfx <- split(df, df$Fund.ID)
+  npvs <- sapply(dfx, f1.idi, max.month=max.month, par0=c("RF" = 1, par.factor), 
+                 par.idi.date=par.idi.date, par.idi=par, df.idi)
+  p <- ifelse(length(par) == 1, par, par[-1])
+  return(
+    sqrt(sum(npvs^2)) / length(npvs) + lambda / length(p) * sum(abs(p))
+  )
+}
+
+RETURN.BOUNDARY <- 1
+
+# one boosting step
+one.cwb.iteration <- function(df.idi, lambda, max.month, df.in, par) {
+  
+  # initialize
+  best.res <- list(objective = Inf)
+  
+  # find best date
+  for (date in df.idi$date.chr) {
+    # print(date)
+    res <- optimize(err.sqr.calc.idi, 
+                    interval = c(-RETURN.BOUNDARY, RETURN.BOUNDARY),
+                    lambda = lambda,
+                    max.month = max.month,
+                    df = df.in,
+                    par.factor = par,
+                    df.idi = df.idi,
+                    par.idi.date = date
+    )
+    res
+    
+    if (res$objective < best.res$objective) {
+      best.res <- res
+      best.res$date <- date
+    }
+  }
+  
+  return(data.frame(best.res))
+}
+
+# system.time(res <- one.cwb.iteration(df.idi, lambda, max.month, df.in, par))
+# res
+
+one.cwb.iteration2 <- function(df.idi, lambda, max.month, df.in, par) {
+  
+  # find best date
+  foo <- function(date) {
+    res <- optimize(err.sqr.calc.idi, 
+                    interval = c(-RETURN.BOUNDARY, RETURN.BOUNDARY),
+                    lambda = lambda,
+                    max.month = max.month,
+                    df = df.in,
+                    par.factor = par,
+                    df.idi = df.idi,
+                    par.idi.date = date
+    )
+    res$date <- date
+    return(data.frame(res))
+  }
+  
+  method <- "parLapply"
+  no.cores <- 2 # parallel::detectCores() - 1
+  
+  if (method == "mclapply") {
+    # Unfortunately, 'mc.cores' > 1 not supported in Windows
+    mc.cores <- ifelse(.Platform$OS.type == "unix", no.cores, 1)
+    list.res <- parallel::mclapply(df.idi$date.chr, foo, mc.cores = mc.cores)
+  } else if (method == "parLapply") {
+    # does not work with Rccp functions
+    cl <- parallel::makeCluster(no.cores)
+    export2cluster <- c("err.sqr.calc.idi", "RETURN.BOUNDARY", 
+                        "df.in", "f1.idi", "df.idi", "getNPVs",
+                        "lambda", "max.month", "par")
+    parallel::clusterExport(cl, export2cluster)
+    list.res <- parallel::parLapply(cl, df.idi$date.chr, foo)
+    parallel::stopCluster(cl)
+  } else {
+    list.res <- lapply(df.idi$date.chr, foo)
+  }
+  
+  df.res <- data.frame(do.call(rbind, list.res))
+  best.res <- df.res[df.res$objective == min(df.res$objective), ]
+  
+  return(best.res)
+}
+
+#system.time(res <- one.cwb.iteration2(df.idi, lambda, max.month, df.in, par))
+#res
+
+
+# multiple boosting steps
+multi.cwb.iterations <- function(n.boost, 
+                                 lambda, max.month, df.in, par, 
+                                 alpha=0, 
+                                 old.out = NA, 
+                                 load.cached.idi = FALSE) {
+  
+  # load cached csv
+  if (load.cached.idi) {
+    df.idi <- read.csv2("data_out/df.idi.csv")
+    df.res.before <- read.csv2("data_out/df.res.csv")
+    
+    df.idi$X <- NULL
+    df.idi$Date <- as.Date(df.idi$Date)
+    
+    df.res.before$X <- NULL
+  }
+  
+  if ( is.list(old.out)) {
+    df.idi = old.out$df.idi
+    df.res.before = old.out$df.res
+  } else if (!load.cached.idi) {
+    df.res.before <- NA
+    df.idi <- NA
+  }
+  
+  # make df.idi
+  if (!is.data.frame(df.idi)) {
+    df.idi <- data.frame(Date = unique(df0$Date),
+                         idi.return = 0)
+    df.idi$date.chr <- as.character(df.idi$Date)
+    
+    df.idi$idi.return <- alpha
+  }
+  
+  # set hyper-parameters
+  damper <- 0.33
+  
+  list.res <- list()
+  # loop over boosting steps
+  for (i in 1:n.boost) {
+    print(i)
+    proc.time <- system.time(res <- one.cwb.iteration2(df.idi, lambda, max.month, df.in, par))
+    res$alpha <- alpha
+    res$damper <- damper
+    res$elapsed <- proc.time["elapsed"]
+    
+    # update idiosyncratic return time-series
+    df.idi$idi.return[df.idi$date.chr == res$date] <- df.idi$idi.return[df.idi$date.chr == res$date] + res$minimum * damper
+    
+    # NICE TO KNOW
+    print(paste("filled returns:", nrow(df.idi[df.idi$idi.return != alpha, ])))
+    
+    # store optimization result
+    list.res[[as.character(i)]] <- res
+    print(res)
+    
+  }
+  df.res <- data.frame(do.call(rbind, list.res))
+  
+  if (is.data.frame(df.res.before)) {
+    df.res <- rbind(df.res.before, df.res)
+    rownames(df.res) <- NULL
+  }
+  
+  # prepare output
+  out <- list(
+    df.res = df.res,
+    df.idi = df.idi
+  )
+  return(out)
+}
+
+
+out <- multi.cwb.iterations(1, lambda, max.month, df.in, par, res.alpha$minimum)
+# out <- multi.cwb.iterations(1, lambda, max.month, df.in, par, res.alpha$minimum, load.cached.idi=TRUE)
+# out <- multi.cwb.iterations(1, lambda, max.month, df.in, par, res.alpha$minimum, out)
+# out$df.idi
+# out$df.res
+plot(out$df.idi$Date, out$df.idi$idi.return, type="l", xlab = "Date", ylab = "Return", main=type)
+plot(out$df.res$objective, type = "l", xlab="iterations", ylab="objective", main=type)
+legend("topright", bty="n", legend = paste("# different dates:", length(unique(out$df.res$date))))
+
+
+# write.csv2(out$df.idi, "data_out/df.idi.csv")
+# write.csv2(out$df.res, "data_out/df.res.csv")
+
 
 # 2.3 Asymptotic gradient hessian -----
 if(TRUE) {

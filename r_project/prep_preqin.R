@@ -88,6 +88,7 @@ make.preqin.df <- function(
   for(fund.id in levels(df$FUND.ID)) {
     df.ss <- df[df$FUND.ID == fund.id, ]
     df.ss$CF <- c(df.ss$NET.CASHFLOW[1], diff(df.ss$NET.CASHFLOW))
+    # for last date: CF = CF + NAV, i.e., regard final NAV as final distribution
     df.ss$CF[nrow(df.ss)] <- df.ss$CF[nrow(df.ss)] + df.ss$TRANSACTION.AMOUNT[nrow(df.ss)]
     
     year.diff <- min(as.numeric(format(df.ss$TRANSACTION.DATE, "%Y"))) - as.numeric(df.ss$VINTAGE...INCEPTION.YEAR[1])
