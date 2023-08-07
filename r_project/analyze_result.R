@@ -5,8 +5,10 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
 
 list.cache <- list()
-suffix <- "FW_VYP_SL"
-dir.cache <- paste0("data_out/cache_q_factors_", suffix)
+prefix <- "msci_market_factors_pitchbook_2023_cv_"
+suffix <- "EW_VYP"
+dir.cache <- paste0("data_out/cache_", prefix, suffix)
+
 for(file in list.files(dir.cache)) {
   if(substr(file,1,1) == 0) next
   df.f <- read.csv(paste0(dir.cache, "/", file))
@@ -39,7 +41,7 @@ rbind.all.columns <- function(x, y) {
 
 # summarize cross-validation coefs -----
 require(xtable)
-q.factors <- levels(df.f$Factor)
+q.factors <- levels(as.factor(df.f$Factor))
 
 cv.res <- list()
 for(Factor in q.factors) {
@@ -103,7 +105,7 @@ df.all <- df.all[, c("Type", "max.month", "MKT", "SE.MKT", "SE.MKT.indep",
 
 df.all$key <- paste(df.all$Type, df.all$max.month, df.all$Factor)
 df.all <- merge(df.all, df.cv.rank, by = "key")
-df.all <- df.all[order(df.all$Type, df.all$validation.error), ]
+df.all <- df.all[base::order(df.all$Type, df.all$validation.error), ]
 df.all$max.month <- df.all$key <- df.all$validation.error <- NULL
 
 df.all <- merge(df.all, df.order, by ="Type")
@@ -178,6 +180,11 @@ for(Type in df.cv$Type) {
   for(max.month in df.cv$max.month) {
     df.ss <- df.cv[(df.cv$Type == Type) & (df.cv$max.month == max.month), ]
     df.ss <- df.ss[df.ss$validation.error == min(df.ss$validation.error), ]
+    # we just want "one best" model
+    if (nrow(df.ss) > 1) {
+      # df.ss <- df.ss[df.ss$MKT > 0, ] # hope that exactly one model remains
+      df.ss <- df.ss[df.ss$t.Coef == max(df.ss$t.Coef), ] # choose most significant model
+    }
     
     if(df.ss$Factor == "Alpha") {
       df.ss <- df.cv[(df.cv$Type == Type) & (df.cv$max.month == max.month), ]
@@ -196,13 +203,22 @@ df.best <- df.f[(df.f$CV.key == "ALL"), ]
 df.best$best.key <- paste(df.best$Type, df.best$max.month, df.best$Factor)
 df.best <- df.best[df.best$best.key %in% df.cv.best$best.key, ]
 df.best$Tables <- NA
-df.best$Alpha.p.a. <- (1 + df.best$Alpha)^4 - 1
 df.best$ID <- paste(df.best$weighting, df.best$max.month, sep = " - ")
-cols <- c("ID", "Type", "MKT", "Alpha.p.a.", "ME", "IA", "ROE", "EG", "Tables")
+
+# Alpha just included in q-factor models, not MSCI models (so far)
+if ("Alpha" %in% colnames(df.best)) {
+  df.best$Alpha.p.a. <- (1 + df.best$Alpha)^4 - 1
+  cols <- c("ID", "Type", "MKT", "Alpha.p.a.", "ME", "IA", "ROE", "EG", "Tables") # q factors
+} else {
+  # assuming MSCI factors
+  df.best$Alpha.p.a. <- NA
+  cols <- c("ID", "Type", "MKT", "SMB", "HML", "HDY", "QLT", "MOM", "LOV", "Tables") # msci factors
+}
 
 print(xtable::xtable(df.best[, cols], 
                      caption = "SDF models with best out-of-sample performance as determined by $hv$-block cross-validation. ID consists of cash flow weighting - maximum quarter",
                      label = "tab:result_summary"), include.rownames=FALSE)
+
 
 write.csv(df.best, paste0(dir.cache,"/0_best_models_summary.csv"))
 
@@ -242,25 +258,29 @@ plot.log.return <- function(type, df.f) {
   
 }
 
-df.best1 <- df.best2 <- NULL
-df.best1 <- read.csv("data_out/cache_q_factors_EW_VYP_SL/0_best_models_summary.csv")
-df.best2 <- read.csv("data_out/cache_q_factors_FW_VYP_SL/0_best_models_summary.csv")
-#df.best1 <- read.csv("data_out/cache_q_factors_EW/0_best_models_summary.csv")
-#df.best2 <- read.csv("data_out/cache_q_factors_FW/0_best_models_summary.csv")
-df.best <- rbind(df.best1, df.best2)
+if (FALSE) {
+  df.best1 <- df.best2 <- NULL
+  df.best1 <- read.csv("data_out/cache_q_factors_EW_VYP_SL/0_best_models_summary.csv")
+  df.best2 <- read.csv("data_out/cache_q_factors_FW_VYP_SL/0_best_models_summary.csv")
+  #df.best1 <- read.csv("data_out/cache_q_factors_EW/0_best_models_summary.csv")
+  #df.best2 <- read.csv("data_out/cache_q_factors_FW/0_best_models_summary.csv")
+  df.best <- rbind(df.best1, df.best2)
+}
+
 
 plot.log.return("VC", df.best)
 
 
-setEPS()
-postscript(paste0(dir.cache, "/", "0_SDF_realizations.eps"), 
-           width = 6, height = 7.5, family = "Helvetica", pointsize = 5)
-par(mfrow=c(3,2), cex=1.2, mar = c(4.1, 4.1, 3.1, 1.1))
+#setEPS()
+#postscript(paste0(dir.cache, "/", "0_SDF_realizations.eps"), 
+#           width = 6, height = 7.5, family = "Helvetica", pointsize = 5)
+#par(mfrow=c(3,2), cex=1.2, mar = c(4.1, 4.1, 3.1, 1.1))
 
 for(type in c("PE", "VC", "PD", "RE", "NATRES", "INF")) {
   plot.log.return(type, df.best)
   abline(h=c(0), col = "grey", lty = 3)
 }
 
-par(mfrow=c(1,1), cex=1)
-dev.off() 
+#par(mfrow=c(1,1), cex=1)
+#dev.off() 
+

@@ -14,22 +14,31 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
 
 # 1.1) PARAMETERS ----
+export.data <- FALSE
+  
 use.vintage.year.pfs <- TRUE
 use.simulation <- FALSE
 do.cross.validation <- FALSE
 do.cache <- TRUE
 do.parallel <- ifelse(.Platform$OS.type == "windows", FALSE, TRUE)
 
-#public.filename <- "public_returns"
-public.filename <- "msci_market_factors"
+private.source <- "pitchbook"
+private.source <- "preqin"
+
+#public.filename <- "public_returns" # outdated
+#public.filename <- "msci_market_factors"
 #public.filename <- "q_factors"
-#public.filename <- "DebtFactorsEURUSD"
+#public.filename <- "DebtFactorsEURUSD" # outdated
+#public.filename <- "iBoxxFactorsMIX"
+#public.filename <- "iBoxxFactorsUSD" 
+public.filename <- "iBoxxFactorsEUR"
+
 
 # CHOICES
-#weighting <- "EW"
+weighting <- "EW"
 weighting <- "FW"
-#error.function <- "L1_Ridge"
-error.function <- "L2_Lasso"
+error.function <- "L1_Ridge"
+#error.function <- "L2_Lasso"
 
 sdf.model <- "linear"
 #sdf.model <- "exp.aff"
@@ -40,15 +49,32 @@ include.alpha.term <- FALSE
 lambdas <- 0
 kernel.bandwidth <- 12
 if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
+cache.folder.tag <- paste0("pitchbook_2023", ifelse(do.cross.validation, "_cv_", "_"))
+cache.folder.tag <- paste0(cache.folder.tag, ifelse(include.alpha.term, "alpha_", ""))
+cache.folder.tag <- paste0(cache.folder.tag, weighting)
+cache.folder.tag
 
 # 1.2) load data -----
-df.public <- read.csv(paste0("data_prepared/", public.filename, ".csv"))
+
+# load public data
+if (public.filename == "q_factors") {
+  df.public <- read.csv(paste0("data_prepared/", public.filename, ".csv"))
+  
+} else {
+  df.public <- read.csv2(paste0("data_prepared/", public.filename, ".csv"))
+}
+colnames(df.public) <- gsub("_World", "", colnames(df.public))
 df.public$Date <- as.Date(df.public$Date)
-if (public.filename %in% c("DebtFactorsUSD", "DebtFactorsEUR", "DebtFactorsEURUSD") ) {
+bond.files <- c(
+  "DebtFactorsUSD", "DebtFactorsEUR", "DebtFactorsEURUSD",
+  "iBoxxFactorsEUR", "iBoxxFactorsUSD", "iBoxxFactorsMIX"
+  )
+if (public.filename %in% bond.files ) {
   df.public <- df.public[complete.cases(df.public[, 2:5]), ]
   df.public[is.na(df.public)] <- 0
   public.equity <- "msci_market_factors"
-  df.pubeq <- read.csv(paste0("data_prepared/", public.equity, ".csv"))
+  df.pubeq <- read.csv2(paste0("data_prepared/", public.equity, ".csv"))
+  colnames(df.pubeq) <- gsub("_World", "", colnames(df.pubeq))
   df.pubeq$Date <- as.Date(df.pubeq$Date)
   
   df.public$RF <- NULL
@@ -57,13 +83,32 @@ if (public.filename %in% c("DebtFactorsUSD", "DebtFactorsEUR", "DebtFactorsEURUS
   df.public <- df.public[df.public$Date > as.Date("2000-01-31"), ]
 }
 
-if(!use.simulation) {
-  df.preqin0 <- read.csv(paste0("data_prepared/preqin_cashflows_", weighting, ".csv"))
-} else {
-  df.preqin0 <- read.csv(paste0("data_prepared/simulated_cashflows_", weighting, ".csv"))
+df.public$Alpha <- 1
+
+if (export.data) {
+  write.csv2(df.public, paste0("data_private_public/public_", public.filename, ".csv"))
 }
-df.preqin0$Date <- as.Date(df.preqin0$Date)
-df.preqin0$Fund.ID <- as.factor(paste(df.preqin0$Fund.ID, df.preqin0$type, sep = "_"))
+
+# Load private data
+if(!use.simulation) {
+  
+  if (private.source == "preqin") {
+    year.tag <- ""
+    df.private.cfs <- read.csv(paste0("data_prepared/preqin_cashflows_", weighting, year.tag, ".csv"))
+    colnames(df.private.cfs)
+  }
+  
+  if (private.source == "pitchbook") {
+    year.tag <- "_2023"
+    df.private.cfs <- read.csv(paste0("data_prepared/pitchbook_cashflows_", weighting, year.tag, ".csv"))
+    colnames(df.private.cfs)
+  }
+  
+} else {
+  df.private.cfs <- read.csv(paste0("data_prepared/simulated_cashflows_", weighting, ".csv"))
+}
+df.private.cfs$Date <- as.Date(df.private.cfs$Date)
+df.private.cfs$Fund.ID <- as.factor(paste(df.private.cfs$Fund.ID, df.private.cfs$type, sep = "_"))
 
 to.monthly <- function(df.ss) {
   # fill zero cash flows (necessary for estimation)
@@ -76,16 +121,17 @@ to.monthly <- function(df.ss) {
   return(df.ss)
 }
 
-df.preqin <- as.data.frame(data.table::rbindlist(lapply(split(df.preqin0, df.preqin0$Fund.ID), to.monthly)))
-rm(df.preqin0)
-df.preqin$type <- as.factor(as.character(df.preqin$type))
-df.preqin$Fund.ID <- as.factor(as.character(df.preqin$Fund.ID))
-length(levels(df.preqin$type))
+df.private.cfs <- as.data.frame(data.table::rbindlist(lapply(split(df.private.cfs, df.private.cfs$Fund.ID), to.monthly)))
+df.private.cfs$type <- as.factor(as.character(df.private.cfs$type))
+df.private.cfs$Fund.ID <- as.factor(as.character(df.private.cfs$Fund.ID))
+length(levels(df.private.cfs$type))
 
-df0 <- merge(df.preqin, df.public, by="Date")
+
+
+# merge private and public data
+df0 <- merge(df.private.cfs, df.public, by="Date")
 df0$Fund.ID <- as.factor(df0$Fund.ID)
-df0$Alpha <- 1
-rm(df.preqin)
+rm(df.private.cfs)
 
 # check if we have enough public data
 min(df0$Vintage)
@@ -94,8 +140,20 @@ min(df0$Date)
 if (public.filename %in% c("DebtFactorsUSD", "DebtFactorsEUR", "DebtFactorsEURUSD") ) {
   df0 <- df0[df0$Vintage > 2000, ]  
 }
-
 #df0 <- df0[df0$Vintage <= 2011, ]
+
+
+# Export df0
+if (export.data) {
+  write.csv2(df0, paste0("data_private_public/df0_",
+                         private.source, "_",
+                         public.filename,"_",
+                         weighting,".csv"), 
+             row.names = FALSE)
+}
+
+
+# Summary statistics for df0
 aggregate(Vintage ~ type , df0, min)
 number.of <- function(x) length(table(x))
 aggregate(Vintage ~ type , df0, number.of)
@@ -107,73 +165,11 @@ df1 <- df1[!duplicated(df1$Fund.ID), ]
 df1 <- as.data.frame.matrix(table(df1$Vintage, df1$type))
 df1 <- df1[, colnames(df1) %in% c("BO", "DD", "INF", "MEZZ", "NATRES", "PD", "RE", "VC")]
 df1["Total", ] <- as.integer(colSums(df1))
-print(xtable::xtable(df1, caption = "Number of funds per vintage year.", label = "tab:preqin_data"), include.rownames = TRUE)
+print(xtable::xtable(df1, caption = "Number of funds per vintage year.", label = "tab:pitchbook_data"), include.rownames = TRUE)
 rm(df1)
 
-# 1.3) rbind.all ----
-rbind.all.columns <- function(x, y) {
-  
-  x.diff <- setdiff(colnames(x), colnames(y))
-  y.diff <- setdiff(colnames(y), colnames(x))
-  
-  x[, c(as.character(y.diff))] <- NA
-  
-  y[, c(as.character(x.diff))] <- NA
-  
-  return(rbind(x, y))
-}
-
 # 2.1) getNPVs function ----
-use.cpp <- FALSE
-
-if (use.cpp) {
-  library(Rcpp)
-  
-  Rcpp::cppFunction("
-                    double getNPVs(NumericVector cf, NumericVector ret, int max_month){
-                    double DCF = sum(cf / ret);
-                    
-                    int n = cf.length();
-                    int i_max = std::min(max_month, n);
-                    NumericVector VectorOut(i_max, 0.0);
-                    
-                    for(int i = 0; i < i_max; i++) {
-                    VectorOut[i] = DCF * ret[i];
-                    }
-                    
-                    double y = mean(VectorOut);
-                    return y;
-                    }")
-n <- 13
-system.time(
-  replicate(10000, getNPVs(rep(1,n), seq(1,n,1), n))
-)
-
-} else {
-  # use R function instead
-  
-  getNPVs <- function(cf, ret, max_month) {
-    DCF = sum(cf / ret)
-    
-    n = length(cf)
-    i_max = min(max_month, n)
-    VectorOut = c()
-    
-    for(i in 0:i_max) {
-      VectorOut <- c(VectorOut, DCF * ret[i])
-    }
-    y <- mean(VectorOut)
-    return(y)
-  }
-  
-  n <- 13
-  system.time(
-    replicate(10000, getNPVs(rep(1,n), seq(1,n,1), n))
-  )
-}
-
-
-
+source("getNPVs.R")
 
 # 2.2) err.sqr.calc function ----
 
@@ -226,261 +222,6 @@ df.in$Fund.ID <- (as.character(df.in$Fund.ID))
 system.time(
   print(err.sqr.calc(par, df=df.in, lambda=lambda, max.month=max.month))
 )
-
-
-# 2.2 new) alpha return component -------------
-
-# IMPORTANT: this is an alternative way to determine the alpha term
-# this method here is conditional a factor model that has no intercept (= alpha term)
-# compare to: Excess-IRR method described by Phalippou and Gottschalg (2009)
-
-# make df.idi
-df.idi <- data.frame(Date = unique(df0$Date),
-                     idi.return = 0)
-df.idi$date.chr <- as.character(df.idi$Date)
-
-# linear SDF
-f1.alpha <- function(df.ss, max.month, par0, par.alpha, df.idi) {
-  
-  # where to place small return?
-  df.ss <- merge(df.ss, df.idi, by = "Date")
-  df.ss$idi.return = par.alpha
-  
-  return(getNPVs(df.ss$CF, 
-                 exp(cumsum(log(
-                   1 + (as.matrix(df.ss[, names(par0)]) %*% par0)
-                   + df.ss$idi.return
-                 ))), 
-                 max.month))
-}
-
-# L2 lasso
-err.sqr.calc.alpha <- function(par, max.month, lambda, df, df.idi, par.factor) {
-  dfx <- split(df, df$Fund.ID)
-  npvs <- sapply(dfx, f1.alpha, max.month=max.month, par0=c("RF" = 1, par.factor), 
-                 par.alpha=par, df.idi)
-  p <- ifelse(length(par) == 1, par, par[-1])
-  return(
-    sqrt(sum(npvs^2)) / length(npvs) + lambda / length(p) * sum(abs(p))
-  )
-}
-
-par <- c(MKT = 1, Alpha = 0)
-par <- c(MKT = 1.33, HML = -0.15, SMB = 0.2, HDY = 0.3, QLT = 0.21) # from SDF paper for BO
-
-# optimize alpha
-res.alpha <- optimize(err.sqr.calc.alpha, 
-                interval = c(-1, 1),
-                lambda = lambda,
-                max.month = max.month,
-                df = df.in,
-                par.factor = par,
-                df.idi = df.idi)
-(1 + res.alpha$minimum)^12
-
-# 2.2.new) idiosyncratic return component ------
-
-# make df.idi
-df.idi <- data.frame(Date = unique(df0$Date),
-                     idi.return = 0)
-df.idi$date.chr <- as.character(df.idi$Date)
-
-# linear SDF
-f1.idi <- function(df.ss, max.month, par0, par.idi.date, par.idi, df.idi) {
-
-  # where to place small return?
-  df.ss <- merge(df.ss, df.idi, by = "Date")
-  df.ss$idi.return[df.ss$Date == par.idi.date] = df.ss$idi.return[df.ss$Date == par.idi.date] + par.idi
-  
-  return(getNPVs(df.ss$CF, 
-                 exp(cumsum(log(
-                   1 + (as.matrix(df.ss[, names(par0)]) %*% par0)
-                   + df.ss$idi.return
-                 ))), 
-                 max.month))
-}
-
-# L2 lasso
-err.sqr.calc.idi <- function(par, max.month, lambda, df, par.idi.date, df.idi, par.factor) {
-  dfx <- split(df, df$Fund.ID)
-  npvs <- sapply(dfx, f1.idi, max.month=max.month, par0=c("RF" = 1, par.factor), 
-                 par.idi.date=par.idi.date, par.idi=par, df.idi)
-  p <- ifelse(length(par) == 1, par, par[-1])
-  return(
-    sqrt(sum(npvs^2)) / length(npvs) + lambda / length(p) * sum(abs(p))
-  )
-}
-
-RETURN.BOUNDARY <- 1
-
-# one boosting step
-one.cwb.iteration <- function(df.idi, lambda, max.month, df.in, par) {
-  
-  # initialize
-  best.res <- list(objective = Inf)
-  
-  # find best date
-  for (date in df.idi$date.chr) {
-    # print(date)
-    res <- optimize(err.sqr.calc.idi, 
-                    interval = c(-RETURN.BOUNDARY, RETURN.BOUNDARY),
-                    lambda = lambda,
-                    max.month = max.month,
-                    df = df.in,
-                    par.factor = par,
-                    df.idi = df.idi,
-                    par.idi.date = date
-    )
-    res
-    
-    if (res$objective < best.res$objective) {
-      best.res <- res
-      best.res$date <- date
-    }
-  }
-  
-  return(data.frame(best.res))
-}
-
-# system.time(res <- one.cwb.iteration(df.idi, lambda, max.month, df.in, par))
-# res
-
-one.cwb.iteration2 <- function(df.idi, lambda, max.month, df.in, par) {
-  
-  # find best date
-  foo <- function(date) {
-    res <- optimize(err.sqr.calc.idi, 
-                    interval = c(-RETURN.BOUNDARY, RETURN.BOUNDARY),
-                    lambda = lambda,
-                    max.month = max.month,
-                    df = df.in,
-                    par.factor = par,
-                    df.idi = df.idi,
-                    par.idi.date = date
-    )
-    res$date <- date
-    return(data.frame(res))
-  }
-  
-  method <- "parLapply"
-  no.cores <- parallel::detectCores() - 1
-  
-  if (method == "mclapply") {
-    # Unfortunately, 'mc.cores' > 1 not supported in Windows
-    mc.cores <- ifelse(.Platform$OS.type == "unix", no.cores, 1)
-    list.res <- parallel::mclapply(df.idi$date.chr, foo, mc.cores = mc.cores)
-  } else if (method == "parLapply") {
-    # does not work with Rccp functions
-    cl <- parallel::makeCluster(no.cores)
-    export2cluster <- c("err.sqr.calc.idi", "RETURN.BOUNDARY", 
-                        "df.in", "f1.idi", "df.idi", "getNPVs",
-                        "lambda", "max.month", "par")
-    parallel::clusterExport(cl, export2cluster)
-    list.res <- parallel::parLapply(cl, df.idi$date.chr, foo)
-    parallel::stopCluster(cl)
-  } else {
-    list.res <- lapply(df.idi$date.chr, foo)
-  }
-  
-  df.res <- data.frame(do.call(rbind, list.res))
-  best.res <- df.res[df.res$objective == min(df.res$objective), ]
-  
-  return(best.res)
-}
-
-# system.time(res <- one.cwb.iteration2(df.idi, lambda, max.month, df.in, par))
-# res
-
-
-# multiple boosting steps
-multi.cwb.iterations <- function(n.boost, 
-                                 lambda, max.month, df.in, par, 
-                                 alpha=0, 
-                                 old.out = NA, 
-                                 load.cached.idi = FALSE) {
-  
-  # load cached csv
-  if (load.cached.idi) {
-    df.idi <- read.csv2("data_out/df.idi.csv")
-    df.res.before <- read.csv2("data_out/df.res.csv")
-    
-    df.idi$X <- NULL
-    df.idi$Date <- as.Date(df.idi$Date)
-    df.idi$date.chr <- as.character(df.idi$date.chr)
-    
-    df.res.before$X <- NULL
-    df.res.before$date <- as.character(df.res.before$date)
-  }
-  
-  if ( is.list(old.out)) {
-    df.idi = old.out$df.idi
-    df.res.before = old.out$df.res
-  } else if (!load.cached.idi) {
-    df.res.before <- NA
-    df.idi <- NA
-  }
-  
-  # make df.idi
-  if (!is.data.frame(df.idi)) {
-    df.idi <- data.frame(Date = unique(df0$Date),
-                         idi.return = 0)
-    df.idi$date.chr <- as.character(df.idi$Date)
-    
-    df.idi$idi.return <- alpha
-  }
-  
-  # set hyper-parameters
-  damper <- 0.33
-  
-  list.res <- list()
-  # loop over boosting steps
-  for (i in 1:n.boost) {
-    print(i)
-    proc.time <- system.time(res <- one.cwb.iteration2(df.idi, lambda, max.month, df.in, par))
-    res$alpha <- alpha
-    res$damper <- damper
-    res$elapsed <- proc.time["elapsed"]
-    
-    # update idiosyncratic return time-series
-    df.idi$idi.return[df.idi$date.chr == res$date] <- df.idi$idi.return[df.idi$date.chr == res$date] + res$minimum * damper
-    
-    # NICE TO KNOW
-    print(paste("filled returns:", nrow(df.idi[df.idi$idi.return != alpha, ])))
-    
-    # store optimization result
-    list.res[[as.character(i)]] <- res
-    print(res)
-    
-  }
-  df.res <- data.frame(do.call(rbind, list.res))
-  
-  if (is.data.frame(df.res.before)) {
-    df.res <- rbind(df.res.before, df.res)
-    rownames(df.res) <- NULL
-  }
-  
-  # prepare output
-  out <- list(
-    df.res = df.res,
-    df.idi = df.idi,
-    df.par = data.frame(t(par))
-  )
-  return(out)
-}
-
-
-# out <- multi.cwb.iterations(1, lambda, max.month, df.in, par, res.alpha$minimum)
-# out <- multi.cwb.iterations(10, lambda, max.month, df.in, par, res.alpha$minimum, load.cached.idi=TRUE)
-out <- multi.cwb.iterations(40, lambda, max.month, df.in, par, res.alpha$minimum, out)
-# out$df.idi
-# out$df.res
-plot(out$df.idi$Date, out$df.idi$idi.return, type="l", xlab = "Date", ylab = "Return", main=type)
-plot(out$df.res$objective, type = "l", xlab="iterations", ylab="objective", main=type)
-legend("topright", bty="n", legend = paste("# different dates:", length(unique(out$df.res$date))))
-
-
-#write.csv2(out$df.idi, "data_out/df.idi.csv")
-#write.csv2(out$df.res, "data_out/df.res.csv")
 
 
 # 2.3 Asymptotic gradient hessian -----
@@ -728,7 +469,7 @@ iter.run <- function(input.list) {
     types <- c("PE", "VC", "PD", "RE", "NATRES", "INF") # asset classes
     #types <- levels(df0$type)
   }
-  if (public.filename %in% c("DebtFactorsUSD", "DebtFactorsEUR", "DebtFactorsEURUSD")) {
+  if (public.filename %in% bond.files) {
     factors <- c("TERM", "CORP", "HY", "LIQ")
     types <- levels(df0$type)
     # types <- c("PD", "DD", "MEZZ")
@@ -836,7 +577,7 @@ iter.run <- function(input.list) {
       }
       
       if(do.cache & nrow(output) > 0) {
-        cache.path <- paste0("data_out/cache_", public.filename, "/")
+        cache.path <- paste0("data_out/cache_", paste0(public.filename, "_", cache.folder.tag), "/")
         if(!dir.exists(cache.path)) dir.create(cache.path)
         path.cache <- paste0(cache.path, 
                              format(Sys.time() + 2 * 60 * 60, "%Y-%m-%d_%H%M%S"), 

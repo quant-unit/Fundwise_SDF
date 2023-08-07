@@ -5,11 +5,12 @@ getwd()
 
 
 list.cache <- list()
+prefix <- "q_factors_"
 suffixes <- c("EW", "EW_VYP", "FW", "FW_VYP")
 files <- c("asymptotic_inference", "cross_validation")
 for(suffix in suffixes) {
   for(file in files) {
-    path <- paste0("data_out/cache_q_factors_", suffix, "/0_", file, "_summary.csv")
+    path <- paste0("data_out/cache_", prefix, suffix, "/0_", file, "_summary.csv")
     df <- read.csv(path)
     df$X <- NULL
     if("Max.Quarter" %in% colnames(df)) {

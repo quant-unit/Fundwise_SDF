@@ -10,9 +10,11 @@ if(!dir.exists("data_prepared")) dir.create("data_prepared")
 
 
 path <- "data_in/Preqin_Cashflow_export-26_Feb_20e003d5aa-5a18-4c12-aba8-7586a7435ac9.xlsx"
+path <- "data_in/Preqin_Cashflow_export-14_Apr_22272f54e5-79fe-43c0-8bc0-9206381de0b7.xlsx"
 sheet <- "Preqin_Export"
 df.xl <- data.frame(readxl::read_excel(path = path, sheet = sheet))
-table(df.xl$PRIMARY.GEOGRAPHIC.FOCUS) 
+if ("GEOGRAPHIC.FOCUS" %in% colnames(df.xl)) df.xl$PRIMARY.GEOGRAPHIC.FOCUS <- df.xl$GEOGRAPHIC.FOCUS
+table(df.xl$PRIMARY.GEOGRAPHIC.FOCUS)
 colnames(df.xl)
 
 #df <- df.xl
@@ -60,7 +62,7 @@ make.preqin.df <- function(
   
   df <- df[df$TRANSACTION.TYPE == "Value", ]
 
-  if(!is.na(acs.filter)) {
+  if(length(acs.filter) > 0) {
     
     test <- df[df$ASSET.CLASS %in% acs.filter, ]
     if(nrow(test) > 0) df <- test
@@ -166,9 +168,9 @@ make.preqin.csv <- function(fund.size.weighting) {
   } else {
     tag <- "EW"
   }
-  file = paste0("data_prepared/preqin_cashflows_", tag, "_Europe.csv")
+  file = paste0("data_prepared/preqin_cashflows_", tag, "_Europe_2022.csv")
   write.csv(df.out, file, row.names = FALSE)
-  
+  invisible(df.out)
 }
-make.preqin.csv(TRUE)
-make.preqin.csv(FALSE)
+df.out <- make.preqin.csv(TRUE)
+df.out <- make.preqin.csv(FALSE)
