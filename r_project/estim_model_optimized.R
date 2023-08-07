@@ -21,12 +21,12 @@ do.cache <- TRUE
 do.parallel <- ifelse(.Platform$OS.type == "windows", FALSE, TRUE)
 
 #public.filename <- "public_returns"
-#public.filename <- "msci_market_factors"
+public.filename <- "msci_market_factors"
 #public.filename <- "q_factors"
-public.filename <- "DebtFactorsEURUSD"
+#public.filename <- "DebtFactorsEURUSD"
 
 # CHOICES
-#weighting <- "EW" 
+#weighting <- "EW"
 weighting <- "FW"
 #error.function <- "L1_Ridge"
 error.function <- "L2_Lasso"
@@ -232,6 +232,7 @@ system.time(
 
 # IMPORTANT: this is an alternative way to determine the alpha term
 # this method here is conditional a factor model that has no intercept (= alpha term)
+# compare to: Excess-IRR method described by Phalippou and Gottschalg (2009)
 
 # make df.idi
 df.idi <- data.frame(Date = unique(df0$Date),
@@ -264,6 +265,9 @@ err.sqr.calc.alpha <- function(par, max.month, lambda, df, df.idi, par.factor) {
   )
 }
 
+par <- c(MKT = 1, Alpha = 0)
+par <- c(MKT = 1.33, HML = -0.15, SMB = 0.2, HDY = 0.3, QLT = 0.21) # from SDF paper for BO
+
 # optimize alpha
 res.alpha <- optimize(err.sqr.calc.alpha, 
                 interval = c(-1, 1),
@@ -272,7 +276,7 @@ res.alpha <- optimize(err.sqr.calc.alpha,
                 df = df.in,
                 par.factor = par,
                 df.idi = df.idi)
-res.alpha
+(1 + res.alpha$minimum)^12
 
 # 2.2.new) idiosyncratic return component ------
 
@@ -359,7 +363,7 @@ one.cwb.iteration2 <- function(df.idi, lambda, max.month, df.in, par) {
   }
   
   method <- "parLapply"
-  no.cores <- 2 # parallel::detectCores() - 1
+  no.cores <- parallel::detectCores() - 1
   
   if (method == "mclapply") {
     # Unfortunately, 'mc.cores' > 1 not supported in Windows
@@ -384,8 +388,8 @@ one.cwb.iteration2 <- function(df.idi, lambda, max.month, df.in, par) {
   return(best.res)
 }
 
-#system.time(res <- one.cwb.iteration2(df.idi, lambda, max.month, df.in, par))
-#res
+# system.time(res <- one.cwb.iteration2(df.idi, lambda, max.month, df.in, par))
+# res
 
 
 # multiple boosting steps
@@ -402,8 +406,10 @@ multi.cwb.iterations <- function(n.boost,
     
     df.idi$X <- NULL
     df.idi$Date <- as.Date(df.idi$Date)
+    df.idi$date.chr <- as.character(df.idi$date.chr)
     
     df.res.before$X <- NULL
+    df.res.before$date <- as.character(df.res.before$date)
   }
   
   if ( is.list(old.out)) {
@@ -456,15 +462,16 @@ multi.cwb.iterations <- function(n.boost,
   # prepare output
   out <- list(
     df.res = df.res,
-    df.idi = df.idi
+    df.idi = df.idi,
+    df.par = data.frame(t(par))
   )
   return(out)
 }
 
 
-out <- multi.cwb.iterations(1, lambda, max.month, df.in, par, res.alpha$minimum)
-# out <- multi.cwb.iterations(1, lambda, max.month, df.in, par, res.alpha$minimum, load.cached.idi=TRUE)
-# out <- multi.cwb.iterations(1, lambda, max.month, df.in, par, res.alpha$minimum, out)
+# out <- multi.cwb.iterations(1, lambda, max.month, df.in, par, res.alpha$minimum)
+# out <- multi.cwb.iterations(10, lambda, max.month, df.in, par, res.alpha$minimum, load.cached.idi=TRUE)
+out <- multi.cwb.iterations(40, lambda, max.month, df.in, par, res.alpha$minimum, out)
 # out$df.idi
 # out$df.res
 plot(out$df.idi$Date, out$df.idi$idi.return, type="l", xlab = "Date", ylab = "Return", main=type)
@@ -472,8 +479,8 @@ plot(out$df.res$objective, type = "l", xlab="iterations", ylab="objective", main
 legend("topright", bty="n", legend = paste("# different dates:", length(unique(out$df.res$date))))
 
 
-# write.csv2(out$df.idi, "data_out/df.idi.csv")
-# write.csv2(out$df.res, "data_out/df.res.csv")
+#write.csv2(out$df.idi, "data_out/df.idi.csv")
+#write.csv2(out$df.res, "data_out/df.res.csv")
 
 
 # 2.3 Asymptotic gradient hessian -----
