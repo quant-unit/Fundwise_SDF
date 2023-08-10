@@ -12,6 +12,7 @@ public.filename <- "q_factors"
 private.source <- "preqin"
 weighting <- "FW"
 if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
+sub.folder <- paste(public.filename, private.source, weighting, sep = "#")
 
 # load df0
 file.name <- paste("df0", private.source, public.filename, weighting, sep ="_")
@@ -35,20 +36,20 @@ lambda <- 0
 source("getNPVs.R")
 
 # load cached SDF factor estimates
-sdf.model <- "cache_q_factors_EW_VYP_SL"
+sdf.model <- paste0("cache_q_factors_", weighting, "_SL")
 filenames <- list.files(paste0("data_out/", sdf.model), pattern="*cached_res.csv", full.names=TRUE)
 df.sdf <- data.frame(Reduce(rbind.all.columns, lapply(filenames, read.csv)))
 df.sdf[is.na(df.sdf)] <- 0
 types <- levels(as.factor(df.sdf$Type))
 type <- types[1]
-type
+type <- "PE"
 
 sdf.factors <- colnames(df.sdf)[grep(".indep", colnames(df.sdf))]
 sdf.factors <- sub(".indep", "", sdf.factors)
 sdf.factors <- sub("SE.", "", sdf.factors)
 sdf.factors
 
-avergae.sdf.par <- function(type="BO") {
+avergae.sdf.par <- function(type) {
   print(type)
   df <- df.sdf[, c("Type", sdf.factors)]
   df <- aggregate(df[, sdf.factors], list(Type = df[, "Type"]), mean)
@@ -59,6 +60,24 @@ avergae.sdf.par <- function(type="BO") {
 }
 par <- avergae.sdf.par(type)
 par
+
+pars <- list("AvgPar" = par)
+pars
+
+ensemble.of.par <- function(type) {
+  df <- df.sdf[df.sdf$Type == type, ]
+  df <- df[, sdf.factors]
+  y <- list()
+  sdf.names <- colnames(df)
+  for (i in 1:nrow(df)) {
+    x <- as.numeric(df[i, ])
+    names(x) <- sdf.names
+    y[[paste0("Ensemble", i)]] <- x
+  }
+  return(y)
+}
+pars <- ensemble.of.par(type)
+
 
 
 # 2) alpha return component -------------
@@ -119,7 +138,7 @@ map.types = list(
   INF = "INF_FUNDS",
   NATRES = "NATRES_FUNDS",
   PD = "PE_PD",
-  PE = "ALL",
+  PE = "ALL_ALL",
   RE ="RE_FUNDS",
   VC = "PE_VC"
 )
@@ -137,9 +156,8 @@ make.df.idi <- function(use.nav.returns=FALSE, par0=NA, df.public=NA, col.return
     if (FALSE) {
       # load nav returns (QUARTERLY NAV RETURNS)
       file.nav.returns <- "nav_returns_pitchbook_acs"
-      file.nav.returns <- "ca_index_100"
       df.nav.ret <- read.csv2(paste0("nav_returns/", file.nav.returns, ".csv"))
-      
+
       quarter2date <- function(x) {
         year <- substring(x, 1, 4)
         quarter <- as.numeric(substring(x, 6, 6))
@@ -155,14 +173,23 @@ make.df.idi <- function(use.nav.returns=FALSE, par0=NA, df.public=NA, col.return
       df.idi$StandardReturn_filledQ[is.na(df.idi$StandardReturn_filledQ)] <- 0
       df.idi$idi.return <- df.idi$StandardReturn_filledQ
       df.idi$StandardReturn_filledQ <- NULL
-    } else {
+    } else if (FALSE) {
+      file.nav.returns <- "Pitchbook NAV Returns Truncated"
       # newly calculated Pitchbook NAV returns from AM data_prep (also QUARTERLY !!!)
-      df.nav.ret <- read.csv2(paste0("nav_returns/", "Pitchbook NAV Returns Truncated", ".csv"))
+      df.nav.ret <- read.csv(paste0("nav_returns/", file.nav.returns, ".csv"))
       df.nav.ret$Date <- as.Date(df.nav.ret$date)
       df.idi <- merge(df.idi, df.nav.ret[, c("Date", col.return)], by="Date", all.x = TRUE)
       df.idi$idi.return <- as.numeric(gsub(",", ".", df.idi[, col.return]))
       df.idi$idi.return[is.na(df.idi$idi.return)] <- 0
       df.idi[, col.return] <- NULL
+    } else {
+      # CA NAV 100 return time series
+      file.nav.returns <- "ca_index_100"
+      df.nav.ret <- read.csv(paste0("nav_returns/", file.nav.returns, ".csv"))
+      df.nav.ret$Date <- as.Date(df.nav.ret$Date)
+      df.idi <- merge(df.idi, df.nav.ret[, c("Date", col.return)], by="Date", all.x = TRUE)
+      df.idi$idi.return <- as.numeric(gsub(",", ".", df.idi[, col.return]))
+      df.idi$idi.return[is.na(df.idi$idi.return)] <- 0
     }
     
     
@@ -296,8 +323,9 @@ one.cwb.iteration2 <- function(df.idi, lambda, max.month, df.in, par) {
     return(data.frame(res))
   }
   
-  method <- "parLapply"
-  no.cores <- 4 # parallel::detectCores() - 1
+  method <- "parLapply" # Windows
+  method <- "mclapply" # Mac
+  no.cores <- parallel::detectCores() - 1
   
   if (method == "mclapply") {
     # Unfortunately, 'mc.cores' > 1 not supported in Windows
@@ -337,7 +365,8 @@ multi.cwb.iterations <- function(n.boost,
                                  old.out = NA, 
                                  load.cached.idi = FALSE,
                                  use.nav.returns = FALSE,
-                                 df.public = NA) {
+                                 df.public = NA, 
+                                 ensemble="") {
   
   df.in <- df0[df0$type == type, ]
   
@@ -366,6 +395,12 @@ multi.cwb.iterations <- function(n.boost,
     
     if (!use.nav.returns) df.idi$idi.return <- alpha
   }
+
+  # calc factor return
+  df.fac <- df.in[!duplicated(df.in$Date), c("Date", names(par))]
+  df.idi <- merge(df.idi, df.fac, by = "Date")
+  df.idi$factor.return <- (as.matrix(df.idi[, names(par)]) %*% par)
+  df.idi <- df.idi[, !(colnames(df.idi) %in% names(par))]
   
   # set hyper-parameters
   damper <- 0.33
@@ -373,7 +408,7 @@ multi.cwb.iterations <- function(n.boost,
   list.res <- list()
   # loop over boosting steps
   for (i in 1:n.boost) {
-    print(i)
+    print(paste(ensemble, i))
     proc.time <- system.time(res <- one.cwb.iteration2(df.idi, lambda, max.month, df.in, par))
     res$alpha <- alpha
     res$damper <- damper
@@ -398,9 +433,16 @@ multi.cwb.iterations <- function(n.boost,
   }
   
   df.par <- data.frame(t(par))
+  
+  # add type col
   df.par$type <- type
   df.res$type <- type
-  df.idi$tyoe <- type
+  df.idi$type <- type
+  
+  # add ensemble col
+  df.idi$ensemble <- ensemble
+  df.res$ensemble <- ensemble
+  df.par$ensemble <- ensemble
   
   # prepare output
   out <- list(
@@ -411,17 +453,64 @@ multi.cwb.iterations <- function(n.boost,
   return(out)
 }
 
+write.out <- function(out, type, tag="") {
+  # write
+  write.csv2(out$df.idi, paste0("data_idi/",sub.folder, "/df_idi_", type, tag, ".csv"))
+  write.csv2(out$df.res, paste0("data_idi/",sub.folder, "/df_res_", type, tag, ".csv"))
+  write.csv2(out$df.par, paste0("data_idi/",sub.folder, "/df_par_", type, tag, ".csv"))
+}
+
+read.out <- function(type, tag="") {
+  out <- list()
+  for (name in c("idi", "par", "res")) {
+    file <- paste0("data_idi/",sub.folder, "/df_",name, "_", type, tag,".csv")
+    if(! file.exists(file)) return(NA)
+    
+    df <- read.csv2(file)
+    if ("Date" %in% colnames(df)) df$Date <- as.Date(df$Date)
+    df$X <- NULL
+    out[[paste0("df.", name)]] <- df
+  }
+  return(out)
+}
+read.out(type)
+
 res.alpha$minimum
-out <- multi.cwb.iterations(5, lambda, max.month, df0, par, type, use.nav.returns=FALSE, df.public=df.public)
-# out <- multi.cwb.iterations(2, lambda, max.month, df.in, par, res.alpha$minimum, load.cached.idi=TRUE)
-# out <- multi.cwb.iterations(50, lambda, max.month, df.in, par, old.out = out)
-out$df.idi
-out$df.res
+
+no.iterations <- 200
+print(paste("approximated run time:", length(pars) * no.iterations * 0.5 / 60, "hours for type", type))
+for (ensemble in names(pars)) {
+  out <- multi.cwb.iterations(no.iterations, lambda, max.month, df0, pars[[ensemble]], type, 
+                              use.nav.returns=FALSE, df.public=df.public, ensemble=ensemble)
+  # out <- multi.cwb.iterations(2, lambda, max.month, df.in, par, res.alpha$minimum, load.cached.idi=TRUE)
+  # out <- multi.cwb.iterations(50, lambda, max.month, df.in, par, old.out = out)
+  
+  # combine old.out and new.out
+  old.out <- read.out(type)
+  if(is.list(old.out)) {
+    for(name in names(old.out)) {
+      out[[name]] <- rbind(old.out[[name]], out[[name]])
+    }
+  }
+  write.out(out, type)
+}
+
+
+# 4. Analyze output -----
+count.dates <- function(df.res) {
+  y <- c()
+  for (i in 1:nrow(df.res)) {
+    df <- df.res[1:i, ]
+    y <- c(y, length(unique(df$date)))
+  }
+  return(y)
+}
+
+
 plot(out$df.idi$Date, out$df.idi$idi.return, type="l", xlab = "Date", ylab = "Return", main=type)
 plot(acf(out$df.idi$idi.return))
 plot(out$df.res$objective, type = "l", xlab="iterations", ylab="objective", main=type)
 legend("topright", bty="n", legend = paste("# different dates:", length(unique(out$df.res$date))))
+plot(count.dates(out$df.res), type="s", col="blue", xlab="iterations", ylab="# dates", main=type)
 
-write.csv2(out$df.idi, paste0("data_idi/df_idi_", type, ".csv"))
-write.csv2(out$df.res, paste0("data_idi/df_res_", type, ".csv"))
-write.csv2(out$df.par, paste0("data_idi/df_par_", type, ".csv"))
+

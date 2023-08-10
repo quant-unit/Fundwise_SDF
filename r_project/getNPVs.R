@@ -3,7 +3,7 @@
 ##############################
 # 1) getNPVs function ----
 
-use.cpp <- FALSE
+use.cpp <- TRUE
 
 if (use.cpp) {
   library(Rcpp)
