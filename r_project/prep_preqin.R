@@ -58,7 +58,8 @@ make.preqin.df <- function(
   region.filter = NA,
   vin.year.pfs = FALSE) {
   col.to.keep <- c("FUND.ID", "FUND.SIZE..USD.MN.", "VINTAGE...INCEPTION.YEAR",
-                   "TRANSACTION.DATE", "TRANSACTION.AMOUNT", "NET.CASHFLOW")
+                   "TRANSACTION.DATE", "TRANSACTION.AMOUNT", "NET.CASHFLOW",
+                   "CUMULATIVE.CONTRIBUTION", "CUMULATIVE.DISTRIBUTION")
   
   df <- df[df$TRANSACTION.TYPE == "Value", ]
 
@@ -90,6 +91,8 @@ make.preqin.df <- function(
   for(fund.id in levels(df$FUND.ID)) {
     df.ss <- df[df$FUND.ID == fund.id, ]
     df.ss$CF <- c(df.ss$NET.CASHFLOW[1], diff(df.ss$NET.CASHFLOW))
+    df.ss$CUMULATIVE.CONTRIBUTION <- c(df.ss$CUMULATIVE.CONTRIBUTION[1], diff(df.ss$CUMULATIVE.CONTRIBUTION))
+    df.ss$CUMULATIVE.DISTRIBUTION <- c(df.ss$CUMULATIVE.DISTRIBUTION[1], diff(df.ss$CUMULATIVE.DISTRIBUTION))
     # for last date: CF = CF + NAV, i.e., regard final NAV as final distribution
     df.ss$CF[nrow(df.ss)] <- df.ss$CF[nrow(df.ss)] + df.ss$TRANSACTION.AMOUNT[nrow(df.ss)]
     
@@ -102,20 +105,36 @@ make.preqin.df <- function(
 
   if(fund.size.weighting) {
     df$CF <- df$CF * df$FUND.SIZE..USD.MN.
+    df$TRANSACTION.AMOUNT <- df$TRANSACTION.AMOUNT * df$FUND.SIZE..USD.MN. # aka NAV
+    df$CUMULATIVE.CONTRIBUTION <- df$CUMULATIVE.CONTRIBUTION * df$FUND.SIZE..USD.MN.
+    df$CUMULATIVE.DISTRIBUTION <- df$CUMULATIVE.DISTRIBUTION * df$FUND.SIZE..USD.MN.
   } else {
-    df$CF <- df$CF * mean(df$FUND.SIZE..USD.MN.)
+    # df$CF <- df$CF * mean(df$FUND.SIZE..USD.MN.) # why?
+    df$CF <- df$CF
   }
   
-  df$CF <- df$CF/ 1000 / 1000
-  df <- df[, c("FUND.ID", "TRANSACTION.DATE", "CF", "VINTAGE...INCEPTION.YEAR")]
-  colnames(df) <- c("Fund.ID", "Date", "CF", "Vintage")
+  ten.mio <- 10 * 1000 * 1000
+  df$CF <- df$CF/ ten.mio
+  df$TRANSACTION.AMOUNT <- df$TRANSACTION.AMOUNT / ten.mio # aka NAV
+  df$CUMULATIVE.CONTRIBUTION <- df$CUMULATIVE.CONTRIBUTION / ten.mio
+  df$CUMULATIVE.DISTRIBUTION <- df$CUMULATIVE.DISTRIBUTION / ten.mio
+  df <- df[, c("FUND.ID", "TRANSACTION.DATE", "CF", 
+               "TRANSACTION.AMOUNT", "CUMULATIVE.CONTRIBUTION", "CUMULATIVE.DISTRIBUTION",
+               "VINTAGE...INCEPTION.YEAR")]
+  colnames(df) <- c("Fund.ID", "Date", "CF", "NAV", "CON", "DIS", "Vintage")
   df$type <- out.name
   
   # Vintage Year Porftolio Formation
   agg.vin.year.pf <- function(df) {
     Vintage <- df$Vintage[1]
     type <- df$type[1]
-    df.out <- aggregate(CF ~ Date, data = df, sum)
+    df.out <- aggregate(CF ~ Date, data = df, mean)
+    df.nav <- aggregate(NAV ~ Date, data = df, mean)
+    df.out <- merge(df.out, df.nav, by = "Date")
+    df.con <- aggregate(CON ~ Date, data = df, mean)
+    df.out <- merge(df.out, df.con, by = "Date")
+    df.dis <- aggregate(DIS ~ Date, data = df, mean)
+    df.out <- merge(df.out, df.dis, by = "Date")
     df.out$type <- type
     df.out$Vintage <- Vintage
     df.out$Fund.ID <- paste0(Vintage, "_", type)
@@ -149,28 +168,30 @@ acs <- list(
 )
 
 
-make.preqin.csv <- function(fund.size.weighting) {
+make.preqin.csv <- function(fund.size.weighting, vin.year.pfs, region.filter) {
   l <- list()
   for(i in names(acs)) {
     print(acs[[i]])
     df0 = make.preqin.df(
       fund.size.weighting = fund.size.weighting,
       acs.filter = acs[[i]],
-      region.filter = "Europe",
-      vin.year.pfs = TRUE,
+      region.filter = region.filter,
+      vin.year.pfs = vin.year.pfs,
       out.name = i)
     l[[i]] <- df0
   }
   df.out <- data.frame(do.call(rbind, l))
   
-  if(fund.size.weighting) {
-    tag <- "FW"
-  } else {
-    tag <- "EW"
-  }
-  file = paste0("data_prepared/preqin_cashflows_", tag, "_Europe_2022.csv")
+  tag <- ifelse(fund.size.weighting, "FW", "EW")
+  tag <- ifelse(vin.year.pfs, paste0(tag, "_VYP"), tag)
+  tag <- ifelse(is.na(region.filter), tag, paste0(tag, "_", region.filter))
+  file = paste0("data_prepared/preqin_cashflows_2022_", tag, "_NAV.csv")
   write.csv(df.out, file, row.names = FALSE)
   invisible(df.out)
 }
-df.out <- make.preqin.csv(TRUE)
-df.out <- make.preqin.csv(FALSE)
+df.out <- make.preqin.csv(TRUE, TRUE, NA)
+df.out <- make.preqin.csv(FALSE, TRUE, NA)
+df.out <- make.preqin.csv(TRUE, FALSE, NA)
+df.out <- make.preqin.csv(FALSE, FALSE, NA)
+df.out <- make.preqin.csv(TRUE, TRUE, "Europe")
+df.out <- make.preqin.csv(FALSE, TRUE, "Europe")

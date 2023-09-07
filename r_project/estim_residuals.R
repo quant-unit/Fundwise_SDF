@@ -8,8 +8,8 @@ getwd()
 
 # 1) load data -------
 use.vintage.year.pfs <- TRUE
-public.filename <- "q_factors"
-private.source <- "preqin"
+public.filename <- "msci_market_factors" # "q_factors"
+private.source <- "pitchbook" # "preqin"
 weighting <- "FW"
 if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
 sub.folder <- paste(public.filename, private.source, weighting, sep = "#")
@@ -36,13 +36,18 @@ lambda <- 0
 source("getNPVs.R")
 
 # load cached SDF factor estimates
-sdf.model <- paste0("cache_q_factors_", weighting, "_SL")
+if (public.filename == "q_factors") {
+  sdf.model <- paste0("cache_", public.filename, "_", weighting, "_SL")
+} else if (public.filename == "msci_market_factors") {
+  sdf.model <- paste0("cache_", public.filename, "_pitchbook_2023_alpha_", weighting)
+  sdf.model <- paste0("cache_", public.filename, "_pitchbook_2023_", weighting)
+}
 filenames <- list.files(paste0("data_out/", sdf.model), pattern="*cached_res.csv", full.names=TRUE)
 df.sdf <- data.frame(Reduce(rbind.all.columns, lapply(filenames, read.csv)))
 df.sdf[is.na(df.sdf)] <- 0
 types <- levels(as.factor(df.sdf$Type))
 type <- types[1]
-type <- "PE"
+type <- "BO"
 
 sdf.factors <- colnames(df.sdf)[grep(".indep", colnames(df.sdf))]
 sdf.factors <- sub(".indep", "", sdf.factors)
@@ -77,7 +82,6 @@ ensemble.of.par <- function(type) {
   return(y)
 }
 pars <- ensemble.of.par(type)
-
 
 
 # 2) alpha return component -------------
@@ -140,7 +144,8 @@ map.types = list(
   PD = "PE_PD",
   PE = "ALL_ALL",
   RE ="RE_FUNDS",
-  VC = "PE_VC"
+  VC = "PE_VC",
+  BO = "PE_BO"
 )
 
 # TODO: align monthly and quarterly returns !!!
@@ -454,10 +459,18 @@ multi.cwb.iterations <- function(n.boost,
 }
 
 write.out <- function(out, type, tag="") {
+  folder <- paste0("data_idi/",sub.folder)
+  # Check if the folder exists
+  if (!file.exists(folder)) {
+    # Create the folder if it doesn't exist
+    dir.create(folder)
+  }
+  
   # write
-  write.csv2(out$df.idi, paste0("data_idi/",sub.folder, "/df_idi_", type, tag, ".csv"))
-  write.csv2(out$df.res, paste0("data_idi/",sub.folder, "/df_res_", type, tag, ".csv"))
-  write.csv2(out$df.par, paste0("data_idi/",sub.folder, "/df_par_", type, tag, ".csv"))
+  print(folder)
+  write.csv2(out$df.idi, paste0(folder, "/df_idi_", type, tag, ".csv"))
+  write.csv2(out$df.res, paste0(folder, "/df_res_", type, tag, ".csv"))
+  write.csv2(out$df.par, paste0(folder, "/df_par_", type, tag, ".csv"))
 }
 
 read.out <- function(type, tag="") {
@@ -473,28 +486,31 @@ read.out <- function(type, tag="") {
   }
   return(out)
 }
-read.out(type)
+out <- read.out(type)
 
 res.alpha$minimum
 
-no.iterations <- 200
-print(paste("approximated run time:", length(pars) * no.iterations * 0.5 / 60, "hours for type", type))
-for (ensemble in names(pars)) {
-  out <- multi.cwb.iterations(no.iterations, lambda, max.month, df0, pars[[ensemble]], type, 
-                              use.nav.returns=FALSE, df.public=df.public, ensemble=ensemble)
-  # out <- multi.cwb.iterations(2, lambda, max.month, df.in, par, res.alpha$minimum, load.cached.idi=TRUE)
-  # out <- multi.cwb.iterations(50, lambda, max.month, df.in, par, old.out = out)
-  
-  # combine old.out and new.out
-  old.out <- read.out(type)
-  if(is.list(old.out)) {
-    for(name in names(old.out)) {
-      out[[name]] <- rbind(old.out[[name]], out[[name]])
+boost.over.all.ensembles <- function() {
+  no.iterations <- 200
+  print(paste("approximated run time:", length(pars) * no.iterations * 0.5 / 60, "hours for type", type))
+  for (ensemble in names(pars)) {
+    out <- multi.cwb.iterations(no.iterations, lambda, max.month, df0, pars[[ensemble]], type, 
+                                use.nav.returns=FALSE, df.public=df.public, ensemble=ensemble)
+    # out <- multi.cwb.iterations(2, lambda, max.month, df.in, par, res.alpha$minimum, load.cached.idi=TRUE)
+    # out <- multi.cwb.iterations(50, lambda, max.month, df.in, par, old.out = out)
+    
+    # combine old.out and new.out
+    old.out <- read.out(type)
+    if(is.list(old.out)) {
+      for(name in names(old.out)) {
+        out[[name]] <- rbind(old.out[[name]], out[[name]])
+      }
     }
+    write.out(out, type)
   }
-  write.out(out, type)
+  
 }
-
+# boost.over.all.ensembles()
 
 # 4. Analyze output -----
 count.dates <- function(df.res) {
@@ -506,11 +522,135 @@ count.dates <- function(df.res) {
   return(y)
 }
 
-
 plot(out$df.idi$Date, out$df.idi$idi.return, type="l", xlab = "Date", ylab = "Return", main=type)
 plot(acf(out$df.idi$idi.return))
-plot(out$df.res$objective, type = "l", xlab="iterations", ylab="objective", main=type)
+plot(out$df.res[out$df.res$ensemble == "Ensemble1", "objective"], type = "l", xlab="iterations", ylab="objective", main=type)
 legend("topright", bty="n", legend = paste("# different dates:", length(unique(out$df.res$date))))
 plot(count.dates(out$df.res), type="s", col="blue", xlab="iterations", ylab="# dates", main=type)
 
+# 5. Compare to NAV Return indices -----
 
+# View(out$df.idi)
+# View(out$df.par)
+
+df.par <- out$df.par
+df.par <- df.par[df.par$ESG == 0, ]
+df.par <- df.par[df.par$LOV == 0, ]
+df.par <- df.par[df.par$MOM == 0, ]
+colMeans(df.par[, 1:5])
+weighting
+
+nrow(out$df.idi[out$df.idi$ensemble == "Ensemble1", ])
+length(unique(out$df.idi[out$df.idi$idi.return != 0, "Date"]))
+
+df.idi2 <- out$df.idi
+#df.idi2 <- df.idi2[df.idi2$ensemble %in% df.par$ensemble, ]
+df.ret <- aggregate(cbind(idi.return, factor.return) ~ Date + type, data = df.idi2, FUN = mean)
+
+df.ret <- merge(df.ret, df.public[, c("Date", "MKT", "RF")], by ="Date", all.x = TRUE)
+df.ret$MKTplusRF <- df.ret$MKT + df.ret$RF
+
+# convert monthly to quarterly returns
+df.ret$idi.return <- cumprod(1+ df.ret$idi.return)
+df.ret$factor.return <- cumprod(1+ df.ret$factor.return)
+df.ret$MKTplusRF <- cumprod(1+ df.ret$MKTplusRF)
+
+df.ret <- df.ret[df.ret$Date == lubridate::quarter(df.ret$Date, type = "date_last"), ]
+
+calc.return <- function(x) {
+  y <- diff(c(1,x)) / c(1, x[1:(length(x)-1)])
+  return(y)
+}
+calc.return(df.ret$idi.return)
+
+df.ret$idi.return <- calc.return(df.ret$idi.return)
+df.ret$factor.return <- calc.return(df.ret$factor.return)
+df.ret$MKTplusRF <- calc.return(df.ret$MKTplusRF)
+
+
+df.ret$total.return <- df.ret$idi.return + df.ret$factor.return
+
+
+((1+mean(df.ret$total.return))^4-1)
+((1+mean(df.ret$factor.return))^4-1)
+((1+mean(df.ret$idi.return))^4-1)
+((1+mean(df.ret$MKTplusRF))^4-1)
+
+
+df.ca <- read.csv("nav_returns/ca_index_100.csv")
+df.ca$Date <- as.Date(df.ca$Date)
+df.ca <- df.ca[, c("Date", "PE_BO")]
+df.ret <- merge(df.ret, df.ca, by="Date", all.x = TRUE)
+
+df.pb <- read.csv2("nav_returns/pitchbook_nav_returns_2022Q4.csv")
+df.pb$Date <- as.Date(df.pb$Date, "%d.%m.%Y")
+df.pb <- df.pb[, c("Date", "Buyout")]
+df.ret <- merge(df.ret, df.pb, by="Date", all.x = TRUE)
+
+df.ret <- df.ret[1:(nrow(df.ret)-1), ]
+# df.ret[is.na(df.ret)] <- 0
+df.ret$Buyout <- ifelse(is.na(df.ret$Buyout), df.ret$PE_BO, df.ret$Buyout)
+df.ret <- df.ret[complete.cases(df.ret), ]
+# df.ret <- df.ret[df.ret$Date > as.Date("1990-01-01"), ]
+df.ret <- df.ret[df.ret$Date > as.Date("2003-01-01"), ]
+
+
+cor(df.ret$total.return, df.ret$PE_BO, method = "pearson")
+cor(df.ret$total.return, df.ret$Buyout, method = "pearson")
+cor(df.ret$total.return, df.ret$MKTplusRF, method = "pearson")
+
+mean(df.ret$total.return); sd(df.ret$total.return)
+mean(df.ret$factor.return); sd(df.ret$factor.return)
+mean(df.ret$idi.return); sd(df.ret$idi.return)
+mean(df.ret$PE_BO); sd(df.ret$PE_BO)
+mean(df.ret$Buyout); sd(df.ret$Buyout)
+mean(df.ret$MKTplusRF); sd(df.ret$MKTplusRF)
+
+
+do.eps <- FALSE
+
+# Plot 1
+if (do.eps) {
+  setEPS()
+  postscript("ErrorSeriesBO.eps", width = 5.5, height = 3, family = "Helvetica", pointsize = 11)
+  par(mar=c(4.2,4.2,1,2))
+}
+
+plot(df.ret$Date, df.ret$idi.return, type="h", lwd=2, xlab="Date", ylab="Idiosyncratic Return")
+
+if (do.eps) {
+  par(mfrow=c(1,1), cex=1, lwd=2)
+  dev.off() 
+}
+
+# Plot 2
+if (do.eps) {
+  setEPS()
+  postscript("TotalErrorSeriesBO.eps", width = 5.5, height = 3, family = "Helvetica", pointsize = 11)
+  par(mar=c(4.2,4.2,1,2), lwd=2)
+}
+
+
+plot(df.ret$Date, cumprod(1+df.ret$total.return), type="l", ylim=c(0,22),
+     xlab="Date", ylab="Cumulative Return", col = "blue")
+lines(df.ret$Date, cumprod(1+df.ret$factor.return), type="l", col="black")
+lines(df.ret$Date, cumprod(1+df.ret$PE_BO), type="l", col="red")
+lines(df.ret$Date, cumprod(1+df.ret$Buyout), type="l", col="orange")
+lines(df.ret$Date, cumprod(1+df.ret$MKTplusRF), type="l", col="green")
+
+legend("topleft", bty="n", legend = c("Cambridge Associates NAV Returns", 
+                                      "Pitchbook NAV Returns", 
+                                      "Public Factors + Error", "Public Factors", "MSCI Market"),
+       col=c("red", "orange", "blue", "black", "green"), lty=1)
+
+if (do.eps) {
+  par(mfrow=c(1,1), cex=1, lwd=2)
+  dev.off() 
+}
+
+print(acf(df.ret$total.return))
+print(acf(df.ret$PE_BO))
+print(acf(df.ret$Buyout))
+
+
+# write.csv2(df.ret, "dfBOmsciIdiReturns.csv")
