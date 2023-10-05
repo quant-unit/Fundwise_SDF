@@ -3,9 +3,9 @@ rm(list=ls()) # remove workspace objects
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
 
-year <- 2020
+year <- 2023
 alpha <- FALSE
-model <- "bond"
+model <- "msci"
 
 if (model == "bond") {
   path.fac <- "data/SDFs iBoxxFactorsMIX_pitchbook_2023"
@@ -98,7 +98,8 @@ if (model == "bond") {
 df.r$Date <- as.Date(df.r$Date)
 rownames(df.r) <- df.r$Date
 df.r <- df.r[df.r$Date > as.Date("1996-01-01"), ]
-df.r <- df.r[df.r$Date > as.Date("1999-01-01"), ]
+# df.r <- df.r[df.r$Date > as.Date("1996-12-31"), ]
+# df.r <- df.r[df.r$Date > as.Date("1999-01-01"), ]
 
 df.r <- df.r[, grep(region ,colnames(df.r))]
 colnames(df.r) <- sub(paste0("_", region), "", colnames(df.r))
@@ -131,10 +132,12 @@ if (do.eps) {
   }
   par(mar=c(4.2,4.2,1,2))
 }
+par(lwd=2)
 
 ylim <- 20 # old paper
 ylim <- 33
 ylim <- 11
+ylim <- 22
 plot(as.Date(rownames(df0)), cumprod(1+df0[, 1])-1, type="l", 
      col = "black", ylab = "Cumulative Return", xlab = "Date", ylim = c(0, ylim))
 i <- 1
@@ -143,7 +146,7 @@ for(col in colnames(df0)[-1]) {
   lines(as.Date(rownames(df0)), cumprod(1+df0[, col])-1, col=i)
 }
 lines(as.Date(rownames(df0)), cumprod(1+df.r$MKT + df.r$RF)-1, lty=3, lwd=3, col = 1)
-legend("topleft", bty="n", legend = colnames(df0), col= 1:ncol(df0), lty=1, cex=0.9)
+legend("topleft", bty="n", legend = colnames(df0), col= 1:ncol(df0), lty=1, cex=0.9, lwd=2)
 legend("top", bty="n", legend = "MKT", col = 1, lty = 3, lwd = 3, cex = 0.9)
 
 if (do.eps) {

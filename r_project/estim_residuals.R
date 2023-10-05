@@ -546,6 +546,7 @@ length(unique(out$df.idi[out$df.idi$idi.return != 0, "Date"]))
 df.idi2 <- out$df.idi
 #df.idi2 <- df.idi2[df.idi2$ensemble %in% df.par$ensemble, ]
 df.ret <- aggregate(cbind(idi.return, factor.return) ~ Date + type, data = df.idi2, FUN = mean)
+cumprod(1 + df.ret$factor.return)
 
 df.ret <- merge(df.ret, df.public[, c("Date", "MKT", "RF")], by ="Date", all.x = TRUE)
 df.ret$MKTplusRF <- df.ret$MKT + df.ret$RF
@@ -591,8 +592,8 @@ df.ret <- df.ret[1:(nrow(df.ret)-1), ]
 # df.ret[is.na(df.ret)] <- 0
 df.ret$Buyout <- ifelse(is.na(df.ret$Buyout), df.ret$PE_BO, df.ret$Buyout)
 df.ret <- df.ret[complete.cases(df.ret), ]
-# df.ret <- df.ret[df.ret$Date > as.Date("1990-01-01"), ]
-df.ret <- df.ret[df.ret$Date > as.Date("2003-01-01"), ]
+df.ret <- df.ret[df.ret$Date > as.Date("1990-01-01"), ]
+# df.ret <- df.ret[df.ret$Date > as.Date("2003-01-01"), ]
 
 
 cor(df.ret$total.return, df.ret$PE_BO, method = "pearson")
@@ -631,7 +632,7 @@ if (do.eps) {
 }
 
 
-plot(df.ret$Date, cumprod(1+df.ret$total.return), type="l", ylim=c(0,22),
+plot(df.ret$Date, cumprod(1+df.ret$total.return), type="l", ylim=c(0,10),
      xlab="Date", ylab="Cumulative Return", col = "blue")
 lines(df.ret$Date, cumprod(1+df.ret$factor.return), type="l", col="black")
 lines(df.ret$Date, cumprod(1+df.ret$PE_BO), type="l", col="red")
@@ -640,7 +641,9 @@ lines(df.ret$Date, cumprod(1+df.ret$MKTplusRF), type="l", col="green")
 
 legend("topleft", bty="n", legend = c("Cambridge Associates NAV Returns", 
                                       "Pitchbook NAV Returns", 
-                                      "Public Factors + Error", "Public Factors", "MSCI Market"),
+                                      "Avgerage 2-Factor Models + Errors", 
+                                      "Avgerage 2-Factor Models",
+                                      "MSCI Market"),
        col=c("red", "orange", "blue", "black", "green"), lty=1)
 
 if (do.eps) {
