@@ -119,7 +119,7 @@ df0 <- df0[, names(sort(apply(df0, 2, function(x) prod(1+x)), decreasing = TRUE)
 
 
 # plot it ----
-do.eps <- TRUE
+do.eps <- FALSE
 if (do.eps) {
   if(TRUE) {
     year.eps <- ifelse(model == "bond", "2023_Bond", paste0(year, ifelse(alpha, "_alpha", "") ))

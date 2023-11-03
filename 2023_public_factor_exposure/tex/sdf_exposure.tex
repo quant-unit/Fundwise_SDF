@@ -466,7 +466,7 @@ In summary, all SDF models from table \ref{tab:average_coefs_2023} seem reasonab
 
 
 
-\subsection{Estimating idiosyncratic returns for BO funds}
+\subsection{Idiosyncratic returns for BO funds}
 \label{sec:idiosyncratic_BO}
 
 In this section, we apply the idiosyncratic return estimation method described in subsection \ref{sec:error_term_estimation} for BO funds\footnote{We refrain from estimating the $e$ time series for other fund types because a full run takes about 100 hours on a 2023 MacBookPro with 12 CPU cores and parallel processing.}.
@@ -481,43 +481,44 @@ HDY-MKT (-0.15), and
 QLT-MKT (-0.09).
 
 In the second step, we apply componetwise $L_2$ boosting (CLB) with 200 iterations for each two-factor ensemble, a damper factor of 0.33, and return bounds of plus and minus $100\%$.
-For each of the 40 ensembles, we start with a vector of 307 zeros for $e$  (i.e. 307 monthly observations from 1996-12-31 until 2022-06-30).
+For each of the 40 ensembles, we start with a vector of 307 zeros for $e$  (i.e. 307 monthly observations from 1998-03-31 until 2022-06-30).
 After all CLB algorithms have been terminated, we average over all 40 error term series and public factor models to obtain our final estimate for $e$ and $\beta$.
-Since only 46/307=15\% are filled with values other than zero in the final $e$ vector, our estimated error term series can be considered relatively sparse.
-Yet three quarters exhibit quite extreme idiosyncratic returns of around +30\% or larger as depicted in Figure \ref{fig:clb_idio}.
+Since only 46/307=15\% monthly errors are filled with values other than zero in the final $e$ vector, our estimated error term series can be considered relatively sparse.
+On a quarterly basis we still have 43/96=45\% non-zero error terms from 1998 until 2022.
+Yet two quarters exhibit quite extreme idiosyncratic returns of around +30\% or larger as depicted in Figure \ref{fig:clb_idio}.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics{Figures/ErrorSeriesBO}
-	\caption{Idiosyncratic returns estimated by componentwise $L_2$ boosting for fund type BO in the period from 1996-12-31 until 2022-03-31.}
+	\includegraphics{Figures/XErrorSeriesBO}
+	\caption{Idiosyncratic returns estimated by componentwise $L_2$ boosting for fund type BO in the period from 1998-03-31 until 2022-03-31.}
 	\label{fig:clb_idio}
 \end{figure}
 
-For illustration and comparison with other BO return series, we map the monthly returns to quarterly returns in Figures \ref{fig:clb_idio} and \ref{fig:clb_total} and analyze the period from 1996-12-31 until 2022-03-31.
-Figure \ref{fig:clb_total} nicely depicts that adding the error term estimates to our public factor model closely aligns the Public Factors + Error series to the NAV returns of Cambridge Associates (CA) and Pitchbook\footnote{Because of missing data, we fill the first quarters of the Pitchbook series with CA returns (from 1996-12-31 until 1999-09-30).}.
-The Pearson correlation coefficients between our Public Factors + Error series and the CA and Pitchbook series are 78\% and 72\%, respectively.
-The quarterly average return is relatively high in all three series with 4.5\% (Public Factors + Error), 3.8\% (CA), and 3.7\% (Pitchbook).
-However, the standard deviation is considerably larger in our Public Factors + Error series with 15.3\% compared to 5.7\% and 5.1\% observed for CA and Pitchbook NAV returns, respectively.
-For comparison, the MSCI Market [Public Factors] return exhibits a 2.7\% [3.4\%] average quarterly return with a standard deviation of 8.7\% [13.8\%].
-Interestingly, the MSCI Market return and the public factor model return still exhibit a similar pattern in Figure \ref{fig:clb_total}.
-Adding our sparse error term vector $e$ seems to visually transform a public return time series into a NAV return time series.
-However the observed autocorrelation function values for lags 1 and 2 are considerably smaller in our Public Factors + Error series with 12.4\% and 12.0\% than in the CA (35.1\% and 30.4\%) and Pitchbook (40.6\% and 34.6\%) case.
+For illustration and comparison with other BO return series, we map the monthly returns to quarterly returns in Figures \ref{fig:clb_idio} and \ref{fig:clb_total} and analyze the period from 1998-03-31 until 2022-03-31.
+Figure \ref{fig:clb_total} nicely depicts that adding the error term estimates to our public factor model closely aligns the Average 2-Factor Models + Error series to the NAV returns of Cambridge Associates (CA) and Pitchbook\footnote{Because of missing data, we fill the first quarters of the Pitchbook series with CA returns (from 1998-03-31 until 1999-09-30).}.
+The Pearson correlation coefficients between our Public Factors + Error series and the CA and Pitchbook series are 79\% and 72\%, respectively.
+The quarterly average return is relatively high in all three series with 4.7\% (Public Factors + Error), 3.6\% (CA), and 3.5\% (Pitchbook).
+However, the standard deviation is considerably larger in our Public Factors + Error series with 15.4\% compared to 5.7\% and 5.1\% observed for CA and Pitchbook NAV returns, respectively.
+For comparison, the MSCI Market [Public Factors] return exhibits a 2.7\% [3.8\%] average quarterly return with a standard deviation of 8.8\% [13.9\%].
+Interestingly in Figure \ref{fig:clb_total}, the public factor model returns of the average 2-factor model and the 5-factor model exhibit a very similar return pattern that slightly outperforms the MSCI Market return.
+Adding our sparse error term vector $e$ to the factor model generates a new return time series that is closer aligned with both NAV return time series.
+However the observed autocorrelation function values for lags 1 and 2 are considerably smaller in our Average 2-Factor Models + Error series with 12.4\% and 12.0\% than in the CA (35.6\% and 28.7\%) and Pitchbook (41.3\% and 32.7\%) cases.
 Our boosting procedure thus can generate return proxies that do not suffer from the smoothing and staleness problems associated with NAV returns.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics{Figures/TotalErrorSeriesBO}
+	\includegraphics{Figures/XTotalErrorSeriesBO}
 	\caption{
 		Comparison between the total returns for fund type BO implied by our two-factor ensemble and our two-factor ensemble plus the error term from Figure \ref{fig:clb_idio}.
-		Both series are contrasted against the NAV Return indices provided by Cambridge Associates and Pitchbook and the MSCI stock market index in the period 1996-12-31 until 2022-03-31.
+		Both series are contrasted against the NAV Return indices provided by Cambridge Associates and Pitchbook and the MSCI stock market index in the period 1998-03-31 until 2022-03-31.
 		}
 	\label{fig:clb_total}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
-	\includegraphics{Figures/TotalErrorSeriesBOpre2010}
-	\includegraphics{Figures/TotalErrorSeriesBOpost2010}
+	\includegraphics{Figures/XTotalErrorSeriesBOpre2010}
+	\includegraphics{Figures/XTotalErrorSeriesBOpost2010}
 	\caption{
 		In these two subplots, we split the full time series from Figure \ref{fig:clb_total} into a pre-2010 and post-2010 period.
 	}
@@ -525,13 +526,12 @@ Our boosting procedure thus can generate return proxies that do not suffer from 
 \end{figure}
 
 
-
-
 In Figure \ref{fig:clb_pre_post_2010}, we split Figure \ref{fig:clb_total} in a pre-2010 and a post-2010 period.
 We observe a big difference between the Average 2-Factor Models and the Average 2-Factor Models + Errors series in the period before 2010.
-However after 2010, Public Factors and the Average 2-Factor Models return seem both closely aligned with the CA and Pitchbook NAV return indices.
-Certainly, this result does not come by surprise as Figure \ref{fig:clb_idio} displays all large error terms before 2010.
-From these analysis it remains unclear if the time-consuming error term estimation is always necessary since the average of the two-factor models alone can adequately price BO cash flows in the more recent past.
+However after 2010, all public factor model returns (with and without errors) seem closely aligned with the CA and Pitchbook NAV return indices.
+Certainly, this result does not come by surprise as Figure \ref{fig:clb_idio} displays all larger error terms before 2010.
+From these analyses it remains unclear if the time-consuming error term estimation is always necessary since the average of the two-factor models alone can adequately price BO cash flows in the more recent past.
+In appendix \ref{sec:vc_errors}, we receive a similar result for VC returns.
 
 
 \subsection{Integrated public and private risk management}
@@ -584,7 +584,8 @@ Additionally, as already briefly mentioned in the article, we can apply cross-va
 \bibliographystyle{apalike}
 \bibliography{ref}
 
-% Appendix
+% 
+\input{sdf_errors_appendix.tex}
 \input{sdf_pitchbook_appendix.tex}
 \input{sdf_preqin_appendix.tex}
 
