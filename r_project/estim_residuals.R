@@ -8,8 +8,8 @@ getwd()
 
 # 1) load data -------
 use.vintage.year.pfs <- TRUE
-public.filename <- "msci_market_factors" # "q_factors" # "msci_market_factors"
-private.source <- "pitchbook" # "preqin" # "pitchbook"
+public.filename <- "q_factors" # "msci_market_factors"
+private.source <- "preqin" # "pitchbook"
 weighting <- "FW"
 if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
 sub.folder <- paste(public.filename, private.source, weighting, sep = "#")
@@ -50,8 +50,8 @@ df.sdf[is.na(df.sdf)] <- 0
 types <- levels(as.factor(df.sdf$Type))
 type <- types[1]
 type <- "ALL" # "PE" # "PD" # "MEZZ" # "NATRES" # "INF" # "DD" # "RE" # "BO" # "VC"
-type <- "PD"
-RUN <- FALSE
+type <- "PE"
+RUN <- TRUE
 
 sdf.factors <- colnames(df.sdf)[grep(".indep", colnames(df.sdf))]
 sdf.factors <- sub(".indep", "", sdf.factors)
