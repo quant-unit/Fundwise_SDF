@@ -50,7 +50,7 @@ df.sdf[is.na(df.sdf)] <- 0
 types <- levels(as.factor(df.sdf$Type))
 type <- types[1]
 type <- "ALL" # "PE" # "PD" # "MEZZ" # "NATRES" # "INF" # "DD" # "RE" # "BO" # "VC"
-type <- "PE"
+type <- "PD"
 RUN <- TRUE
 
 sdf.factors <- colnames(df.sdf)[grep(".indep", colnames(df.sdf))]
@@ -543,9 +543,11 @@ plot(count.dates(out$df.res), type="s", col="blue", xlab="iterations", ylab="# d
 # View(out$df.par)
 
 df.par <- out$df.par
-df.par <- df.par[df.par$ESG == 0, ]
-df.par <- df.par[df.par$LOV == 0, ]
-df.par <- df.par[df.par$MOM == 0, ]
+if (public.filename == "msci_market_factors") {
+  df.par <- df.par[df.par$ESG == 0, ]
+  df.par <- df.par[df.par$LOV == 0, ]
+  df.par <- df.par[df.par$MOM == 0, ]
+}
 colMeans(df.par[, 1:5])
 weighting
 
@@ -557,10 +559,12 @@ df.idi2 <- out$df.idi
 #df.idi2 <- df.idi2[df.idi2$ensemble %in% df.par$ensemble, ]
 df.ret <- aggregate(cbind(idi.return, factor.return) ~ Date + type, data = df.idi2, FUN = mean)
 
-# manual overwrites
-if (type == "VC") df.ret[df.ret$Date > as.Date("2022-01-01"), "idi.return"] <- 0
-# if (type == "RE") df.ret[df.ret$Date < as.Date("1998-04-01"), "idi.return"] <- 0
-if (type == "DD") df.ret[df.ret$Date < as.Date("2000-01-01"), "idi.return"] <- 0
+if (public.filename == "msci_market_factors") {
+  # manual overwrites
+  if (type == "VC") df.ret[df.ret$Date > as.Date("2022-01-01"), "idi.return"] <- 0
+  # if (type == "RE") df.ret[df.ret$Date < as.Date("1998-04-01"), "idi.return"] <- 0
+  if (type == "DD") df.ret[df.ret$Date < as.Date("2000-01-01"), "idi.return"] <- 0
+}
 
 cumprod(1 + df.ret$factor.return)
 
@@ -659,30 +663,42 @@ print(acf(df.ret[, map.types.pb[[type]]])) # Pitchbook
 
 plot.it <- function(df.ret, tag="") {
   
-  if (type == "BO") ylimit <- 33
-  if (type == "VC") ylimit <- 50
-  if (type %in% c("RE", "PD")) ylimit <- 10
-  if (type %in% c("DD", "INF", "MEZZ")) ylimit <- 15
-  if (type == "NATRES") ylimit <- 35
-  if (type %in% c("PE", "ALL")) ylimit <- 40
-  
-  
-  if (tag == "pre2010") {
-    df.ret <- df.ret[df.ret$Date < as.Date("2010-01-01"), ]
-    ylimit <- 10.5
-    if (type == "RE") ylimit <- 5.5
-    if (type == "DD") ylimit <- 8
-    if (type == "INF") ylimit <- 6
-    if (type == "NATRES") ylimit <- 32
-    if (type %in% c("MEZZ", "PD")) ylimit <- 4
-
-  }
-  if (tag == "post2010") {
-    df.ret <- df.ret[df.ret$Date > as.Date("2010-01-01"), ]
-    ylimit <- 10.5
-    if (type == "RE") ylimit <- 5.5
-    if (type == "DD") ylimit <- 5.5
-    if (type %in% c("INF", "NATRES", "MEZZ", "PD")) ylimit <- 4
+  if (public.filename == "msci_market_factors") {
+    if (type == "BO") ylimit <- 33
+    if (type == "VC") ylimit <- 50
+    if (type %in% c("RE", "PD")) ylimit <- 10
+    if (type %in% c("DD", "INF", "MEZZ")) ylimit <- 15
+    if (type == "NATRES") ylimit <- 35
+    if (type %in% c("PE", "ALL")) ylimit <- 40
+    
+    
+    if (tag == "pre2010") {
+      df.ret <- df.ret[df.ret$Date < as.Date("2010-01-01"), ]
+      ylimit <- 10.5
+      if (type == "RE") ylimit <- 5.5
+      if (type == "DD") ylimit <- 8
+      if (type == "INF") ylimit <- 6
+      if (type == "NATRES") ylimit <- 32
+      if (type %in% c("MEZZ", "PD")) ylimit <- 4
+      
+    }
+    if (tag == "post2010") {
+      df.ret <- df.ret[df.ret$Date > as.Date("2010-01-01"), ]
+      ylimit <- 10.5
+      if (type == "RE") ylimit <- 5.5
+      if (type == "DD") ylimit <- 5.5
+      if (type %in% c("INF", "NATRES", "MEZZ", "PD")) ylimit <- 4
+      
+    }
+  } else {
+    
+    if (type == "RE") {
+      ylimit <- 25
+    } else if (type == "INF") {
+      ylimit <- 12
+    } else {
+      ylimit <- 60
+    }
     
   }
   

@@ -1,7 +1,7 @@
 
 \documentclass[12pt]{article}
 
-\title{The Public Factor Exposure of Private Equity}
+\title{Machine Learning Private Equity Returns}
 
 \author{
 	Christian Tausch  \\
@@ -62,11 +62,16 @@
 
 
 \section*{Keywords}
- Public factor exposure, Private equity, Stochastic discount factor, Model combination, Factor investing, Ensemble learning
+Return factor model,
+Private equity, 
+Public factor exposure, 
+Model combination, 
+Machine learning,
+Ensemble learning
 
 
 \section*{Acknowledgements}
-We thank Nicolas D\"{u}tsch and Philipp Abel for valuable feedback and helpful comments that greatly improved the paper.
+We thank Nicolas D\"{u}tsch, Philipp Abel, and Kai Urban for valuable feedback and helpful comments that greatly improved the paper.
 
 
 \section*{Declaration of interest}
@@ -78,27 +83,29 @@ The authors alone are responsible for the content and writing of the paper.
 %\doublespacing
 
 \begin{center} 
-\section*{The Public Factor Exposure of Private Equity}
+\section*{Machine Learning Private Equity Returns}
 \end{center}
 
 
 \abstract{
-	We propose Stochastic Discount Factor (SDF) model combination to determine the public factor exposure of private equity.
-	First, we describe our theoretical motivation to favor model combination over model selection.
+	In this paper, we use two machine learning techniques to learn the aggregated return time series of complete private capital fund segments.
+	First, we propose Stochastic Discount Factor (SDF) model combination to determine the public factor exposure of private equity.
+	Here, we describe our theoretical motivation to favor model combination over model selection.
 	This entails that we apply simple coefficient averaging to obtain multivariate SDF models that mimic the factor exposure of all major private capital fund types.
-	As a next step, we suggest componentwise $L_2$ boosting to estimate the error term time series associated with our factor models.
-	The empirical results indicate that the replication strategies for the most conventional private equity fund types slightly outperform the (unlevered) MSCI World index in our sample period.
-	Finally, we outline how to employ these factor models for integrated public and private risk management. 
+	As a second step, we suggest componentwise $L_2$ boosting to estimate the error term time series associated with our factor models.
+	The simple addition of the public factor model returns and the error terms then yields the total return time series.
+	These return time series can be applied for proper integrated public and private risk management or benchmarking.
 }
 
 
 \section{Introduction}
 \label{sec:factor_investing}
 
-Factor investing is currently popular in public markets as it helps investors to identify underlying return drivers.
-Describing a portfolio's public factor exposure corresponds to understanding both its (i) realized returns and (ii) forward-looking risk and return expectations.
-Realistic factor decompositions offer nuanced insights also for private market investors, assuming there exist common components that drive public and private returns.
-From this viewpoint, factor analysis translates private equity returns to traded return components with main applications in public market equivalent benchmarking and holistic risk management.
+Factor investing has gained widespread popularity in public markets due to its ability to discern the underlying drivers of returns. 
+Articulating a portfolio's exposure to public factors entails a comprehensive understanding of both its realized returns and the expectations for future risk and return. 
+For private market investors, meaningful insights can be derived from realistic factor decompositions, presuming the existence of shared components influencing both public and private returns. 
+In light of this perspective, our factor analysis dissects private equity returns into a traded return component and its corresponding error terms. 
+The primary applications of our return decomposition extend to public market equivalent benchmarking, comprehensive risk management, and strategic asset allocation.
 
 Generally, more sophisticated methods are required to estimate factor models for private (in comparison to public) asset classes as private returns are not directly observable on liquid secondary markets.
 However, the challenge of identifying the 'best' factor model is the same as in public markets.
@@ -112,23 +119,33 @@ This paper pursues a factor-based solution that employs publicly traded indices 
 In contrast to the factor-based ansatz of \cite{P14}, we base our approach on SDF models that are actually estimated on PE fund-level data rather than comparing several ad-hoc choices for potentially suitable indices.
 
 This article aims at a data-science-driven solution to describe PE returns\footnote{See \cite{CG23} for a textbook treatment of machine learning methods for factor investing.}.
-Concretely, we propose SDF model combination as a straightforward method to obtain 'strong' public factor models that explain private equity returns.
+Concretely, we propose SDF model combination (of factor models estimated by the \cite{DLP12} method) as a straightforward method to obtain 'strong' public factor models that explain private equity returns.
 Here, we provisionally define the term 'strong' versus 'weak' model in analogy to the boosting literature \citep{S90}.
 A 'strong' model shall exhibit small (error term) bias and variance, whereas a 'weak' model displays high bias and variance.
 Only the 'true' or 'best' or 'optimal' model obtains an error term of precisely zero.
-Figure \ref{fig:how} illustrates our general ensemble-based approach to derive the public factor exposure of private equity \citep{B12}.
+
+As we cannot expect a perfect model with zero error terms in any realistic setting, we try to explicitly model these error terms by means of machine learning.
+Usually, estimation procedures for linear return factor models like $R_t= \alpha + \beta^{\top} X_t + e_t$ are mainly interested in estimating the factor loadings $\beta$ and the constant outperformance term $\alpha$.
+For private equity fund returns only \cite{ACGP18} propose a Markov Chain Monte Carlo (MCMC) approach to estimate also the error terms $e$.
+As an alternative to their method, our paper suggests a statistical learning technique called componentwise $L_2$ boosting to estimate the error term time series belonging to a given public factor model.
+Moreover, in stark contrast to \cite{ACGP18}, our model does not assume a parametric distribution for the error term $e$.
+Figure \ref{fig:how} illustrates our general machine learning approach to derive the public and private part of private equity returns.
 
 The paper is structured as follows.
 Section \ref{sec:semiparametric_setting} introduces the method's underlying semiparametric setting.
 Section \ref{sec:model_selection} explains why model selection is problematic.
-Section \ref{sec:model_combination} argues that model combination is more promising.
-Section \ref{sec:applications} presents two examples of how to apply our combined SDF models in the benchmarking and risk context.
+Section \ref{sec:model_combination} introduces two estimation procedures: model combination for the public factor model and componentwise $L_2$ boosting for the error terms.
+Section \ref{sec:applications} successfully applies the estimation procedures to a real-world dataset.
 Section \ref{sec:conclusion} concludes.
+
+Moreover, appendices \ref{sec:vc_errors} until \ref{sec:errors_pd} outline the error term time series for several private capital fund segments. 
+Appendix \ref{sec:pitchbook} gives further information on the Pitchbook dataset used for empirical estimation.
+Finally, the \texttt{R} code used for model estimation can be found in the following online repository \url{https://github.com/quant-unit/Fundwise_SDF}.
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=14cm]{FlowChart/FC4}
-	\caption{How to translate private equity cash flows to public market factors?}
+	\includegraphics[width=14cm]{FlowChart/MLPER}
+	\caption{How to translate private equity cash flows to private equity returns?}
 	\label{fig:how}
 \end{figure}
 
@@ -172,7 +189,7 @@ As commonly seen in the asset pricing literature, we estimate SDF model coeffici
 This means we select $\alpha$ and $\beta$ values that yield average pricing errors close to zero. 
 Here the typical loss function choices are quadratic forms like in Generalized Method of Moments (GMM) or a quadratic or least absolute deviance loss function $L()$
 \begin{equation}
-\label{eq:elastic_net}
+\label{eq:minimization_estimation}
 \hat{\theta } = \
 \arg \min_{\theta} \frac{1}{n} \sum_{i=1}^n L \left( P ; \theta, \gamma \right)
 \end{equation}
@@ -194,35 +211,45 @@ This scenario is comparable to the extensive ``factor model zoo'' observed in pu
 In this section, we explain in greater detail why we also expect to be confronted with (i) many but (ii) weak SDF model candidates in the private equity case.
 Moreover, we discuss why it is challenging to select the single 'best' model from an extensive collection of homogeneous competitors (that all use the same SDF model as specified in equation \ref{eq:linear_sdf}).
 
-\paragraph{Why are there so many models?}
+\subsection{Why are there so many models?}
 
-\begin{itemize}
-	\item There exists a great variety of different public return factor candidates that might be also relevant for private equity. It is not even clear which factors 'best' explain public equity returns, cf. references in \cite{KN20}. 
-	\item We can choose from many feasible semiparametric estimators, loss functions, or ancillary machine learning methods, cf. \cite{GKX20} for a public market overview.
-	Additionally, there are discretionary choices for regularization- or other hyper-parameters.
-	Further, bootstrapping and other resampling-based techniques may be helpful but likewise dramatically increase the number of model candidates.
-	\item In contrast to common public databases available for public equity, the private equity literature has to draw on various private -- often proprietary -- data sources. When estimating the same model on different datasets, the coefficient estimates will differ. Unclear data cutoff dates or horizons exacerbate this issue.
-\end{itemize}
+First, there exists a great variety of different public return factor candidates that might be also relevant for private equity. 
+It is not even clear which factors 'best' explain public equity returns, cf. references in \cite{KN20}. 
 
-\paragraph{Why are the models so weak?}
+Second, we can choose from many feasible semiparametric estimators, loss functions, or ancillary machine learning methods, cf.\ \cite{GKX20} for a public market overview.
+Additionally, there are discretionary choices for regularization- or other hyper-parameters.
+Further, bootstrapping and other resampling-based techniques may be helpful but likewise dramatically increase the number of model candidates.
 
-\begin{itemize}
-	\item Private equity data is notoriously sparse as the first PE funds were established in the 1970s to 80s. Moreover, it is currently (almost) impossible to collect data on all funds from a given vintage. These issues render finite [infinite] sample inference more [less] reliable.
-	\item For fund-level data, the dependency issue introduced by overlapping fund cash flows further reduces the number of independent observations. Similarly, financial engineering applied on fund level like bridge financing or NAV facilities undermine the explanatory power of observed fund cash flows.
-	\item In private equity, limited sample sizes typically allow the inclusion of just 1-2 factors in a SDF model; even many two-factor models appear to be statistically insignificant (weak models); models with more covariates almost surely overfit (invalid models).
-\end{itemize}
+Third, in contrast to common public databases available for public equity, the private equity literature has to draw on various private -- often proprietary -- data sources. 
+When estimating the same model on different datasets, the coefficient estimates will differ. 
+Unclear data cutoff dates or horizons exacerbate this issue.
 
-\paragraph{Why is model selection difficult?}
+\subsection{Why are the models so weak?}
 
-\begin{itemize}
-	\item Model uncertainty is particularly high for weak models, as we cannot be sure which single model performs best when we test several competing models/factors.
-	\item As there are many model candidates but limited data, data snooping may be a general problem \citep{W00}. 
-	\item Correct inference post model selection is essential but known to be challenging \citep{BLP19}. This means classical statistical inference results only apply for testing a single model. When we want to compare several model candidates, the application of these basic statistical methods yields invalid inference results.
-\end{itemize}
+First, private equity data is notoriously sparse as the first PE funds were established in the 1970s to 80s.
+Moreover, it is currently (almost) impossible to collect data on all funds from a given vintage. 
+These issues render finite [infinite] sample inference more [less] reliable.
+
+Second, for fund-level data, the dependency issue introduced by overlapping fund cash flows further reduces the number of truly independent observations. 
+Similarly, financial engineering applied on fund level like bridge financing or NAV facilities undermine the explanatory power of observed fund cash flows.
+
+Third, in private equity, limited sample sizes typically allow the inclusion of just 1-2 factors in a SDF model; 
+even many two-factor models appear to be statistically insignificant (weak models); 
+models with more covariates almost surely overfit (invalid models).
 
 
+\subsection{Why is model selection difficult?}
 
-\section{And the jury selects... a strong combination}
+First, model uncertainty is particularly high for weak models, as we cannot be sure which single model performs best when we test several competing models/factors.
+
+Second, as there are many model candidates but limited data, data snooping may be a general problem \citep{W00}. 
+
+Third,  correct inference post model selection is essential but known to be challenging \citep{BLP19}. 
+This means classical statistical inference results only apply for testing a single model. 
+When we want to compare several model candidates, the application of these basic statistical methods yields invalid inference results.
+
+
+\section{And the jury selects: model combination}
 \label{sec:model_combination}
 
 A powerful alternative to model selection is model combination.
@@ -285,61 +312,63 @@ In general, we can choose any high-dimensional statistical method that can be us
 In the probably most closely related paper to our problem, \cite{ACGP18} use a Bayesian Markov Chain Monte Carlo (MCMC) method to estimate the systematic and also idiosyncratic return component of private equity returns.
 
 In our approach, we start with a set of $\alpha$ and $\beta$ estimates and learn the idiosyncratic error term time series $e$ conditional on these initial estimates.
-Concretely, we estimate in the first step an ensemble of size $M_{\mathrm{systematic}}$ consisting of reasonable estimates for $\alpha$ and $\beta$ by iteratively applying traditional non-linear optimization (using a different set of factors $F$, data set samples, or hyperparameters $\gamma$ in each iteration).
-In the second step, we use componentwise $L_2$ boosting to estimate a new series $e$ for each of the $M_{\mathrm{systematic}}$ public factor ensembles\footnote{
-Componentwise $L_2$ boosting (CLB) is itself an iterative procedure that simultaneously optimizes each component of the vector $e$ to reduce the pricing error.
-However, in each CLB iteration only the component of the $e$ vector that yields the minimal pricing error, when compared to all other optimized $e$ vector components, is used to update the SDF.
-To avoid overfitting, early stopping of the CLB procedure is mandatory.
-\citep[Section 2]{B06} gives the exact mathematical definition of the CLB algorithm.
-}.
-Finally, we average over the $M_{\mathrm{systematic}}$ estimates of $\alpha$, $\beta$ and $e$ to obtain our final factor model estimates.
-Since $\alpha=E[e]$, we can, without loss of generality, set $\alpha=0$ in our estimation procedure.
-In practice, it could however have benefits in some cases to start with a ``good initial guess value" for $\alpha$.
+Concretely, we estimate in the first step an ensemble of size $M_{\mathrm{systematic}}$ consisting of reasonable estimates for $\alpha$ and $\beta$ by iteratively applying traditional non-linear optimization (using a different set of factors $F$, dataset samples, or hyperparameters $\gamma$ in each iteration).
 
-\section{Applications}
+In the second step, we use componentwise $L_2$ boosting to estimate a new series $e$ for each of the $M_{\mathrm{systematic}}$ public factor ensembles.
+Componentwise $L_2$ boosting (CLB), also known as gradient boosting with the $L_2$ loss function, is a machine learning algorithm that belongs to the family of boosting methods. 
+Boosting is an ensemble learning technique where weak learners (usually simple models like decision trees) are sequentially trained, and each new learner focuses on correcting the errors made by the existing ensemble.
+In the context of boosting, "componentwise" refers to the fact that each weak learner added to the ensemble is trained to fit the residual errors of the existing ensemble. 
+This is done in a way that the new learner addresses a specific component of the overall prediction.
+The original paper of \citep[Section 2]{B06} gives the exact mathematical definition of the CLB algorithm.
+Financial applications of the CLB method can be found in \cite{bai2009boosting}, \cite{mittnik2015stock}, and \cite{tausch2019quadratic}.
+
+In our case, the CLB algorithm can be described by the following "brute-force" iterative procedure. 
+We apply these CLB steps to each public factor model (of the previously estimated ensemble of size $M_{\mathrm{systematic}}$) separately.
+\begin{enumerate}
+	\item \textbf{Initialization:} 
+	The boosting process starts with the public factor model without error terms ($e_t = 0 \ \forall \ t$) as initial model. 
+	The first weak learner is then trained to minimize the $L_2$ loss on the training data, considering the difference between the true outcomes and the predictions made by the current ensemble (which is the initial factor model).
+	\item \textbf{Sequential Training:} 
+	In each subsequent iteration, a new weak learner -- in the form of an error vector $e$ update -- is added to the ensemble. 
+	This learner is trained to fit the negative gradient of the $L_2$ loss with respect to the current ensemble's predictions. 
+	In other words, it focuses on the residuals, the differences between the true outcome (which is a zero pricing error in equation \ref{eq:quadratic_loss}) and the pricing error made by the current ensemble.
+	This means that, at each step, the boosting algorithm is effectively optimizing the ensemble by sequentially addressing the weaknesses of the current predictions.
+	\item \textbf{Componentwise Correction:} 
+	The term "componentwise" emphasizes that each weak learner corrects only one specific component (date) of the overall error time series $e$. 
+	Concretely, one boosting step simultaneously optimizes each component of the vector $e$ to reduce the pricing error.
+	However, only the component of the $e$ vector (i.e., a single date $t$) that yields the minimal pricing error, when compared to all other optimized $e$ vector components, is used to update the factor model.
+	\item \textbf{Shrinkage:} 
+	Componentwise $L_2$ boosting often incorporates a shrinkage parameter, which controls the contribution of each weak learner to the ensemble (in our case 0.33). 
+	This helps prevent overfitting.
+	\item \textbf{Early Stopping:} 
+	The steepness of the gradient or cross validation techniques can be employed to determine the optimal stopping time of the algorithm. 
+	With too many boosting iterations CLB likely overfits.
+	\item \textbf{Final Prediction:} 
+	The final prediction for the error term time series $e$ is the sum of the predictions made by all the weak learners in the error ensemble.
+\end{enumerate}
+
+Finally, in the spirit of model combination, we average over the $M_{\mathrm{systematic}}$ estimates of $\alpha$, $\beta$ and $e$ to obtain our final factor model estimates.
+Since $\alpha=E[e]$, we can, without loss of generality, set $\alpha=0$ in our estimation procedure.
+In practice, it could however be beneficial in some cases to start with a ``good initial guess value" for $\alpha$.
+
+\section{Empirical application}
 \label{sec:applications}
 
-\subsection{Factor exposure by fund type}
+\subsection{Factor exposure by fund segment}
 \label{sec:factor_exposure}
 
-% latex table generated in R 4.2.1 by xtable 1.8-4 package
-% Wed May 10 17:11:24 2023
-\begin{table}[ht]
-	\centering
-	\begin{tabular}{rrrrrrrrr}
-		Vintage & BO & DD & INF & MEZZ & NATRES & PD & RE & VC \\ 
-		\hline
-		\hline
-		1996 &   9 &   0 &   0 &   1 &   0 &   0 &   0 &   1 \\ 
-		1997 &  18 &   1 &   0 &   2 &   1 &   0 &   3 &  13 \\ 
-		1998 &  29 &   0 &   1 &   3 &   2 &   0 &   5 &  18 \\ 
-		1999 &  26 &   3 &   0 &   1 &   0 &   0 &   1 &  32 \\ 
-		2000 &  28 &   2 &   0 &   4 &   0 &   0 &   7 &  49 \\ 
-		2001 &  17 &   3 &   0 &   4 &   1 &   0 &   3 &  27 \\ 
-		2002 &  22 &   2 &   0 &   4 &   2 &   1 &   0 &  13 \\ 
-		2003 &  25 &   5 &   1 &   2 &   1 &   0 &   1 &  14 \\ 
-		2004 &  34 &   1 &   1 &   4 &   1 &   0 &   0 &  25 \\ 
-		2005 &  61 &   6 &   2 &   7 &   2 &   1 &  15 &  32 \\ 
-		2006 &  94 &  10 &   6 &  14 &   7 &   2 &  16 &  50 \\ 
-		2007 &  96 &  15 &   2 &   7 &   6 &   1 &  22 &  49 \\ 
-		2008 &  74 &  16 &   3 &  11 &   9 &   0 &  16 &  51 \\ 
-		2009 &  41 &  11 &   0 &  10 &   7 &   2 &   9 &  26 \\ 
-		2010 &  40 &   4 &   5 &   3 &   4 &   1 &  13 &  20 \\ 
-		2011 &  70 &  13 &   6 &   6 &   6 &   2 &  22 &  24 \\ 
-		2012 &  74 &   9 &   5 &   5 &  12 &   2 &  21 &  18 \\ 
-		2013 &  78 &   8 &   6 &   1 &   9 &   7 &  22 &  26 \\ 
-		2014 &  67 &  10 &   8 &   1 &  15 &   3 &  34 &  36 \\ 
-		2015 &  87 &  12 &   8 &   6 &  12 &  13 &  34 &  41 \\ 
-		2016 &  64 &   6 &  11 &   3 &   6 &   9 &  15 &  36 \\ 
-		2017 &  20 &   1 &   0 &   1 &   0 &   0 &   3 &   2 \\ 
-		\hline
-		Total & 1074 & 138 &  65 & 100 & 103 &  44 & 262 & 603 \\ 
-		\hline
-		\hline
-	\end{tabular}
-	\caption{PITCHBOOK 2023: Number of funds per vintage year in the Pitchbook dataset used for estimation.} 
-	\label{tab:pitchbook_data}
-\end{table}
+In this section, we apply our model combination methodology to replicate the factor exposure of PE funds.
+The resulting SDF models employ MSCI indices and are estimated by our augmented version of the \cite{DLP12} method.
+Specifically, all SDF ensemble draw on (valid) two-factor models, where the first factor is always the MSCI World excess return over the risk-free rate and the second factor is a long-short combination of MSCI World style indices:
+\begin{description}
+	\item[MKT-RF:]{MSCI Market Return Minus Risk-free Rate}
+	\item[SMB:]{MSCI Small Cap Minus MSCI Large Cap Return}
+	\item[HML:]{MSCI Value Minus MSCI Growth Return}
+	\item[HDY-MKT:]{MSCI High Dividend Yield Minus MSCI Market Return}
+	\item[QLT-MKT:]{MSCI Quality Minus MSCI Market Return}
+\end{description}
+For each of the 4 factors (SMB, HML, HDY-MKT, QLT-MKT), we estimate an ensemble of $2 \times 2 \times 5$ bivariate two-factor models with (i) quadratic and least absolute deviance loss function $L()$, (ii) both equal- and fund-size-weighted cash flows, and (iii) maximum months 120, 150, 180, 210, 240.
+Next, we use the simple coefficient averaging as described in subsection \ref{sec:coef_averaging} to obtain five-factor models.
 
 % latex table generated in R 4.2.1 by xtable 1.8-4 package
 % Wed May 10 16:40:54 2023
@@ -367,10 +396,25 @@ In practice, it could however have benefits in some cases to start with a ``good
 		\hline
 	\end{tabular}
 	\caption{
-	PITCHBOOK 2023: Multivariate five-factor models obtained by simple coefficient averaging (with standard deviations in parenthesis).
+		PITCHBOOK 2023: Multivariate five-factor models obtained by simple coefficient averaging (with standard deviations in parenthesis).
 	} 
 	\label{tab:average_coefs_2023}
 \end{table}
+
+We use the Pitchbook dataset as of 19th April 2023 to analyze the following private capital fund types: 
+Buyout (BO), 
+Distressed Debt (DD), 
+Infrastructure (INF), 
+Mezzanine (MEZZ),
+Natural Resources (NATRES), 
+Private Debt (PD), 
+Real Estate (RE), 
+and Venture Capital (VC).
+For these fund types, we extract all (i) equal-weighted and (ii) fund-size-weighted cash flow series.
+For non-liquidated funds, we treat the latest net asset value as a final cash flow.
+We explicitly refrain from excluding the most recent vintage years.
+Thus, the minimum vintage year is 1996, and the maximum is 2017.
+Table \ref{tab:average_coefs_2023} provides an overview of the Pitchbook dataset used for SDF model estimation.
 
 % latex table generated in R 4.2.1 by xtable 1.8-4 package
 % Wed May 10 16:55:48 2023
@@ -394,7 +438,7 @@ In practice, it could however have benefits in some cases to start with a ``good
 		RE & 0.089 & 0.183 & 0.066 & 0.183 & 0.362 \\ 
 		%SEC & 0.139 & 0.220 & 0.115 & 0.220 & 0.521 \\ 
 		VC & 0.118 & 0.204 & 0.094 & 0.205 & 0.459 \\ 
-			\hline
+		\hline
 		MKT & 0.110 & 0.155 & 0.086 & 0.155 & 0.555 \\ 
 		\hline
 		\hline
@@ -402,37 +446,9 @@ In practice, it could however have benefits in some cases to start with a ``good
 	\caption{
 		PITCHBOOK 2023: 
 		Annualized average returns, standard deviations (annualized by the square root of time formula), and Sharpe ratios (i.e. the ratio of mean.R-RF to stdv.R-RF) implied by the five-factor models from table \ref{tab:average_coefs_2023}.
-	The underlying monthly returns are based on MSCI World style indices (in USD) from 1996-01-31 to 2023-02-28.} 
+		The underlying monthly returns are based on MSCI World style indices (in USD) from 1996-01-31 to 2023-02-28.} 
 	\label{tab:ann_returns_2023}
 \end{table}
-
-In this section, we apply our model combination methodology to replicate the factor exposure of PE funds.
-The resulting SDF models employ MSCI indices and are estimated by our augmented version of the \cite{DLP12} method.
-Specifically, all SDF ensemble draw on (valid) two-factor models, where the first factor is always the MSCI World excess return over the risk-free rate and the second factor is a long-short combination of MSCI World style indices:
-\begin{description}
-	\item[MKT-RF:]{MSCI Market Return Minus Risk-free Rate}
-	\item[SMB:]{MSCI Small Cap Minus MSCI Large Cap Return}
-	\item[HML:]{MSCI Value Minus MSCI Growth Return}
-	\item[HDY-MKT:]{MSCI High Dividend Yield Minus MSCI Market Return}
-	\item[QLT-MKT:]{MSCI Quality Minus MSCI Market Return}
-\end{description}
-For each of the 4 factors (SMB, HML, HDY-MKT, QLT-MKT), we estimate an ensemble of $2 \times 2 \times 5$ bivariate two-factor models with (i) quadratic and least absolute deviance loss function $L()$, (ii) both equal- and fund-size-weighted cash flows, and (iii) maximum months 120, 150, 180, 210, 240.
-Next, we use the simple coefficient averaging as described in subsection \ref{sec:coef_averaging} to obtain five-factor models.
-
-We use the Pitchbook data set as of 19th April 2023 to analyze the following private capital fund types: 
-Buyout (BO), 
-Distressed Debt (DD), 
-Infrastructure (INF), 
-Mezzanine (MEZZ),
-Natural Resources (NATRES), 
-Private Debt (PD), 
-Real Estate (RE), 
-and Venture Capital (VC).
-For these fund types, we extract all (i) equal-weighted and (ii) fund-size-weighted cash flow series.
-For non-liquidated funds, we treat the latest net asset value as a final cash flow.
-We explicitly refrain from excluding the most recent vintage years.
-Thus, the minimum vintage year is 1996, and the maximum is 2017.
-Table \ref{tab:average_coefs_2023} provides an overview of the Pitchbook dataset used for SDF model estimation.
 
 The average coefficients of the 20 SDF model returns are displayed in table \ref{tab:average_coefs_2023}.
 For all fund types, the market beta estimates (MKT-RF) reasonably range from 0.48 for NATRES to 1.4 for BO.
@@ -466,12 +482,12 @@ In summary, all SDF models from table \ref{tab:average_coefs_2023} seem reasonab
 
 
 
-\subsection{Idiosyncratic returns for BO funds}
+\subsection{Idiosyncratic returns for Buyout funds}
 \label{sec:idiosyncratic_BO}
 
-In this section, we apply the idiosyncratic return estimation method described in subsection \ref{sec:error_term_estimation} for BO funds\footnote{We refrain from estimating the $e$ time series for other fund types because a full run takes about 100 hours on a 2023 MacBookPro with 12 CPU cores and parallel processing.}.
+In this section, we apply the idiosyncratic return estimation method described in subsection \ref{sec:error_term_estimation} for BO funds.
 Here we use a starting point an ensemble of the MSCI market factors similar to the one described in Table \ref{tab:average_coefs_2023}.
-Now we however only include fund-size-weighted datasets to reduce the long computation time that comes with this brute force approach.
+Now we however only include fund-size-weighted datasets to reduce the long computation time that comes with this brute-force approach\footnote{Estimation for the reduced Buyout ensemble takes around three days on a 2023 MacBook with 12 CPU cores and parallel processing.}.
 Specifically, we use an ensemble of 40 two-factor models $4 \times 2 \times 5$  with (i) second factors (HML, SMB, HDY-MKT, QLT-MKT) (ii) quadratic and least absolute deviance loss function $L()$, and (iii) maximum months 120, 150, 180, 210, 240.
 The average factor loadings of the five-factor model are fortunately very similar to the ones from Table \ref{tab:average_coefs_2023}:  
 MKT-RF (1.46), 
@@ -534,6 +550,8 @@ From these analyses it remains unclear if the time-consuming error term estimati
 In appendix \ref{sec:vc_errors}, we receive a similar result for VC returns.
 
 
+\iffalse
+
 \subsection{Integrated public and private risk management}
 \label{sec:integrated_risk}
 
@@ -567,18 +585,26 @@ These conditions render an SDF model tracking error that is small in (i) absolut
 	\label{fig:coef_barchart_100_pofo}
 \end{figure}
 
-
+\fi
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-In this paper, we present a simple ensemble method to translate private equity cash flows into a public factor model and an error term time series. 
-It can be used to (i) investigate public market factor exposures of private equity fund types (strategies) and to (ii) analyze actual private equity portfolios in order to enable the use of factor loadings in integrated risk management, establishing a common basis to compare the risk exposure of public and private asset portfolios. 
-This novel type of analysis can complement more traditional methods of describing style and risk of private equity investments and yields additional insight for investors.
-Our error term analysis shows for Buyout funds that before 2010 the error term played an important role in describing BO total returns; after 2010 the public factor model alone sufficed to price BO cash flows.
- 
-As a further perspective, we can amend our (i) simple ensemble approach for the public factor model and (ii) brute-force componentwise $L_2$ boosting for the error term by more efficient machine learning algorithms \citep{B12}.
-Additionally, as already briefly mentioned in the article, we can apply cross-validation techniques to obtain the set of valid SDF models in a more reliable way than our simple quantile-based procedure.
+In summary, this paper introduces a straightforward ensemble method designed to translate private equity cash flows into a public factor model and an error term time series. 
+The versatility of this method is evident in its applicability, serving two primary purposes: 
+(i) exploring the public market factor exposures of various private equity fund types or strategies and (ii) analyzing specific private equity portfolios. 
+By enabling the use of factor loadings and error terms in integrated risk management, this approach establishes a standardized foundation for comparing the risk exposure of public and private asset portfolios.
+
+This innovative analysis represents a valuable addition to traditional methods for characterizing the style and risk of private equity investments, providing investors with additional insights. 
+Our error term analysis, particularly for Buyout funds, reveals a temporal shift in the significance of the error term in describing total returns. 
+Before 2010, the error term played a crucial role, whereas after 2010, the public factor model alone proved sufficient to price Buyout cash flows. 
+Notably, our empirical application yields total return time series for private equity segments with significantly lower autocorrelations than traditional NAV-return time series.
+
+Looking forward, there are promising avenues for refining our approach. 
+Firstly, enhancing the (i) simple ensemble approach for the public factor model and (ii) brute-force componentwise $L_2$ boosting for the error term can be achieved through more efficient machine learning algorithms \citep{B12}.
+Additionally, integrating cross-validation techniques can enhance the reliability of identifying valid Stochastic Discount Factor (SDF) models compared to our current quantile-based procedure, as briefly mentioned in this article.
+Finally, to validate the robustness of our findings, further studies should replicate our results using alternative private and public data sources beyond Pitchbook and MSCI data. 
+These potential enhancements and validations are essential steps toward strengthening the credibility and generalizability of our proposed methodology.
 
 %% References
 \bibliographystyle{apalike}
