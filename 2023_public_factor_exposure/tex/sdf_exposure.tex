@@ -338,11 +338,12 @@ We apply these CLB steps to each public factor model (of the previously estimate
 	Concretely, one boosting step simultaneously optimizes each component of the vector $e$ to reduce the pricing error.
 	However, only the component of the $e$ vector (i.e., a single date $t$) that yields the minimal pricing error, when compared to all other optimized $e$ vector components, is used to update the factor model.
 	\item \textbf{Shrinkage:} 
-	Componentwise $L_2$ boosting often incorporates a shrinkage parameter, which controls the contribution of each weak learner to the ensemble (in our case 0.33). 
+	Componentwise $L_2$ boosting often incorporates a shrinkage parameter, which controls the contribution of each weak learner to the ensemble (in our empirical example: 0.33). 
 	This helps prevent overfitting.
 	\item \textbf{Early Stopping:} 
 	The steepness of the gradient or cross validation techniques can be employed to determine the optimal stopping time of the algorithm. 
 	With too many boosting iterations CLB likely overfits.
+	In our empirical example, we stop after 200 boosting steps.
 	\item \textbf{Final Prediction:} 
 	The final prediction for the error term time series $e$ is the sum of the predictions made by all the weak learners in the error ensemble.
 \end{enumerate}
