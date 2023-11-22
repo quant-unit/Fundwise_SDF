@@ -50,8 +50,8 @@ df.sdf[is.na(df.sdf)] <- 0
 types <- levels(as.factor(df.sdf$Type))
 type <- types[1]
 type <- "ALL" # "PE" # "PD" # "MEZZ" # "NATRES" # "INF" # "DD" # "RE" # "BO" # "VC"
-type <- "PD"
-RUN <- TRUE
+type <- "NATRES"
+RUN <- FALSE
 
 sdf.factors <- colnames(df.sdf)[grep(".indep", colnames(df.sdf))]
 sdf.factors <- sub(".indep", "", sdf.factors)
@@ -649,17 +649,28 @@ cor(df.ret$total.return, df.ret$FiveFactorReturn, method = "pearson")
 
 mean(df.ret$total.return); sd(df.ret$total.return)
 mean(df.ret$factor.return); sd(df.ret$factor.return)
-mean(df.ret$idi.return); sd(df.ret$idi.return)
+mean(df.ret$idi.return) * 100; sd(df.ret$idi.return) * 100; skewness(df.ret$idi.return) * 100; kurtosis(df.ret$idi.return) * 100; sum(df.ret$idi.return != 0) / length(df.ret$idi.return) * 100; sum(df.ret$idi.return != 0); length(df.ret$idi.return)
+median(df.ret$idi.return) * 100 # should be always zero because CLB is sparse
 mean(df.ret[, map.types[[type]]]); sd(df.ret[, map.types[[type]]]) # CA 
 mean(df.ret[, map.types.pb[[type]]]); sd(df.ret[, map.types.pb[[type]]]) # Pitchbook
 mean(df.ret$MKTplusRF); sd(df.ret$MKTplusRF)
 mean(df.ret$FiveFactorReturn); sd(df.ret$FiveFactorReturn)
 
 # analyze autocorrelation
-print(acf(df.ret$total.return))
-print(acf(df.ret[, map.types[[type]]])) # CA
-print(acf(df.ret[, map.types.pb[[type]]])) # Pitchbook
-
+do.eps <- FALSE
+if (do.eps) {
+  setEPS()
+  postscript(paste0("charts_error/", "ACFun",type,".eps"), width = 5.5, 
+             height = 6, family = "Helvetica", pointsize = 11)
+  par(mar=c(4.2,4.2,3.8,2), mfrow=c(3,1), lwd=2)
+}
+acf(df.ret$total.return, main = "Average 2-Factor Models + Errors")
+acf(df.ret[, map.types[[type]]], main ="Cambridge Associates NAV Returns") # CA
+acf(df.ret[, map.types.pb[[type]]], main ="Pitchbook NAV Returns") # Pitchbook
+if (do.eps) {
+  par(mfrow=c(1,1), cex=1, lwd=2)
+  dev.off() 
+}
 
 plot.it <- function(df.ret, tag="") {
   
@@ -696,6 +707,8 @@ plot.it <- function(df.ret, tag="") {
       ylimit <- 25
     } else if (type == "INF") {
       ylimit <- 12
+    } else if (type == "PD") {
+      ylimit <- 22
     } else {
       ylimit <- 60
     }
@@ -755,7 +768,6 @@ plot.it <- function(df.ret, tag="") {
 plot.it(df.ret)
 plot.it(df.ret, "pre2010")
 plot.it(df.ret, "post2010")
-
 
 
 # write.csv2(df.ret, "dfBOmsciIdiReturns.csv")

@@ -519,7 +519,7 @@ However, the standard deviation is considerably larger in our Public Factors + E
 For comparison, the MSCI Market [Public Factors] return exhibits a 2.7\% [3.8\%] average quarterly return with a standard deviation of 8.8\% [13.9\%].
 Interestingly in Figure \ref{fig:clb_total}, the public factor model returns of the average 2-factor model and the 5-factor model exhibit a very similar return pattern that slightly outperforms the MSCI Market return.
 Adding our sparse error term vector $e$ to the factor model generates a new return time series that is closer aligned with both NAV return time series.
-However the observed autocorrelation function values for lags 1 and 2 are considerably smaller in our Average 2-Factor Models + Error series with 12.4\% and 12.0\% than in the CA (35.6\% and 28.7\%) and Pitchbook (41.3\% and 32.7\%) cases.
+However, as can be seen in Figure \ref{fig:autocorrelation}, the observed autocorrelation function values for lags 1 and 2 are considerably smaller in our Average 2-Factor Models + Error series with 12.4\% and 12.0\% than in the CA (35.6\% and 28.7\%) and Pitchbook (41.3\% and 32.7\%) cases.
 Our boosting procedure thus can generate return proxies that do not suffer from the smoothing and staleness problems associated with NAV returns.
 
 \begin{figure}[H]
@@ -543,6 +543,15 @@ Our boosting procedure thus can generate return proxies that do not suffer from 
 \end{figure}
 
 
+\begin{figure}[H]
+	\centering
+	\includegraphics{Figures/ACFunBO}
+	\caption{
+		Comparison between the autocorrelation functions of our total return time series and the NAV-return time series of Cambridge Associates and Pitchbook.
+	}
+	\label{fig:autocorrelation}
+\end{figure}
+
 In Figure \ref{fig:clb_pre_post_2010}, we split Figure \ref{fig:clb_total} in a pre-2010 and a post-2010 period.
 We observe a big difference between the Average 2-Factor Models and the Average 2-Factor Models + Errors series in the period before 2010.
 However after 2010, all public factor model returns (with and without errors) seem closely aligned with the CA and Pitchbook NAV return indices.
@@ -550,6 +559,34 @@ Certainly, this result does not come by surprise as Figure \ref{fig:clb_idio} di
 From these analyses it remains unclear if the time-consuming error term estimation is always necessary since the average of the two-factor models alone can adequately price BO cash flows in the more recent past.
 In appendix \ref{sec:vc_errors}, we receive a similar result for VC returns.
 
+Finally, table \ref{tab:error_summary} reports the summary statistics for the error terms to address the question if Buyout (and other fund types) outperformed the public market on a risk-adjusted basis.
+The extremely high values for skewness and kurtosis challenge the validity of using the mean of the error term series as measure for the expected outperformance, i.e., $\alpha = E [ e ]$.
+Supposedly, the median gives a more realistic approximation for practical purposes since asymptotic behavior cannot be expected for time series of length 100.
+
+
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{l | c c c c | c}
+		Type & Mean  & Stdv. & Skew. & Kurt.  & Percentage filled \\ 
+		\hline 
+		\hline
+		BO & 1.12 \% & 6.44 \% & 432 \% & 2081 \% & 44 \% = 45 / 102  \\ 
+		VC & 1.33 \% & 12.36 \% &  553 \% & 3827 \% & 62 \% = 61 / 99 \\ 
+		RE & 1.06 \% & 16.84 \% & -9 \% & 1799 \% & 51 \% = 50 / 98 \\ 
+		INF & 0.91 \% & 11.15 \% & 404 \% & 2579 \% & 36 \% = 34 / 94  \\ 
+		NATRES  & 5.77 \% & 41.31 \% & 794 \% & 6887 \% & 36 \% = 36 / 99 \\ 
+		PD & 1.05 \% & 5.70 \% & 420 \% & 2166 \% & 44 \% = 34 / 77 \\ 
+		\hline 
+		\hline 
+	\end{tabular} 
+	\caption{
+		Quarterly error term return summary for various fund segments.
+		The percentage filled column gives us the number of quarters with non-zero error terms as determined by the sparse componentwise $L_2$ boosting algorithm; the remaining unfilled quarters show zero idiosyncratic returns.
+		Thus, the percentage filled column is a measure of sparseness for our CLB method.
+		The median error term is 0 for all reported fund segments due to this sparseness.
+	}
+\label{tab:error_summary}
+\end{table}
 
 \iffalse
 
@@ -600,6 +637,7 @@ This innovative analysis represents a valuable addition to traditional methods f
 Our error term analysis, particularly for Buyout funds, reveals a temporal shift in the significance of the error term in describing total returns. 
 Before 2010, the error term played a crucial role, whereas after 2010, the public factor model alone proved sufficient to price Buyout cash flows. 
 Notably, our empirical application yields total return time series for private equity segments with significantly lower autocorrelations than traditional NAV-return time series.
+However, our methodology for the error term estimation seems to sometimes yield unreliable (more extreme) results at the beginning and end of the error term time series when relatively small cash flows need to be priced by our SDF.
 
 Looking forward, there are promising avenues for refining our approach. 
 Firstly, enhancing the (i) simple ensemble approach for the public factor model and (ii) brute-force componentwise $L_2$ boosting for the error term can be achieved through more efficient machine learning algorithms \citep{B12}.
