@@ -636,8 +636,10 @@ By enabling the use of factor loadings and error terms in integrated risk manage
 This innovative analysis represents a valuable addition to traditional methods for characterizing the style and risk of private equity investments, providing investors with additional insights. 
 Our error term analysis, particularly for Buyout funds, reveals a temporal shift in the significance of the error term in describing total returns. 
 Before 2010, the error term played a crucial role, whereas after 2010, the public factor model alone proved sufficient to price Buyout cash flows. 
+Moreover, our error term estimates exhibit too extreme higher moments to be adequately  described by lower order summary statistics like the mean value alone.
+This, in turn, casts doubts on the usefulness of the exptected outperformance term $\alpha = E [ e ]$ in the context of private capital returns.
 Notably, our empirical application yields total return time series for private equity segments with significantly lower autocorrelations than traditional NAV-return time series.
-However, our methodology for the error term estimation seems to sometimes yield unreliable (more extreme) results at the beginning and end of the error term time series when relatively small cash flows need to be priced by our SDF.
+However, our methodology for the error term estimation seems to sometimes yield unreliable results at the beginning and end of the error term time series when relatively small cash flows need to be priced by our SDF.
 
 Looking forward, there are promising avenues for refining our approach. 
 Firstly, enhancing the (i) simple ensemble approach for the public factor model and (ii) brute-force componentwise $L_2$ boosting for the error term can be achieved through more efficient machine learning algorithms \citep{B12}.
