@@ -87,6 +87,7 @@ The authors alone are responsible for the content and writing of the paper.
 \end{center}
 
 
+
 \abstract{
 	In this paper, we use two machine learning techniques to learn the aggregated return time series of complete private capital fund segments.
 	First, we propose Stochastic Discount Factor (SDF) model combination to determine the public factor exposure of private equity.
@@ -116,9 +117,9 @@ More subtle factor-based methods are mainly established in the hedge fund replic
 To avoid overfitting, \cite{OST17} propose to combine multiple factor models for passive hedge fund replication.
 Holding-based approaches to mimic the PE investment style are proposed by \cite{LSSL16}, \cite{S17}, \cite{MS19}, and \cite{PP19}.
 This paper pursues a factor-based solution that employs publicly traded indices and does not require deal-level information on PE funds.
-In contrast to the factor-based ansatz of \cite{P14}, we base our approach on SDF models that are actually estimated on PE fund-level data rather than comparing several ad-hoc choices for potentially suitable indices.
+In contrast to the factor-based ansatz of \cite{P14}, we base our approach on SDF models that are estimated on PE fund-level data rather than comparing several ad-hoc choices for potentially suitable indices.
 
-This article aims at a data-science-driven solution to describe PE returns\footnote{See \cite{CG23} for a textbook treatment of machine learning methods for factor investing.}.
+This article aims at a data-science-driven solution to describe PE returns.\footnote{See \cite{CG23} for a textbook treatment of machine learning methods for factor investing.}
 Concretely, we propose SDF model combination (of factor models estimated by the \cite{DLP12} method) as a straightforward method to obtain 'strong' public factor models that explain private equity returns.
 Here, we provisionally define the term 'strong' versus 'weak' model in analogy to the boosting literature \citep{S90}.
 A 'strong' model shall exhibit small (error term) bias and variance, whereas a 'weak' model displays high bias and variance.
@@ -137,9 +138,9 @@ Section \ref{sec:model_selection} explains why model selection is problematic.
 Section \ref{sec:model_combination} introduces two estimation procedures: model combination for the public factor model and componentwise $L_2$ boosting for the error terms.
 Section \ref{sec:applications} successfully applies the estimation procedures to a real-world dataset.
 Section \ref{sec:conclusion} concludes.
-
-Moreover, appendices \ref{sec:vc_errors} until \ref{sec:errors_pd} outline the error term time series for several private capital fund segments. 
-Appendix \ref{sec:pitchbook} gives further information on the Pitchbook dataset used for empirical estimation.
+%Moreover, appendices \ref{sec:vc_errors} until \ref{sec:errors_pd} outline the error term time series for several private capital fund segments. 
+%Appendix \ref{sec:pitchbook} gives further information on the Pitchbook dataset used for empirical estimation.
+%Appendix \ref{sec:preqin} gives model results based on Preqin data (instead of Pitchbook data).
 Finally, the \texttt{R} code used for model estimation can be found in the following online repository \url{https://github.com/quant-unit/Fundwise_SDF}.
 
 \begin{figure}[ht]
@@ -163,7 +164,7 @@ P_{\tau, i} =
 \end{equation}
 with price $P$, SDF functional $\Psi$, and cash flow stream $CF$. 
 Time is discrete with $t=1,2,\dots,T$.
-If the 'true' SDF model is applied, the expected price\footnote{We also refer to $P$ as pricing error since we want to avoid any average price deviation from zero, i.e., minimize the expected pricing error.} $\mathbb{E}[P]=0$. 
+If the 'true' SDF model is applied, the expected price $\mathbb{E}[P]=0$.\footnote{We also refer to $P$ as pricing error since we want to avoid any average price deviation from zero, i.e., minimize the expected pricing error.}
 Thus the functional form and explanatory variables used in the 'true' SDF explain or describe the risk and return properties of the cash flows. 
 Further, if we have an appropriate SDF for a given private equity fund type, we can apply it in a simple net present value calculation (as in the formula above) to assess the outperformance of a specific private equity fund. 
 A positive/negative net present value indicates an out/under-performance compared to other PE funds.
@@ -265,12 +266,12 @@ Probably most closely related to our case, \cite{OST17} advertise model combinat
 
 As we potentially want to exclude invalid models from combination, the set of valid models is defined as the $M^*$ models with the smallest absolute pricing error $M^*=\{m \in M: P^{(m)} \leq Q(x;P) \}$ where $Q$ is the pricing error quantile function and quantile value $x = \frac{M^*}{M}$.
 Here, $M$ is the number of all valid and invalid SDF models.
-Generally, we can also apply more sophisitcated (but also more time-consuming) cross-validation procedures to distinguish between valid and invalid models \citep{AC10}.
+Generally, we can also apply more sophisticated (but also more time-consuming) cross-validation procedures to distinguish between valid and invalid models \citep{AC10}.
 The quite different alternative is to assume that all SDF models estimated by the researcher are valid, i.e. $M^*=M$ with $x=1$.
 Finally, the weighted pricing error obtained by SDF model averaging is defined as
 \begin{equation}
 \label{eq:model_averaging}
-\epsilon_{\tau, i}^{(M^*)} = 
+\mathcal{E}_{\tau, i}^{(M^*)} = 
 \sum_{m=1}^{M^*} \  
 w_m \
 \sum_{t=1}^{T} \
@@ -278,7 +279,7 @@ w_m \
 {CF}_{t, i}
 \end{equation}
 with model weight $w_m \geq 0$ and all weights sum to one $\sum_m^{M^*}\ w_m=1$. 
-If a similar predictive performance for all valid models can be assumed, equal weighting $w=(M^*)^{-1}$ is advised\footnote{The forecast combination puzzle states that simple equal-weighting practically often performs better than more complex (theoretically optimal) combination schemes \citep{SW09,CMVW16,QRCY19}.}. 
+If a similar predictive performance for all valid models can be assumed, equal weighting $w=(M^*)^{-1}$ is advised.\footnote{The forecast combination puzzle states that simple equal-weighting practically often performs better than more complex (theoretically optimal) combination schemes \citep{SW09,CMVW16,QRCY19}.}.
 Otherwise, we shall overweight more predictive models with smaller pricing errors, e.g., the weight may be proportional to the inverse of the absolute pricing error $\left(\left|P\right|\right)^{-1}$.
 
 \subsection{Coefficient averaging}
@@ -338,7 +339,7 @@ We apply these CLB steps to each public factor model (of the previously estimate
 	Concretely, one boosting step simultaneously optimizes each component of the vector $e$ to reduce the pricing error.
 	However, only the component of the $e$ vector (i.e., a single date $t$) that yields the minimal pricing error, when compared to all other optimized $e$ vector components, is used to update the factor model.
 	\item \textbf{Shrinkage:} 
-	Componentwise $L_2$ boosting often incorporates a shrinkage parameter, which controls the contribution of each weak learner to the ensemble (in our empirical example: 0.33). 
+	Componentwise $L_2$ boosting often incorporates a shrinkage parameter between zero and one, which controls the contribution of each weak learner to the ensemble (in our empirical example: 0.33). 
 	This helps prevent overfitting.
 	\item \textbf{Early Stopping:} 
 	The steepness of the gradient or cross validation techniques can be employed to determine the optimal stopping time of the algorithm. 
@@ -360,7 +361,7 @@ In practice, it could however be beneficial in some cases to start with a ``good
 
 In this section, we apply our model combination methodology to replicate the factor exposure of PE funds.
 The resulting SDF models employ MSCI indices and are estimated by our augmented version of the \cite{DLP12} method.
-Specifically, all SDF ensemble draw on (valid) two-factor models, where the first factor is always the MSCI World excess return over the risk-free rate and the second factor is a long-short combination of MSCI World style indices:
+Specifically, all SDF ensembles draw on (valid) two-factor models, where the first factor is always the MSCI World excess return over the risk-free rate and the second factor is a long-short combination of MSCI World style indices:
 \begin{description}
 	\item[MKT-RF:]{MSCI Market Return Minus Risk-free Rate}
 	\item[SMB:]{MSCI Small Cap Minus MSCI Large Cap Return}
@@ -413,7 +414,7 @@ Real Estate (RE),
 and Venture Capital (VC).
 For these fund types, we extract all (i) equal-weighted and (ii) fund-size-weighted cash flow series.
 For non-liquidated funds, we treat the latest net asset value as a final cash flow.
-We explicitly refrain from excluding the most recent vintage years.
+We explicitly refrain from including the most recent vintage years to analyze only funds with at least a few years of history.
 Thus, the minimum vintage year is 1996, and the maximum is 2017.
 Table \ref{tab:average_coefs_2023} provides an overview of the Pitchbook dataset used for SDF model estimation.
 
@@ -506,48 +507,48 @@ Yet two quarters exhibit quite extreme idiosyncratic returns of around +30\% or 
 
 \begin{figure}[H]
 	\centering
-	\includegraphics{Figures/XErrorSeriesBO}
+	\includegraphics{Figures/msci_market_factors/XErrorSeriesBO}
 	\caption{Idiosyncratic returns estimated by componentwise $L_2$ boosting for fund type BO in the period from 1998-03-31 until 2022-03-31.}
 	\label{fig:clb_idio}
 \end{figure}
 
 For illustration and comparison with other BO return series, we map the monthly returns to quarterly returns in Figures \ref{fig:clb_idio} and \ref{fig:clb_total} and analyze the period from 1998-03-31 until 2022-03-31.
-Figure \ref{fig:clb_total} nicely depicts that adding the error term estimates to our public factor model closely aligns the Average 2-Factor Models + Error series to the NAV returns of Cambridge Associates (CA) and Pitchbook\footnote{Because of missing data, we fill the first quarters of the Pitchbook series with CA returns (from 1998-03-31 until 1999-09-30).}.
+Figure \ref{fig:clb_total} nicely depicts that adding the error term estimates to our public factor model closely aligns the Average 2-Factor Models + Error series to the NAV returns of Cambridge Associates (CA), Preqin and Pitchbook.\footnote{Because of missing data, we fill the first quarters of the Pitchbook series with CA returns (from 1998-03-31 until 1999-09-30) and the first quarters of the Preqin series with CA returns (from 1998-03-31 until 2007-12-31).
+}
 The Pearson correlation coefficients between our Public Factors + Error series and the CA and Pitchbook series are 79\% and 72\%, respectively.
 The quarterly average return is relatively high in all three series with 4.7\% (Public Factors + Error), 3.6\% (CA), and 3.5\% (Pitchbook).
 However, the standard deviation is considerably larger in our Public Factors + Error series with 15.4\% compared to 5.7\% and 5.1\% observed for CA and Pitchbook NAV returns, respectively.
 For comparison, the MSCI Market [Public Factors] return exhibits a 2.7\% [3.8\%] average quarterly return with a standard deviation of 8.8\% [13.9\%].
 Interestingly in Figure \ref{fig:clb_total}, the public factor model returns of the average 2-factor model and the 5-factor model exhibit a very similar return pattern that slightly outperforms the MSCI Market return.
 Adding our sparse error term vector $e$ to the factor model generates a new return time series that is closer aligned with both NAV return time series.
-However, as can be seen in Figure \ref{fig:autocorrelation}, the observed autocorrelation function values for lags 1 and 2 are considerably smaller in our Average 2-Factor Models + Error series with 12.4\% and 12.0\% than in the CA (35.6\% and 28.7\%) and Pitchbook (41.3\% and 32.7\%) cases.
+However, as can be seen in Figure \ref{fig:autocorrelation}, the observed autocorrelation function values for lags 1 and 2 are considerably smaller in our Average 2-Factor Models + Error series with 12.4\% and 12.0\% than in the CA (35.6\% and 28.7\%), Preqin (44.2\% and 25.2\%) and Pitchbook (41.3\% and 32.7\%) cases.
 Our boosting procedure thus can generate return proxies that do not suffer from the smoothing and staleness problems associated with NAV returns.
 
 \begin{figure}[H]
 	\centering
-	\includegraphics{Figures/XTotalErrorSeriesBO}
+	\includegraphics{Figures/msci_market_factors/XTotalErrorSeriesBO}
 	\caption{
 		Comparison between the total returns for fund type BO implied by our two-factor ensemble and our two-factor ensemble plus the error term from Figure \ref{fig:clb_idio}.
-		Both series are contrasted against the NAV Return indices provided by Cambridge Associates and Pitchbook and the MSCI stock market index in the period 1998-03-31 until 2022-03-31.
+		Both series are contrasted against the NAV Return indices provided by Cambridge Associates, Preqin and Pitchbook and the MSCI stock market index in the period 1998-03-31 until 2022-03-31.
 		}
 	\label{fig:clb_total}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
-	\includegraphics{Figures/XTotalErrorSeriesBOpre2010}
-	\includegraphics{Figures/XTotalErrorSeriesBOpost2010}
+	\includegraphics{Figures/msci_market_factors/XTotalErrorSeriesBOpre2010}
+	\includegraphics{Figures/msci_market_factors/XTotalErrorSeriesBOpost2010}
 	\caption{
 		In these two subplots, we split the full time series from Figure \ref{fig:clb_total} into a pre-2010 and post-2010 period.
 	}
 	\label{fig:clb_pre_post_2010}
 \end{figure}
 
-
 \begin{figure}[H]
 	\centering
 	\includegraphics{Figures/ACFunBO}
 	\caption{
-		Comparison between the autocorrelation functions of our total return time series and the NAV-return time series of Cambridge Associates and Pitchbook.
+		Comparison between the autocorrelation functions of our total return time series and the NAV-return time series of Cambridge Associates, Preqin and Pitchbook.
 	}
 	\label{fig:autocorrelation}
 \end{figure}
@@ -567,7 +568,7 @@ Supposedly, the median gives a more realistic approximation for practical purpos
 \begin{table}[ht]
 	\centering
 	\begin{tabular}{l | c c c c | c}
-		Type & Mean  & Stdv. & Skew. & Kurt.  & Percentage filled \\ 
+		Type & Mean  & Stdv. & Skew. & Kurt.  & Percentage filled \\
 		\hline 
 		\hline
 		BO & 1.12 \% & 6.44 \% & 432 \% & 2081 \% & 44 \% = 45 / 102  \\ 
@@ -651,9 +652,11 @@ These potential enhancements and validations are essential steps toward strength
 \bibliographystyle{apalike}
 \bibliography{ref}
 
-% 
-\input{sdf_errors_appendix.tex}
+% Appendix
+\appendix
+
 \input{sdf_pitchbook_appendix.tex}
+\input{sdf_errors_appendix.tex}
 \input{sdf_preqin_appendix.tex}
 
 \end{document}

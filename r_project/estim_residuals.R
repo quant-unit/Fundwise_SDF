@@ -5,11 +5,10 @@ if(sys.nframe() == 0L) rm(list = ls())
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
 
-
 # 1) load data -------
 use.vintage.year.pfs <- TRUE
-public.filename <- "q_factors" # "msci_market_factors"
-private.source <- "preqin" # "pitchbook"
+public.filename <- "msci_market_factors" # "q_factors" # 
+private.source <- "pitchbook" # "preqin" #  
 weighting <- "FW"
 if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
 sub.folder <- paste(public.filename, private.source, weighting, sep = "#")
@@ -50,8 +49,8 @@ df.sdf[is.na(df.sdf)] <- 0
 types <- levels(as.factor(df.sdf$Type))
 type <- types[1]
 type <- "ALL" # "PE" # "PD" # "MEZZ" # "NATRES" # "INF" # "DD" # "RE" # "BO" # "VC"
-type <- "NATRES"
-RUN <- TRUE
+type <- "BO"; length(types); type
+RUN <- FALSE
 
 sdf.factors <- colnames(df.sdf)[grep(".indep", colnames(df.sdf))]
 sdf.factors <- sub(".indep", "", sdf.factors)
@@ -561,7 +560,7 @@ df.ret <- aggregate(cbind(idi.return, factor.return) ~ Date + type, data = df.id
 
 if (public.filename == "msci_market_factors") {
   # manual overwrites
-  if (type == "VC") df.ret[df.ret$Date > as.Date("2022-01-01"), "idi.return"] <- 0
+  # if (type == "VC") df.ret[df.ret$Date > as.Date("2022-01-01"), "idi.return"] <- 0
   # if (type == "RE") df.ret[df.ret$Date < as.Date("1998-04-01"), "idi.return"] <- 0
   if (type == "DD") df.ret[df.ret$Date < as.Date("2000-01-01"), "idi.return"] <- 0
 }
@@ -611,7 +610,7 @@ df.ca$Date <- as.Date(df.ca$Date)
 df.ca <- df.ca[, c("Date", map.types[[type]])]
 df.ret <- merge(df.ret, df.ca, by="Date", all.x = TRUE)
 
-
+# Pitchbook NAV Returns
 df.pb <- read.csv2("nav_returns/pitchbook_nav_returns_2022Q4.csv")
 colnames(df.pb)
 map.types.pb = list(
@@ -630,12 +629,39 @@ df.pb$Date <- as.Date(df.pb$Date, "%d.%m.%Y")
 df.pb <- df.pb[, c("Date", map.types.pb[[type]])]
 df.ret <- merge(df.ret, df.pb, by="Date", all.x = TRUE)
 
+# Preqin NAV Returns
+df.pr <- openxlsx::read.xlsx("nav_returns/preqin_export_Private Capital Quarterly Index Chart_2023_12_14.xlsx", startRow=2)
+df.pr$DATE <- as.Date(df.pr$DATE - 25568) # 2023-06-30
+df.pr$DATE <- as.Date(ifelse(format(df.pr$DATE, "%m") == "01", df.pr$DATE - 1 , df.pr$DATE))
+df.pr$DATE <- as.Date(ifelse(format(df.pr$DATE, "%m-%d") == "04-01", df.pr$DATE - 1 , df.pr$DATE))
+df.pr$Date <- df.pr$DATE
+df.pr <- df.pr[order(df.pr$Date), ]
+types
+map.types.pr <- list(
+  PE = "PRIVATE.EQUITY",
+  VC = "VENTURE",
+  RE = "REAL.ESTATE",
+  NATRES = "NATURAL.RESOURCES",
+  INF = "INFRASTRUCTURE",
+  PD = "Private.Debt",
+  BO = "BUYOUT",
+  DD = "Private.Debt.-.Distressed.Debt",
+  FOF = "FUNDS.OF.FUNDS",
+  MEZZ = "Private.Debt.-.Mezzanine",
+  SEC = "Secondaries"
+)
+df.pr <- df.pr[, c("Date", map.types.pr[[type]])]
+df.pr[, map.types.pr[[type]]] <- calc.return(df.pr[, map.types.pr[[type]]] / 100)
+df.pr[, map.types.pr[[type]]][1] <- NA
+df.ret <- merge(df.ret, df.pr, by="Date", all.x = TRUE)
+
 df.ret <- df.ret[1:(nrow(df.ret)-1), ]
 # df.ret[is.na(df.ret)] <- 0
 df.ret[, map.types.pb[[type]]] <- ifelse(is.na(df.ret[, map.types.pb[[type]]]), df.ret[, map.types[[type]]], df.ret[, map.types.pb[[type]]])
+df.ret[, map.types.pr[[type]]] <- ifelse(is.na(df.ret[, map.types.pr[[type]]]), df.ret[, map.types[[type]]], df.ret[, map.types.pr[[type]]])
 df.ret <- df.ret[complete.cases(df.ret), ]
 df.ret <- df.ret[df.ret$Date > as.Date("1990-01-01"), ]
-# df.ret <- df.ret[df.ret$Date > as.Date("1998-01-01"), ]
+if (public.filename == "msci_market_factors") df.ret <- df.ret[df.ret$Date > as.Date("1998-01-01"), ]
 
 # how many quarterly errors are filled
 length(unique(df.ret[df.ret$idi.return != 0, "Date"]))
@@ -649,7 +675,7 @@ cor(df.ret$total.return, df.ret$FiveFactorReturn, method = "pearson")
 
 mean(df.ret$total.return); sd(df.ret$total.return)
 mean(df.ret$factor.return); sd(df.ret$factor.return)
-mean(df.ret$idi.return) * 100; sd(df.ret$idi.return) * 100; skewness(df.ret$idi.return) * 100; kurtosis(df.ret$idi.return) * 100; sum(df.ret$idi.return != 0) / length(df.ret$idi.return) * 100; sum(df.ret$idi.return != 0); length(df.ret$idi.return)
+mean(df.ret$idi.return) * 100; sd(df.ret$idi.return) * 100; e1071::skewness(df.ret$idi.return) * 100; e1071::kurtosis(df.ret$idi.return) * 100; sum(df.ret$idi.return != 0) / length(df.ret$idi.return) * 100; sum(df.ret$idi.return != 0); length(df.ret$idi.return)
 median(df.ret$idi.return) * 100 # should be always zero because CLB is sparse
 mean(df.ret[, map.types[[type]]]); sd(df.ret[, map.types[[type]]]) # CA 
 mean(df.ret[, map.types.pb[[type]]]); sd(df.ret[, map.types.pb[[type]]]) # Pitchbook
@@ -657,16 +683,18 @@ mean(df.ret$MKTplusRF); sd(df.ret$MKTplusRF)
 mean(df.ret$FiveFactorReturn); sd(df.ret$FiveFactorReturn)
 
 # analyze autocorrelation
-do.eps <- FALSE
+do.eps <- TRUE
 if (do.eps) {
   setEPS()
   postscript(paste0("charts_error/", "ACFun",type,".eps"), width = 5.5, 
-             height = 6, family = "Helvetica", pointsize = 11)
-  par(mar=c(4.2,4.2,3.8,2), mfrow=c(3,1), lwd=2)
+             height = 4, family = "Helvetica", pointsize = 9)
+  par(mar=c(4.2,4.2,3.8,2), mfrow=c(2,2), lwd=2)
 }
-acf(df.ret$total.return, main = "Average 2-Factor Models + Errors")
-acf(df.ret[, map.types[[type]]], main ="Cambridge Associates NAV Returns") # CA
-acf(df.ret[, map.types.pb[[type]]], main ="Pitchbook NAV Returns") # Pitchbook
+acf(df.ret$total.return, main = "Average 2-Factor Models + Errors", lag.max = 10)
+acf(df.ret[, map.types[[type]]], main ="Cambridge Associates NAV Returns", lag.max = 10) # CA
+acf(df.ret[df.ret$Date > as.Date("2008-01-01"), map.types.pr[[type]]], main ="Preqin NAV Returns", lag.max = 10) # Preqin
+acf(df.ret[, map.types.pb[[type]]], main ="Pitchbook NAV Returns", lag.max = 10) # Pitchbook
+
 if (do.eps) {
   par(mfrow=c(1,1), cex=1, lwd=2)
   dev.off() 
@@ -690,18 +718,18 @@ plot.it <- function(df.ret, tag="") {
       if (type == "DD") ylimit <- 8
       if (type == "INF") ylimit <- 6
       if (type == "NATRES") ylimit <- 32
-      if (type %in% c("MEZZ", "PD")) ylimit <- 4
-      
+      if (type %in% c("MEZZ", "PD")) ylimit <- 5
     }
+    
     if (tag == "post2010") {
       df.ret <- df.ret[df.ret$Date > as.Date("2010-01-01"), ]
       ylimit <- 10.5
       if (type == "RE") ylimit <- 5.5
       if (type == "DD") ylimit <- 5.5
       if (type %in% c("INF", "NATRES", "MEZZ", "PD")) ylimit <- 4
-      
     }
-  } else {
+    
+  } else { # Preqin
     
     if (type == "RE") {
       ylimit <- 25
@@ -709,19 +737,32 @@ plot.it <- function(df.ret, tag="") {
       ylimit <- 12
     } else if (type == "PD") {
       ylimit <- 22
+    } else if (type == "NATRES") {
+      ylimit <- 160
     } else {
       ylimit <- 60
     }
     
+    if (tag == "pre2010") {
+      df.ret <- df.ret[df.ret$Date < as.Date("2010-01-01"), ]
+      ylimit <- 22
+      if (type == "VC") ylimit <- 50
+    }
+    
+    if (tag == "post2010") {
+      df.ret <- df.ret[df.ret$Date > as.Date("2010-01-01"), ]
+      ylimit <- 5 # VC & PE
+    }
+    
+    tag <- paste0("Preqin", tag)
   }
   
-  
-  do.eps <- FALSE
+  do.eps <- TRUE
   
   # Plot 1
   if (do.eps) {
     setEPS()
-    postscript(paste0("charts_error/", "XErrorSeries", type, tag, ".eps"), width = 5.5, height = 3, 
+    postscript(paste0("charts_error/", public.filename, "/XErrorSeries", type, tag, ".eps"), width = 5.5, height = 3, 
                family = "Helvetica", pointsize = 11)
     par(mar=c(4.2,4.2,1,2))
   }
@@ -736,7 +777,7 @@ plot.it <- function(df.ret, tag="") {
   # Plot 2
   if (do.eps) {
     setEPS()
-    postscript(paste0("charts_error/", "XTotalErrorSeries",type, tag,".eps"), width = 5.5, 
+    postscript(paste0("charts_error/", public.filename, "/XTotalErrorSeries",type, tag,".eps"), width = 5.5, 
                height = 3, family = "Helvetica", pointsize = 11)
     par(mar=c(4.2,4.2,1,2), lwd=2)
   }
@@ -749,16 +790,19 @@ plot.it <- function(df.ret, tag="") {
   lines(df.ret$Date, cumprod(1+df.ret[, map.types.pb[[type]]]), type="l", col="orange")
   lines(df.ret$Date, cumprod(1+df.ret$MKTplusRF), type="l", col="green")
   lines(df.ret$Date, cumprod(1+df.ret$FiveFactorReturn), type="l", col="yellow")
+  lines(df.ret$Date, cumprod(1+df.ret[, map.types.pr[[type]]]), type="l", col="turquoise1", lty=2)
   
   position <- "topleft"
-  if ((type=="VC") & (tag=="pre2010")) position <- "topright"
+  if ((type=="VC") & (tag=="pre2010") & (public.filename == "msci_market_factors")) position <- "topright"
   legend(position, bty="n", legend = c("Cambridge Associates NAV Returns", 
+                                       "Preqin NAV Returns",
                                         "Pitchbook NAV Returns", 
                                         "Average 2-Factor Models + Errors", 
                                         "Average 2-Factor Models",
                                         "5-Factor Model",
                                         "MSCI Market"),
-         col=c("red", "orange", "blue", "black", "yellow", "green"), lty=1)
+         col=c("red", "turquoise1", "orange", "blue", "black", "yellow", "green"), 
+         lty= c(1,2,1,1,1,1,1), cex=0.9)
   
   if (do.eps) {
     par(mfrow=c(1,1), cex=1, lwd=2)

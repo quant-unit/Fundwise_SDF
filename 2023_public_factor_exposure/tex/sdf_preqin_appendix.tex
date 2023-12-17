@@ -3,6 +3,7 @@
 
 
 \section{Preqin}
+\label{sec:preqin}
 
 
 % latex table generated in R 3.4.2 by xtable 1.8-4 package
@@ -134,4 +135,110 @@
 	\caption{PREQIN 2020: Number of funds per vintage year in the Preqin dataset used for estimation (Preqin cash flow data set as of 26th February 2020).} 
 	\label{tab:preqin_data}
 \end{table}
+
+
+\newpage
+
+
+% Factor Model Returns + Errors
+\renewcommand{\segment}{PE}
+
+\subsection{Preqin: Idiosyncratic returns for \segment \ funds}
+\label{sec:preqin_errors_\segment}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics{Figures/q_factors/XErrorSeries\segment Preqin}
+	\caption{Idiosyncratic returns estimated by componentwise $L_2$ boosting for fund type \segment \ in the period from 1990-03-31 until 2019-09-30.}
+	\label{fig:preqin_clb_idio_\segment}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics{Figures/q_factors/XTotalErrorSeries\segment Preqin}
+	\caption{
+		Comparison between the total returns for fund type \segment \ implied by our two-factor ensemble and our two-factor ensemble plus the error term from Figure \ref{fig:preqin_clb_idio_\segment}.
+		Both series are contrasted against the NAV Return indices provided by Cambridge Associates and Pitchbook and the MSCI stock market index in the period 1990-03-31 until 2019-09-30.
+	}
+	\label{fig:preqin_clb_total_\segment}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics{Figures/q_factors/XTotalErrorSeries\segment Preqinpre2010}
+	\includegraphics{Figures/q_factors/XTotalErrorSeries\segment Preqinpost2010}
+	\caption{
+		In these two subplots, we split the full \segment \ time series from Figure \ref{fig:preqin_clb_total_\segment} into a pre-2010 and post-2010 period.
+	}
+	\label{fig:preqin_clb_pre_post_2010_\segment}
+\end{figure}
+
+
+% Factor Model Returns + Errors
+\renewcommand{\segment}{VC}
+
+\subsection{Preqin: Idiosyncratic returns for \segment \ funds}
+\label{sec:preqin_errors_\segment}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics{Figures/q_factors/XErrorSeries\segment Preqin}
+	\caption{Idiosyncratic returns estimated by componentwise $L_2$ boosting for fund type \segment \ in the period from 1990-03-31 until 2019-09-30.}
+	\label{fig:preqin_clb_idio_\segment}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics{Figures/q_factors/XTotalErrorSeries\segment Preqin}
+	\caption{
+		Comparison between the total returns for fund type \segment \ implied by our two-factor ensemble and our two-factor ensemble plus the error term from Figure \ref{fig:preqin_clb_idio_\segment}.
+		Both series are contrasted against the NAV Return indices provided by Cambridge Associates and Pitchbook and the MSCI stock market index in the period 1990-03-31 until 2019-09-30.
+	}
+	\label{fig:preqin_clb_total_\segment}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics{Figures/q_factors/XTotalErrorSeries\segment Preqinpre2010}
+	\includegraphics{Figures/q_factors/XTotalErrorSeries\segment Preqinpost2010}
+	\caption{
+		In these two subplots, we split the full \segment \ time series from Figure \ref{fig:preqin_clb_total_\segment} into a pre-2010 and post-2010 period.
+	}
+	\label{fig:preqin_clb_pre_post_2010_\segment}
+\end{figure}
+
+
+
+% Factor Model Returns + Errors
+\renewcommand{\segment}{RE}
+
+\subsection{Preqin: Idiosyncratic returns for \segment \ funds}
+\label{sec:preqin_errors_\segment}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics{Figures/q_factors/XErrorSeries\segment Preqin}
+	\caption{Idiosyncratic returns estimated by componentwise $L_2$ boosting for fund type \segment \ in the period from 1992-06-30 until 2019-09-30.}
+	\label{fig:preqin_clb_idio_\segment}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics{Figures/q_factors/XTotalErrorSeries\segment Preqin}
+	\caption{
+		Comparison between the total returns for fund type \segment \ implied by our two-factor ensemble and our two-factor ensemble plus the error term from Figure \ref{fig:preqin_clb_idio_\segment}.
+		Both series are contrasted against the NAV Return indices provided by Cambridge Associates and Pitchbook and the MSCI stock market index in the period 1990-03-31 until 2019-09-30.
+	}
+	\label{fig:preqin_clb_total_\segment}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics{Figures/q_factors/XTotalErrorSeries\segment Preqinpre2010}
+	\includegraphics{Figures/q_factors/XTotalErrorSeries\segment Preqinpost2010}
+	\caption{
+		In these two subplots, we split the full \segment \ time series from Figure \ref{fig:preqin_clb_total_\segment} into a pre-2010 and post-2010 period.
+	}
+	\label{fig:preqin_clb_pre_post_2010_\segment}
+\end{figure}
 
