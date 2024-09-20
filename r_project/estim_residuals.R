@@ -90,7 +90,7 @@ pars <- ensemble.of.par(type)
 # 2) alpha return component -------------
 
 # IMPORTANT: this is an alternative way to determine the alpha term
-# this method here is conditional a factor model that has no intercept (= alpha term)
+# this method here is conditional on a factor model that has no intercept (= alpha term)
 # compare to: Excess-IRR method described by Phalippou and Gottschalg (2009)
 
 # make df.idi

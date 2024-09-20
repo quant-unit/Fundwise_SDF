@@ -29,20 +29,35 @@ if (TRUE) {
   rm(path, l)
 } else {
   df <- read.csv("data/Benchmark_SDF_MSCI_coefs.csv")
-  
 }
+df.full <- df
 df <- df[!(df$Factor %in% c("ESG", "LOV", "MOM")), ]
 df <- df[df$lambda == 0, ]
 nrow(df) / length(levels(as.factor(df$Type)))
 5 * 2 * 2 * 4
 table(df$max.month)
 
-
 if (model == "bond") {
   factors <- c("MKT", "TERM", "CORP", "HY", "LIQ")
 } else {
   factors <- c("MKT", "HML", "SMB", "HDY", "QLT") # , "MOM", "ESG", "LOV)
 }
+
+# Model Confidence Set (MCS) ---------
+library(MCS)
+
+data <- df.full
+data <- data[data$error.fun == "L2_Lasso", ]
+data$id <- paste(data$max.month, data$weighting, data$Type, data$error.fun)
+data <- data[, c("id", "validation.error", "Factor")]
+data <- reshape(data, idvar = "id", direction = "wide", timevar= "Factor")
+rownames(data) <- data$id
+data$id <- NULL
+
+MCS1 <- MCSprocedure(Loss=data,alpha=0.05,B=15000,statistic="Tmax",cl=NULL)
+MCS2 <- MCSprocedure(Loss=data,alpha=0.05,B=15000,statistic="TR",cl=NULL)
+
+# Average coef table --------
 
 mean.sd.4 <- function(x) {
   x <- x[x!=0]

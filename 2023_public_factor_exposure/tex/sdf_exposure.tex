@@ -35,10 +35,13 @@
 \usepackage{booktabs}
 \usepackage{float}
 \usepackage{standalone}
+\usepackage{xcolor}
 
 
 \newtheorem{prop}{Proposition}
 \newtheorem{assume}{Assumption}
+
+\definecolor{darkgreen}{rgb}{0.0, 0.5, 0.0}
 
 
 % logo
@@ -117,7 +120,9 @@ More subtle factor-based methods are mainly established in the hedge fund replic
 To avoid overfitting, \cite{OST17} propose to combine multiple factor models for passive hedge fund replication.
 Holding-based approaches to mimic the PE investment style are proposed by \cite{LSSL16}, \cite{S17}, \cite{MS19}, and \cite{PP19}.
 This paper pursues a factor-based solution that employs publicly traded indices and does not require deal-level information on PE funds.
-In contrast to the factor-based ansatz of \cite{P14}, we base our approach on SDF models that are estimated on PE fund-level data rather than comparing several ad-hoc choices for potentially suitable indices.
+In contrast to the factor-based ansatz of \cite{P14}, we base our approach on 
+\textcolor{darkgreen}{Stochastic Discount Factor} 
+(SDF) models that are estimated on PE fund-level data rather than comparing several ad-hoc choices for potentially suitable indices.
 
 This article aims at a data-science-driven solution to describe PE returns.\footnote{See \cite{CG23} for a textbook treatment of machine learning methods for factor investing.}
 Concretely, we propose SDF model combination (of factor models estimated by the \cite{DLP12} method) as a straightforward method to obtain 'strong' public factor models that explain private equity returns.
@@ -194,7 +199,7 @@ Here the typical loss function choices are quadratic forms like in Generalized M
 \hat{\theta } = \
 \arg \min_{\theta} \frac{1}{n} \sum_{i=1}^n L \left( P ; \theta, \gamma \right)
 \end{equation}
-where $\theta=(\alpha,\beta)$ and $\gamma$ denotes the vector of potential hyperparameters like data cutoff dates or weighting/averaging methods.
+where $\theta=(\alpha,\beta)$ and $\gamma$ denotes the vector of potential hyper-parameters like data cutoff dates or weighting/averaging methods.
 More details on the semiparametric estimation framework can be found in the original paper of \cite{DLP12} and its credit market factor application by \cite{HSS23}.
 As a little modification of their native method, we average over multiple compounding dates $\tau \in \mathcal{T}$ in our quadratic loss function
 \begin{equation}
@@ -232,7 +237,7 @@ Moreover, it is currently (almost) impossible to collect data on all funds from 
 These issues render finite [infinite] sample inference more [less] reliable.
 
 Second, for fund-level data, the dependency issue introduced by overlapping fund cash flows further reduces the number of truly independent observations. 
-Similarly, financial engineering applied on fund level like bridge financing or NAV facilities undermine the explanatory power of observed fund cash flows.
+Similarly, financial engineering applied on fund level like bridge financing or Net Asset Value (NAV) facilities undermine the explanatory power of observed fund cash flows.
 
 Third, in private equity, limited sample sizes typically allow the inclusion of just 1-2 factors in a SDF model; 
 even many two-factor models appear to be statistically insignificant (weak models); 
@@ -266,8 +271,10 @@ Probably most closely related to our case, \cite{OST17} advertise model combinat
 
 As we potentially want to exclude invalid models from combination, the set of valid models is defined as the $M^*$ models with the smallest absolute pricing error $M^*=\{m \in M: P^{(m)} \leq Q(x;P) \}$ where $Q$ is the pricing error quantile function and quantile value $x = \frac{M^*}{M}$.
 Here, $M$ is the number of all valid and invalid SDF models.
-Generally, we can also apply more sophisticated (but also more time-consuming) cross-validation procedures to distinguish between valid and invalid models \citep{AC10}.
-The quite different alternative is to assume that all SDF models estimated by the researcher are valid, i.e. $M^*=M$ with $x=1$.
+Generally, we can also apply more sophisticated -- but also more time-consuming -- cross-validation procedures \citep{AC10} 
+\textcolor{darkgreen}{or the Model Confidence Set approach of \cite{HLN11}} 
+to distinguish between valid and invalid models.
+The simpler alternative is to assume that all SDF models estimated by the researcher are valid, i.e. $M^*=M$ with $x=1$.
 Finally, the weighted pricing error obtained by SDF model averaging is defined as
 \begin{equation}
 \label{eq:model_averaging}
@@ -352,6 +359,7 @@ We apply these CLB steps to each public factor model (of the previously estimate
 Finally, in the spirit of model combination, we average over the $M_{\mathrm{systematic}}$ estimates of $\alpha$, $\beta$ and $e$ to obtain our final factor model estimates.
 Since $\alpha=E[e]$, we can, without loss of generality, set $\alpha=0$ in our estimation procedure.
 In practice, it could however be beneficial in some cases to start with a ``good initial guess value" for $\alpha$.
+
 
 \section{Empirical application}
 \label{sec:applications}
@@ -626,6 +634,7 @@ These conditions render an SDF model tracking error that is small in (i) absolut
 
 \fi
 
+
 \section{Conclusion}
 \label{sec:conclusion}
 
@@ -644,7 +653,7 @@ However, our methodology for the error term estimation seems to sometimes yield 
 
 Looking forward, there are promising avenues for refining our approach. 
 Firstly, enhancing the (i) simple ensemble approach for the public factor model and (ii) brute-force componentwise $L_2$ boosting for the error term can be achieved through more efficient machine learning algorithms \citep{B12}.
-Additionally, integrating cross-validation techniques can enhance the reliability of identifying valid Stochastic Discount Factor (SDF) models compared to our current quantile-based procedure, as briefly mentioned in this article.
+Additionally, integrating cross-validation techniques can enhance the reliability of identifying valid SDF models compared to our current quantile-based procedure, as briefly mentioned in this article.
 Finally, to validate the robustness of our findings, further studies should replicate our results using alternative private and public data sources beyond Pitchbook and MSCI data. 
 These potential enhancements and validations are essential steps toward strengthening the credibility and generalizability of our proposed methodology.
 
@@ -655,8 +664,9 @@ These potential enhancements and validations are essential steps toward strength
 % Appendix
 \appendix
 
-\input{sdf_pitchbook_appendix.tex}
-\input{sdf_errors_appendix.tex}
-\input{sdf_preqin_appendix.tex}
+\input{comparison_appendix.tex}
+% \input{sdf_pitchbook_appendix.tex}
+% \input{sdf_errors_appendix.tex}
+% \input{sdf_preqin_appendix.tex}
 
 \end{document}

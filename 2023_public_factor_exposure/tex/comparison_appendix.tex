@@ -1,0 +1,88 @@
+\clearpage
+
+
+\section{Comparison to competing approaches}
+\label{sec:comparison}
+
+\textcolor{darkgreen}{
+	In this section, we compare our two-step methodology to potentially simpler competitor models highlighting advantages as well as disadvantages associated with each model.
+	In this context, it is paramount to explain which general intricacies arise when researchers want to estimate a regression model $R = \beta X + e$ with private equity returns $R$ as dependent variable and a linear factor model $\beta X$ plus error term $e$ on the right-hand side.
+}
+
+\textcolor{darkgreen}{
+	The first fundamental challenge is accurately measuring private equity returns $R$, as fund NAVs are impacted by intermediate cash flows and stale pricing, both of which are difficult to avoid for closed-end funds operating in illiquid markets. 
+	The second challenge is estimating a factor model $\beta X$ when only incomplete return time series or cash flow data are available.
+	The third problem is to derive the error term $e$ that comes with a factor model $\beta X$ given the same fundamental problem.
+}
+
+\subsection{Return measurment}
+% Horizon IRR and NAV returns
+
+\textcolor{darkgreen}{
+	The most straightforward alternative to our model would be a "precise" measurement of "true" PE fund returns.
+	Given well-behaved PE return time-series, factor model estimation and error term calculation can be simply done by a linear Ordinary Least Squares (OLS) regression.
+	However, in practice true PE returns can be only approximated by so-called Horizon Internal Rate of Returns (Horizon IRRs) or NAV returns (or variants thereof).
+}
+
+\textcolor{darkgreen}{
+	Horizon IRR is a measure used to evaluate the performance of private equity investments over a specific time period, accounting for both interim cash flows and changes in NAV.
+	Unlike traditional IRR, which focuses on the full lifetime cash flows of an investment, Horizon IRR assesses returns within a given investment horizon, typically over shorter periods like one or several years. 
+	This metric is often used for benchmarking and performance comparison across funds during specific periods.
+	\[
+	\mathrm{IRR}_{horizon} := \arg \min_{r \in \mathbb{R}} 
+	\left| 
+	{NAV}_{t_1} -
+	\sum_{t=t_1}^{t_2} \frac{{CF}_t}{(1 + r)^{t-t_1}} 
+	- \frac{{NAV}_{t_2}}{(1 + r)^{t_2-t_1}}
+	\right|
+	\stackrel{!}{=} 0
+	\]
+}
+
+\textcolor{darkgreen}{
+	The connection between Horizon IRR and NAV returns lies in their shared focus on interim valuations. 
+	NAV returns capture the percentage change in a private equity fund's net asset value, adjusted for distributions and contributions, and are often calculated on a quarterly or annual basis. 
+	\[
+	R_{t_1, t_2}^{\mathrm{NAV}} := \frac{{NAV}_{t_2} - \sum_{t=t_1}^{t_2} {CF}_t }{{NAV}_{t_1}}
+	\]
+	Horizon IRR incorporates NAV returns by considering both the periodic changes in NAV and cash flows (capital calls and distributions) during the investment horizon, providing a more time-weighted performance measure that accounts for both realized and unrealized gains. 
+	Unfortunately, the inherent stale pricing of PE funds' NAVs yields autocorrelated NAV returns as previously exemplified by Figure \ref{fig:autocorrelation}.
+	Thus, NAV returns and horizon IRRs can only be considered as proxy returns.
+	}
+	
+\subsection{Factor-model estimation}
+% \cite{dimson1979risk} regression
+
+\textcolor{darkgreen}{
+	The \cite{dimson1979risk} beta approach -- initially developed for public shares that are subject to infrequent trading -- is particularly useful for estimating factor loadings in private equity returns, where stale pricing (of NAV appraisals) can lead to asynchronous movements with market factors. 
+	Traditional beta estimation assumes contemporaneous correlation between asset returns and factor returns, which may not hold for illiquid, non-traded assets like private equity. 
+	The \cite{dimson1979risk} beta corrects for this by incorporating lagged factor returns in the OLS regression, capturing delayed or smoothed responses to market-wide movements. 
+	This method potentially improves the accuracy of factor loading estimates, reflecting a more realistic sensitivity of private equity returns to systematic risk factors.
+	As dependent variable for a \cite{dimson1979risk} regression, we could use NAV returns or Horizon IRRs.
+	\[
+	R_t^{\mathrm{Dimson}} := 
+	\alpha + \sum_{l=0}^L \sum_j \beta_{j,l} F_{j,t-l} + e_{t}
+	\]
+	Unfortunately, this method is not helpful to determine the "true" total PE return as the error terms in the formula above are directly derived from the stale returns that serve as dependent variable in the regression. 
+}
+
+\textcolor{darkgreen}{
+	\cite{DLP12}, \cite{KN16}, \cite{ACGP18} propose factor-models estimators that use cash flows instead for return time series to completely avoid the (fundamental) stale pricing problem associated with NAVs.
+}
+
+\subsection{Error-term derivation}
+% \cite{ACGP18} MCMC
+
+\textcolor{darkgreen}{
+	The advanced \cite{ACGP18} ansatz aims at creating a Markov Chain Monte Carlo (MCMC) which equilibrium distribution matches the distribution of latent private equity returns denoted by $g_t^e$.
+	While estimating the MCMC they further decompose the PE returns by a linear multi-factor model $g_t = \alpha + \beta^{'} F_t + f_t + r_t^{rf}$ where $ r_t^{rf}$ denotes the risk-free rate and $f_t$ is perceived as asset-class specific latent factor (i.e., the error term) with mean zero that is orthogonal to the traded factors, $F_t$.
+	The corresponding factor loadings $\beta$ need to be subsequently updated in each MCMC iteration after a new candidate for $g_t$ has been drawn via "a standard regression draw" \cite[internet appendix, p.4]{ACGP18}.
+	In the final step, each MCMC iteration samples a nuisance parameter, assumed to follow a normal distribution. 
+}
+
+\textcolor{darkgreen}{
+	In summary, their approach first samples total PE returns by normal draws around the factor-model mean for each date and then -- as a second step -- updates the public factor model via a multi-variate Least Absolute Deviations (LAD) regression on this total return series.
+	In contrast, we first combine multiple, potentially simpler (uni- or bi-variate) factor models by model averaging and then -- in the second step -- directly estimate the time-series of idiosyncratic returns via a straightforward but brute-force algorithm.
+	A minor drawback of the \cite{ACGP18} framework is its inherent complexity, which, along with its Bayesian nature, offers researchers considerable flexibility in selecting priors and making subtle design decisions.
+	In other words, several variations of the \cite{ACGP18} algorithm appear reasonable and worth investigating.
+}
