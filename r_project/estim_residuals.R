@@ -667,11 +667,59 @@ if (public.filename == "msci_market_factors") df.ret <- df.ret[df.ret$Date > as.
 length(unique(df.ret[df.ret$idi.return != 0, "Date"]))
 length(unique(df.ret[df.ret$idi.return == 0, "Date"]))
 
+series.ca <- df.ret[, map.types[[type]]] # Cambridge Associate
+series.pb <- df.ret[, map.types.pb[[type]]] # PitchBook
+series.pr <- df.ret[, map.types.pr[[type]]] # Preqin
 
-cor(df.ret$total.return, df.ret[, map.types[[type]]], method = "pearson") # CA
-cor(df.ret$total.return, df.ret[, map.types.pb[[type]]], method = "pearson") # Pitchbook
-cor(df.ret$total.return, df.ret$MKTplusRF, method = "pearson")
-cor(df.ret$total.return, df.ret$FiveFactorReturn, method = "pearson")
+r.sqrd <- function(preds, actual) {
+  return(1- sum((preds - actual) ^ 2) / sum((actual - mean(actual))^2))
+}
+quantitfy.accuracy <- function(x, y, x.name = "X", y.name = "Y") {
+  out <- pracma::rmserr(x, y)
+  out["pearson"] <- cor(x, y, method = "pearson") 
+  out["kendall"] <- cor(x, y, method = "kendall") 
+  out["spearman"] <- cor(x, y, method = "spearman")
+  
+  # R^2 does not make sense, since ill-defined since SS.total < SS.residuals
+  out["r.sqrd"] <- r.sqrd(actual = y, pred = x)
+  out["r.sqrd.rev"] <- r.sqrd(actual = x, pred = y)
+  
+  out <- data.frame(X=x.name, Y=y.name, out)
+  out[, 3:ncol(out)] <- round(out[, 3:ncol(out)], 6)
+  return(out)
+}
+
+df.acc <- rbind(
+  quantitfy.accuracy(df.ret$total.return, series.ca, "Avg2FacModel+Err", "Cambridge Associates"),
+  quantitfy.accuracy(df.ret$total.return, series.pb, "Avg2FacModel+Err", "PitchBook"),
+  quantitfy.accuracy(df.ret$total.return, series.pr, "Avg2FacModel+Err", "Preqin"),
+  quantitfy.accuracy(df.ret$total.return, df.ret$FiveFactorReturn, "Avg2FacModel+Err", "FiveFactorReturn")
+)
+df.acc <- df.acc[, 2:(ncol(df.acc)-4)]
+colnames(df.acc)[1] <- "NAV Return Series"
+df.acc
+
+print(xtable::xtable(df.acc, 
+                     digits = 3,
+                     caption = "Quantitative measures of distance between the Average 2-Factor Models + Error time series and three NAV return time series.",
+                     label = "tab:accuracy_measures"), include.rownames=FALSE)
+
+corr.method <- "pearson"
+cor(df.ret$total.return, series.ca, method = corr.method) # CA
+cor(df.ret$total.return, series.pb, method = corr.method) # Pitchbook
+cor(df.ret$total.return, series.pr, method = corr.method) # Preqin
+cor(df.ret$total.return, df.ret$MKTplusRF, method = corr.method)
+cor(df.ret$total.return, df.ret$FiveFactorReturn, method = corr.method)
+
+summary(lm(series.ca ~ df.ret$total.return))
+summary(lm(series.pb ~ df.ret$total.return))
+summary(lm(series.pr ~ df.ret$total.return))
+summary(lm(df.ret$total.return ~ series.ca))
+summary(lm(df.ret$total.return ~ series.pb))
+summary(lm(df.ret$total.return ~ series.pr))
+
+summary(lm(df.ret$total.return ~ df.ret$FiveFactorReturn))
+summary(lm(df.ret$FiveFactorReturn ~ df.ret$total.return))
 
 mean(df.ret$total.return); sd(df.ret$total.return)
 mean(df.ret$factor.return); sd(df.ret$factor.return)
@@ -683,7 +731,7 @@ mean(df.ret$MKTplusRF); sd(df.ret$MKTplusRF)
 mean(df.ret$FiveFactorReturn); sd(df.ret$FiveFactorReturn)
 
 # analyze autocorrelation
-do.eps <- TRUE
+do.eps <- FALSE
 if (do.eps) {
   setEPS()
   postscript(paste0("charts_error/", "ACFun",type,".eps"), width = 5.5, 
@@ -757,7 +805,7 @@ plot.it <- function(df.ret, tag="") {
     tag <- paste0("Preqin", tag)
   }
   
-  do.eps <- TRUE
+  do.eps <- FALSE
   
   # Plot 1
   if (do.eps) {
