@@ -23,15 +23,17 @@ do.cache <- TRUE
 do.parallel <- ifelse(.Platform$OS.type == "windows", FALSE, TRUE)
 
 private.source <- "pitchbook"
-private.source <- "preqin"
+# private.source <- "preqin"
+cutoff <- "" # "_cutoff_2019" # only available for PitchBook (2024-09-28)
+cutoff <- "_cutoff_2021"
 
 #public.filename <- "public_returns" # outdated
-#public.filename <- "msci_market_factors"
+public.filename <- "msci_market_factors"
 #public.filename <- "q_factors"
 #public.filename <- "DebtFactorsEURUSD" # outdated
 #public.filename <- "iBoxxFactorsMIX"
 #public.filename <- "iBoxxFactorsUSD" 
-public.filename <- "iBoxxFactorsEUR"
+#public.filename <- "iBoxxFactorsEUR"
 
 
 # CHOICES
@@ -100,8 +102,9 @@ if(!use.simulation) {
   
   if (private.source == "pitchbook") {
     year.tag <- "_2023"
-    df.private.cfs <- read.csv(paste0("data_prepared/pitchbook_cashflows_", weighting, year.tag, ".csv"))
+    df.private.cfs <- read.csv(paste0("data_prepared", cutoff, "/pitchbook_cashflows_", weighting, year.tag, ".csv"))
     colnames(df.private.cfs)
+    print(max(df.private.cfs$Date))
   }
   
 } else {
@@ -148,7 +151,8 @@ if (export.data) {
   write.csv2(df0, paste0("data_private_public/df0_",
                          private.source, "_",
                          public.filename,"_",
-                         weighting,".csv"), 
+                         weighting,
+                         cutoff, ".csv"), 
              row.names = FALSE)
 }
 

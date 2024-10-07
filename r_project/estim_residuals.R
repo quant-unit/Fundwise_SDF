@@ -10,11 +10,15 @@ use.vintage.year.pfs <- TRUE
 public.filename <- "msci_market_factors" # "q_factors" # 
 private.source <- "pitchbook" # "preqin" #  
 weighting <- "FW"
+cutoff = ""
+# cutoff = "cutoff_2021" # "cutoff_2019" # "cutoff_2021"
 if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
-sub.folder <- paste(public.filename, private.source, weighting, sep = "#")
+sub.folder <- paste(public.filename, private.source, weighting, cutoff, sep = "#")
+if(cutoff == "") sub.folder <- paste(public.filename, private.source, weighting, sep = "#")
 
 # load df0
-file.name <- paste("df0", private.source, public.filename, weighting, sep ="_")
+file.name <- paste("df0", private.source, public.filename, weighting, cutoff, sep ="_")
+if(cutoff == "") file.name <- paste("df0", private.source, public.filename, weighting, sep ="_")
 file.name <- paste(file.name, "csv", sep=".")
 file.name
 df0 <- read.csv2(paste0("data_private_public/", file.name))
@@ -49,7 +53,7 @@ df.sdf[is.na(df.sdf)] <- 0
 types <- levels(as.factor(df.sdf$Type))
 type <- types[1]
 type <- "ALL" # "PE" # "PD" # "MEZZ" # "NATRES" # "INF" # "DD" # "RE" # "BO" # "VC"
-type <- "BO"; length(types); type
+type <- "VC"; length(types); type
 RUN <- FALSE
 
 sdf.factors <- colnames(df.sdf)[grep(".indep", colnames(df.sdf))]
@@ -530,7 +534,9 @@ count.dates <- function(df.res) {
   return(y)
 }
 
-plot(out$df.idi$Date, out$df.idi$idi.return, type="l", xlab = "Date", ylab = "Return", main=type)
+out <- read.out(type)
+
+plot(out$df.idi$Date, out$df.idi$idi.return, type="h", xlab = "Date", ylab = "Return", main=type)
 plot(acf(out$df.idi$idi.return))
 plot(out$df.res[out$df.res$ensemble == "Ensemble1", "objective"], type = "l", xlab="iterations", ylab="objective", main=type)
 legend("topright", bty="n", legend = paste("# different dates:", length(unique(out$df.res$date))))
@@ -810,7 +816,7 @@ plot.it <- function(df.ret, tag="") {
   # Plot 1
   if (do.eps) {
     setEPS()
-    postscript(paste0("charts_error/", public.filename, "/XErrorSeries", type, tag, ".eps"), width = 5.5, height = 3, 
+    postscript(paste0("charts_error/", public.filename, "/XErrorSeries", type, tag, cutoff, ".eps"), width = 5.5, height = 3, 
                family = "Helvetica", pointsize = 11)
     par(mar=c(4.2,4.2,1,2))
   }
@@ -825,7 +831,7 @@ plot.it <- function(df.ret, tag="") {
   # Plot 2
   if (do.eps) {
     setEPS()
-    postscript(paste0("charts_error/", public.filename, "/XTotalErrorSeries",type, tag,".eps"), width = 5.5, 
+    postscript(paste0("charts_error/", public.filename, "/XTotalErrorSeries",type, tag, cutoff,".eps"), width = 5.5, 
                height = 3, family = "Helvetica", pointsize = 11)
     par(mar=c(4.2,4.2,1,2), lwd=2)
   }

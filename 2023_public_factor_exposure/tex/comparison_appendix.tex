@@ -12,7 +12,7 @@
 \textcolor{darkgreen}{
 	The first fundamental challenge is accurately measuring private equity returns $R$, as fund NAVs are impacted by intermediate cash flows and stale pricing, both of which are difficult to avoid for closed-end funds operating in illiquid markets. 
 	The second challenge is estimating a factor model $\beta X$ when only incomplete return time series or cash flow data are available.
-	The third problem is to derive the error term $e$ that comes with a factor model $\beta X$ given the same fundamental problem.
+	The third problem is to derive the error term $e$ that comes with a factor model $\beta X$ given the same fundamental problems.
 }
 
 \subsection{Return measurment}
@@ -29,7 +29,7 @@
 	Unlike traditional IRR, which focuses on the full lifetime cash flows of an investment, Horizon IRR assesses returns within a given investment horizon, typically over shorter periods like one or several years. 
 	This metric is often used for benchmarking and performance comparison across funds during specific periods.
 	\[
-	\mathrm{IRR}_{horizon} := \arg \min_{r \in \mathbb{R}} 
+	\mathrm{IRR}_{t_1,t_2}^{horizon} := \arg \min_{r \in \mathbb{R}} 
 	\left| 
 	{NAV}_{t_1} -
 	\sum_{t=t_1}^{t_2} \frac{{CF}_t}{(1 + r)^{t-t_1}} 
@@ -41,13 +41,13 @@
 
 \textcolor{darkgreen}{
 	The connection between Horizon IRR and NAV returns lies in their shared focus on interim valuations. 
-	NAV returns capture the percentage change in a private equity fund's net asset value, adjusted for distributions and contributions, and are often calculated on a quarterly or annual basis. 
+	NAV returns capture the percentage change in a private equity fund's NAV, adjusted for distributions and contributions, and are often calculated on a quarterly or annual basis. 
 	\[
 	R_{t_1, t_2}^{\mathrm{NAV}} := \frac{{NAV}_{t_2} - \sum_{t=t_1}^{t_2} {CF}_t }{{NAV}_{t_1}}
 	\]
 	Horizon IRR incorporates NAV returns by considering both the periodic changes in NAV and cash flows (capital calls and distributions) during the investment horizon, providing a more time-weighted performance measure that accounts for both realized and unrealized gains. 
 	Unfortunately, the inherent stale pricing of PE funds' NAVs yields autocorrelated NAV returns as previously exemplified by Figure \ref{fig:autocorrelation}.
-	Thus, NAV returns and horizon IRRs can only be considered as proxy returns.
+	Thus, NAV returns and Horizon IRRs can only be considered as proxy returns.
 	}
 	
 \subsection{Factor-model estimation}
@@ -68,13 +68,14 @@
 
 \textcolor{darkgreen}{
 	\cite{DLP12}, \cite{KN16}, \cite{ACGP18} propose factor-models estimators that use cash flows instead for return time series to completely avoid the (fundamental) stale pricing problem associated with NAVs.
+	Our method is based on the \cite{DLP12} approach.
 }
 
 \subsection{Error-term derivation}
 % \cite{ACGP18} MCMC
 
 \textcolor{darkgreen}{
-	The advanced \cite{ACGP18} ansatz aims at creating a Markov Chain Monte Carlo (MCMC) which equilibrium distribution matches the distribution of latent private equity returns denoted by $g_t^e$.
+	The advanced \cite{ACGP18} ansatz aims at creating a Markov Chain Monte Carlo (MCMC) sampler which equilibrium distribution matches the distribution of latent private equity returns denoted by $g_t$.
 	While estimating the MCMC they further decompose the PE returns by a linear multi-factor model $g_t = \alpha + \beta^{'} F_t + f_t + r_t^{rf}$ where $ r_t^{rf}$ denotes the risk-free rate and $f_t$ is perceived as asset-class specific latent factor (i.e., the error term) with mean zero that is orthogonal to the traded factors, $F_t$.
 	The corresponding factor loadings $\beta$ need to be subsequently updated in each MCMC iteration after a new candidate for $g_t$ has been drawn via "a standard regression draw" \cite[internet appendix, p.4]{ACGP18}.
 	In the final step, each MCMC iteration samples a nuisance parameter, assumed to follow a normal distribution. 

@@ -24,6 +24,11 @@ table(df.xl$asset_class[!duplicated(df.xl$Fund.ID)])
 table(df.xl$asset_class_segment[!duplicated(df.xl$Fund.ID)])
 table(df.xl$Vintage[!duplicated(df.xl$Fund.ID)])
 
+# data cutoff to understand larger errors at time-series end
+max(df.xl$date)
+cutoff <- "2021"
+df.xl <- df.xl[df.xl$date < as.Date(paste0(cutoff, "-01-01")), ]
+
 
 make.strategy.summary <- function() {
   l <- list()
@@ -187,7 +192,7 @@ make.preqin.csv <- function(fund.size.weighting, region.filter=NA, vin.year.pfs=
   if (!is.na(region.filter)) region.tag <- paste0("_", region.filter)
   if (vin.year.pfs) region.tag <- paste0("_VYP", region.tag)
     
-  file = paste0("data_prepared/pitchbook_cashflows_", tag, region.tag, "_2023.csv")
+  file = paste0("data_prepared_cutoff_", cutoff, "/pitchbook_cashflows_", tag, region.tag, "_2023.csv")
   write.csv(df.out, file, row.names = FALSE)
   invisible(df.out)
 }

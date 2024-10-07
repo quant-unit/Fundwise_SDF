@@ -199,7 +199,7 @@ Here the typical loss function choices are quadratic forms like in Generalized M
 \hat{\theta } = \
 \arg \min_{\theta} \frac{1}{n} \sum_{i=1}^n L \left( P ; \theta, \gamma \right)
 \end{equation}
-where $\theta=(\alpha,\beta)$ and $\gamma$ denotes the vector of potential hyper-parameters like data cutoff dates or weighting/averaging methods.
+where $\theta=(\alpha,\beta)$ and $\gamma$ denotes the vector of potential hyperparameters like data cutoff dates or weighting/averaging methods.
 More details on the semiparametric estimation framework can be found in the original paper of \cite{DLP12} and its credit market factor application by \cite{HSS23}.
 As a little modification of their native method, we average over multiple compounding dates $\tau \in \mathcal{T}$ in our quadratic loss function
 \begin{equation}
@@ -223,7 +223,7 @@ First, there exists a great variety of different public return factor candidates
 It is not even clear which factors 'best' explain public equity returns, cf. references in \cite{KN20}. 
 
 Second, we can choose from many feasible semiparametric estimators, loss functions, or ancillary machine learning methods, cf.\ \cite{GKX20} for a public market overview.
-Additionally, there are discretionary choices for regularization- or other hyper-parameters.
+Additionally, there are discretionary choices for regularization- or other hyperparameters.
 Further, bootstrapping and other resampling-based techniques may be helpful but likewise dramatically increase the number of model candidates.
 
 Third, in contrast to common public databases available for public equity, the private equity literature has to draw on various private -- often proprietary -- data sources. 
@@ -378,6 +378,9 @@ Specifically, all SDF ensembles draw on (valid) two-factor models, where the fir
 	\item[QLT-MKT:]{MSCI Quality Minus MSCI Market Return}
 \end{description}
 For each of the 4 factors (SMB, HML, HDY-MKT, QLT-MKT), we estimate an ensemble of $2 \times 2 \times 5$ bivariate two-factor models with (i) quadratic and least absolute deviance loss function $L()$, (ii) both equal- and fund-size-weighted cash flows, and (iii) maximum months 120, 150, 180, 210, 240.
+\textcolor{darkgreen}{
+	As we consider all models to be valid, no model is excluded ($M^*=M$).
+}
 Next, we use the simple coefficient averaging as described in subsection \ref{sec:coef_averaging} to obtain five-factor models.
 
 % latex table generated in R 4.2.1 by xtable 1.8-4 package
@@ -523,7 +526,7 @@ Yet two quarters exhibit quite extreme idiosyncratic returns of around +30\% or 
 For illustration and comparison with other BO return series, we map the monthly returns to quarterly returns in Figures \ref{fig:clb_idio} and \ref{fig:clb_total} and analyze the period from 1998-03-31 until 2022-03-31.
 Figure \ref{fig:clb_total} nicely depicts that adding the error term estimates to our public factor model closely aligns the Average 2-Factor Models + Error series to the NAV returns of Cambridge Associates (CA), Preqin and Pitchbook.\footnote{Because of missing data, we fill the first quarters of the Pitchbook series with CA returns (from 1998-03-31 until 1999-09-30) and the first quarters of the Preqin series with CA returns (from 1998-03-31 until 2007-12-31).
 }
-The Pearson correlation coefficients between our Public Factors + Error series and the CA and Pitchbook series are 79\% and 72\%, respectively.
+\textcolor{darkgreen}{As outlined in Table \ref{tab:accuracy_measures},} the Pearson correlation coefficients between our Public Factors + Error series and the CA and Pitchbook series are 79\% and 72\%, respectively.
 The quarterly average return is relatively high in all three series with 4.7\% (Public Factors + Error), 3.6\% (CA), and 3.5\% (Pitchbook).
 However, the standard deviation is considerably larger in our Public Factors + Error series with 15.4\% compared to 5.7\% and 5.1\% observed for CA and Pitchbook NAV returns, respectively.
 For comparison, the MSCI Market [Public Factors] return exhibits a 2.7\% [3.8\%] average quarterly return with a standard deviation of 8.8\% [13.9\%].
@@ -566,11 +569,43 @@ We observe a big difference between the Average 2-Factor Models and the Average 
 However after 2010, all public factor model returns (with and without errors) seem closely aligned with the CA and Pitchbook NAV return indices.
 Certainly, this result does not come by surprise as Figure \ref{fig:clb_idio} displays all larger error terms before 2010.
 From these analyses it remains unclear if the time-consuming error term estimation is always necessary since the average of the two-factor models alone can adequately price BO cash flows in the more recent past.
-In appendix \ref{sec:vc_errors}, we receive a similar result for VC returns.
+% In appendix \ref{sec:vc_errors}, we receive a similar result for VC returns.
 
 Finally, table \ref{tab:error_summary} reports the summary statistics for the error terms to address the question if Buyout (and other fund types) outperformed the public market on a risk-adjusted basis.
 The extremely high values for skewness and kurtosis challenge the validity of using the mean of the error term series as measure for the expected outperformance, i.e., $\alpha = E [ e ]$.
 Supposedly, the median gives a more realistic approximation for practical purposes since asymptotic behavior cannot be expected for time series of length 100.
+
+
+% LaTeX table generated in R 4.3.1 by xtable 1.8-4 package
+% Fri Sep 20 20:28:23 2024
+
+\begin{table}[ht]
+	\centering
+	\begin{tabular}{l rrrrrrr}
+		{NAV Return} & {MAE} & {MSE} & {RMSE} & {MAPE} & {NMSE} & {rSTD} & {Pearson} \\ 
+		\hline
+		\hline
+		Cambridge A. & 0.085 & 0.013 & 0.115 & 1.918 & 0.561 & 2.448 & 0.785 \\  
+	 	PitchBook & 0.092 & 0.015 & 0.122 & 2.298 & 0.636 & 2.605 & 0.723 \\   
+	 	Preqin & 0.088 & 0.014 & 0.119 & 1.883 & 0.597 & 2.526 & 0.759 \\ 
+		\hline
+		\hline
+	\end{tabular}
+	\caption{
+		\textcolor{darkgreen}{
+			Quantitative measures of distance between our "2-Factor Models + Error" time series and three NAV-return indices for BO funds as depicted in Figure \ref{fig:clb_total}.
+			For the \emph{quarterly} return series, we calculate 
+			Mean Absolute Error (MAE),
+			Mean Squared Error (MSE),
+			Root Mean Squared Error (RMSE),
+			Mean Absolute Percentage Error (MAPE),
+			Normalized Mean Squared Error (NMSE),
+			relative Standard Deviation (rSTD)
+			and Pearson correlation.
+			}
+		}
+	\label{tab:accuracy_measures}
+\end{table}
 
 
 \begin{table}[ht]
@@ -596,6 +631,40 @@ Supposedly, the median gives a more realistic approximation for practical purpos
 	}
 \label{tab:error_summary}
 \end{table}
+
+\subsection{Model limitations for other fund types}
+
+\textcolor{darkgreen}{
+	In this section, we analyze the estimated error-term time series for other private capital fund types, as shown in Appendix \ref{sec:error_terms_other_fund_types}.
+	Similar to the BO case, the error-term time series for VC, RE, DD, INF, NATRES, MEZZ, and PD funds are sparse, with most estimated errors being zero. 
+	Generally, volatility clusters of several large positive and negative errors only appear infrequently or as single large outliers. 
+	However, two irregular and potentially problematic patterns can be identified in the idiosyncratic return time series.
+}
+
+\textcolor{darkgreen}{
+	First, our error-term estimation methodology sometimes produces unreliable results at the beginning and end of the time series.
+	This is especially prominent at the end of the VC error series with a quarterly return of +200\% for the first quarter of 2022 (Figure \ref{fig:clb_idio_VC}). 
+	The RE errors start with a return of around -100\% (Figure \ref{fig:clb_idio_RE}).
+	The last MEZZ error term is around -50\% (Figure \ref{fig:clb_idio_MEZZ}) and the final PD error term is over +30\% (Figure \ref{fig:clb_idio_PD}).
+	Due to the frequent outliers at the beginning and end of the time series, we recommend that researchers always discount or exclude at least the first and last observations of the error-term series generated by our method. 
+	For these quarters, it appears more reliable to use only the factor-model returns without including the error terms.
+	Alternatively, we could rerun our error-term estimation method on a trimmed cash flow dataset if outliers are found at the beginning or end, though this approach is more computationally intensive.
+}
+
+\textcolor{darkgreen}{
+	Second, for asset classes with relatively few funds in our dataset, the error-term time series can display quarters with extreme idiosyncratic return estimates, particularly around the 2007-08 financial crisis.
+	Between 2007 and 2009, we observe an almost +80\% return for DD funds (Figure \ref{fig:clb_idio_DD}) and an almost +400\% return for NATRES funds (Figure \ref{fig:clb_idio_NATRES}).
+	INF funds also exhibit two negative returns of around -20\% and two positive returns larger than +50\% in the period between 2005 and 2008 (Figure \ref{fig:clb_idio_INF}).
+	However, in some instances, the increased volatility of error terms during the 2007-08 financial crisis may realistically represent actual market conditions. 
+	In other cases, such as a 400\% return in a single quarter, it is clearly reasonable to introduce a return cap, limiting error estimates to no more than, e.g., 100\% per quarter.
+}
+
+\textcolor{darkgreen}{
+	Despite the two issues mentioned above, the cumulative return time series for many of the fund types discussed show patterns similar to their NAV-return benchmarks. 
+	Only the cumulative returns for NATRES and MEZZ appear noticeably different when examined visually.
+≠
+}
+
 
 \iffalse
 
@@ -649,7 +718,9 @@ Before 2010, the error term played a crucial role, whereas after 2010, the publi
 Moreover, our error term estimates exhibit too extreme higher moments to be adequately  described by lower order summary statistics like the mean value alone.
 This, in turn, casts doubts on the usefulness of the exptected outperformance term $\alpha = E [ e ]$ in the context of private capital returns.
 Notably, our empirical application yields total return time series for private equity segments with significantly lower autocorrelations than traditional NAV-return time series.
-However, our methodology for the error term estimation seems to sometimes yield unreliable results at the beginning and end of the error term time series when relatively small cash flows need to be priced by our SDF.
+\textcolor{darkgreen}{
+However, our error-term estimation methodology sometimes produces unreliable outliers, particularly at the beginning and end of the time series, which researchers should consider trimming.
+}
 
 Looking forward, there are promising avenues for refining our approach. 
 Firstly, enhancing the (i) simple ensemble approach for the public factor model and (ii) brute-force componentwise $L_2$ boosting for the error term can be achieved through more efficient machine learning algorithms \citep{B12}.
@@ -666,7 +737,7 @@ These potential enhancements and validations are essential steps toward strength
 
 \input{comparison_appendix.tex}
 % \input{sdf_pitchbook_appendix.tex}
-% \input{sdf_errors_appendix.tex}
+\input{sdf_errors_appendix.tex}
 % \input{sdf_preqin_appendix.tex}
 
 \end{document}
