@@ -53,7 +53,7 @@ df.sdf[is.na(df.sdf)] <- 0
 types <- levels(as.factor(df.sdf$Type))
 type <- types[1]
 type <- "ALL" # "PE" # "PD" # "MEZZ" # "NATRES" # "INF" # "DD" # "RE" # "BO" # "VC"
-type <- "VC"; length(types); type
+type <- "BO"; length(types); type
 RUN <- FALSE
 
 sdf.factors <- colnames(df.sdf)[grep(".indep", colnames(df.sdf))]
@@ -867,5 +867,9 @@ plot.it(df.ret)
 plot.it(df.ret, "pre2010")
 plot.it(df.ret, "post2010")
 
+# Average alpha (error-term) per time period
+(1+mean(df.ret$idi.return))^4 - 1
+(1+mean(df.ret$idi.return[df.ret$Date < as.Date("2010-01-01")]))^4 - 1
+(1+mean(df.ret$idi.return[df.ret$Date > as.Date("2010-01-01")]))^4 - 1
 
 # write.csv2(df.ret, "dfBOmsciIdiReturns.csv")
