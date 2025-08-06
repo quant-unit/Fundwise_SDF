@@ -1,0 +1,237 @@
+\section{Literature review}
+\label{sec:cfb_sdf_estimators}
+
+For private equity funds, performance evaluation under the SDF framework is currently an active research topic \citep{DLP12,FNP12,B14,B16a,B16b,KN16,ACGP18,GSW19}.
+Previously, SDF performance evaluation was already applied for public stock markets by, e.g., \cite{FFJT02} and for hedge fund returns by \cite{LXZ16}.
+We can briefly explain the underlying idea by rearranging and reinterpreting the terms of the famous $\mathrm{PME_{KS}}$ Equation \ref{eq:ks_pme_ratio}. 
+\textcolor{darkgreen}{
+	We obtain the Net Present Value (NPV) as the expectation (at inception) of all discounted future fund net cash flows discounted by a Stochastic Discount Factor (SDF) which we denote as $\Psi$
+	\begin{equation}
+		\label{eq:net_present_value}
+		NPV 
+		= 
+		\mathbb{E} \left[ DNCF \right]
+		= 
+		\mathbb{E} \left[
+		\sum_{t=1}^T \frac{D_t}{1 / \Psi_t} - \sum_t \frac{C_t}{1 / \Psi_t} 
+		\right]
+		= 
+		\mathbb{E} \left[
+		\sum_{t=1}^T \Psi_t \left( D_t - C_t \right)
+		\right]
+	\end{equation}
+	where $D$ denote fund distributions, $C$ are fund contributions, and the random variable $DNCF$ abbreviates Discounted Net Cash Flow.
+	Then for an appropriate SDF $\Psi$, we expect that the present value of contributions shall equal the present value of distributions or equivalently
+	\begin{equation}
+		\label{eq:npv=zero}
+		NPV \stackrel{!}{=} 0
+	\end{equation}
+	since we expect perfect SDF pricing\footnote{\textcolor{darkgreen}{It is important to note, that some PE papers define the NPV (or present value) as random variable, i.e. what we denote by DNCF \cite{L08,DLP12,ACGP18}.}}.
+	Chapter \ref{chap:SDFs} introduces SDFs in greater detail and Chapter \ref{chap:numeraire_denomination_and_replication} further clarifies why the reciprocal of a broad market index $\frac{1}{I}$ is a good choice for a general SDF proxy.
+	A given private capital fund (PCF) exhibits a positive abnormal return if the DNCF is positive and a negative abnormal performance if $DNCF<0$.
+	In this section, we review estimation methods that try to find the most appropriate SDF to discount PCF cash flows.
+	These methods usually estimate linear factor models for the SDF similar to Equation \ref{eq:multi_factor_model}.
+	The underlying estimation idea is that the true SDF can correctly price the population of PCF cash flows, i.e., $NPV=\mathbb{E} \left[ DNCF \right] = 0$ just if we discount by the true SDF.
+}
+In other words, the average out- or under-performance in an unbiased performance evaluation framework shall be zero.
+
+\subsection{Parametric approaches}
+
+\cite{FNP12} propose a deal-level methodology that assumes lognormally distributed PE company returns.
+%\[
+%\ln R_{t+1} = \ln \frac{V_{t+1}}{V_t} = \gamma + \ln R_{t+1}^f + \delta^{\top} f_{t+1} + \epsilon_{t+1}
+%\]
+%\textcolor{darkgreen}{
+	%	where $\gamma$ is a constant, $R_{t+1}^f$ is the gross risk free rate, $f_{t+1}$ is a vector of risk factors, $\delta$ is a vector of risk factor loadings and $\epsilon_{t+1}$ is normal with mean zero and variance $\sigma^2$ and is independent of the risk factors.
+	%}
+They empirically apply their method to the CEPRES deal-level dataset to test the liquidity factor of \cite{PS03} for the first time in the PE context.
+Interestingly, they decide to estimate their model via OLS \textcolor{darkgreen}{(after an imaginative Generalized Least Squares (GLS) transformation)} and not by maximum likelihood, which would be the traditional choice when parametrically specifying the error term \textcolor{darkgreen}{(like in a Generalized Linear Model (GLM))}.
+Here, their dependent variable is the scaled natural logarithm of the gross geometric average return on the investment.
+Unfortunately, their construction of this gross geometric average return\footnote{\textcolor{darkgreen}{They use Modified Internal Rate of Return (MIRR).}} involves a reinvestment assumption for intermediate deal cash flows between entry and exit.
+\textcolor{darkgreen}{This reinvestment of distribution cash flows into the public market aggravates the estimation of an SDF that is exclusively tailored for PE cash flows.}
+They report that the effect of the reinvestment assumption is not overly large in their deal-level dataset due to the relatively short time periods and few intermediate cash flows.
+However, fund-level cash flows have, of course, only intermediate cash flows and much longer time periods. 
+To avoid minus infinite log returns for defaulted deals and to obtain more normally distributed returns, they \textbf{group deals into monthly portfolios} for estimation.
+% Overall, from a methodological viewpoint, they probably should estimate their "practitioner approach" by GLM instead of OLS since their arbitrary log transformation probably caused more issues than it solved.
+Presumably, \textcolor{darkgreen}{from a methodological viewpoint, the authors try to force a nonlinear estimation problem a little bit too much into a common linear regression framework.}
+
+\cite{ACGP18} use fund-level data provided by Preqin to estimate a "PE return index based on historical fund cash flows."
+As Data Generating Process (DGP), they assume a log-linear factor model for each fund distribution
+\begin{equation}
+	\label{eq:data_generating_process}
+	D_T = C_t \prod_{\tau=t+1}^{T} g_{\tau}
+\end{equation}
+where $D_T$ is a given fund distribution and $C_t$ a contribution with $t<T$.
+The return dynamics $\ln (g_t) = \ln (g_t^M) + \epsilon_t$ where $g_t^M$ is the market component of the fund return and $\epsilon_t$ its idiosyncratic part that is normal and i.i.d.
+The state space dynamics of the filtering problem describe the factor model structure of $g$ as
+\[
+g_t^M = \alpha + r_t^{\mathrm{free}} + \beta^{\top} F_t + f_t^{\mathrm{PE}}
+\]
+where $\alpha$ is the average excess return, $r_t^{\mathrm{free}}$ is the risk-free rate, $F_t$ is a vector of public market (long-short) factor returns, $\beta$ the corresponding factor loadings, and $f_t^{\mathrm{PE}}$ is "an asset-class-specific latent factor with mean zero that is orthogonal to the traded factors, $F_t$."
+They assume each fund holds $N$ investments $i=1,2,\dots,N$; $t_i$ notes the investment date of the first deal and $T_i$ is the corresponding exit date.
+For each fund, they then postulate the following Present Value Ratio ($PVR$) to hold
+\begin{equation}
+	\label{eq:pvr_ang_2018}
+	PVR = \ln \left(\frac{PV_D}{PV_C}\right) \cong \ln (u) \qquad \mathrm{where} \quad \ln (u) \sim N \left( - 0.5 \sigma^2, \sigma^2 \right)
+\end{equation}
+with present value of distributions
+\[
+PV_D = \sum_{i=1}^N \frac{D_{T_i}}{g_{t_1} \dots g_{T_i}}
+\]
+and present value of contributions
+\[
+PV_C = \sum_{i=1}^N \frac{C_{i}}{g_{t_1} \dots g_{T_i}} U_{t_i, T_i}
+\]
+where $U_{t_i, T_j}$ contains the idiosyncratic terms
+\[
+U_{t_i, T_j}^i = \exp \left( \epsilon_{t_i + 1} + \dots + \epsilon_{T_i} \right)
+\]
+\textcolor{darkgreen}{
+	This means $1/g_t$ is used here as SDF.
+}
+The \textcolor{darkgreen}{variance term $\sigma^2$ of $\ln (u)$} is given by
+\[
+\sigma^2 = \ln \left[ \sum_{i=1}^N w_i^2 \exp \left( T_i - t_i \right) s^2 \right]
+\]
+with weights 
+\[
+w_i = \frac{\frac{C_{i}}{g_{t_1} \dots g_{T_i}}}{PV_C}
+\]
+and idiosyncratic variance $s^2 = var( \epsilon_t )$.
+Here, the approximation ($\cong$) of the PVR by $\ln (u)$ relies on a lognormal central limit theorem (CLT) obtained from the textbook of \cite{BT13}.
+For this CLT to hold, they need the two \textbf{regularity conditions} that there is no dominantly (i) large or (ii) long investment as $N$ goes to infinity.
+They estimate all \textcolor{darkgreen}{relevant} model parameters, \textcolor{darkgreen}{i.e., $\alpha,\beta$ and the latent residual return time-series $f^{\mathrm{PE}}$,} by a Bayesian Markov Chain Monte Carlo method that minimizes "one large error term per fund in the estimation process".
+\textcolor{darkgreen}{
+	Thus \cite{ACGP18} provide the only SDF estimation method in the literature (so far) that not only estimates the public market factors but additionally an \textbf{asset-class-specific latent factor}.
+	Because of the high dimensionality of $f^{\mathrm{PE}}$ (i.e., a return time-series), they need to employ an estimation method like Gibbs sampling that can handle more parameters to estimate than actual data points.
+}
+
+However, their parametric approach also possesses several potential caveats:
+\begin{enumerate}
+	\item a lognormal distribution may not appropriately describe the PEF returns $g_t$,
+	\item the price path of individual fund error terms is assumed i.i.d.,
+	\item they use net-of-fee cash flows for estimation but assume a gross-of-fee data generating process (which neglects autocorrelation and return nonlinearities due to carry payments),
+	\item the CLT (and its regularity conditions) may not hold for individual funds since $N$ is usually between 10 and 20 investments (and not large); therefore, the normal approximation for $\ln (u)$ may be inadequate, 
+	\textcolor{darkgreen}{
+		\item estimating the latent error time-series may be prone to overfitting because of the high dimensionality of the optimization problem,
+		\item Jensen's inequality holds for the Present Value Ratio (PVR), which questions the validity of equation \ref{eq:pvr_ang_2018} (as shown later by equation \ref{eq:expected_ks_pme_ratio}).
+	}
+\end{enumerate}
+\textcolor{darkgreen}{
+	Here, the choice of a semiparametric estimator, as the ones described in the following subsection, can avoid the issues 1 and 4.
+	Point 3 is probably the hardest problem to fix properly as we also could not avoid this simplification in Section \ref{subsec:sdf_estimation_multi_cfs_trivial_sdf}.
+}
+
+Moreover, one of their extensive simulation results shows that their method "cannot recover the latent time series for an asset class that has small exposures to specified factors."
+They estimate several factor model specifications using the Preqin cash flow dataset.
+The best model (in terms of likelihood) for BO just includes the market factor coefficient of 1.25 and a positive annualized alpha of 4\% p.a.
+For VC, the best model is the four-factor model of \cite{PS03} with coefficients 2.09 for the market factor, 0.91 for size (SMB), 0.90 for value (HML), and 0.60 for the liquidity (LIQ), and a negative annualized alpha of -5\% p.a.
+Interestingly, the profitability (RMW) and investment (CMA) factors of the \cite{FF15} model never enter the best model for both BO and VC.
+
+
+
+\subsection{Semiparametric approaches}
+
+Given the limitations of parametric models that became apparent in the context of \cite{ACGP18}, we favor semiparametric SDF methods \textcolor{darkgreen}{(cf. Chapter \ref{chap:spatial_sdf_estimator})}.
+Semiparametric approaches omit (i) parametric specifications for the idiosyncratic error term and (ii) often also formulations of the concrete Data Generating Process (DGP).
+
+
+\cite{DLP12} develop the first SDF estimator tailored for typical PE fund-level cash flows.
+Their goal is to estimate a linear factor model that minimizes the squared $DNCF$ of PEFs.
+Generically, they solve the following minimization problem
+\begin{equation}
+	\label{eq:dlp12_minimization}
+	\theta^{\mathrm{SDF}} = \arg \min_{\theta^{\mathrm{SDF}}} \sum_{i=1}^N \left( DNCF_i \right)^2
+\end{equation}
+where $N$ is the number of PEF portfolios in the dataset and the $DNCF$ calculation follows Equation \ref{eq:net_present_value}
+\[
+DNCF_i = 
+\sum_{t=1}^{T_i}
+\left(
+\frac{D_{it} - C_{it}}{\Psi_{t}^{-1}}
+\right)
+\]
+$\theta^{\mathrm{SDF}}=(\alpha, \beta)$ are the coefficients of a linear factor model SDF with $\Psi_t=(\prod_{\tau=0}^t R_{\tau})^{-1}$ \textcolor{darkgreen}{where $R_{\tau}$ follows a \textbf{linear return factor model}}
+\begin{equation}
+	R_{\tau}=1+\alpha_{\tau}+\beta^{\top}F_{\tau}+\epsilon_{\tau}
+\end{equation}
+\textcolor{darkgreen}{where the risk-free rate is the first element of the vector $F_{\tau}$.}
+Plugging these terms into Equation \ref{eq:dlp12_minimization} yields
+\[
+\left( \alpha, \beta \right) 
+= 
+\arg \min_{\alpha, \beta} 
+\sum_{i=1}^N 
+\left( 
+\sum_{t=1}^{T_i}
+\frac{D_{i,t} - C_{i,t}}{\prod_{\tau=0}^t (1 + \alpha_{\tau}+\beta^{\top}F_{\tau}+\epsilon_{\tau}) } 
+\right)^2
+\]
+which \textcolor{darkgreen}{constitutes} a nonlinear least squares optimization problem.
+However, \cite{DLP12} \textbf{interpret their approach as Generalized Method of Moments (GMM) estimator} with $N$ moment conditions and identity weighting matrix where asymptotically the number of underlying investments per portfolio $i$ tends to infinity.
+In our view, this cross-sectional GMM interpretation is both unnecessarily (i) complex and (ii) unrealistic.
+Especially, their GMM derivation (in the internet appendix) takes as starting point a DGP similar to Equation \ref{eq:data_generating_process} but does not show why their nontraditional GMM interpretation is favorable to traditional (and simpler) non-linear least squares as defined, e.g., by \cite{PP97}.
+Instead of using individual funds, they form $N$ \textbf{vintage year portfolios} where they pool all fund cash flows from a given vintage "to lower the effect of idiosyncratic shocks," similar to \cite{FNP12}.
+To obtain standard errors for their coefficient estimates, the authors rely on cross-sectional bootstrapping \textbf{\textcolor{darkgreen}{instead of providing} an asymptotic inference formula}.
+Empirically, the paper draws on the problematic Thomson Venture Economics (TVE) fund-level dataset that exhibits some now well-known data errors as discussed by \cite{HJK14}.
+For VC, they estimate a one-factor model with a market beta factor of 2.73 and an annualized negative alpha of -12.3\%. For BO, one-factor model coefficients are 1.31 for the market factor, and the annualized alpha is again negative with -4.8\%.
+These highly negative alpha terms can be at least partially attributed to the aforementioned data errors in the TVE dataset.
+However, surprisingly from a methodological viewpoint, both alpha terms must be considered insignificantly different from zero due to high bootstrap standard errors.
+In summary, we still consider the \cite{DLP12} paper a seminal contribution to the PE literature as it proposes the first semiparametric SDF estimator for typical PEF (fund-level) datasets.  
+
+
+\cite{KN16} introduce the Generalized Public Market Equivalent (GPME) framework, which is a new SDF-based performance evaluation methodology for PE fund-level cash flows.
+The general idea is to first estimate a given SDF just on a public market dataset and then, in the second step, evaluate PEF cash flows by the traditional NPV approach from Equation \ref{eq:net_present_value} and \ref{eq:npv=zero}
+\[
+GPME = \sum_t \Psi_t^{\mathrm{public}} CF_t^{\mathrm{PEF}}
+\]
+where $\Psi_t^{\mathrm{public}}$ is a generic SDF estimated on public data and $CF_t^{\mathrm{PEF}}$ are all cash flows of a (liquidated) PEF.
+\textcolor{darkgreen}{Here, GPME is simply our DNCF from Equation \ref{eq:net_present_value}.}
+However, their paper also offers one new and important methodical insight for SDF estimation using PE cash flow data.
+They are the first to realize that for asymptotic statistical inference, a \textbf{spatial heteroskedasticity and autocorrelation consistent (SHAC)}\footnote{\textcolor{darkgreen}{A SHAC estimator will be later applied and defined by Equation \ref{eq:hac}.}} covariance matrix estimator that incorporates the economic distance between PE fund pairs proves very useful.
+To estimate their exponentially affine SDF, they apply a time-series Generalized Method of Moments (GMM) approach where they, for simplicity, assume an identity weighting matrix.
+This corresponds to a very similar minimization problem as the one from Equation \ref{eq:dlp12_minimization}, which is used by \cite{DLP12}. 
+They form public replication portfolios that mimic PEF contributions and distributions patterns and use these synthetic cash flows for SDF estimation. 
+Interestingly, they claim that an exponentially affine SDF is especially suited for "irregularly spaced, skewed, and endogenously timed payoffs" of VC investments.
+Moreover, they state: "With irregularly spaced and skewed VC cash flow data, \textbf{linear factor models are not readily applicable} without strong distributional assumptions."
+Empirically, the authors calculate their GPME metric for VC funds from the Preqin fund-level dataset and start-ups from Sand Hill Econometrics' deal-level data.
+Unfortunately, they relinquish to also test a linear factor model as an alternative to their exponential affine SDF to underpin their strong allegation about the correct SDF choice.
+It is also not clear why they cannot use a public SDF that has been estimated on a traditional public stock return (not cash flow) dataset \textcolor{darkgreen}{(comparable to the \cite{GSW19} approach, which is discussed in the next paragraph)}.
+From this perspective, their non-traditional GMM estimator and the construction of the public benchmark portfolio cash flows seem unnecessarily complicated and artificial.
+\textcolor{darkgreen}{
+	In a more recent (unpublished) working paper \cite{KN22} extend their GPME methodology to obtain risk-adjusted benchmarks for single PE funds.
+	\cite{NSS22} adapt the GPME method to estimate their so-called Credit Market Equivalent which relies on an SDF that prices the bonds issued by buyout-held companies.
+	Interestingly, \cite{NSS22} find that public credit market factors can better price PE cash flows than the traditional public stock market factors.
+	Similarly, \cite{GJ21} test the GPME approach using a CAPM SDF and a "Discount Rate News" SDF.
+	Although we think pricing PE cash flows instead of public market cash flows is the more natural approach (as \cite{GJ21} and \cite{NSS22} did), \cite{KN16,KN22} still mark highly significant contributions to the PE-related SDF literature.
+}
+
+
+The \textcolor{darkgreen}{(unpublished)} working paper of \cite{GSW19} evaluates PE fund-level cash flows by means of asset pricing tests for "off-the-shelf" SDFs.
+They examine SDFs that shall be presumably better aligned with typical PE investor preferences than traditional factor models like \cite{FF15}.
+Specifically, they test two leading consumption-based asset pricing models: the long-run risk model of \cite{BY04} and the external habit formation model of \cite{CC99} among other simpler SDF alternatives.
+Notably, in the first place, the authors take SDF parameters from the existing literature rather than estimating their own SDF coefficients.
+This is comparable to the \cite{KN16} generalized PME framework, which also does not uses any PE cash flows for SDF estimation.
+Their SDF can thus be considered as universal SDFs that can price all cash flows in a given economy (not just PE cash flows specifically).
+Just in their additional results section \cite{GSW19} "are trying to 'fine-tune' the off-the-shelf SDFs to reduce the benchmark pricing errors".
+Empirically, they obtain unrealistically large negative risk-free rate parameters when fitting SDFs to fund cash flows from the Burgiss database.
+Most interestingly, they claim to "show that cash flow NPV-based measures of performance for long-duration investment vehicles like PE funds are biased relative to per-period abnormal return estimates."
+In other words, they criticize asset pricing tests that are based on our general NPV-equal-to-zero condition $NPV = \mathbb{E} \left[ DNCF \right] = 0$ from Equation \ref{eq:npv=zero}. 
+Their derived bias term is non-zero if there exits any auto-correlation in the time-series of (unobserved) pricing errors $e_t = \Psi_t R_t - 1$ were $\Psi_t$ is a SDF and $R_t$ is the latent periodic PE return.
+Here they assume a data generating process similar to Equation \ref{eq:data_generating_process}, \textcolor{darkgreen}{which is used by \cite{ACGP18}}.
+To better understand their "compounding error" \textbf{small-sample bias}, it is important to mention that in small samples, we may measure a nonzero autocorrelation for some error terms even if this effect vanishes asymptotically and the true expected autocorrelation is zero.
+So, we generally agree that asset pricing tests for PE cash flow datasets are always weaker than standard time-series asset pricing tests that could draw on the latent true return time-series of PE returns.
+Moreover, their idea to \textbf{price the difference between PE cash flows and a suitable public replication strategy} instead of just PE cash flows (as a resolution of their bias issue) provides a link to our PEF replication Section \ref{sec:pef_replication}.
+
+
+Finally, the deal-level working paper of \cite{B14} also uses a company dataset provided by CEPRES like \cite{FNP12}.
+His \textbf{non-linear least-squares} approach minimizes the distance between expected and observed deal dividends.
+The derivation of these expected dividends seems to be more complex than necessary since it involves some auxiliary intermediate steps to match the cash flow dates between expected dividends and observed dividends.
+Fortunately, this matching of cash flow dates is not necessary for a traditional SDF approach since an SDF naturally moves cash flows in time. 
+Probably, he did not choose the basic SDF formula, exemplified by Equation \ref{eq:net_present_value}, to reuse parts of the cash flow dynamics model from the \cite{BKW10} paper.
+His simpler semiparametric estimators described in \cite{B16a,B16b}, which likely originated from this \cite{B14} working paper, spare to define these complex expected dividends.
+In contrast, these published papers rely on rather general SDF identities and need assumptions like logarithmic utility \citep{B16a} or the certainty equivalent form of the CAPM \citep{B16b} for reaching more meaningful results.
+Too specific assumptions, of course, always impair the universality of any given estimation approach.
+\textcolor{darkgreen}{
+	Finally, the empirical results of \cite{B16a} which indicate annualized alphas of 13-18\% (and market beta factors of 3.3 and 3.6) for VC deals seem surprisingly high.
+}

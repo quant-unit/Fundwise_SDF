@@ -1,0 +1,201 @@
+\section{Extremum estimators}
+
+In our exposition of the semiparametric and parametric estimation approaches, we follow a standard reference on the asymptotic theory of so-called extremum estimators \citep{NM94}. 
+Here, we choose Maximum Likelihood Estimation (MLE) as the most common example of a parametric extremum estimator\footnote{\cite{A97} summarizes R.A. Fisher's introduction of MLE in the years 1912-1922.}.
+Generalized Method of Moments (GMM) will serve as a general example of a semiparametric extremum estimator \citep{H82,H12}.
+Note that semiparametric (extremum) estimators could be used to estimate a parametric model, but parametric (extremum) estimators cannot be used to estimate semiparametric models since a semiparametric model does not specify a probability law for the data.
+
+
+\begin{definition}
+	\label{def:extremum_estimator}
+	Extremum estimator \cite[Equation 1.1]{NM94}: \\
+	An estimator $\hat{\theta}$ is an extremum estimator if there is an objective function $Q_n(\theta)$ such that
+	\[
+	\hat{\theta} = \max_{\theta} \ Q_n(\theta)
+	\]
+	for $\theta \in \Theta$ where $\Theta$ is the set of all possible parameter values.
+\end{definition}
+
+In the case of MLE, we have
+\[
+Q_n(\theta^{\mathrm{MLE}}) = n^{-1} \sum_{i=1}^n \ln \left[ \mathrm{pdf} (x_i | \theta^{\mathrm{MLE}}) \right]
+\]
+where $x$ is a i.i.d. data vector and this data follows a probability density function $\mathrm{pdf} (x_i | \theta_0^{\mathrm{MLE}})$ where $\theta_0^{\mathrm{MLE}}= \left\{ \beta_0^{\mathrm{P}}, \gamma_0^{\mathrm{P}} \right\}$ is the correct parameter vector (to generate $x$).
+So the statistician has to know (or guess) the population probability law that governs $x$ in advance.
+For distributions that are supposed to be thick-tailed \cite{Taleb20} vigorously recommends parametric approaches because semi- or non-parametric models too much rely on the sample mean (in the fat-tailed case).
+
+For GMM, we have to instead assume that there exist a ``moment condition" vector $g(x, \theta^{\mathrm{GMM}}) \in \mathbb{R}^m$ such that the population moments satisfy
+\[
+z := \mathbb{E} \left[ g(x, \theta_0^{\mathrm{GMM}}) \right]=0
+\]
+where $z \in \mathbb{R}^m$ is called the vector of expected population moments.
+Here, $x$ is the data random variable, $g$ a known vector-valued function (``moment function") and $\theta_0^{\mathrm{GMM}}$ is the true but unknown parameter.
+Then a GMM estimator minimizes a squared Euclidean distance of sample moments and their population counterparts (that are expected to be zero). 
+Let us define this vector of sample moments minus the vector of expected population moments as
+\[
+v := n^{-1} \sum_{i=1}^n g(x_i, \theta^{\mathrm{GMM}}) - z
+\]
+where  $v \in \mathbb{R}^m$ and $z$ has just zero components.
+Then the GMM objective function is
+\begin{equation}
+	\label{eq:GMM_objective_function}
+	Q_n(\theta^{\mathrm{GMM}}) = - v^{\top} \hat{W} v
+\end{equation}
+where $\hat{W} \in \mathbb{R}^{m \times m}$ is a positive-semidefinite matrix so that $(v^{\top} \hat{W} v)^{1/2}$ is a measure of the distance of $v$ and zero.
+However, this weighting matrix $\hat{W}$ has to be also estimated and thus can be perceived as an auxiliary parameter, which mainly controls the asymptotic estimator variance, and can be optimized in later steps.
+Thus, in the case of GMM, $\beta^{\mathrm{SP}}=\theta^{\mathrm{GMM}}$ and $\gamma^{\mathrm{SP}} = \hat{W}$.
+When we, instead of estimating $\hat{W}$, assume an identity matrix $I \in ^{m \times m}$ we arrive at $-v^{\top} I v = - v^{\top} v = - \sum_{j=1}^m (v_j)^2$.
+Note that we just use the minus sign in Equation \ref{eq:GMM_objective_function} to turn the minimization problem into a maximization problem to comply with the Definition \ref{def:extremum_estimator} of an extremum estimator.
+
+A Least Mean Distance (LMD) estimator can be perceived as a simpler alternative to a GMM approach \cite[Equation 7.1]{PP97}.
+In the LMD case, the objective function is
+\begin{equation}
+	\label{eq:LMD_objective_function}
+	Q_n(\theta^{\mathrm{LMD}}) = - n^{-1} \sum_{i=1}^n g(x_i, \theta^{\mathrm{LMD}})
+\end{equation}
+where we just have a one-dimensional moment function $g(x_i, \theta^{\mathrm{LMD}}) \in \mathbb{R}^1$.
+We receive a nonlinear least squares estimator when we specify the loss function $g$ in Equation \ref{eq:LMD_objective_function} according to
+\begin{equation}
+	\label{eq:NLS_moment_function}
+	g(x_i, \theta^{\mathrm{NLS}}) = \left[ y_i - f(x_i, \theta^{\mathrm{NLS}}) \right]^2
+\end{equation}
+where $f(.) \in \mathbb{R}^1$ is any nonlinear function, and the dependent variable $y_i$ is usually equal to zero in the SDF context since it corresponds to the expected pricing error.
+
+Given the very general Definition \ref{def:extremum_estimator} of extremum estimators, it is reasonable that many estimators fall into this category (e.g., ordinary least squares, nonlinear least squares, minimum distance, M-estimators, MLE, GMM).
+Fortunately, we can prove in the following subsection that all these extremum estimators share the desirable properties of consistency and asymptotic normality; however, efficiency is harder to obtain and cannot generally be expected.
+To understand the econometric literature's focus on GMM approaches, we have to know that many extremum estimators can be formulated as special cases of a GMM estimator (even MLE).
+Thus, the proofs and properties of GMM estimators are valid for many other well-known estimators. 
+
+\section{Asymptotic theory for extremum estimators}
+\label{sec:asymptotics_theory_extremum_estimators}
+
+Let us now derive important asymptotic results for extremum estimators as defined by Definition \ref{def:extremum_estimator}.
+Asymptotic always refers to the situation when the size of the dataset tends to infinity $n \rightarrow \infty$.
+Again, we follow \cite{NM94} in their exposition and start with consistency which is considered the most basic asymptotic property.
+Consistency entails that the estimator $\hat{\theta}$ converges in probability to the true parameter value $\theta_0$ as $n \rightarrow \infty$ (for all possible true values).
+It corresponds to the notion that a consistent estimator shall generate asymptotically unbiased parameter estimates.
+
+\begin{definition}
+	\label{def:uniform_convergence_probability}
+	Uniform convergence in probability \cite[Section 2.1]{NM94}:
+	$\hat{Q}_n$ converges uniformly in probability to $Q_0$ means
+	\[
+	\sup_{\theta \in \Theta} \left| \hat{Q}_n(\theta) - Q_0(\theta) \right| \xrightarrow{p} 0
+	\]
+	as $n \rightarrow \infty$.
+\end{definition}
+
+\begin{theorem}
+	\label{theo:consistency}
+	Consistency \citep[Theorem 2.1]{NM94}: \\
+	If there is a function $Q_0$ such that 
+	\begin{enumerate}
+		\item Identification: $Q_0$ is uniquely maximized at $\theta_0$,
+		\item Boundedness: $\Theta$ is compact,
+		\item Continuity: $Q_0$ is continuous,
+		\item Uniform convergence: $\hat{Q}_n$ converges uniformly in probability to $Q_0$,
+	\end{enumerate}
+	then $\hat{\theta} \xrightarrow{p} \theta_0$ as $n \rightarrow \infty$.
+\end{theorem}
+
+Let us briefly analyze the conditions of Theorem \ref{theo:consistency} in reverse order.
+Points 3 and 4 are usually referred to as ``the standard regularity conditions" which "will typically be satisfied when moments of certain functions exist and there is some continuity in $\hat{Q}_n$ or in the distribution of the data" \cite[p. 2123]{NM94}.
+Uniform convergence in probability, as introduced by Definition	\ref{def:uniform_convergence_probability} corresponds to applying a uniform law of large numbers (ULLN).
+Thus, we just have to find a valid ULLN for a given (potentially non-i.i.d.) data generating process\footnote{Even for very complex data generating processes and random functions, these ULLN usually exist. Their technical derivation based on stochastic equicontinuity is then just of secondary importance for us \cite[Section 2.7]{NM94}.}.
+However, there are also cases where no ULLN can be applied and $\hat{Q}_n(\theta)$ may not converge to a limiting objective function $Q_0(\theta)$ as $n \to \infty$ because the underlying data generating process is not well-behaved enough.
+Continuity is a rather weak condition as even non-continuous functions $\hat{Q}_n$ can have a continuous limit when the discontinuities are smoothed out by the data distribution \cite[Section 7]{NM94}.
+In the case of finite-dimensional parameters, compactness of the parameter space $\Theta$ is satisfied if we can find for each component an (arbitrary) lower and upper bound\footnote{Ruling out infinite parameter values shall be enough. Moreover, \cite[Section 2.6]{NM94} show than we even can drop the compactness condition if $\hat{Q}_n(\theta)$ is a concave function.}.
+Next, let us investigate exact identification, which is a necessary but not a sufficient condition for point 1 of Theorem \ref{theo:consistency}.
+Exact identification entails to prove $Q_0(\theta) < Q_0(\theta_0)$ for $\theta \neq \theta_0$.
+A necessary order condition for moment-condition-based estimation procedures like GMM is that the number of moment conditions is greater or equal than the length of the parameter vector.
+For GMM-like estimators, $G_0(\theta)$ shall constitute an exactly- or over-identified system but never an under-identified system of equations.
+If there are fewer moments than parameters, then there usually exist many exact solutions to the system.
+Practically, many empirical researchers assume Theorem \ref{theo:consistency} to hold without formally proving its four underlying requirements but rather look for more "primitive" conditions that are easier to check \cite[pp. 2122]{NM94}.
+
+% asymptotic normality
+Next, let us derive the asymptotic normality of extremum estimators.
+
+\begin{definition}
+	Asymptotically linear estimator \cite[Equation 3.3]{NM94}: \\
+	An estimator $\hat{\theta}$ is called asymptotically linear if there is a function $\gamma(x)$ such that
+	\[
+	\sqrt{n} \left( \hat{\theta} - \theta_0 \right) = \sum_{i=1}^n \frac{\gamma(x_i)}{\sqrt{n}} + o_p(1)
+	\]
+	where $\mathbb{E} \left[ \gamma(x) \right]=0$, $\mathbb{E} \left[ \gamma(x) \gamma(x)^{\top} \right]$ exists, and the remainder term $o_p(1)$ denotes a random vector that converges in probability to zero. 
+	$\gamma(x)$ is called influence function.
+\end{definition}
+
+Asymptotic normality of $\hat{\theta}$ then results from the central limit theorem applied to $\sum_{i=1}^n \frac{\gamma(x_i)}{\sqrt{n}}$ where the asymptotic variance is just determined by the variance of $\gamma(x)$.
+
+\begin{theorem}
+	\label{theo:asymptotic_normality_extremum}
+	Asymptotic normality for extremum estimators \cite[Theorem 3.1]{NM94}: \\
+	Suppose $\hat{\theta}$ is an extremum estimator as by Definition \ref{def:extremum_estimator} and $\hat{\theta}$ is consistent in the sense of Theorem \ref{theo:consistency}.
+	Moreover,
+	\begin{enumerate}
+		\item $\theta_0$ lies in the interior of $\Theta$,
+		\item $\hat{Q}_n$ is twice continuously differentiable in a neighborhood $N$ of $\theta_0$,
+		\item $\sqrt{n} \nabla_{\theta} \hat{Q}_n(\theta_0) \xrightarrow{d} \mathcal{N} (0,\Lambda)$,
+		\item the Hessian matrix $H$ exists and is continuous at $\theta_0$ and \\ 
+		$\sup_{\theta \in N} \left| \left| \nabla_{\theta \theta} \hat{Q}_n(\theta) - H(\theta) \right| \right| \xrightarrow{p} 0$, 
+		\item the true Hessian matrix $H=H(\theta_0)$ is nonsingular.
+	\end{enumerate}
+	Then
+	\[
+	\sqrt{n} \left( \hat{\theta} - \theta_0 \right) \xrightarrow{d} \mathcal{N} \left( 0, \Sigma \right)
+	\]
+	with covariance matrix $\Sigma = H^{-1} \Lambda H^{-1}$ as $n \rightarrow \infty$.
+\end{theorem}
+
+Note that \cite[Theorem H.1]{PP97} describe the covariance matrix as $\Sigma = H^{-1} \Lambda (H^{-1})^{\top}$ which is equivalent to the above theorem if $H$ is symmetric. 
+Indeed, $H$ is symmetric if the second partial derivatives of $\hat{Q}_n$ are continuous (as assumed by point two of Theorem \ref{theo:asymptotic_normality_extremum}).
+Theorem 3.2 and equation 5.5 in \cite{NM94} show equivalent expressions for $\Sigma$ for general minimum distance estimators (like GMM) that rely on the covariance matrix of the moment vector
+\[
+\Omega = \mathbb{E} \left[ g(x,\theta_0) g(x,\theta_0)^{\top} \right]
+\]
+and the Jacobian matrix of the moment vector
+\[
+G = \mathbb{E} \left[ \nabla_{\theta} g(x, \theta_0) \right]
+\]
+then
+\[
+\Sigma^{(\mathrm{GMM})} = 
+\left( G^{\top} W G \right) ^{-1}
+G^{\top} W \Omega W G
+\left( G^{\top} W G \right) ^{-1}
+\]
+For MLE, $\Sigma$ is the inverse of the Fisher information matrix, which is defined as
+\begin{equation}
+	\label{eq:fisher_information_matrix}
+	J = \mathbb{E} \left\{ \nabla_{\theta} \ln \mathrm{pdf} (x | \theta_0^{\mathrm{MLE}}) \left[ \nabla_{\theta} \ln \mathrm{pdf} (x | \theta_0^{\mathrm{MLE}}) \right]^{\top} \right\}
+\end{equation}
+which means $\Sigma^{(\mathrm{MLE})} = J^{-1}$.
+
+% asymptotic variance estimation
+Empirical estimates of $\Sigma$ are ultimately used to construct asymptotic confidence intervals for the estimated parameter vector $\hat{\theta}$.
+Here, the diagonal elements of $\Sigma$ correspond to the asymptotic parameter variances that are necessary to calculate confidence intervals which are just quantiles of a normal distribution.
+Practically, we apply so-called plug-in estimators where we replace expected values by sample averages and the unknown $\theta_0$ by our parameter estimate $\hat{\theta}$.
+Next, the Hessian $\nabla_{\theta \theta}$ and Jacobian $\nabla_{\theta}$ terms can be numerically approximated if these derivatives do not exist in closed-form \citep{NW06}.
+However, several estimation and approximation methods might result in different empirical estimates even though they are all asymptotically equivalent (under correct specification, i.e., all assumptions are true). 
+If the model is not correctly specified one should use the (more robust) general form $\Sigma = H^{-1} \Lambda H^{-1}$ since some simplifications may not be valid\footnote{Especially, $\Sigma = H^{-1} \Lambda H^{-1}$ is valid for MLE with a misspecified probability distribution.}.
+Consequently, the following theorem states how to generally estimate $\hat{\Sigma}$ for extremum estimators.
+
+\begin{theorem}
+	Consistent asymptotic variance estimation \cite[Theorem 4.1]{NM94}: \\
+	If the hypotheses of Theorem \ref{theo:asymptotic_normality_extremum} are satisfied, i.e., $\hat{H}=\nabla_{\theta \theta} \hat{Q}_n(\hat{\theta})$ and $\hat{\Lambda} \xrightarrow{p} \Lambda$, then $\hat{H^{-1}} \hat{\Lambda} \hat{H^{-1}}  \xrightarrow{p} H^{-1} \Lambda H^{-1}$ as $n \rightarrow \infty$.
+\end{theorem}
+
+% efficiency
+Next, let us analyze asymptotic efficiency, which compares the asymptotic variance of asymptotically normal estimators.
+One (consistent) estimator is efficient relative to another (consistent) estimator if it has at least as small asymptotic variance for all true parameter values.
+The efficient estimator is "more precise" in the sense that its parameter estimates come with smaller asymptotic confidence intervals, which is desirable in empirical applications.
+Specifically, we motivate two of the most important efficiency results:
+(1) efficiency of MLE and (2) the optimal weighting matrix of minimum distance estimators.
+Although MLE is not always efficient (due to so-called "superefficient" estimators), it is efficient in the highly relevant class of GMM estimators that includes method of moments, least squares, and many more.
+In their Theorem 5.1, \cite{NM94} derive that the inverse of the Fischer information matrix is the lower bound on the asymptotic variance of a GMM estimator. 
+Specifically, they show that $\Sigma^{(\mathrm{GMM})} - \Sigma^{(\mathrm{MLE})}$ is positive semidefinite with $\Sigma^{(\mathrm{MLE})}=J^{-1}$ and the Fisher information matrix $J$ is given by Equation \ref{eq:fisher_information_matrix}.
+In their Theorem 5.2, \cite{NM94} characterize the most efficient weighting matrix $W$ for minimum distance estimators:
+If the covariance matrix of the moment vector $\Omega$ is nonsingular, a minimum distance estimator with $W=\mathrm{plim}(\hat{W})=\Omega^{-1}$ is asymptotically efficient in the class of minimum distance estimators.
+
+In summary, this section introduced the assumptions necessary to obtain asymptotically valid standard error estimates for the parameter vector of an extremum estimator.
+As the asymptotic covariance matrix $\Sigma$ is normally distributed, it is straightforward to calculate (asymptotic) confidence intervals based on an appropriate empirical estimate for $\hat{\Sigma}$.
