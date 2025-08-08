@@ -97,7 +97,7 @@ The authors alone are responsible for the content and writing of the paper.
 
 
 \abstract{
-	This paper proposes an improved stochastic discount factor estimation methodology suited for fund-level cash flows of private equity funds and other complex, non-traded cash flow streams.
+	This paper proposes an improved stochastic discount factor estimation methodology suited for fund-level cash flows of private equity funds and other pooled, non-traded cash flow streams.
 	The asymptotic inference framework for our semiparametric nonlinear least squares estimator draws on a spatial notion, i.e., the idea that the economic distance between distinct private equity funds can be measured.
 	The empirical and Monte Carlo simulation results indicate (i) that our method can improve the popular Generalized Method of Moments approach of \cite{DLP12}, but (ii) that estimator variance for typical data sizes is still high.
 	Thus, we conjecture that traditional semiparametric extremum estimators like the one described by us shall be exclusively used for single-factor models until considerably more vintage year information for private equity funds is available.
@@ -270,7 +270,9 @@ Most interestingly, they claim to ``show that cash flow NPV-based measures of pe
 In other words, they criticize asset pricing tests that are based on a general NPV-equal-to-zero condition (cf.\ Equation \ref{eq:basic_pricing_relation}).
 Their derived bias term is non-zero if there exits any auto-correlation in the time-series of (unobserved) pricing errors $e_t = \Psi_t R_t - 1$ were $\Psi_t$ is a SDF and $R_t$ is the latent periodic PE return.
 Here they assume a data generating process similar to Equation \ref{eq:data_generating_process}, which is used by \cite{ACGP18}.
-To better understand their ``compounding error" \textbf{small-sample bias}, it is important to mention that in small samples, we may measure a nonzero autocorrelation for some error terms even if this effect vanishes asymptotically and the true expected autocorrelation is zero.
+\textcolor{red}{
+	To better understand their ``compounding error" \textbf{small-sample bias}, it is important to mention that in small samples, we may measure a nonzero autocorrelation for some error terms even if this effect vanishes asymptotically and the true expected autocorrelation is zero.
+	}
 So, we generally agree that asset pricing tests for PE cash flow datasets are always weaker than standard time-series asset pricing tests that could draw on the latent true return time-series of PE returns.
 Moreover, their idea to \textbf{price the difference between PE cash flows and a suitable public replication strategy} instead of just PE cash flows (as a resolution of their bias issue) is picked up by the quadratic hedging strategies derived by \cite{T19}.
 
@@ -304,14 +306,14 @@ From asset pricing theory, we know that we can use a stochastic discount factor 
 \begin{equation}
 	\label{eq:deal_pricing}
 	\mathbb{E} \left[ 
-	\epsilon_{i,j}
+	\delta_{i,j}
 	\left| \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right.
 	\right] = 0
 	\quad \forall \ i,j
 \end{equation}
 where we denote the deal-level pricing error by
 \begin{equation}
-	\epsilon_{i,j} :=
+	\delta_{i,j} :=
 	\label{eq:deal_pricing_error}
 	\mathrm{Inv}_{i,j} +
 	\sum_k^K
@@ -334,20 +336,22 @@ For the pooled, fund-level cash flow stream, we assume that the true fund valuat
 to acknowledge the stale-pricing problem inherent to private capital fund net asset values (NAVs).
 In other words, we only trust fund cash flows but not fund NAVs in private markets\footnote{In the empirical section, we empirically treat the most recent NAV as the final distribution cash flow for non-liquidated funds.}.
 
-This realistic setting introduces problems for pricing approaches like \cite{DLP12} since we cannot easily price pooled fund-level cash flow streams (even for fund inception date $\tau = \min_j t_{i,j}^{\mathrm{Inv}}$).
+In this realistic setting, the absence of observable market valuations considerably contributes to the difficulty of our pricing problem.
+However, also the existence of only pooled cash flows, instead of granular deal-by-deal cash flows, introduces issues for pricing approaches like \cite{DLP12} that discount to the fund inception date (see Equation \ref{eq:dlp12_minimization}).
+In the following, we will demonstrate why we cannot easily price pooled fund-level cash flow streams without introducing \textbf{inevitable bias terms} (even for fund inception date $\tau = \min_j t_{i,j}^{\mathrm{Inv}}$).
 Generally, all deal-level cash flows will produce the following ``bias term"
 \begin{equation}
 	\label{eq:deal_level_bias}
 	\mathbb{E} \left[ 
 	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}}
-	\epsilon_{i,j}
+	\delta_{i,j}
 	\left| \mathcal{F}_{\tau} \right.
 	\right]
 	=
-	\mathrm{Cov} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}}, \ \epsilon_{i,j} \right]
+	\mathrm{Cov} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}}, \ \delta_{i,j} \right]
 	\quad \forall \ \tau < t_{i,j}^{\mathrm{Inv}}
 \end{equation}
-Only for the trivial case of Equation \ref{eq:deal_pricing}, when the investment date coincides with the discounting date $\tau =  t_{i,j}^{\mathrm{Inv}}$, the covariance terms necessarily equal zero.
+Only for the trivial case of Equation \ref{eq:deal_pricing}, where the investment date coincides with the discounting date $\tau =  t_{i,j}^{\mathrm{Inv}}$, the covariance term necessarily equals zero.
 
 For the fund-level cash flows, we therefore introduce the following proposition.
 \begin{proposition}
@@ -363,7 +367,7 @@ For the fund-level cash flows, we therefore introduce the following proposition.
 		\right]
 		=
 		\sum_{j=1}^J
-		\mathrm{Cov} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}}, \ \epsilon_{i,j} \right]
+		\mathrm{Cov} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}}, \ \delta_{i,j} \right]
 		\ \forall \ i
 	\end{equation}
 	with fund inception date $\tau = \ \min_j \mathrm{Inv}_{i,j}$.
@@ -386,7 +390,7 @@ We can simply proof the proposition as follows.
 		\mathbb{E} \left[ 
 		\sum_{j=1}^J
 		\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}}
-		\epsilon_{i,j}
+		\delta_{i,j}
 		\left| \mathcal{F}_{\tau} \right.
 		\right]
 	\end{equation}
@@ -396,13 +400,13 @@ We can simply proof the proposition as follows.
 		\mathbb{E} \left[ 
 		\sum_{j=1}^J
 		\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}}
-		\epsilon_{i,j}
+		\delta_{i,j}
 		\left| \mathcal{F}_{\tau} \right.
 		\right]
 		=
 		\mathbb{E} \left[ 
 		\sum_{j=1}^J
-		\mathrm{Cov} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}}, \ \epsilon_{i,j} \right]
+		\mathrm{Cov} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}}, \ \delta_{i,j} \right]
 		\left| \mathcal{F}_{\tau} \right.
 		\right]
 	\end{equation}
@@ -411,17 +415,18 @@ We can simply proof the proposition as follows.
 		\label{eq:price_pooled_cash_flows_proof_3}
 		\mathbb{E} \left[ 
 		\sum_{j=1}^J
-		\mathrm{Cov} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}}, \ \epsilon_{i,j} \right]
+		\mathrm{Cov} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}}, \ \delta_{i,j} \right]
 		\left| \mathcal{F}_{\tau} \right.
 		\right]
 		=
 		\sum_{j=1}^J
-		\mathrm{Cov} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}}, \ \epsilon_{i,j} \right]
+		\mathrm{Cov} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}}, \ \delta_{i,j} \right]
 	\end{equation}
 \end{proof}
 
 
 \begin{corollary}
+	\label{cor:same_investment_dates}
 	If and only if all deal investment dates coincide with the fund inception date, i.e., $\mathrm{Inv}_{i,j} = \min_j \mathrm{Inv}_{i,j} \forall j$, we have
 	\begin{equation}
 		\label{eq:price_pooled_cash_flows_corollary}
@@ -434,21 +439,22 @@ We can simply proof the proposition as follows.
 		=
 		0
 	\end{equation}
-	for the standard case where we do not assume independence between $\Psi$ and $\epsilon_{i,j}$.
+	for the standard case where we do not assume independence between $\Psi$ and $\delta_{i,j}$.
 \end{corollary}
 
 
 \subsection{Least-Mean-Distance estimator}
 \label{sec:fundwise_lmd_estimator}
 
-In this subsection, we provide a new SDF estimator designed to analyzed the effect of different discounting dates $\tau$ on the bias and variance of the SDF parameters.
-In the previous subsection, we demonstrated that for a pooled cash flow stream consisting of two or more deals (projects) with different investment start dates no correct discounting date exists.
+In this subsection, we introduce a new SDF estimator designed to analyzed the effect of different discounting dates $\tau$ on the bias and variance of the estimated SDF parameters.
+In the previous subsection, we demonstrated that for a pooled cash flow stream, consisting of at least two deals with different investment start dates, \textbf{no correct discounting date exists}.
+Thus our general idea is to rather average over multiple suitable discounting date candidates $\tau$ than to try to select only one candidate for the ``best" discounting date (which is empirically unknown).
 
-
-The stochastic discount factor $\Psi_{\tau,t}$ can be used to calculate the time-$\tau$ price $P_{\tau,t,i}$ of a \textbf{single} time-$t$ cash flow of any given PE fund $i$
+Henceforth, we assume that the underlying transactions within a private equity fund cannot be distinguished individually, and that only the fund’s total (pooled) cash flows are observable.
+The stochastic discount factor $\Psi_{\tau,t}$ is used to calculate the time-$\tau$ ``price" $P_{\tau,t,i}$ of a \textbf{single} time-$t$ cash flow of any given PE fund $i$
 \begin{equation}
 \label{eq:price}
-P_{\tau,t,i} = \Psi_{\tau,t} \cdot CF_{t,i}
+P_{\tau,t,i} := \Psi_{\tau,t} \cdot CF_{t,i}
 = \frac{\Psi_{t}}{\Psi_{\tau}} \cdot CF_{t,i}
 \qquad \forall \quad \tau,t,i
 \end{equation}
@@ -456,13 +462,13 @@ with multi-period SDF $\Psi_t = \prod_{k=0}^t M_k$.
 As SDFs are commonly parameterized by a vector $\theta \in \mathbb{R}^{p}$, i.e., $\Psi_{t,\tau} \equiv \Psi_{t,\tau} (\theta)$, our goal is to find an estimation method for the optimal $\theta$.
 We denote this optimal/best/true parameter vector as $\theta_0$.
 We call the numerator $\Psi_{t}$ the discount part of the multi-period SDF $\Psi_{\tau,t}$ (used for present value calculations) and the denominator $\Psi_{\tau}$ the compound part (used for future value calculations).
-For each fund $i$ and all points $\tau$ within a common fund lifetime, the empirical pricing error $\epsilon_{\tau,i}$ of \textbf{all} fund cash flows is calculated as time-$\tau$ present value
+For each fund $i$ and all points $\tau$ within a common fund lifetime, the empirical "pricing error" $\epsilon_{\tau,i}$ of \textbf{all} fund cash flows is calculated as time-$\tau$ ``present value"
 \begin{equation}
 \label{eq:pricing_error}
-\epsilon_{\tau,i} = \sum_{t=1}^T P_{\tau,t,i} 
+\epsilon_{\tau,i} := \sum_{t=1}^T P_{\tau,t,i} 
 \qquad \forall \quad \tau,i
 \end{equation}
-
+We use the terms ``price", ``pricing error`" and ``net present value" in quotation marks to acknowledge the theoretical asset pricing problem which can arise for pooled cash flows and has been described in the previous subsection.
 
 
 \iffalse
@@ -512,9 +518,7 @@ This means we introduce a non-zero expected pricing error term on purpose, which
 
 \fi
 
-We are now ready to introduce this paper's main contribution that aims to improve the estimator of \cite{DLP12} in terms of bias and variance.
-\marginpar{\scriptsize Define bias and variance.}
-The following Equation \ref{eq:average_pricing_error} defines the ($w_i$-weighted) average pricing error $\bar{\epsilon}_{i}$ that averages over the set $\mathcal{T}_i$
+To better analyze the impact of different discount date $\tau$ on the estimator's bias and variance, we define the ($w_i$-weighted) average pricing error $\bar{\epsilon}_{i}$ that averages over the set $\mathcal{T}_i$
 \begin{equation}
 \label{eq:average_pricing_error}
 \bar{\epsilon}_{i} =
@@ -579,13 +583,13 @@ As we average over $\mathcal{T}_i$ in Equation \ref{eq:average_pricing_error} we
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.9\textwidth]{Figures/spatial/npvs2.eps}
+	\includegraphics[width=0.9\textwidth]{Figures/spatial/npvs3.eps}
 	\caption{
 		How to calculate and interpret the average pricing error?
 		The time index $t$ is relevant for the net cash flows (black dots).
 		The time index $\tau$ is used for the pricing error, i.e., the sum of discounted net cash flows (blue boxes).
 		The weighted average of these "pricing errors" gives the average pricing error $\bar{\epsilon}$ as defined in Equation \ref{eq:average_pricing_error} (solid blue line).
-		In this example, $\mathrm{card}(\mathcal{T}_{i})=9$, i.e., the number of blue boxes.
+		In this example, $\mathrm{card}(\mathcal{T}_{i})=7$, i.e., the number of blue boxes.
 	}
 	\label{fig:npvs}
 \end{figure}
@@ -594,8 +598,9 @@ As we average over $\mathcal{T}_i$ in Equation \ref{eq:average_pricing_error} we
 \label{sec:cross_sectional_unit}
 
 According to the classical value-additivity assumption in \cite{HR87}, SDF models invariably shall hold for all pooled or unpooled assets (compare to Assumption \ref{ass:linearity}).
-So, in theory, it is not important if the test assets for our SDF are portfolio or individual fund cash flows.
-Practically it makes a difference, and there are arguments both for and against portfolio formation.
+So, in theory, it is not important if the test assets for our SDF are portfolio or individual fund cash flows when the investment dates are the same (see Corollary
+\ref{cor:same_investment_dates}).
+Empirically it makes a difference, and there are arguments both for and against portfolio formation.
 
 In the risk premium literature, portfolio formation mainly helps to attenuate the errors-in-variables bias connected to two-pass asset pricing methods \citep{JNPR19,PRS19}.
 As this is no issue in our case, we could use individual funds.
@@ -1253,7 +1258,7 @@ Secondly, given the high estimator variance revealed in the simulation study, st
 \marginpar{\scriptsize Incorporate fees and carry model to DGP for SDF estimation for PE gross-fee performance}
 
 Finally, we point to the potentially most interesting topic for future research.
-Our simulation study indicates that the small sample bias and variance can be controlled by an appropriate choice for the set $\mathcal{T}$.
+Our simulation study indicates that the estimator's bias and variance can be controlled by an appropriate choice for the set $\mathcal{T}$.
 This set averages the pricing error over multiple discounting dates.
 In simpler terms, an identification method that utilizes a future value concept instead of net present values obtains more favorable results in our case.
 The bias in our simulation study is minimal when the set of discounting dates corresponds to the fund lifetime.
