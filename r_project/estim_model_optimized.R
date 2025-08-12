@@ -1,60 +1,75 @@
-#### estimated model
+#### estimate model
 # 0) Prologue -----
-if(FALSE) {
-  files <- c("prep_preqin.R", "prep_public.R")
-  for(file in files) {
-    source(file)
-    if(sys.nframe() == 0L) rm(list = ls())
+source.externally <- FALSE
+if (source.externally) {
+  
+  if(FALSE) {
+    files <- c("prep_preqin.R", "prep_public.R")
+    for(file in files) {
+      source(file)
+      if(sys.nframe() == 0L) rm(list = ls())
+    }
   }
+  
+  if(sys.nframe() == 0L) rm(list = ls())
+  
+  setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+  getwd()
 }
 
-if(sys.nframe() == 0L) rm(list = ls())
-
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-getwd()
-
 # 1.1) PARAMETERS ----
-export.data <- FALSE
+if (source.externally) {
   
-use.vintage.year.pfs <- TRUE
-use.simulation <- FALSE
-do.cross.validation <- FALSE
-do.cache <- TRUE
-do.parallel <- ifelse(.Platform$OS.type == "windows", FALSE, TRUE)
-
-private.source <- "pitchbook"
-# private.source <- "preqin"
-cutoff <- "" # "_cutoff_2019" # only available for PitchBook (2024-09-28)
-cutoff <- "_cutoff_2021"
-
-#public.filename <- "public_returns" # outdated
-public.filename <- "msci_market_factors"
-#public.filename <- "q_factors"
-#public.filename <- "DebtFactorsEURUSD" # outdated
-#public.filename <- "iBoxxFactorsMIX"
-#public.filename <- "iBoxxFactorsUSD" 
-#public.filename <- "iBoxxFactorsEUR"
-
-
-# CHOICES
-weighting <- "EW"
-weighting <- "FW"
-error.function <- "L1_Ridge"
-#error.function <- "L2_Lasso"
-
-sdf.model <- "linear"
-#sdf.model <- "exp.aff"
-
-max.months <- c(120, 150, 180, 210, 240) # c(10, 20) * 12 # c(12.5, 15, 17.5) * 12
-
-include.alpha.term <- FALSE
-lambdas <- 0
-kernel.bandwidth <- 12
-if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
-cache.folder.tag <- paste0("pitchbook_2023", ifelse(do.cross.validation, "_cv_", "_"))
-cache.folder.tag <- paste0(cache.folder.tag, ifelse(include.alpha.term, "alpha_", ""))
-cache.folder.tag <- paste0(cache.folder.tag, weighting)
-cache.folder.tag
+  export.data <- FALSE
+  
+  use.vintage.year.pfs <- TRUE
+  use.simulation <- TRUE
+  do.cross.validation <- FALSE
+  do.cache <- TRUE
+  do.parallel <- ifelse(.Platform$OS.type == "windows", FALSE, TRUE)
+  
+  private.source <- "pitchbook"
+  # private.source <- "preqin"
+  cutoff <- "" # "_cutoff_2019" # only available for PitchBook (2024-09-28)
+  cutoff <- "_cutoff_2021"
+  
+  #public.filename <- "public_returns" # outdated
+  #public.filename <- "msci_market_factors"
+  public.filename <- "q_factors"
+  #public.filename <- "DebtFactorsEURUSD" # outdated
+  #public.filename <- "iBoxxFactorsMIX"
+  #public.filename <- "iBoxxFactorsUSD" 
+  #public.filename <- "iBoxxFactorsEUR"
+  
+  
+  # CHOICES
+  weighting <- "EW"
+  #weighting <- "FW"
+  #error.function <- "L1_Ridge"
+  error.function <- "L2_Lasso"
+  
+  sdf.model <- "linear"
+  #sdf.model <- "exp.aff"
+  
+  max.months <- c(1, 60, 120, 150, 180, 210, 240, 300, 360) # c(10, 20) * 12 # c(12.5, 15, 17.5) * 12
+  
+  include.alpha.term <- FALSE
+  lambdas <- 0
+  kernel.bandwidth <- 12
+  if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
+  cache.folder.tag <- paste0("pitchbook_2023", ifelse(do.cross.validation, "_cv_", "_"))
+  cache.folder.tag <- paste0(cache.folder.tag, ifelse(include.alpha.term, "alpha_", ""))
+  cache.folder.tag <- paste0(cache.folder.tag, weighting)
+  cache.folder.tag
+  
+  cache.folder.tag <- "20250808_222540_simulated_cashflows_EW"
+  simulation.filename <- paste0("20250808_222540/", cache.folder.tag, ".csv")
+  
+  part.to.keep <- 1
+  no.partitions <- 10
+  
+  data.out.folder <- "data_out_2025"
+}
 
 # 1.2) load data -----
 
@@ -108,10 +123,25 @@ if(!use.simulation) {
   }
   
 } else {
-  df.private.cfs <- read.csv(paste0("data_prepared/simulated_cashflows_", weighting, ".csv"))
+  # df.private.cfs <- read.csv(paste0("data_prepared/simulated_cashflows_", weighting, ".csv"))
+  df.private.cfs <- read.csv(paste0("data_prepared_sim/", simulation.filename))
+  
 }
+
+# split too large data.frames into partitions
+if (no.partitions > 1) {
+  data.table::setDT(df.private.cfs)
+  lev <- unique(df.private.cfs$Fund.ID)
+  part <- data.table::data.table(Fund.ID = lev, partition = as.integer(dplyr::ntile(seq_along(lev), no.partitions)))
+  df.private.cfs <- as.data.frame(part[df.private.cfs, on = "Fund.ID"][partition == part.to.keep])
+  cache.folder.tag <- paste0(cache.folder.tag, "_part", part.to.keep)
+  rm(lev) ; rm(part)
+  df.private.cfs$partition <- NULL
+}
+
 df.private.cfs$Date <- as.Date(df.private.cfs$Date)
 df.private.cfs$Fund.ID <- as.factor(paste(df.private.cfs$Fund.ID, df.private.cfs$type, sep = "_"))
+
 
 to.monthly <- function(df.ss) {
   # fill zero cash flows (necessary for estimation)
@@ -124,7 +154,23 @@ to.monthly <- function(df.ss) {
   return(df.ss)
 }
 
-df.private.cfs <- as.data.frame(data.table::rbindlist(lapply(split(df.private.cfs, df.private.cfs$Fund.ID), to.monthly)))
+if (FALSE) {
+  list.private <- list()
+  i <- 1
+  for (fuid in levels(df.private.cfs$Fund.ID)) {
+    print(i)
+    i <- i + 1
+    df.ss <- df.private.cfs[df.private.cfs$Fund.ID == fuid, ]
+    list.private[[as.character(fuid)]] <- to.monthly(df.ss)
+  }
+}
+
+#split.private <- split(df.private.cfs, df.private.cfs$Fund.ID)
+#system.time(list.private <- lapply(split.private, to.monthly))
+#system.time(df.private.cfs <- as.data.frame(data.table::rbindlist(list.private)))
+system.time(df.private.cfs <- as.data.frame(data.table::rbindlist(lapply(split(df.private.cfs, df.private.cfs$Fund.ID), to.monthly))))
+
+
 df.private.cfs$type <- as.factor(as.character(df.private.cfs$type))
 df.private.cfs$Fund.ID <- as.factor(as.character(df.private.cfs$Fund.ID))
 length(levels(df.private.cfs$type))
@@ -163,14 +209,16 @@ number.of <- function(x) length(table(x))
 aggregate(Vintage ~ type , df0, number.of)
 aggregate(as.character(Fund.ID) ~ type , df0, number.of)
 
-# print summary: funds per vintage
-df1 <- df0
-df1 <- df1[!duplicated(df1$Fund.ID), ]
-df1 <- as.data.frame.matrix(table(df1$Vintage, df1$type))
-df1 <- df1[, colnames(df1) %in% c("BO", "DD", "INF", "MEZZ", "NATRES", "PD", "RE", "VC")]
-df1["Total", ] <- as.integer(colSums(df1))
-print(xtable::xtable(df1, caption = "Number of funds per vintage year.", label = "tab:pitchbook_data"), include.rownames = TRUE)
-rm(df1)
+if (!use.simulation) {
+  # print summary: funds per vintage
+  df1 <- df0
+  df1 <- df1[!duplicated(df1$Fund.ID), ]
+  df1 <- as.data.frame.matrix(table(df1$Vintage, df1$type))
+  df1 <- df1[, colnames(df1) %in% c("BO", "DD", "INF", "MEZZ", "NATRES", "PD", "RE", "VC")]
+  df1["Total", ] <- as.integer(colSums(df1))
+  print(xtable::xtable(df1, caption = "Number of funds per vintage year.", label = "tab:pitchbook_data"), include.rownames = TRUE)
+  rm(df1)
+}
 
 # 2.1) getNPVs function ----
 source("getNPVs.R")
@@ -228,7 +276,7 @@ system.time(
 )
 
 
-# 2.3 Asymptotic gradient hessian -----
+# 2.3) Asymptotic gradient hessian -----
 if(TRUE) {
   res <- optimx::optimx(par, err.sqr.calc, 
                         lambda = lambda,
@@ -465,13 +513,13 @@ iter.run <- function(input.list) {
   }
   if (public.filename == "q_factors") {
     factors <- colnames(df.public)[2:6] # q_factors
-    #factors <- "MKT"
+    factors <- "MKT"
     #factors <- "Alpha"
-    factors <- c(factors, "Alpha")
+    #factors <- c(factors, "Alpha")
     #factors <- c("ALL", factors)
     
     types <- c("PE", "VC", "PD", "RE", "NATRES", "INF") # asset classes
-    #types <- levels(df0$type)
+    if (use.simulation) types <- levels(df0$type)
   }
   if (public.filename %in% bond.files) {
     factors <- c("TERM", "CORP", "HY", "LIQ")
@@ -483,7 +531,7 @@ iter.run <- function(input.list) {
   l <- list()
   for (lambda in lambdas) {
     for(max.month in max.months) {
-      print(paste("Max.M", max.month, "Lambda", lambda))
+      print(paste("Max.M", max.month, "Lambda", lambda, " - ", Sys.time()))
       
       if(do.parallel) {
         cl <- parallel::makeForkCluster(3)
@@ -518,8 +566,8 @@ iter.run <- function(input.list) {
             if ("ALL" %in% factors) break
             if(!(factor %in% names(par))) par[factor] <- 0
           }
-          print(type)
-          print(par)
+          # print(type)
+          # print(par)
 
           if (TRUE) {
             res <- optimx::optimx(par, err.sqr.calc, 
@@ -549,7 +597,7 @@ iter.run <- function(input.list) {
           
           # dependent - kernel bandwidht
           cov <- estim.CoVM(dfx, par=par, indep = FALSE)
-          print(cov)
+          # print(cov)
           for(v in names(cov$SE)) res[, v] <- cov$SE[v]
           res$Wald.p.value.MKT_1 <- cov$Wald.p.value.MKT_1
           
@@ -557,7 +605,7 @@ iter.run <- function(input.list) {
           cov.indep <- estim.CoVM(dfx, par=par, indep = TRUE)
           for(v in names(cov.indep$SE)) res[, paste0(v, ".indep")] <- cov.indep$SE[v]
           
-          print(res)
+          # print(res)
           res$Factor <- factor
           res$Type <- type
           res$max.month <- max.month
@@ -581,7 +629,7 @@ iter.run <- function(input.list) {
       }
       
       if(do.cache & nrow(output) > 0) {
-        cache.path <- paste0("data_out/cache_", paste0(public.filename, "_", cache.folder.tag), "/")
+        cache.path <- paste0(data.out.folder, "/cache_", paste0(public.filename, "_", cache.folder.tag), "/")
         if(!dir.exists(cache.path)) dir.create(cache.path)
         path.cache <- paste0(cache.path, 
                              format(Sys.time() + 2 * 60 * 60, "%Y-%m-%d_%H%M%S"), 
@@ -589,7 +637,7 @@ iter.run <- function(input.list) {
         write.csv(output, path.cache)
       }
       
-      print(output)
+      # print(output)
       l[[paste0(max.month, lambda)]] <- output
       
       if(do.parallel) parallel::stopCluster(cl)
