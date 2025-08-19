@@ -6,7 +6,7 @@ getwd()
 bivar <- function(files, digi=3) {
   l <- list()
   for (file in files) {
-    name <- paste0("data_out_2025/", file, ".csv")
+    name <- paste0("data_out_2025-2/", file, ".csv")
     l[[file]] <- read.csv(name)
   }
   df0 <- data.frame(do.call(rbind, l))
@@ -39,153 +39,194 @@ l <- list()
 ## cross-sectional unit -----
 # vintage year portfolios
 run <- "cache_q_factors_20250808_222540_simulated_cashflows_EW_VYP/"
-l$sl_1$one <-   bivar(paste0(run, "2025-08-12_010504_cached_res")) # 1
-l$sl_60$one <-  bivar(paste0(run, "2025-08-12_010958_cached_res")) # 60
-l$sl_120$one <- bivar(paste0(run, "2025-08-12_011508_cached_res")) # 120
-l$sl_150$one <- bivar(paste0(run, "2025-08-12_012028_cached_res")) # 150
-l$sl_180$one <- bivar(paste0(run, "2025-08-12_012558_cached_res")) # 180
-l$sl_210$one <- bivar(paste0(run, "2025-08-12_013127_cached_res")) # 210
-l$sl_240$one <- bivar(paste0(run, "2025-08-12_013656_cached_res")) # 240
-l$sl_300$one <- bivar(paste0(run, "2025-08-12_014225_cached_res")) # 300
-l$sl_360$one <- bivar(paste0(run, "2025-08-12_014752_cached_res")) # 360
+l$sl_1$one <-   bivar(paste0(run, "2025-08-17_191933_cached_res")) # 1
+l$sl_60$one <-  bivar(paste0(run, "2025-08-17_192506_cached_res")) # 60
+l$sl_120$one <- bivar(paste0(run, "2025-08-17_193052_cached_res")) # 120
+l$sl_150$one <- bivar(paste0(run, "2025-08-17_193646_cached_res")) # 150
+l$sl_180$one <- bivar(paste0(run, "2025-08-17_194249_cached_res")) # 180
+l$sl_210$one <- bivar(paste0(run, "2025-08-17_194859_cached_res")) # 210
+l$sl_240$one <- bivar(paste0(run, "2025-08-17_195514_cached_res")) # 240
+l$sl_300$one <- bivar(paste0(run, "2025-08-17_200140_cached_res")) # 300
+l$sl_360$one <- bivar(paste0(run, "2025-08-17_200816_cached_res")) # 360
+
+# Single duration date instead of date averaging
+l$sl_duration$one <- bivar(paste0(run, "2025-08-18_220836_cached_res")) # duration
+l$sl_duration$one <- bivar(paste0(run, "2025-08-18_222238_cached_res")) # duration (to assure max.month does not matter)
+
+# TODO: Single date
+l$sl_single_date1$one <- bivar(paste0(run, "2025-08-18_224944_cached_res")) # single date
+l$sl_single_date10$one <- bivar(paste0(run, "2025-08-18_225958_cached_res")) # single date
+l$sl_single_date20$one <- bivar(paste0(run, "2025-08-18_231021_cached_res")) # single date
+l$sl_single_date30$one <- bivar(paste0(run, "2025-08-18_232052_cached_res")) # single date
+l$sl_single_date40$one <- bivar(paste0(run, "2025-08-18_233133_cached_res")) # single date
+l$sl_single_date50$one <- bivar(paste0(run, "2025-08-18_234225_cached_res")) # single date
+l$sl_single_date60$one <- bivar(paste0(run, "2025-08-18_235333_cached_res")) # single date
+l$sl_single_date70$one <- bivar(paste0(run, "2025-08-19_000441_cached_res")) # single date
+l$sl_single_date80$one <- bivar(paste0(run, "2025-08-19_001603_cached_res")) # single date
+l$sl_single_date90$one <- bivar(paste0(run, "2025-08-19_002742_cached_res")) # single date
+l$sl_single_date100$one <- bivar(paste0(run, "2025-08-19_003929_cached_res")) # single date
+l$sl_single_date110$one <- bivar(paste0(run, "2025-08-19_005119_cached_res")) # single date
+l$sl_single_date120$one <- bivar(paste0(run, "2025-08-19_010323_cached_res")) # single date
+l$sl_single_date150$one <- bivar(paste0(run, "2025-08-19_011608_cached_res")) # single date
+l$sl_single_date180$one <- bivar(paste0(run, "2025-08-19_012913_cached_res")) # single date
+l$sl_single_date210$one <- bivar(paste0(run, "2025-08-19_014238_cached_res")) # single date
+l$sl_single_date240$one <- bivar(paste0(run, "2025-08-19_015643_cached_res")) # single date
+l$sl_single_date300$one <- bivar(paste0(run, "2025-08-19_021213_cached_res")) # single date
+l$sl_single_date360$one <- bivar(paste0(run, "2025-08-19_022921_cached_res")) # single date
 
 # individual funds (new in 2025: also 1000 iterations)
 run <- "cache_q_factors_20250808_222540_simulated_cashflows_EW/"
 l$sl_1$funds <- bivar(
   c(
-    paste0(run, "2025-08-13_000858_cached_res"),
-    paste0(run, "2025-08-13_011913_cached_res"),
-    paste0(run, "2025-08-13_021810_cached_res"),
-    paste0(run, "2025-08-13_031732_cached_res"),
-    paste0(run, "2025-08-13_041901_cached_res"),
-    paste0(run, "2025-08-13_051818_cached_res"),
-    paste0(run, "2025-08-13_061953_cached_res"),
-    paste0(run, "2025-08-13_072647_cached_res"),
-    paste0(run, "2025-08-13_083327_cached_res"),
-    paste0(run, "2025-08-13_093948_cached_res")
+    paste0(run, "2025-08-17_201954_cached_res"),
+    paste0(run, "2025-08-17_214212_cached_res"),
+    paste0(run, "2025-08-17_230517_cached_res"),
+    paste0(run, "2025-08-18_002926_cached_res"),
+    paste0(run, "2025-08-18_015524_cached_res"),
+    paste0(run, "2025-08-18_032000_cached_res"),
+    paste0(run, "2025-08-18_045107_cached_res"),
+    paste0(run, "2025-08-18_062123_cached_res"),
+    paste0(run, "2025-08-18_075258_cached_res"),
+    paste0(run, "2025-08-18_092457_cached_res")
                         )
   ) # 1
 l$sl_60$funds <- bivar(
   c(
-    paste0(run, "2025-08-13_001431_cached_res"),
-    paste0(run, "2025-08-13_012439_cached_res"),
-    paste0(run, "2025-08-13_022345_cached_res"),
-    paste0(run, "2025-08-13_032312_cached_res"),
-    paste0(run, "2025-08-13_042436_cached_res"),
-    paste0(run, "2025-08-13_052401_cached_res"),
-    paste0(run, "2025-08-13_062548_cached_res"),
-    paste0(run, "2025-08-13_073255_cached_res"),
-    paste0(run, "2025-08-13_083945_cached_res"),
-    paste0(run, "2025-08-13_094617_cached_res")
+    paste0(run, "2025-08-17_202631_cached_res"),
+    paste0(run, "2025-08-17_214902_cached_res"),
+    paste0(run, "2025-08-17_231209_cached_res"),
+    paste0(run, "2025-08-18_003621_cached_res"),
+    paste0(run, "2025-08-18_020219_cached_res"),
+    paste0(run, "2025-08-18_032728_cached_res"),
+    paste0(run, "2025-08-18_045818_cached_res"),
+    paste0(run, "2025-08-18_062852_cached_res"),
+    paste0(run, "2025-08-18_080032_cached_res"),
+    paste0(run, "2025-08-18_093233_cached_res")
   )
 ) # 60
 l$sl_120$funds <- bivar(
   c(
-    paste0(run, "2025-08-13_002013_cached_res"),
-    paste0(run, "2025-08-13_013022_cached_res"),
-    paste0(run, "2025-08-13_022926_cached_res"),
-    paste0(run, "2025-08-13_032905_cached_res"),
-    paste0(run, "2025-08-13_043011_cached_res"),
-    paste0(run, "2025-08-13_052953_cached_res"),
-    paste0(run, "2025-08-13_063210_cached_res"),
-    paste0(run, "2025-08-13_073915_cached_res"),
-    paste0(run, "2025-08-13_084604_cached_res"),
-    paste0(run, "2025-08-13_095310_cached_res")
+    paste0(run, "2025-08-17_203321_cached_res"),
+    paste0(run, "2025-08-17_215615_cached_res"),
+    paste0(run, "2025-08-17_231916_cached_res"),
+    paste0(run, "2025-08-18_004333_cached_res"),
+    paste0(run, "2025-08-18_020916_cached_res"),
+    paste0(run, "2025-08-18_033506_cached_res"),
+    paste0(run, "2025-08-18_050605_cached_res"),
+    paste0(run, "2025-08-18_063634_cached_res"),
+    paste0(run, "2025-08-18_080808_cached_res"),
+    paste0(run, "2025-08-18_094035_cached_res")
   )
 ) # 120
 l$sl_150$funds <- bivar(
   c(
-    paste0(run, "2025-08-13_002637_cached_res"),
-    paste0(run, "2025-08-13_013633_cached_res"),
-    paste0(run, "2025-08-13_023540_cached_res"),
-    paste0(run, "2025-08-13_033535_cached_res"),
-    paste0(run, "2025-08-13_043621_cached_res"),
-    paste0(run, "2025-08-13_053619_cached_res"),
-    paste0(run, "2025-08-13_063914_cached_res"),
-    paste0(run, "2025-08-13_074617_cached_res"),
-    paste0(run, "2025-08-13_085254_cached_res"),
-    paste0(run, "2025-08-13_100035_cached_res")
+    paste0(run, "2025-08-17_204110_cached_res"),
+    paste0(run, "2025-08-17_220413_cached_res"),
+    paste0(run, "2025-08-17_232722_cached_res"),
+    paste0(run, "2025-08-18_005147_cached_res"),
+    paste0(run, "2025-08-18_021703_cached_res"),
+    paste0(run, "2025-08-18_034346_cached_res"),
+    paste0(run, "2025-08-18_051500_cached_res"),
+    paste0(run, "2025-08-18_064528_cached_res"),
+    paste0(run, "2025-08-18_081635_cached_res"),
+    paste0(run, "2025-08-18_094939_cached_res")
   )
 ) # 150
 l$sl_180$funds <- bivar(
   c(
-    paste0(run, "2025-08-13_003314_cached_res"),
-    paste0(run, "2025-08-13_014253_cached_res"),
-    paste0(run, "2025-08-13_024200_cached_res"),
-    paste0(run, "2025-08-13_034214_cached_res"),
-    paste0(run, "2025-08-13_044239_cached_res"),
-    paste0(run, "2025-08-13_054258_cached_res"),
-    paste0(run, "2025-08-13_064634_cached_res"),
-    paste0(run, "2025-08-13_075332_cached_res"),
-    paste0(run, "2025-08-13_090005_cached_res"),
-    paste0(run, "2025-08-13_100819_cached_res")
+    paste0(run, "2025-08-17_204950_cached_res"),
+    paste0(run, "2025-08-17_221259_cached_res"),
+    paste0(run, "2025-08-17_233621_cached_res"),
+    paste0(run, "2025-08-18_010107_cached_res"),
+    paste0(run, "2025-08-18_022604_cached_res"),
+    paste0(run, "2025-08-18_035336_cached_res"),
+    paste0(run, "2025-08-18_052452_cached_res"),
+    paste0(run, "2025-08-18_065519_cached_res"),
+    paste0(run, "2025-08-18_082617_cached_res"),
+    paste0(run, "2025-08-18_095953_cached_res")
   )
 ) # 180
 l$sl_210$funds <- bivar(
   c(
-    paste0(run, "2025-08-13_003953_cached_res"),
-    paste0(run, "2025-08-13_014906_cached_res"),
-    paste0(run, "2025-08-13_024819_cached_res"),
-    paste0(run, "2025-08-13_034853_cached_res"),
-    paste0(run, "2025-08-13_044857_cached_res"),
-    paste0(run, "2025-08-13_054937_cached_res"),
-    paste0(run, "2025-08-13_065353_cached_res"),
-    paste0(run, "2025-08-13_080047_cached_res"),
-    paste0(run, "2025-08-13_090715_cached_res"),
-    paste0(run, "2025-08-13_101603_cached_res")
+    paste0(run, "2025-08-17_205902_cached_res"),
+    paste0(run, "2025-08-17_222224_cached_res"),
+    paste0(run, "2025-08-17_234540_cached_res"),
+    paste0(run, "2025-08-18_011057_cached_res"),
+    paste0(run, "2025-08-18_023540_cached_res"),
+    paste0(run, "2025-08-18_040401_cached_res"),
+    paste0(run, "2025-08-18_053512_cached_res"),
+    paste0(run, "2025-08-18_070539_cached_res"),
+    paste0(run, "2025-08-18_083653_cached_res"),
+    paste0(run, "2025-08-18_101041_cached_res")
   )
 ) # 210
 l$sl_240$funds <- bivar(
   c(
-    paste0(run, "2025-08-13_004632_cached_res"),
-    paste0(run, "2025-08-13_015520_cached_res"),
-    paste0(run, "2025-08-13_025439_cached_res"),
-    paste0(run, "2025-08-13_035531_cached_res"),
-    paste0(run, "2025-08-13_045515_cached_res"),
-    paste0(run, "2025-08-13_055616_cached_res"),
-    paste0(run, "2025-08-13_070118_cached_res"),
-    paste0(run, "2025-08-13_080802_cached_res"),
-    paste0(run, "2025-08-13_091425_cached_res"),
-    paste0(run, "2025-08-13_102348_cached_res")
+    paste0(run, "2025-08-17_210843_cached_res"),
+    paste0(run, "2025-08-17_223217_cached_res"),
+    paste0(run, "2025-08-17_235530_cached_res"),
+    paste0(run, "2025-08-18_012112_cached_res"),
+    paste0(run, "2025-08-18_024543_cached_res"),
+    paste0(run, "2025-08-18_041459_cached_res"),
+    paste0(run, "2025-08-18_054600_cached_res"),
+    paste0(run, "2025-08-18_071627_cached_res"),
+    paste0(run, "2025-08-18_084754_cached_res"),
+    paste0(run, "2025-08-18_102154_cached_res")
   )
 ) # 240
 l$sl_300$funds <- bivar(
   c(
-    paste0(run, "2025-08-13_005315_cached_res"),
-    paste0(run, "2025-08-13_020133_cached_res"),
-    paste0(run, "2025-08-13_030058_cached_res"),
-    paste0(run, "2025-08-13_040210_cached_res"),
-    paste0(run, "2025-08-13_050133_cached_res"),
-    paste0(run, "2025-08-13_060254_cached_res"),
-    paste0(run, "2025-08-13_070854_cached_res"),
-    paste0(run, "2025-08-13_081518_cached_res"),
-    paste0(run, "2025-08-13_092135_cached_res"),
-    paste0(run, "2025-08-13_103133_cached_res")
+    paste0(run, "2025-08-17_211905_cached_res"),
+    paste0(run, "2025-08-17_224251_cached_res"),
+    paste0(run, "2025-08-18_000611_cached_res"),
+    paste0(run, "2025-08-18_013207_cached_res"),
+    paste0(run, "2025-08-18_025621_cached_res"),
+    paste0(run, "2025-08-18_042639_cached_res"),
+    paste0(run, "2025-08-18_055716_cached_res"),
+    paste0(run, "2025-08-18_072803_cached_res"),
+    paste0(run, "2025-08-18_085940_cached_res"),
+    paste0(run, "2025-08-18_103356_cached_res")
   )
 ) # 300
 l$sl_360$funds <- bivar(
   c(
-    paste0(run, "2025-08-13_010004_cached_res"),
-    paste0(run, "2025-08-13_020752_cached_res"),
-    paste0(run, "2025-08-13_030719_cached_res"),
-    paste0(run, "2025-08-13_040849_cached_res"),
-    paste0(run, "2025-08-13_050751_cached_res"),
-    paste0(run, "2025-08-13_060933_cached_res"),
-    paste0(run, "2025-08-13_071614_cached_res"),
-    paste0(run, "2025-08-13_082233_cached_res"),
-    paste0(run, "2025-08-13_092844_cached_res"),
-    paste0(run, "2025-08-13_103918_cached_res")
+    paste0(run, "2025-08-17_213002_cached_res"),
+    paste0(run, "2025-08-17_225403_cached_res"),
+    paste0(run, "2025-08-18_001729_cached_res"),
+    paste0(run, "2025-08-18_014339_cached_res"),
+    paste0(run, "2025-08-18_030734_cached_res"),
+    paste0(run, "2025-08-18_043852_cached_res"),
+    paste0(run, "2025-08-18_060900_cached_res"),
+    paste0(run, "2025-08-18_074008_cached_res"),
+    paste0(run, "2025-08-18_091208_cached_res"),
+    paste0(run, "2025-08-18_104635_cached_res")
   )
 ) # 360
 
 # Aggregate for plotting
 months <- c(1, 60, 120, 150, 180, 210, 240, 300, 360)
+prefix1 <- "sl_"
+prefix2 <- "sl_"
+unit1 <- "one"
+unit2 <- "funds"
+legend.text <- c("Mean Funds", "Mean VYP", "Stdv Funds", "Stdv VYP")
+xlab.text <- "Max Months"
+
+if (FALSE) {
+  prefix2 <- "sl_single_date"
+  unit2 <-  "one"
+  legend.text <- c("Mean VYP: Single Date", "Mean VYP: Average Dates", 
+                   "Stdv VYP: Single Date", "Stdv VYP: Average Datess")
+  xlab.text <- "Single Date / Max Months"
+}
+
+
 df1 <- data.frame(
   months = months,
-  VYP_mean = sapply(months, function(x) (l[[paste0("sl_", x)]]$one$MKT$MKT$Mean)),
-  VYP_sd = sapply(months, function(x) (l[[paste0("sl_", x)]]$one$MKT$MKT$SD)),
-  Funds_mean = sapply(months, function(x) (l[[paste0("sl_", x)]]$funds$MKT$MKT$Mean)),
-  Funds_sd = sapply(months, function(x) (l[[paste0("sl_", x)]]$funds$MKT$MKT$SD))
+  VYP_mean = sapply(months, function(x) (l[[paste0(prefix1, x)]][[unit1]]$MKT$MKT$Mean)),
+  VYP_sd = sapply(months, function(x) (l[[paste0(prefix1, x)]][[unit1]]$MKT$MKT$SD)),
+  Funds_mean = sapply(months, function(x) (l[[paste0(prefix2, x)]][[unit2]]$MKT$MKT$Mean)),
+  Funds_sd = sapply(months, function(x) (l[[paste0(prefix2, x)]][[unit2]]$MKT$MKT$SD))
 )
 df1
 
@@ -202,12 +243,13 @@ if(do.eps) {
 par( mar = c(4.2, 4.2, 1, 1) )
 
 plot(df1$months, df1$VYP_mean, ylim = c(0, 2), type = "b",
-     xlab = "Max Months", ylab = "Mean and Stdv of Estimates")
+     xlab = xlab.text, ylab = "Mean and Stdv of Estimates")
 lines(df1$months, df1$Funds_mean, type = "b", col = "blue")
 lines(df1$months, df1$VYP_sd, type = "b", lty = 3)
 lines(df1$months, df1$Funds_sd, type = "b", lty = 3, col = "blue")
 abline(h=c(0, 1), col="grey")
-legend("topright", bty = "n", legend = c("Mean Funds", "Mean VYP", "Stdv Funds", "Stdv VYP"), 
+legend("topright", bty = "n", 
+       legend = legend.text, 
        col = c("blue", "black"), lty = c(1,1,3,3), cex = 0.8)
 
 if(do.eps){ 
@@ -216,15 +258,15 @@ if(do.eps){
 
 ## Shorter fund lifetime max(5 + 5) ----
 run <- "cache_q_factors_20250808_223358_simulated_cashflows_EW_VYP/"
-l$sl_1$short <-   bivar(paste0(run, "2025-08-13_104842_cached_res")) # 1
-l$sl_60$short <-  bivar(paste0(run, "2025-08-13_105657_cached_res")) # 60
-l$sl_120$short <- bivar(paste0(run, "2025-08-13_110543_cached_res")) # 120
-l$sl_150$short <- bivar(paste0(run, "2025-08-13_111426_cached_res")) # 150
-l$sl_180$short <- bivar(paste0(run, "2025-08-13_112309_cached_res")) # 180
-l$sl_210$short <- bivar(paste0(run, "2025-08-13_113152_cached_res")) # 210
-l$sl_240$short <- bivar(paste0(run, "2025-08-13_114034_cached_res")) # 240
-l$sl_300$short <- bivar(paste0(run, "2025-08-13_114917_cached_res")) # 300
-l$sl_360$short <- bivar(paste0(run, "2025-08-13_115806_cached_res")) # 360
+l$sl_1$short <-   bivar(paste0(run, "2025-08-18_195614_cached_res")) # 1
+l$sl_60$short <-  bivar(paste0(run, "2025-08-18_200649_cached_res")) # 60
+l$sl_120$short <- bivar(paste0(run, "2025-08-18_201811_cached_res")) # 120
+l$sl_150$short <- bivar(paste0(run, "2025-08-18_203005_cached_res")) # 150
+l$sl_180$short <- bivar(paste0(run, "2025-08-18_204205_cached_res")) # 180
+l$sl_210$short <- bivar(paste0(run, "2025-08-18_205414_cached_res")) # 210
+l$sl_240$short <- bivar(paste0(run, "2025-08-18_210639_cached_res")) # 240
+l$sl_300$short <- bivar(paste0(run, "2025-08-18_211921_cached_res")) # 300
+l$sl_360$short <- bivar(paste0(run, "2025-08-18_213309_cached_res")) # 360
 
 ## High Beta, Negative Alpha ------
 # SL (Beta 2.5, Alpha -0.0025) # -3% p.a. Alpha

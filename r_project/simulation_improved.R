@@ -328,15 +328,17 @@ system.time(
 
 
 ### Big V: 20 Funds, vintages 1967-2005
+
+
 system.time(
   create.simulation(
     no.deals=15,
     investment.period=5,
-    max.holding.period=20,
+    max.holding.period=10,
     alpha=0,
     beta=1,
     no.samples=1000,
-    no.funds=10,
+    no.funds=20,
     min.vin=1967,
     max.vin=2005,
     stdvs=0.2,

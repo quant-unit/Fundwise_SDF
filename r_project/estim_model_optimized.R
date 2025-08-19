@@ -1,7 +1,8 @@
 #### estimate model
 # 0) Prologue -----
-source.externally <- FALSE
-if (source.externally) {
+source.internally <- FALSE
+
+if (source.internally) {
   
   if(FALSE) {
     files <- c("prep_preqin.R", "prep_public.R")
@@ -18,7 +19,7 @@ if (source.externally) {
 }
 
 # 1.1) PARAMETERS ----
-if (source.externally) {
+if (source.internally) {
   
   export.data <- FALSE
   
@@ -69,6 +70,8 @@ if (source.externally) {
   no.partitions <- 10
   
   data.out.folder <- "data_out_2025"
+  
+  factors.to.use <- ""
 }
 
 # 1.2) load data -----
@@ -145,8 +148,11 @@ df.private.cfs$Fund.ID <- as.factor(paste(df.private.cfs$Fund.ID, df.private.cfs
 
 to.monthly <- function(df.ss) {
   # fill zero cash flows (necessary for estimation)
-  max.date <- max(df.ss$Date) + 1
-  #max.date <- as.Date("2020-01-01")
+  if (use.simulation) {
+    max.date <- as.Date("2020-01-01")
+  } else {
+    max.date <- max(df.ss$Date) + 1
+  }
   df.m <- data.frame(Date = seq(min(df.ss$Date) + 1, max.date, by = "month") - 1)
   df.ss <- merge(df.ss, df.m, by = "Date", all = TRUE)
   df.ss$CF[is.na(df.ss$CF)] <- 0
@@ -230,6 +236,22 @@ if(sdf.model == "linear") {
     return(getNPVs(df.ss$CF, 
                    exp(cumsum(log(1 + (as.matrix(df.ss[, names(par0)]) %*% par0)))), 
                    max.month))
+  }
+}
+
+if(sdf.model == "linear.duration") {
+  f1 <- function(df.ss, max.month, par0) {
+    return(getNPVsDuration(df.ss$CF, 
+                   exp(cumsum(log(1 + (as.matrix(df.ss[, names(par0)]) %*% par0)))), 
+                   max.month))
+  }
+}
+
+if(sdf.model == "linear.single.date") {
+  f1 <- function(df.ss, max.month, par0) {
+    return(getNPVsSingleDate(df.ss$CF, 
+                           exp(cumsum(log(1 + (as.matrix(df.ss[, names(par0)]) %*% par0)))), 
+                           max.month))
   }
 }
 
@@ -525,6 +547,10 @@ iter.run <- function(input.list) {
     factors <- c("TERM", "CORP", "HY", "LIQ")
     types <- levels(df0$type)
     # types <- c("PD", "DD", "MEZZ")
+  }
+  
+  if (factors.to.use != "") {
+    factors <- factors.to.use
   }
   
   # 2) RUNNER
