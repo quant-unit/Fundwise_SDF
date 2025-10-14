@@ -134,6 +134,7 @@ Section \ref{sec:empirical_application} applies the method to estimate $q^5$-inv
 Section \ref{sec:spatial_sdf_conclusion} concludes.
 
 
+\iffalse
 
 \section{Literature}
 \label{sec:literature}
@@ -275,6 +276,8 @@ Here they assume a data generating process similar to Equation \ref{eq:data_gene
 	}
 So, we generally agree that asset pricing tests for PE cash flow datasets are always weaker than standard time-series asset pricing tests that could draw on the latent true return time-series of PE returns.
 Moreover, their idea to \textbf{price the difference between PE cash flows and a suitable public replication strategy} instead of just PE cash flows (as a resolution of their bias issue) is picked up by the quadratic hedging strategies derived by \cite{T19}.
+
+\fi
 
 
 \section{Methodology}
@@ -442,6 +445,8 @@ We can simply proof the proposition as follows.
 	for the standard case where we do not assume independence between $\Psi$ and $\delta_{i,j}$.
 \end{corollary}
 
+The asset pricing problem for realistic private equity fund cash flows is aggravated by bridge financing, management fees and carry cash flows that further distort the deal-level cash flows.
+
 
 \subsection{Least-Mean-Distance estimator}
 \label{sec:fundwise_lmd_estimator}
@@ -543,7 +548,7 @@ To find the optimal value for $\theta$, we select an estimator from the broad cl
 	for $\theta \in \Theta$ where $\Theta$ is the set of all possible parameter values.
 \end{definition}
 
-Concretely, our LMD estimator \cite[Equation 7.1]{PP97} minimizes the average loss of $\bar{\epsilon}$
+Concretely, our Least Mean Distance (LMD) estimator \cite[Equation 7.1]{PP97} minimizes the average loss of $\bar{\epsilon}$
 \begin{equation}
 \label{eq:estimator}
 \hat{\theta} = 
@@ -567,9 +572,9 @@ Throughout the paper, the weighted average fund pricing error $\bar{\epsilon}_i 
 \label{subsec:npv_vs_fv}
 
 This subsection helps to explain the importance of the set $\mathcal{T}$ from Equation \ref{eq:average_pricing_error}.
-Initially, we introduced averaging over $\mathcal{T}$ to counter the ``exploding alpha" issued described by \cite{DLP12}: 
-In a net present value formula, an discount factor with a very large alpha term discounts all cash flows close to zero.
-Thus, in this degenerate situation, the beta factors become irrelevant -- an infinite alpha perfectly prices all possible cash flow streams.
+Initially, we introduced averaging over $\mathcal{T}$ to counter the ``exploding alpha" issue, first described by \cite{DLP12}, for cash flow streams with a very small initial cash flow.
+The exploding alpha problem depicts the mathematical fact that in a net present value formula, a discount factor with a very large alpha term discounts all cash flows (after the first one) close to zero.
+Thus, in this degenerate situation, the beta factors become irrelevant -- an infinite alpha almost perfectly prices the cash flow stream.
 Even more importantly, our simulation study in Section \ref{sec:simulation_study} indicates that averaging over $\mathcal{T}$ seems to decrease the small-sample bias of the estimator empirically.
 
 A discounting date $\tau \in \mathcal{T}_{i}$ is a discretionary point in time where all fund cash flows are discounted to.
@@ -578,7 +583,7 @@ The smallest possible set $\mathcal{T}_i$ contains just the fund's starting date
 This corresponds to a typical NPV calculation in finance and is also used by \cite{DLP12} and \cite{KN16}.
 In contrast, the largest candidate set for $\mathcal{T}$ contains all time periods bigger than the fund's starting date until now.
 In Subsection \ref{sec:simulation_study}, we study the optimal set size of $\mathcal{T}$ by Monte Carlo simulations.
-There we show in our example that controlling for the optimal size of $\mathcal{T}$ can decrease the small-sample bias and variance of the original \cite{DLP12} estimator that just discounts all cash flows to the fund inception date.
+There we show in our example that controlling for the optimal size of $\mathcal{T}$ can control the small-sample bias and variance of the original \cite{DLP12} estimator that just discounts all cash flows to the fund inception date.
 As we average over $\mathcal{T}_i$ in Equation \ref{eq:average_pricing_error} we call $\bar{\epsilon}_{i}$ the $\mathcal{T}_i$-averaged pricing error, as visualized in Figure \ref{fig:npvs}.
 
 \begin{figure}[ht]
@@ -594,11 +599,12 @@ As we average over $\mathcal{T}_i$ in Equation \ref{eq:average_pricing_error} we
 	\label{fig:npvs}
 \end{figure}
 
-\subsection{Cross-sectional unit: individual fund vs. portfolio of funds}
+\subsection{Cross-sectional unit: individual fund vs.\ portfolio of funds}
 \label{sec:cross_sectional_unit}
 
-According to the classical value-additivity assumption in \cite{HR87}, SDF models invariably shall hold for all pooled or unpooled assets (compare to Assumption \ref{ass:linearity}).
-So, in theory, it is not important if the test assets for our SDF are portfolio or individual fund cash flows when the investment dates are the same (see Corollary
+According to the classical value-additivity assumption in \cite{HR87}, SDF models invariably shall hold for all pooled or unpooled assets.
+As discussed in Subsection \ref{sec:asset_pricing_pooled}, it is best to use the underlying deals as test assets for SDF estimation to avoid the bias terms caused by pooled fund cash flows.
+For the second best alternative, it is theoretically not important if the test assets for our SDF are portfolio or individual fund cash flows when the investment dates are the same (see Corollary
 \ref{cor:same_investment_dates}).
 Empirically it makes a difference, and there are arguments both for and against portfolio formation.
 
@@ -623,26 +629,26 @@ Without loss of generality, we refer to our cross-sectional units as funds, alth
 In the simulation study in Subsection \ref{sec:simulation_study}, we compare both boundary cases (i) individual funds and (ii) vintage year portfolios.
 
 Thinking more broadly, we could even imagine more extreme boundary cases: 
-(iii) on the one hand, we could pool \emph{all} fund cash flows to form just \emph{one} global moment condition for private equity similar to \cite{KN16} and accept potential under-identification; 
+(iii) on the one hand, we could pool \emph{all} fund cash flows to form only \emph{one} global moment condition for private equity similar to \cite{KN16} and accept potential under-identification; 
 (iv) on the other hand, we could operate on underlying deal level like \cite{B14,B16a,B16b} and use gross-of-fee cash flows.
 
 \subsection{Asymptotic framework}
 \label{sec:asymptotic_framework}
 
-To allow for multiple funds from the same vintage year in Assumption \ref{as:portfolio}, we employ an auxiliary "spatial" notion as originally proposed by \cite{KN16}.
-The spatial viewpoint is just a technical means to switch from time-series-like to more panel-data-like indexing.
+To allow for multiple funds from the same vintage year in Assumption \ref{as:portfolio}, we employ an auxiliary ``spatial" notion as originally proposed by \cite{KN16}.
+The spatial viewpoint is only a technical means to switch from time-series-like to more panel-data-like indexing.
 Unlike typical panel data, we do not follow multiple subjects over time, but for each point in time, we exclusively observe multiple new cross-sectional units (i.e., funds from that vintage year).
 This unusual two-dimensional indexing causes problems in the PE literature as it neatly fits neither in the (i) time-series, (ii) cross-sectional, nor (iii) panel data literature.
 Thus, we generally consider $\bar{\epsilon}$ from Equation \ref{eq:average_pricing_error} as random field (cf. Figure  \ref{fig:randomfields}).
 In our case, it is convenient to interpret the fund vintage year $v_i$ as second dimension in our pricing error random field, i.e., $\bar{\epsilon}_{i} \equiv \bar{\epsilon}_{i, v_i}$.
-
-Yet, in this section, we mainly follow the time-series asymptotic framework of \cite{PP97} since our "spatial" distance measure (between vintage years) is time, and adaption to our case is thus straightforward.
-If we observe just one fund per vintage year (or, equivalently, form vintage year portfolios), we will easily see that the framework of \cite{PP97} with time-series indexing can be applied without any major modification.
+`
+Yet, in this section, we mainly follow the time-series asymptotic framework of \cite{PP97} since our ``spatial" distance measure (between vintage years) is time, and adaption to our case is thus straightforward.
+If we observe only one fund per vintage year (or, equivalently, form vintage year portfolios), we will easily see that the framework of \cite{PP97} with time-series indexing can be applied without any major modification.
 
 
 \subsubsection{Vintage year asymptotics}
 
-We assume that the "spatial" (i.e., economic) distance between cross-sectional units, i.e., private equity funds/portfolios, can be measured quantitatively\footnote{Generally, the economic distance measure could include multiple dimensions, e.g., temporal, geographic, and industry sector proximity. This could be an interesting topic for future research.}.
+We assume that the ``spatial" (i.e., economic) distance between cross-sectional units, i.e., private equity funds/portfolios, can be measured quantitatively\footnote{Generally, the economic distance measure could include multiple dimensions, e.g., temporal, geographic, and industry sector proximity. This could be an interesting topic for future research.}.
 Our "cross-sectional" asymptotic theory lets the number of funds go to infinity $n \to \infty$.
 % However, empirical identification of model parameters requires a sufficient number of funds from different vintage years in the fund-level data set used for model estimation, as emphasized by \cite{DLP12} and \cite{KN16}.
 To expose our SDF to many distinct covariate realizations (economic conditions), we also want the number of vintages to increase asymptotically.
@@ -668,7 +674,7 @@ Infill asymptotics corresponds to the assumption of \cite{DLP12} that the number
 		Each black dot marks a different observation $i$ of the cash flow data.
 		Importantly, the time axis does \textbf{not} correspond to the index $t$ in $CF_{t,i}$ (rather to vintage years $v_i$).
 		Comparing the four choices, we want to avoid an infill random field but prefer our data to constitute an increasing domain random field.
-		The infill random field is also asymptotically "too clustered" or better "too unrepresentative" to allow for meaningful estimation and inference.
+		The infill random field is even asymptotically ``too clustered" or better ``too unrepresentative" to allow for meaningful estimation and inference.
 		The time-series and cross-sectional random fields correspond to the standard cases in the literature but could turn out too restrictive for a general approach.
 		By smart design (like portfolio formation), we often can map an increasing domain random field to simpler time-series or cross-sectional versions.
 	}
@@ -678,13 +684,13 @@ Infill asymptotics corresponds to the assumption of \cite{DLP12} that the number
 GMM estimators typically have a fixed number of moment conditions.
 Thus, GMM estimators, where the number of moment conditions is allowed to grow with sample size, require special attention \citep{HP06,NW09}.
 In many cases, it is probably most convenient to limit the maximum to a finite number of moment conditions (i.e., not each vintage year should form a moment condition).
-In this paper, we employ a nonlinear least squares estimators since they do not suffer from this ``number of moment condition" limitation.
+In this paper, we employ nonlinear least squares estimators since they do not suffer from this ``number of moment condition" issue.
 
 
 \subsubsection{Law of large numbers}
 
-The global moment condition underlying our estimation approach is that the expected value of $\bar{\epsilon}$ shall be zero if we use the optimal SDF parameter $\theta_0$. 
-To approach this expectation, we rely on a spatial (cross-sectional) law of large numbers instead of applying a time-series law of large numbers.
+The global moment condition underlying our estimation approach is that the expected value of $\bar{\epsilon}$ shall be as close as possible to zero if we use the optimal SDF parameter $\theta_0$ (it is nonzero due to Proposition \ref{theo:pooled_bias}). 
+To approach this expected value, we rely on a spatial (cross-sectional) law of large numbers instead of applying a time-series law of large numbers.
 Here, we want to explicitly acknowledge the statistical dependence of pricing errors from adjacent vintage years.
 
 \begin{assume}
@@ -703,8 +709,6 @@ Specifically, we could assume (as a so-called primitive condition) the random fi
 To satisfy the time trend part (i) of this law of large number assumption, the weighting factor $w$, introduced in Equation \ref{eq:average_pricing_error}, can be used to make $\bar{\epsilon}$ stationary.
 Spatial near-epoch dependence with respect to fund vintage years formalizes the simple idea that two fund pricing errors $\bar{\epsilon}$ with a small absolute vintage year difference are supposed to be dependent since they are exposed to the same macroeconomic conditions.
 In contrast, two funds with a large absolute vintage year difference can be assumed independent.
-
-Generally, a law of large numbers only applies if the random variables under consideration are not "too fat-tailed" and the stochastic process is ergodic \citep{Taleb20}.
 
 
 \subsubsection{Consistency}
@@ -731,7 +735,7 @@ Multiple funds for a specific vintage year are not necessarily required but prov
 	\begin{enumerate}
 		\item 
 		Obviously, we have to replace ``maximized at $\theta_0$" by ``minimized at $\theta_0$" compared to the exposition of \cite[Chapter 2]{NM94}.
-		Then, similarly to Equation \ref{eq:basic_pricing_relation}, we need to first show that $\mathbb{E} \left[ \bar{\epsilon} (\theta_0) \right] = 0$.
+		Then, we need to first show that $\mathbb{E} \left[ \bar{\epsilon} (\theta_0) \right] = x$, where $x$ is the minimum bias achievable, see Proposition \ref{theo:pooled_bias}.
 		Secondly, we know $Q_0(\theta_0) = \mathbb{E} \left[ L \left( \bar{\epsilon} (\theta_0) \right) \right] \geq 0$, e.g., for $L(x)=x^2$ we have $Q_0(\theta) = \mathbb{E} \left[ \left( \bar{\epsilon} (\theta) \right)^2 \right] = \mathrm{Var} \left[ \bar{\epsilon} (\theta) \right] +  \left( \mathbb{E} \left[ \bar{\epsilon} (\theta) \right] \right)^2 $ where the second summand can be perceived as bias term that is zero for $\theta_0$.
 		The variance term $\mathrm{Var} \left[ \bar{\epsilon} (\theta) \right]$ for a simplified DGP is analyzed by Corollary \ref{coro:epsilon_variance_bounds}.
 		\item 
@@ -869,7 +873,6 @@ where $\hat{\theta}$ is the $p \times 1$ parameter vector, $R$ is a $q \times p$
 Usually, we select $R$ as $p \times p$ identity matrix, and $r$ as $p \times 1$ vector (e.g., of zeros).
 Under the null hypothesis, $W$ is chi-squared distributed with $q$ degrees of freedom. As large values of $W$ indicate the rejection of $H_0$, the corresponding p-value is calculated as $1 - F_{\chi_q^2}(W)$ where $F_{\chi_q^2}$ is the cumulative distribution function of a chi-squared random variable with $q$ degrees of freedom.
 
-
 However, given the limited amount of available private equity data (typically the oldest vintages start in the 1980s), asymptotic characterizations of ${\Sigma}$ and $\mathrm{SE}(\hat{\theta})$ are of limited importance. 
 In empirical applications, the small sample behavior of an estimation method for private equity data is more relevant than its asymptotic theory.
 Moreover, the standard asymptotic distribution associated with an estimator is generally not valid for post-model-selection inference, i.e., if a model selection procedure is applied to find the best model from a collection of competitors \citep{LP05}.
@@ -890,14 +893,14 @@ The \cite{DLP12} approach is most closely related to our methodology.
 One important difference is that we select a simpler and more flexible LMD estimator instead of a cross-sectional GMM approach.
 In our view, the choice of the more complex cross-sectional GMM just causes some conceptional issues, whereas the underlying formulas are basically the same as for our LMD estimator\footnote{The formulas are this similar because \cite{DLP12} use the identity matrix as GMM weighting matrix and skip the second GMM step.}.
 As a first limitation, they have to regard vintage-year portfolios as their cross-sectional units; we can also use individual funds.
-In this context, we also question their statement that "to identify $\beta$, it is essential that the different FoFs are exposed to different market returns" since it is perfectly fine to view their estimator as cross-sectional approach\footnote{In a classic cross-sectional regression, we only have one market return realization.}.
+In this context, we also question their statement that ``to identify $\beta$, it is essential that the different FoFs are exposed to different market returns" since it is perfectly fine to perceive their estimator as cross-sectional approach\footnote{In a classic cross-sectional regression, we only have one market return realization.}.
 Second, the \cite{DLP12} asymptotic theory assumes the number of funds (or deals) per vintage year portfolio to go to infinity.
-To comply with standard GMM assumptions, the number of vintage years, which corresponds to the number of moment conditions in their approach, \textbf{must be considered fixed} and thus cannot grow asymptotically \citep{HP06,NW09}.
+To comply with standard GMM assumptions, the number of vintage years, which corresponds to the number of moment conditions in their approach, \emph{must be considered fixed} and thus cannot grow asymptotically \citep{HP06,NW09}.
 For a typical LMD estimator (e.g., nonlinear least squares), this constraint does not exist.
 Our asymptotic theory lets both (i) the number of vintage years and (ii) the number of funds go to infinity but bounds the number of funds per vintage year.
 
 Further, \cite{DLP12} discount all fund cash flows just to the first cash flow date (like in a classical net present value calculation).
-In contrast, we additionally average over all dates within $\mathcal{T}_{i}$ to alleviate the exploding alpha issue briefly mentioned in their paper (and more thoroughly so in an earlier working paper version).
+In contrast, we additionally average over all dates within $\mathcal{T}_{i}$ to tackle the problem arising from pricing pooled cash flows, which we thoroughly analyzed in subsection \ref{sec:asset_pricing_pooled}.
 Although \cite{DLP12} describe their estimator as a one-step GMM approach, we consider it a special case of our LMD estimator.
 Specifically, Equation \ref{eq:estimator} from our methodology is a generalization of equation 3 from their paper.
 Consequently, if someone accepts the assumptions from Subsection \ref{sec:asymptotic_framework}, our large sample inference framework from Subsection \ref{sec:asymptotic_inference} applies to their case without any significant modification.
@@ -927,8 +930,8 @@ with identity matrix $I$ as weighting matrix $W$.
 In accordance with classical GMM, the function $\frac{1}{n} \sum_{i=1}^n \bar{\epsilon}_{i}: \mathbb{R}^{n \times T} \times \Theta \to \mathbb{R}^m$ should be perceived as multidimensional where the dimensionality of the function output corresponds to the number of moment conditions.
 
 Time-series GMM estimators inherently bear the risk of under-identification if the corresponding time-series is constructed by pooling all fund cash flows from a given fund type.
-Exactly this happens in Equation \ref{eq:kn16_estimator} with $m=1$ where we consequentially obtain a GMM estimator with just one moment condition\footnote{In contrast, our estimator corresponds to the opposite edge case with asymptotically an infinite number of LMD "moment conditions" as we let $n \to \infty$.}.
-To counter under-identification, additional characteristic-based fund portfolios could be formed to increase the number of moment conditions per fund type; also, random portfolios combined with bootstrapping make sense.
+Exactly this happens in Equation \ref{eq:kn16_estimator} with $m=1$ where we consequentially obtain a GMM estimator with just one moment condition\footnote{In contrast, our estimator corresponds to the opposite edge case with asymptotically an infinite number of LMD ''moment conditions" (units to price) as we let $n \to \infty$.}.
+To counter under-identification, additional characteristic-based fund portfolios could be formed to increase the number of moment conditions per fund type; also, random portfolios combined with bootstrapping could make sense.
 Yet, \cite{KN16} take another approach and introduce the concept of Generalized Public Market Equivalent (GPME), which elegantly avoids the under-identification issue.
 Firstly, a public market SDF model is estimated by pricing public trading strategies that shall replicate PE funds instead of directly pricing the observed PE fund cash flows.
 Only in a second step these public market SDF models are applied to evaluate private equity fund cash flows.

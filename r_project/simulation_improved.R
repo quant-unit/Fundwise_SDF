@@ -80,7 +80,11 @@ create.simulation <- function(
     
     # simulate N deals
     for (i in 1:no.deals) {
-      start <- sample(1:(investment.period * months), 1)
+      if (investment.period == 0) {
+        start <- 1
+      } else {
+        start <- sample(1:(investment.period * months), 1)
+      }
       end <- start + sample(1:(max.holding.period * months), 1)
       end <- min(end, nrow(df))
       if(exp.aff) {
@@ -382,3 +386,291 @@ system.time(
   )
 )
 
+## Shorter fund lifetime max(investing=2 + max.holding=2)
+system.time(
+  create.simulation(
+    no.deals=15,
+    investment.period=2,
+    max.holding.period=2,
+    alpha=0,
+    beta=1,
+    no.samples=1000,
+    no.funds=20,
+    min.vin=1986,
+    max.vin=2005,
+    stdvs=0.2,
+    exp.aff.sdf=FALSE
+  )
+)
+
+## Shorter fund lifetime max(investing=4 + max.holding=4)
+system.time(
+  create.simulation(
+    no.deals=15,
+    investment.period=4,
+    max.holding.period=4,
+    alpha=0,
+    beta=1,
+    no.samples=1000,
+    no.funds=20,
+    min.vin=1986,
+    max.vin=2005,
+    stdvs=0.2,
+    exp.aff.sdf=FALSE
+  )
+)
+
+## Shorter fund lifetime max(investing=2 + max.holding=4)
+system.time(
+  create.simulation(
+    no.deals=15,
+    investment.period=2,
+    max.holding.period=4,
+    alpha=0,
+    beta=1,
+    no.samples=1000,
+    no.funds=20,
+    min.vin=1986,
+    max.vin=2005,
+    stdvs=0.2,
+    exp.aff.sdf=FALSE
+  )
+)
+
+## Shorter fund lifetime max(investing=4 + max.holding=2)
+system.time(
+  create.simulation(
+    no.deals=15,
+    investment.period=4,
+    max.holding.period=2,
+    alpha=0,
+    beta=1,
+    no.samples=1000,
+    no.funds=20,
+    min.vin=1986,
+    max.vin=2005,
+    stdvs=0.2,
+    exp.aff.sdf=FALSE
+  )
+)
+
+## Shorter fund lifetime max(investing=1 + max.holding=5)
+system.time(
+  create.simulation(
+    no.deals=15,
+    investment.period=1,
+    max.holding.period=5,
+    alpha=0,
+    beta=1,
+    no.samples=1000,
+    no.funds=20,
+    min.vin=1986,
+    max.vin=2005,
+    stdvs=0.2,
+    exp.aff.sdf=FALSE
+  )
+)
+
+## Shorter fund lifetime max(investing=5 + max.holding=1)
+system.time(
+  create.simulation(
+    no.deals=15,
+    investment.period=5,
+    max.holding.period=1,
+    alpha=0,
+    beta=1,
+    no.samples=1000,
+    no.funds=20,
+    min.vin=1986,
+    max.vin=2005,
+    stdvs=0.2,
+    exp.aff.sdf=FALSE
+  )
+)
+
+## Shorter fund lifetime max(investing=3 + max.holding=3)
+system.time(
+  create.simulation(
+    no.deals=15,
+    investment.period=3,
+    max.holding.period=3,
+    alpha=0,
+    beta=1,
+    no.samples=1000,
+    no.funds=20,
+    min.vin=1986,
+    max.vin=2005,
+    stdvs=0.2,
+    exp.aff.sdf=FALSE
+  )
+)
+
+## Shorter fund lifetime max(investing=1 + max.holding=1)
+system.time(
+  create.simulation(
+    no.deals=15,
+    investment.period=1,
+    max.holding.period=1,
+    alpha=0,
+    beta=1,
+    no.samples=1000,
+    no.funds=20,
+    min.vin=1986,
+    max.vin=2005,
+    stdvs=0.2,
+    exp.aff.sdf=FALSE
+  )
+)
+
+## Shorter fund lifetime max(investing=6 + max.holding=6)
+system.time(
+  create.simulation(
+    no.deals=15,
+    investment.period=6,
+    max.holding.period=6,
+    alpha=0,
+    beta=1,
+    no.samples=1000,
+    no.funds=20,
+    min.vin=1986,
+    max.vin=2005,
+    stdvs=0.2,
+    exp.aff.sdf=FALSE
+  )
+)
+
+## Shorter fund lifetime max(investing=7 + max.holding=7)
+system.time(
+  create.simulation(
+    no.deals=15,
+    investment.period=7,
+    max.holding.period=7,
+    alpha=0,
+    beta=1,
+    no.samples=1000,
+    no.funds=20,
+    min.vin=1986,
+    max.vin=2005,
+    stdvs=0.2,
+    exp.aff.sdf=FALSE
+  )
+)
+
+## Shorter fund lifetime max(investing=8 + max.holding=8)
+system.time(
+  create.simulation(
+    no.deals=15,
+    investment.period=8,
+    max.holding.period=8,
+    alpha=0,
+    beta=1,
+    no.samples=1000,
+    no.funds=20,
+    min.vin=1986,
+    max.vin=2005,
+    stdvs=0.2,
+    exp.aff.sdf=FALSE
+  )
+)
+
+## Shorter fund lifetime max(investing=9 + max.holding=9)
+system.time(
+  create.simulation(
+    no.deals=15,
+    investment.period=9,
+    max.holding.period=9,
+    alpha=0,
+    beta=1,
+    no.samples=1000,
+    no.funds=20,
+    min.vin=1986,
+    max.vin=2005,
+    stdvs=0.2,
+    exp.aff.sdf=FALSE
+  )
+)
+
+## Shorter fund lifetime max(investing=0 + max.holding=1)
+system.time(
+  create.simulation(
+    no.deals=15,
+    investment.period=0,
+    max.holding.period=1,
+    alpha=0,
+    beta=1,
+    no.samples=1000,
+    no.funds=20,
+    min.vin=1986,
+    max.vin=2005,
+    stdvs=0.2,
+    exp.aff.sdf=FALSE
+  )
+)
+
+## Shorter fund lifetime max(investing=0 + max.holding=3)
+system.time(
+  create.simulation(
+    no.deals=15,
+    investment.period=0,
+    max.holding.period=3,
+    alpha=0,
+    beta=1,
+    no.samples=1000,
+    no.funds=20,
+    min.vin=1986,
+    max.vin=2005,
+    stdvs=0.2,
+    exp.aff.sdf=FALSE
+  )
+)
+
+## Shorter fund lifetime max(investing=0 + max.holding=5)
+system.time(
+  create.simulation(
+    no.deals=15,
+    investment.period=0,
+    max.holding.period=5,
+    alpha=0,
+    beta=1,
+    no.samples=1000,
+    no.funds=20,
+    min.vin=1986,
+    max.vin=2005,
+    stdvs=0.2,
+    exp.aff.sdf=FALSE
+  )
+)
+
+## Shorter fund lifetime max(investing=0 + max.holding=7)
+system.time(
+  create.simulation(
+    no.deals=15,
+    investment.period=0,
+    max.holding.period=7,
+    alpha=0,
+    beta=1,
+    no.samples=1000,
+    no.funds=20,
+    min.vin=1986,
+    max.vin=2005,
+    stdvs=0.2,
+    exp.aff.sdf=FALSE
+  )
+)
+
+## Shorter fund lifetime max(investing=0 + max.holding=10)
+system.time(
+  create.simulation(
+    no.deals=15,
+    investment.period=0,
+    max.holding.period=10,
+    alpha=0,
+    beta=1,
+    no.samples=1000,
+    no.funds=20,
+    min.vin=1986,
+    max.vin=2005,
+    stdvs=0.2,
+    exp.aff.sdf=FALSE
+  )
+)

@@ -78,7 +78,7 @@ part.to.keep <- 1
 no.partitions <- 1
 
 ## trigger run
-source("estim_model_optimized.R")
+# source("estim_model_optimized.R")
 
 # 2. run: base case: cross-sectional unit ----
 
@@ -104,17 +104,291 @@ for (i in 1:10) {
 cache.folder.tag <- "20250808_223358_simulated_cashflows_EW_VYP"
 simulation.filename <- paste0("20250808_223358/", cache.folder.tag, ".csv")
 
+max.months <- c(1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360) # c(10, 20) * 12 # c(12.5, 15, 17.5) * 12
+
 part.to.keep <- 1
 no.partitions <- 1
 
 ## trigger run
 # source("estim_model_optimized.R")
 
+# 3.a) r: Shorter fund lifetime max(investing=2 + max.holding=2) ----
+
+## set parameters
+cache.folder.tag <- "20250819_215442_simulated_cashflows_EW_VYP"
+simulation.filename <- paste0("20250819_215442/", cache.folder.tag, ".csv")
+
+part.to.keep <- 1
+no.partitions <- 1
+
+## trigger run
+# source("estim_model_optimized.R")
+
+# 3.b) r: Shorter fund lifetime max(investing=4 + max.holding=4) ----
+
+## set parameters
+cache.folder.tag <- "20250819_220526_simulated_cashflows_EW_VYP"
+simulation.filename <- paste0("20250819_220526/", cache.folder.tag, ".csv")
+
+part.to.keep <- 1
+no.partitions <- 1
+
+## trigger run
+# source("estim_model_optimized.R")
+
+# 3.c) r: Shorter fund lifetime max(investing=2 + max.holding=4) ----
+
+## set parameters
+cache.folder.tag <- "20250819_221615_simulated_cashflows_EW_VYP"
+simulation.filename <- paste0("20250819_221615/", cache.folder.tag, ".csv")
+
+part.to.keep <- 1
+no.partitions <- 1
+
+## trigger run
+# source("estim_model_optimized.R")
+
+# 3.d) r: Shorter fund lifetime max(investing=4 + max.holding=2) ----
+
+## set parameters
+cache.folder.tag <- "20250819_222708_simulated_cashflows_EW_VYP"
+simulation.filename <- paste0("20250819_222708/", cache.folder.tag, ".csv")
+
+part.to.keep <- 1
+no.partitions <- 1
+
+## trigger run
+# source("estim_model_optimized.R")
+
+# 3.e) r: Shorter fund lifetime max(investing=1 + max.holding=5) ----
+
+## set parameters
+cache.folder.tag <- "20250820_135255_simulated_cashflows_EW_VYP"
+simulation.filename <- paste0("20250820_135255/", cache.folder.tag, ".csv")
+
+part.to.keep <- 1
+no.partitions <- 1
+
+## trigger run
+# source("estim_model_optimized.R")
+
+# 3.f) r: Shorter fund lifetime max(investing=5 + max.holding=1) ----
+
+## set parameters
+cache.folder.tag <- "20250820_140352_simulated_cashflows_EW_VYP"
+simulation.filename <- paste0("20250820_140352/", cache.folder.tag, ".csv")
+
+part.to.keep <- 1
+no.partitions <- 1
+
+## trigger run
+# source("estim_model_optimized.R")
+
+# 3.g) r: Shorter fund lifetime max(investing=3 + max.holding=3) ----
+
+## set parameters
+cache.folder.tag <- "20250820_192412_simulated_cashflows_EW_VYP"
+simulation.filename <- paste0("20250820_192412/", cache.folder.tag, ".csv")
+
+part.to.keep <- 1
+no.partitions <- 1
+
+## trigger run
+# source("estim_model_optimized.R")
+
+# 3.h) r: Shorter fund lifetime max(investing=1 + max.holding=1) ----
+
+## set parameters
+cache.folder.tag <- "20250821_153327_simulated_cashflows_EW_VYP"
+simulation.filename <- paste0("20250821_153327/", cache.folder.tag, ".csv")
+
+part.to.keep <- 1
+no.partitions <- 1
+
+## trigger run
+# source("estim_model_optimized.R")
+
+# 3.i) r: Shorter fund lifetime max(investing=6 + max.holding=6) ----
+
+## set parameters
+cache.folder.tag <- "20250821_154353_simulated_cashflows_EW_VYP"
+simulation.filename <- paste0("20250821_154353/", cache.folder.tag, ".csv")
+
+part.to.keep <- 1
+no.partitions <- 1
+
+## trigger run
+# source("estim_model_optimized.R")
+
+# 3.j) r: Shorter fund lifetime max(investing=7 + max.holding=7) ----
+
+## set parameters
+cache.folder.tag <- "20250821_155431_simulated_cashflows_EW_VYP"
+simulation.filename <- paste0("20250821_155431/", cache.folder.tag, ".csv")
+
+part.to.keep <- 1
+no.partitions <- 1
+
+## trigger run
+# source("estim_model_optimized.R")
+
+# 3.k) r: Shorter fund lifetime max(investing=8 + max.holding=8) ----
+
+## set parameters
+cache.folder.tag <- "20250821_160511_simulated_cashflows_EW_VYP"
+simulation.filename <- paste0("20250821_160511/", cache.folder.tag, ".csv")
+
+part.to.keep <- 1
+no.partitions <- 1
+
+## trigger run
+# source("estim_model_optimized.R")
+
+# 3.l) r: Shorter fund lifetime max(investing=9 + max.holding=9) ----
+
+## set parameters
+cache.folder.tag <- "20250821_161553_simulated_cashflows_EW_VYP"
+simulation.filename <- paste0("20250821_161553/", cache.folder.tag, ".csv")
+
+part.to.keep <- 1
+no.partitions <- 1
+
+## trigger run
+# source("estim_model_optimized.R")
+
+# 12) No investment period (investing=0) -----
+
+### 12.a) No investment period  (investing=0 + max.holding=1) 
+
+## set parameters
+cache.folder.tag <- "20250825_143009_simulated_cashflows_EW_VYP"
+simulation.filename <- paste0("20250825_143009/", cache.folder.tag, ".csv")
+
+part.to.keep <- 1
+no.partitions <- 1
+
+## trigger run
+# source("estim_model_optimized.R")
+
+### 12.b) No investment period  (investing=0 + max.holding=3) 
+
+## set parameters
+cache.folder.tag <- "20250825_143734_simulated_cashflows_EW_VYP"
+simulation.filename <- paste0("20250825_143734/", cache.folder.tag, ".csv")
+
+part.to.keep <- 1
+no.partitions <- 1
+
+## trigger run
+# source("estim_model_optimized.R")
+
+### 12.c) No investment period  (investing=0 + max.holding=5) 
+
+## set parameters
+cache.folder.tag <- "20250825_144508_simulated_cashflows_EW_VYP"
+simulation.filename <- paste0("20250825_144508/", cache.folder.tag, ".csv")
+
+part.to.keep <- 1
+no.partitions <- 1
+
+## trigger run
+# source("estim_model_optimized.R")
+
+### 12.d) No investment period  (investing=0 + max.holding=7) 
+
+## set parameters
+cache.folder.tag <- "20250825_145244_simulated_cashflows_EW_VYP"
+simulation.filename <- paste0("20250825_145244/", cache.folder.tag, ".csv")
+
+part.to.keep <- 1
+no.partitions <- 1
+
+## trigger run
+# source("estim_model_optimized.R")
+
+### 12.e) No investment period  (investing=0 + max.holding=10) 
+
+## set parameters
+cache.folder.tag <- "20250825_150023_simulated_cashflows_EW_VYP"
+simulation.filename <- paste0("20250825_150023/", cache.folder.tag, ".csv")
+
+part.to.keep <- 1
+no.partitions <- 1
+
+## trigger run
+# source("estim_model_optimized.R")
+
+# 13) No investment period (investing=0) - alpha & beta -----
+
+### 13.a) No investment period  (investing=0 + max.holding=1) 
+
+## set parameters
+cache.folder.tag <- "20250825_143009_simulated_cashflows_EW_VYP"
+simulation.filename <- paste0("20250825_143009/", cache.folder.tag, ".csv")
+
+factors.to.use <- "Alpha"
+
+part.to.keep <- 1
+no.partitions <- 1
+
+## trigger run
+source("estim_model_optimized.R")
+
+### 13.b) No investment period  (investing=0 + max.holding=3) 
+
+## set parameters
+cache.folder.tag <- "20250825_143734_simulated_cashflows_EW_VYP"
+simulation.filename <- paste0("20250825_143734/", cache.folder.tag, ".csv")
+
+part.to.keep <- 1
+no.partitions <- 1
+
+## trigger run
+source("estim_model_optimized.R")
+
+### 13.c) No investment period  (investing=0 + max.holding=5) 
+
+## set parameters
+cache.folder.tag <- "20250825_144508_simulated_cashflows_EW_VYP"
+simulation.filename <- paste0("20250825_144508/", cache.folder.tag, ".csv")
+
+part.to.keep <- 1
+no.partitions <- 1
+
+## trigger run
+source("estim_model_optimized.R")
+
+### 13.d) No investment period  (investing=0 + max.holding=7) 
+
+## set parameters
+cache.folder.tag <- "20250825_145244_simulated_cashflows_EW_VYP"
+simulation.filename <- paste0("20250825_145244/", cache.folder.tag, ".csv")
+
+part.to.keep <- 1
+no.partitions <- 1
+
+## trigger run
+source("estim_model_optimized.R")
+
+### 13.e) No investment period  (investing=0 + max.holding=10) 
+
+## set parameters
+cache.folder.tag <- "20250825_150023_simulated_cashflows_EW_VYP"
+simulation.filename <- paste0("20250825_150023/", cache.folder.tag, ".csv")
+
+part.to.keep <- 1
+no.partitions <- 1
+
+## trigger run
+source("estim_model_optimized.R")
+
 # 4. run: High Beta, Negative Alpha ----
 
 ## set parameters
 cache.folder.tag <- "20250808_224228_simulated_cashflows_EW_VYP"
 simulation.filename <- paste0("20250808_224228/", cache.folder.tag, ".csv")
+
+max.months <- c(1, 60, 120, 150, 180, 210, 240, 300, 360) # c(10, 20) * 12 # c(12.5, 15, 17.5) * 12
 
 part.to.keep <- 1
 no.partitions <- 1
