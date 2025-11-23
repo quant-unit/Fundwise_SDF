@@ -927,10 +927,12 @@ l$sl_360$no_i0_h10_alpha <- bivar(paste0(run, "2025-08-27_002036_cached_res")) #
 ## Plot shorties 1:9 -----
 
 # Old-style plot for equal investing/holding short_iX_hX (X = 1..9)
+years1.9 <- 1:9
+years1.9 <- c(1, 5, 9)
 plot_short_equal_lifetime_oldstyle_1to9 <- function(
     l,
-    series     = sprintf("short_i%d_h%d", 1:9, 1:9),
-    labels     = sprintf("Invest %d / Hold %d", 1:9, 1:9),
+    series     = sprintf("short_i%d_h%d", years1.9, years1.9),
+    labels     = sprintf("Invest %d / Hold %d", years1.9, years1.9),
     months_all = c(1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360),
     ylim       = NULL,                 # auto if NULL, else e.g. c(0, 2)
     do.eps     = FALSE,

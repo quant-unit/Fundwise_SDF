@@ -6,32 +6,33 @@
 % latex table generated in R 3.4.2 by xtable 1.8-4 package
 % Fri Nov 19 08:43:30 2021
 \begin{table}[ht]
-	\centering
+	\centering	
+	\resizebox{0.85\textwidth}{!}{%
 	\begin{tabular}{llr}
 		\hline
 		Asset Class & Strategy & Fund Count \\ 
-		\hline
-		Infrastructure & Infrastructure Core &   32 \\ 
-		Infrastructure & Infrastructure Core Plus &   58 \\ 
-		Infrastructure & Infrastructure Debt &   26 \\ 
-		Infrastructure & Infrastructure Fund of Funds &    6 \\ 
-		Infrastructure & Infrastructure Opportunistic &   12 \\ 
-		Infrastructure & Infrastructure Secondaries &    4 \\ 
-		Infrastructure & Infrastructure Value Added &   36 \\ 
-		\hline
-		Natural Resources & Energy &    2 \\ 
-		Natural Resources & Natural Resources &  146 \\ 
-		Natural Resources & Timber &   19 \\ 
-		\hline
-		Private Debt & Direct Lending &    3 \\ 
-		Private Debt & Direct Lending - Blended / Opportunistic Debt &   21 \\ 
-		Private Debt & Direct Lending - Junior / Subordinated Debt &    9 \\ 
-		Private Debt & Direct Lending - Senior Debt &   89 \\ 
-		Private Debt & Direct Lending - Unitranche Debt &    4 \\ 
-		Private Debt & Distressed Debt &  153 \\ 
-		Private Debt & Mezzanine &  147 \\ 
-		Private Debt & Private Debt Fund of Funds &    4 \\ 
-		Private Debt & Special Situations &   58 \\ 
+		%\hline
+		%Infrastructure & Infrastructure Core &   32 \\ 
+		%Infrastructure & Infrastructure Core Plus &   58 \\ 
+		%Infrastructure & Infrastructure Debt &   26 \\ 
+		%Infrastructure & Infrastructure Fund of Funds &    6 \\ 
+		%Infrastructure & Infrastructure Opportunistic &   12 \\ 
+		%Infrastructure & Infrastructure Secondaries &    4 \\ 
+		%Infrastructure & Infrastructure Value Added &   36 \\ 
+		%\hline
+		%Natural Resources & Energy &    2 \\ 
+		%Natural Resources & Natural Resources &  146 \\ 
+		%Natural Resources & Timber &   19 \\ 
+		%\hline
+		%Private Debt & Direct Lending &    3 \\ 
+		%Private Debt & Direct Lending - Blended / Opportunistic Debt &   21 \\ 
+		%Private Debt & Direct Lending - Junior / Subordinated Debt &    9 \\ 
+		%Private Debt & Direct Lending - Senior Debt &   89 \\ 
+		%Private Debt & Direct Lending - Unitranche Debt &    4 \\ 
+		%Private Debt & Distressed Debt &  153 \\ 
+		%Private Debt & Mezzanine &  147 \\ 
+		%Private Debt & Private Debt Fund of Funds &    4 \\ 
+		%Private Debt & Special Situations &   58 \\ 
 		\hline
 		Private Equity & Balanced &   63 \\ 
 		Private Equity & Buyout & 1251 \\ 
@@ -42,17 +43,17 @@
 		Private Equity & Growth &  265 \\ 
 		Private Equity & Secondaries &  131 \\ 
 		Private Equity & Turnaround &   18 \\ 
-		\hline
-		Real Estate & Real Asset &    1 \\ 
-		Real Estate & Real Estate Co-Investment &   15 \\ 
-		Real Estate & Real Estate Core &   33 \\ 
-		Real Estate & Real Estate Core-Plus &   44 \\ 
-		Real Estate & Real Estate Debt &  106 \\ 
-		Real Estate & Real Estate Distressed &   27 \\ 
-		Real Estate & Real Estate Fund of Funds &   29 \\ 
-		Real Estate & Real Estate Opportunistic &  225 \\ 
-		Real Estate & Real Estate Secondaries &   15 \\ 
-		Real Estate & Real Estate Value Added &  315 \\ 
+		%\hline
+		%Real Estate & Real Asset &    1 \\ 
+		%Real Estate & Real Estate Co-Investment &   15 \\ 
+		%Real Estate & Real Estate Core &   33 \\ 
+		%Real Estate & Real Estate Core-Plus &   44 \\ 
+		%Real Estate & Real Estate Debt &  106 \\ 
+		%Real Estate & Real Estate Distressed &   27 \\ 
+		%Real Estate & Real Estate Fund of Funds &   29 \\ 
+		%Real Estate & Real Estate Opportunistic &  225 \\ 
+		%Real Estate & Real Estate Secondaries &   15 \\ 
+		%Real Estate & Real Estate Value Added &  315 \\ 
 		\hline
 		Venture Capital & Early Stage &  262 \\ 
 		Venture Capital & Early Stage: Seed &   42 \\ 
@@ -62,6 +63,7 @@
 		Venture Capital & Venture Debt &   21 \\ 
 		\hline
 	\end{tabular}
+	}
 	\caption{Summary of asset classes and strategies in the unprepared raw Preqin dataset.} 
 	\label{tab:summary_preqin_strategy}
 \end{table}
@@ -69,7 +71,7 @@
 
 \begin{table}[ht]
 	\centering
-	\resizebox{\textwidth}{!}{%
+	\resizebox{0.85\textwidth}{!}{%
 		\begin{tabular}{lrrrrrr}
 			\multicolumn{7}{c}{Panel A: simple linear SDF} \\
 			\hline
@@ -146,7 +148,7 @@
 % Mon Jun  8 17:19:54 2020
 \begin{table}[ht]
 	\centering
-	\resizebox{\textwidth}{!}{%
+	\resizebox{0.85\textwidth}{!}{%
 		\begin{tabular}{lrrrlrrr}
 			& \multicolumn{3}{l}{MKT Factor} & & \multicolumn{3}{l}{Second Factor} \\ 
 			Type & Estim. & SE & SE.indep & Factor & Estim. & SE & SE.indep \\ 
@@ -165,34 +167,34 @@
 			VC & 0.801 & 704.455 & 561.598 & MKT & 0.801 & 704.455 & 561.598 \\ 
 			VC & 1.429 & 8.073 & 3.219 & ROE & -1.306 & 18.055 & 6.919 \\ 
 			VC & 1.507 & 17.322 & 6.966 & EG & -0.904 & 15.344 & 5.737 \\ 
-			\hline
-			PD & 0.885 & 1.040 & 1.242 & MKT & 0.885 & 1.040 & 1.242 \\ 
-			PD & 0.660 & 0.095 & 0.039 & Alpha & 0.002 & 0.001 & 0.000 \\ 
-			PD & 0.826 & 1.707 & 1.443 & EG & 0.143 & 20.341 & 7.506 \\ 
-			PD & 0.849 & 2.921 & 2.146 & ME & 0.301 & 2.739 & 1.518 \\ 
-			PD & 0.887 & 1.378 & 1.244 & ROE & -0.023 & 6.925 & 2.553 \\ 
-			PD & 0.863 & 2.942 & 2.224 & IA & 0.247 & 5.306 & 3.607 \\ 
-			\hline
-			RE & 0.578 & 1.827 & 1.196 & MKT & 0.578 & 1.827 & 1.196 \\ 
-			RE & 1.303 & 5.463 & 2.259 & Alpha & -0.006 & 0.088 & 0.034 \\ 
-			RE & 0.200 & 2.598 & 1.356 & ROE & 3.118 & 2.579 & 6.629 \\ 
-			RE & 0.202 & 3.297 & 1.965 & EG & 0.844 & 2.478 & 1.828 \\ 
-			RE & 0.756 & 3.043 & 2.192 & IA & -1.938 & 1.879 & 0.783 \\ 
-			RE & 0.887 & 1.167 & 0.858 & ME & -2.059 & 1.300 & 0.563 \\ 
-			\hline
-			NR & -0.215 & 2.367 & 1.976 & EG & 0.909 & 14.505 & 7.475 \\ 
-			NR & 0.191 & 3.136 & 4.242 & MKT & 0.191 & 3.136 & 4.242 \\ 
-			NR & -0.674 & 58.003 & 24.234 & Alpha & 0.008 & 0.230 & 0.098 \\ 
-			NR & -0.020 & 0.954 & 2.210 & ROE & 1.128 & 4.830 & 5.066 \\ 
-			NR & 0.143 & 3.236 & 4.116 & IA & -0.768 & 1.808 & 2.154 \\ 
-			NR & 0.212 & 4.209 & 5.450 & ME & -0.575 & 1.603 & 1.252 \\ 
-			\hline
-			INF & 0.824 & 3.201 & 2.815 & MKT & 0.824 & 3.201 & 2.815 \\ 
-			INF & 0.190 & 7.133 & 3.288 & Alpha & 0.005 & 0.030 & 0.025 \\ 
-			INF & 0.317 & 23.904 & 10.658 & EG & 0.848 & 45.836 & 20.176 \\ 
-			INF & 0.470 & 9.316 & 4.237 & ROE & 1.245 & 5.531 & 6.134 \\ 
-			INF & 0.778 & 5.951 & 5.424 & ME & -0.811 & 3.712 & 4.349 \\ 
-			INF & 0.661 & 61.329 & 33.819 & IA & -1.108 & 150.713 & 85.733 \\ 
+			%\hline
+			%PD & 0.885 & 1.040 & 1.242 & MKT & 0.885 & 1.040 & 1.242 \\ 
+			%PD & 0.660 & 0.095 & 0.039 & Alpha & 0.002 & 0.001 & 0.000 \\ 
+			%PD & 0.826 & 1.707 & 1.443 & EG & 0.143 & 20.341 & 7.506 \\ 
+			%PD & 0.849 & 2.921 & 2.146 & ME & 0.301 & 2.739 & 1.518 \\ 
+			%PD & 0.887 & 1.378 & 1.244 & ROE & -0.023 & 6.925 & 2.553 \\ 
+			%PD & 0.863 & 2.942 & 2.224 & IA & 0.247 & 5.306 & 3.607 \\ 
+			%\hline
+			%RE & 0.578 & 1.827 & 1.196 & MKT & 0.578 & 1.827 & 1.196 \\ 
+			%RE & 1.303 & 5.463 & 2.259 & Alpha & -0.006 & 0.088 & 0.034 \\ 
+			%RE & 0.200 & 2.598 & 1.356 & ROE & 3.118 & 2.579 & 6.629 \\ 
+			%RE & 0.202 & 3.297 & 1.965 & EG & 0.844 & 2.478 & 1.828 \\ 
+			%RE & 0.756 & 3.043 & 2.192 & IA & -1.938 & 1.879 & 0.783 \\ 
+			%RE & 0.887 & 1.167 & 0.858 & ME & -2.059 & 1.300 & 0.563 \\ 
+			%\hline
+			%NR & -0.215 & 2.367 & 1.976 & EG & 0.909 & 14.505 & 7.475 \\ 
+			%NR & 0.191 & 3.136 & 4.242 & MKT & 0.191 & 3.136 & 4.242 \\ 
+			%NR & -0.674 & 58.003 & 24.234 & Alpha & 0.008 & 0.230 & 0.098 \\ 
+			%NR & -0.020 & 0.954 & 2.210 & ROE & 1.128 & 4.830 & 5.066 \\ 
+			%NR & 0.143 & 3.236 & 4.116 & IA & -0.768 & 1.808 & 2.154 \\ 
+			%NR & 0.212 & 4.209 & 5.450 & ME & -0.575 & 1.603 & 1.252 \\ 
+			%\hline
+			%INF & 0.824 & 3.201 & 2.815 & MKT & 0.824 & 3.201 & 2.815 \\ 
+			%INF & 0.190 & 7.133 & 3.288 & Alpha & 0.005 & 0.030 & 0.025 \\ 
+			%INF & 0.317 & 23.904 & 10.658 & EG & 0.848 & 45.836 & 20.176 \\ 
+			%INF & 0.470 & 9.316 & 4.237 & ROE & 1.245 & 5.531 & 6.134 \\ 
+			%INF & 0.778 & 5.951 & 5.424 & ME & -0.811 & 3.712 & 4.349 \\ 
+			%INF & 0.661 & 61.329 & 33.819 & IA & -1.108 & 150.713 & 85.733 \\ 
 			\hline
 			\hline
 		\end{tabular}
@@ -204,7 +206,7 @@
 
 \begin{table}[ht]
 	\centering
-	\resizebox{10cm}{!}{%
+	\resizebox{0.85\textwidth}{!}{%
 		\begin{tabular}{lrrlrrr}
 			& \multicolumn{2}{l}{MKT Factor} & & \multicolumn{2}{l}{Second Factor} & \\ 
 			Type & Mean & SD & Factor & Mean & SD & CV-error \\ 
@@ -223,34 +225,34 @@
 			VC & 0.804 & 0.363 & MKT & 0.804 & 0.363 & 21852 \\ 
 			VC & 1.527 & 0.517 & ROE & -0.972 & 0.679 & 26680 \\ 
 			VC & 1.646 & 0.678 & EG & -0.644 & 0.556 & 32730 \\ 
-			\hline
-			PD & 0.887 & 0.039 & MKT & 0.887 & 0.039 & 7368 \\ 
-			PD & 0.567 & 0.202 & Alpha & 0.003 & 0.001 & 7917 \\ 
-			PD & 0.763 & 0.113 & EG & 0.229 & 0.141 & 8758 \\ 
-			PD & 0.862 & 0.103 & ME & 0.342 & 0.256 & 9834 \\ 
-			PD & 0.812 & 0.153 & ROE & 0.258 & 0.394 & 11522 \\ 
-			PD & 0.914 & 0.211 & IA & 0.472 & 0.424 & 18096 \\
-			\hline 
-			RE & 0.722 & 0.392 & MKT & 0.722 & 0.392 & 50900 \\ 
-			RE & 1.288 & 0.345 & Alpha & -0.004 & 0.005 & 51437 \\ 
-			RE & 0.389 & 0.446 & ROE & 2.333 & 1.507 & 54689 \\ 
-			RE & 0.465 & 0.470 & EG & 0.448 & 0.629 & 59316 \\ 
-			RE & 0.847 & 0.411 & IA & -1.262 & 1.160 & 65835 \\ 
-			RE & 0.983 & 0.350 & ME & -1.467 & 1.298 & 66827 \\ 
-			\hline
-			NR & -0.047 & 0.421 & EG & 0.657 & 0.557 & 10559 \\ 
-			NR & 0.318 & 0.321 & MKT & 0.318 & 0.321 & 11480 \\ 
-			NR & -0.335 & 0.763 & Alpha & 0.006 & 0.005 & 11854 \\ 
-			NR & 0.136 & 0.466 & ROE & 0.844 & 1.062 & 13296 \\ 
-			NR & 0.270 & 0.508 & IA & -0.288 & 1.124 & 14479 \\ 
-			NR & 0.416 & 0.587 & ME & 0.032 & 1.079 & 15789 \\ 
-			\hline
-			INF & 0.862 & 0.320 & MKT & 0.862 & 0.320 & 14551 \\ 
-			INF & 0.639 & 0.753 & Alpha & 0.002 & 0.004 & 15069 \\ 
-			INF & 0.766 & 0.626 & EG & 0.258 & 0.495 & 16004 \\ 
-			INF & 0.837 & 0.504 & ROE & 0.090 & 0.939 & 18472 \\ 
-			INF & 0.868 & 0.412 & ME & 0.078 & 0.643 & 18514 \\ 
-			INF & 0.892 & 0.561 & IA & 0.081 & 1.073 & 23162 \\ 
+			%\hline
+			%PD & 0.887 & 0.039 & MKT & 0.887 & 0.039 & 7368 \\ 
+			%PD & 0.567 & 0.202 & Alpha & 0.003 & 0.001 & 7917 \\ 
+			%PD & 0.763 & 0.113 & EG & 0.229 & 0.141 & 8758 \\ 
+			%PD & 0.862 & 0.103 & ME & 0.342 & 0.256 & 9834 \\ 
+			%PD & 0.812 & 0.153 & ROE & 0.258 & 0.394 & 11522 \\ 
+			%PD & 0.914 & 0.211 & IA & 0.472 & 0.424 & 18096 \\
+			%\hline 
+			%RE & 0.722 & 0.392 & MKT & 0.722 & 0.392 & 50900 \\ 
+			%RE & 1.288 & 0.345 & Alpha & -0.004 & 0.005 & 51437 \\ 
+			%RE & 0.389 & 0.446 & ROE & 2.333 & 1.507 & 54689 \\ 
+			%RE & 0.465 & 0.470 & EG & 0.448 & 0.629 & 59316 \\ 
+			%RE & 0.847 & 0.411 & IA & -1.262 & 1.160 & 65835 \\ 
+			%RE & 0.983 & 0.350 & ME & -1.467 & 1.298 & 66827 \\ 
+			%\hline
+			%NR & -0.047 & 0.421 & EG & 0.657 & 0.557 & 10559 \\ 
+			%NR & 0.318 & 0.321 & MKT & 0.318 & 0.321 & 11480 \\ 
+			%NR & -0.335 & 0.763 & Alpha & 0.006 & 0.005 & 11854 \\ 
+			%NR & 0.136 & 0.466 & ROE & 0.844 & 1.062 & 13296 \\ 
+			%NR & 0.270 & 0.508 & IA & -0.288 & 1.124 & 14479 \\ 
+			%NR & 0.416 & 0.587 & ME & 0.032 & 1.079 & 15789 \\ 
+			%\hline
+			%INF & 0.862 & 0.320 & MKT & 0.862 & 0.320 & 14551 \\ 
+			%INF & 0.639 & 0.753 & Alpha & 0.002 & 0.004 & 15069 \\ 
+			%INF & 0.766 & 0.626 & EG & 0.258 & 0.495 & 16004 \\ 
+			%INF & 0.837 & 0.504 & ROE & 0.090 & 0.939 & 18472 \\ 
+			%INF & 0.868 & 0.412 & ME & 0.078 & 0.643 & 18514 \\ 
+			%INF & 0.892 & 0.561 & IA & 0.081 & 1.073 & 23162 \\ 
 			\hline
 			\hline
 		\end{tabular}
@@ -264,7 +266,7 @@
 % Mon Jun  8 17:44:27 2020
 \begin{table}[ht]
 	\centering
-	\resizebox{\textwidth}{!}{%
+	\resizebox{0.85\textwidth}{!}{%
 		\begin{tabular}{lrrrlrrr}
 			& \multicolumn{3}{l}{MKT Factor} & & \multicolumn{3}{l}{Second Factor} \\ 
 			Type & Estim. & SE & SE.indep & Factor & Estim. & SE & SE.indep \\ 
@@ -283,34 +285,34 @@
 			VC & 1.034 & 2.205 & 1.758 & MKT & 1.034 & 2.205 & 1.758 \\ 
 			VC & 1.488 & 1.801 & 0.941 & ROE & -1.148 & 4.060 & 1.424 \\ 
 			VC & 1.535 & 2.821 & 1.336 & EG & -0.754 & 3.626 & 1.260 \\ 
-			\hline
-			PD & 0.844 & 1.245 & 0.856 & MKT & 0.844 & 1.245 & 0.856 \\ 
-			PD & 0.502 & 0.044 & 0.015 & Alpha & 0.003 & 0.000 & 0.000 \\ 
-			PD & 0.791 & 2.478 & 1.557 & ROE & 0.222 & 5.024 & 1.966 \\ 
-			PD & 0.736 & 2.230 & 1.303 & EG & 0.213 & 6.296 & 2.374 \\ 
-			PD & 0.844 & 1.150 & 0.837 & IA & 0.076 & 2.543 & 1.416 \\ 
-			PD & 0.833 & 1.978 & 1.362 & ME & 0.323 & 1.845 & 0.986 \\ 
-			\hline
-			RE & 0.743 & 3.471 & 2.075 & MKT & 0.743 & 3.471 & 2.075 \\ 
-			RE & 1.265 & 7.581 & 3.331 & Alpha & -0.004 & 0.046 & 0.017 \\ 
-			RE & 0.145 & 3.486 & 1.614 & ROE & 3.202 & 17.447 & 7.413 \\ 
-			RE & 0.400 & 50.493 & 31.818 & EG & 0.700 & 48.813 & 29.195 \\ 
-			RE & 0.884 & 4.928 & 2.813 & ME & -1.782 & 1.474 & 0.605 \\ 
-			RE & 0.795 & 18.146 & 10.282 & IA & -1.712 & 13.199 & 7.657 \\ 
-			\hline
-			NR & -0.056 & 3.693 & 1.897 & ROE & 1.934 & 3.154 & 2.287 \\ 
-			NR & 0.000 & 4.771 & 2.368 & EG & 0.814 & 1.368 & 1.753 \\ 
-			NR & 0.425 & 3.370 & 5.178 & MKT & 0.425 & 3.370 & 5.178 \\ 
-			NR & -0.272 & 39.463 & 16.698 & Alpha & 0.006 & 0.202 & 0.081 \\ 
-			NR & 0.394 & 0.871 & 1.401 & IA & -0.319 & 1.734 & 1.169 \\ 
-			NR & 0.453 & 15.719 & 24.377 & ME & 0.432 & 5.574 & 8.016 \\ 
-			\hline
-			INF & 0.098 & 0.055 & 0.025 & Alpha & 0.006 & 0.001 & 0.000 \\ 
-			INF & 0.280 & 20.158 & 8.983 & EG & 0.893 & 21.368 & 9.700 \\ 
-			INF & 0.775 & 19.273 & 22.509 & MKT & 0.775 & 19.273 & 22.509 \\ 
-			INF & 0.469 & 26.226 & 12.751 & ROE & 1.030 & 30.728 & 16.129 \\ 
-			INF & 0.758 & 33.453 & 36.239 & ME & -0.804 & 16.214 & 16.161 \\ 
-			INF & 0.664 & 630.801 & 351.730 & IA & -0.929 & 137.937 & 75.628 \\ 
+			%\hline
+			%PD & 0.844 & 1.245 & 0.856 & MKT & 0.844 & 1.245 & 0.856 \\ 
+			%PD & 0.502 & 0.044 & 0.015 & Alpha & 0.003 & 0.000 & 0.000 \\ 
+			%PD & 0.791 & 2.478 & 1.557 & ROE & 0.222 & 5.024 & 1.966 \\ 
+			%PD & 0.736 & 2.230 & 1.303 & EG & 0.213 & 6.296 & 2.374 \\ 
+			%PD & 0.844 & 1.150 & 0.837 & IA & 0.076 & 2.543 & 1.416 \\ 
+			%PD & 0.833 & 1.978 & 1.362 & ME & 0.323 & 1.845 & 0.986 \\ 
+			%\hline
+			%RE & 0.743 & 3.471 & 2.075 & MKT & 0.743 & 3.471 & 2.075 \\ 
+			%RE & 1.265 & 7.581 & 3.331 & Alpha & -0.004 & 0.046 & 0.017 \\ 
+			%RE & 0.145 & 3.486 & 1.614 & ROE & 3.202 & 17.447 & 7.413 \\ 
+			%RE & 0.400 & 50.493 & 31.818 & EG & 0.700 & 48.813 & 29.195 \\ 
+			%RE & 0.884 & 4.928 & 2.813 & ME & -1.782 & 1.474 & 0.605 \\ 
+			%RE & 0.795 & 18.146 & 10.282 & IA & -1.712 & 13.199 & 7.657 \\ 
+			%\hline
+			%NR & -0.056 & 3.693 & 1.897 & ROE & 1.934 & 3.154 & 2.287 \\ 
+			%NR & 0.000 & 4.771 & 2.368 & EG & 0.814 & 1.368 & 1.753 \\ 
+			%NR & 0.425 & 3.370 & 5.178 & MKT & 0.425 & 3.370 & 5.178 \\ 
+			%NR & -0.272 & 39.463 & 16.698 & Alpha & 0.006 & 0.202 & 0.081 \\ 
+			%NR & 0.394 & 0.871 & 1.401 & IA & -0.319 & 1.734 & 1.169 \\ 
+			%NR & 0.453 & 15.719 & 24.377 & ME & 0.432 & 5.574 & 8.016 \\ 
+			%\hline
+			%INF & 0.098 & 0.055 & 0.025 & Alpha & 0.006 & 0.001 & 0.000 \\ 
+			%INF & 0.280 & 20.158 & 8.983 & EG & 0.893 & 21.368 & 9.700 \\ 
+			%INF & 0.775 & 19.273 & 22.509 & MKT & 0.775 & 19.273 & 22.509 \\ 
+			%INF & 0.469 & 26.226 & 12.751 & ROE & 1.030 & 30.728 & 16.129 \\ 
+			%INF & 0.758 & 33.453 & 36.239 & ME & -0.804 & 16.214 & 16.161 \\ 
+			%INF & 0.664 & 630.801 & 351.730 & IA & -0.929 & 137.937 & 75.628 \\ 
 			\hline
 			\hline
 		\end{tabular}
@@ -323,7 +325,7 @@
 % Mon Jun  8 17:44:27 2020
 \begin{table}[ht]
 	\centering
-	\resizebox{10cm}{!}{%
+	\resizebox{0.85\textwidth}{!}{%
 		\begin{tabular}{lrrlrrr}
 			& \multicolumn{2}{l}{MKT Factor} & & \multicolumn{2}{l}{Second Factor} & \\ 
 			Type & Mean & SD & Factor & Mean & SD & CV-error \\ 
@@ -342,34 +344,34 @@
 			VC & 1.138 & 0.341 & MKT & 1.138 & 0.341 & 25321 \\ 
 			VC & 1.610 & 0.431 & ROE & -0.946 & 0.426 & 26618 \\ 
 			VC & 1.688 & 0.505 & EG & -0.616 & 0.331 & 30392 \\ 
-			\hline
-			PD & 0.838 & 0.029 & MKT & 0.838 & 0.029 & 11290 \\ 
-			PD & 0.458 & 0.151 & Alpha & 0.003 & 0.001 & 11568 \\ 
-			PD & 0.770 & 0.058 & ROE & 0.232 & 0.111 & 11572 \\ 
-			PD & 0.707 & 0.086 & EG & 0.224 & 0.091 & 12194 \\ 
-			PD & 0.825 & 0.083 & IA & 0.158 & 0.305 & 15071 \\ 
-			PD & 0.837 & 0.098 & ME & 0.358 & 0.328 & 15441 \\ 
-			\hline
-			RE & 0.803 & 0.336 & MKT & 0.803 & 0.336 & 43486 \\ 
-			RE & 1.191 & 0.363 & Alpha & -0.003 & 0.004 & 45310 \\ 
-			RE & 0.341 & 0.402 & ROE & 2.275 & 1.558 & 52822 \\ 
-			RE & 0.559 & 0.379 & EG & 0.397 & 0.503 & 52867 \\ 
-			RE & 0.929 & 0.339 & ME & -1.287 & 1.174 & 57341 \\ 
-			RE & 0.852 & 0.372 & IA & -1.129 & 1.025 & 57662 \\ 
-			\hline
-			NR & -0.009 & 0.203 & ROE & 1.880 & 0.562 & 15631 \\ 
-			NR & 0.200 & 0.510 & EG & 0.681 & 0.372 & 18981 \\ 
-			NR & 0.572 & 0.400 & MKT & 0.572 & 0.400 & 20006 \\ 
-			NR & -0.065 & 0.729 & Alpha & 0.006 & 0.004 & 20880 \\ 
-			NR & 0.596 & 0.567 & IA & -0.060 & 0.869 & 24766 \\ 
-			NR & 0.769 & 0.771 & ME & 0.666 & 1.062 & 27238 \\ 
-			\hline
-			INF & 0.124 & 0.608 & Alpha & 0.007 & 0.006 & 14995 \\ 
-			INF & 0.613 & 0.393 & EG & 0.402 & 0.496 & 15758 \\ 
-			INF & 0.862 & 0.281 & MKT & 0.862 & 0.281 & 15820 \\ 
-			INF & 0.627 & 0.360 & ROE & 0.577 & 1.374 & 18297 \\ 
-			INF & 0.810 & 0.315 & ME & -0.129 & 1.109 & 19641 \\ 
-			INF & 0.797 & 0.842 & IA & 0.051 & 2.180 & 33661 \\ 
+			%\hline
+			%PD & 0.838 & 0.029 & MKT & 0.838 & 0.029 & 11290 \\ 
+			%PD & 0.458 & 0.151 & Alpha & 0.003 & 0.001 & 11568 \\ 
+			%PD & 0.770 & 0.058 & ROE & 0.232 & 0.111 & 11572 \\ 
+			%PD & 0.707 & 0.086 & EG & 0.224 & 0.091 & 12194 \\ 
+			%PD & 0.825 & 0.083 & IA & 0.158 & 0.305 & 15071 \\ 
+			%PD & 0.837 & 0.098 & ME & 0.358 & 0.328 & 15441 \\ 
+			%\hline
+			%RE & 0.803 & 0.336 & MKT & 0.803 & 0.336 & 43486 \\ 
+			%RE & 1.191 & 0.363 & Alpha & -0.003 & 0.004 & 45310 \\ 
+			%RE & 0.341 & 0.402 & ROE & 2.275 & 1.558 & 52822 \\ 
+			%RE & 0.559 & 0.379 & EG & 0.397 & 0.503 & 52867 \\ 
+			%RE & 0.929 & 0.339 & ME & -1.287 & 1.174 & 57341 \\ 
+			%RE & 0.852 & 0.372 & IA & -1.129 & 1.025 & 57662 \\ 
+			%\hline
+			%NR & -0.009 & 0.203 & ROE & 1.880 & 0.562 & 15631 \\ 
+			%NR & 0.200 & 0.510 & EG & 0.681 & 0.372 & 18981 \\ 
+			%NR & 0.572 & 0.400 & MKT & 0.572 & 0.400 & 20006 \\ 
+			%NR & -0.065 & 0.729 & Alpha & 0.006 & 0.004 & 20880 \\ 
+			%NR & 0.596 & 0.567 & IA & -0.060 & 0.869 & 24766 \\ 
+			%NR & 0.769 & 0.771 & ME & 0.666 & 1.062 & 27238 \\ 
+			%\hline
+			%INF & 0.124 & 0.608 & Alpha & 0.007 & 0.006 & 14995 \\ 
+			%INF & 0.613 & 0.393 & EG & 0.402 & 0.496 & 15758 \\ 
+			%INF & 0.862 & 0.281 & MKT & 0.862 & 0.281 & 15820 \\ 
+			%INF & 0.627 & 0.360 & ROE & 0.577 & 1.374 & 18297 \\ 
+			%INF & 0.810 & 0.315 & ME & -0.129 & 1.109 & 19641 \\ 
+			%INF & 0.797 & 0.842 & IA & 0.051 & 2.180 & 33661 \\ 
 			\hline
 			\hline
 		\end{tabular}
