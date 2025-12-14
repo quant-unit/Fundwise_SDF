@@ -10,7 +10,7 @@ if(!dir.exists("data_prepared")) dir.create("data_prepared")
 
 
 path <- "data_in/Preqin_Cashflow_export-26_Feb_20e003d5aa-5a18-4c12-aba8-7586a7435ac9.xlsx"
-path <- "data_in/Preqin_Cashflow_export-14_Apr_22272f54e5-79fe-43c0-8bc0-9206381de0b7.xlsx"
+# path <- "data_in/Preqin_Cashflow_export-14_Apr_22272f54e5-79fe-43c0-8bc0-9206381de0b7.xlsx"
 sheet <- "Preqin_Export"
 df.xl <- data.frame(readxl::read_excel(path = path, sheet = sheet))
 if ("GEOGRAPHIC.FOCUS" %in% colnames(df.xl)) df.xl$PRIMARY.GEOGRAPHIC.FOCUS <- df.xl$GEOGRAPHIC.FOCUS
@@ -186,6 +186,7 @@ make.preqin.csv <- function(fund.size.weighting, vin.year.pfs, region.filter) {
   tag <- ifelse(vin.year.pfs, paste0(tag, "_VYP"), tag)
   tag <- ifelse(is.na(region.filter), tag, paste0(tag, "_", region.filter))
   file = paste0("data_prepared/preqin_cashflows_2022_", tag, "_NAV.csv")
+  file = paste0("data_prepared/preqin_cashflows_", tag, "_NAV.csv")
   write.csv(df.out, file, row.names = FALSE)
   invisible(df.out)
 }

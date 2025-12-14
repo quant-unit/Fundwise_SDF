@@ -1,6 +1,6 @@
 #### estimate model
 # 0) Prologue -----
-source.internally <- FALSE
+source.internally <- TRUE
 
 if (source.internally) {
   
@@ -16,6 +16,9 @@ if (source.internally) {
   
   setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
   getwd()
+  
+  source.internally <- TRUE
+  
 }
 
 # 1.1) PARAMETERS ----
@@ -24,13 +27,13 @@ if (source.internally) {
   export.data <- FALSE
   
   use.vintage.year.pfs <- TRUE
-  use.simulation <- TRUE
+  use.simulation <- FALSE
   do.cross.validation <- FALSE
   do.cache <- TRUE
   do.parallel <- ifelse(.Platform$OS.type == "windows", FALSE, TRUE)
   
   private.source <- "pitchbook"
-  # private.source <- "preqin"
+  private.source <- "preqin"
   cutoff <- "" # "_cutoff_2019" # only available for PitchBook (2024-09-28)
   cutoff <- "_cutoff_2021"
   
@@ -45,7 +48,7 @@ if (source.internally) {
   
   # CHOICES
   weighting <- "EW"
-  #weighting <- "FW"
+  weighting <- "FW"
   #error.function <- "L1_Ridge"
   error.function <- "L2_Lasso"
   
@@ -53,23 +56,25 @@ if (source.internally) {
   #sdf.model <- "exp.aff"
   
   max.months <- c(1, 60, 120, 150, 180, 210, 240, 300, 360) # c(10, 20) * 12 # c(12.5, 15, 17.5) * 12
+  max.months <- c(180)
   
   include.alpha.term <- FALSE
   lambdas <- 0
   kernel.bandwidth <- 12
   if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
   cache.folder.tag <- paste0("pitchbook_2023", ifelse(do.cross.validation, "_cv_", "_"))
+  cache.folder.tag <- paste0("preqin_2025", ifelse(do.cross.validation, "_cv_", "_"))
   cache.folder.tag <- paste0(cache.folder.tag, ifelse(include.alpha.term, "alpha_", ""))
   cache.folder.tag <- paste0(cache.folder.tag, weighting)
   cache.folder.tag
   
-  cache.folder.tag <- "20250808_222540_simulated_cashflows_EW"
+  # cache.folder.tag <- "20250808_222540_simulated_cashflows_EW"
   simulation.filename <- paste0("20250808_222540/", cache.folder.tag, ".csv")
   
   part.to.keep <- 1
-  no.partitions <- 10
+  no.partitions <- 1 # 10
   
-  data.out.folder <- "data_out_2025"
+  data.out.folder <- "data_out_2025-emp"
   
   factors.to.use <- ""
 }
@@ -114,7 +119,7 @@ if(!use.simulation) {
   
   if (private.source == "preqin") {
     year.tag <- ""
-    df.private.cfs <- read.csv(paste0("data_prepared/preqin_cashflows_", weighting, year.tag, ".csv"))
+    df.private.cfs <- read.csv(paste0("data_prepared/preqin_cashflows_", weighting, year.tag, "_NAV.csv"))
     colnames(df.private.cfs)
   }
   
@@ -220,7 +225,7 @@ if (!use.simulation) {
   df1 <- df0
   df1 <- df1[!duplicated(df1$Fund.ID), ]
   df1 <- as.data.frame.matrix(table(df1$Vintage, df1$type))
-  df1 <- df1[, colnames(df1) %in% c("BO", "DD", "INF", "MEZZ", "NATRES", "PD", "RE", "VC")]
+  # df1 <- df1[, colnames(df1) %in% c("BO", "DD", "INF", "MEZZ", "NATRES", "PD", "RE", "VC")]
   df1["Total", ] <- as.integer(colSums(df1))
   print(xtable::xtable(df1, caption = "Number of funds per vintage year.", label = "tab:pitchbook_data"), include.rownames = TRUE)
   rm(df1)
@@ -535,9 +540,9 @@ iter.run <- function(input.list) {
   }
   if (public.filename == "q_factors") {
     factors <- colnames(df.public)[2:6] # q_factors
-    factors <- "MKT"
+    #factors <- "MKT"
     #factors <- "Alpha"
-    #factors <- c(factors, "Alpha")
+    factors <- c(factors, "Alpha")
     #factors <- c("ALL", factors)
     
     types <- c("PE", "VC", "PD", "RE", "NATRES", "INF") # asset classes
