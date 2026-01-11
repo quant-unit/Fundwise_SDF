@@ -53,15 +53,6 @@
 \usepackage{fancyhdr}
 \usepackage{graphicx }
 
-\iffalse
-%\addtolength{\headheight}{1cm} % make more space for the header
-\pagestyle{fancyplain} % use fancy for all pages except chapter start
-\lhead{\includegraphics[height=0.6cm]{logo/quantunitcom}} % left logo
-\rhead{\includegraphics[height=0.6cm]{logo/AssetMetrixLogo2019schwarz}} % right logo
-%\renewcommand{\headrulewidth}{0pt} % remove rule below header
-\renewcommand{\chaptermark}[1]{ \markboth{#1}{} }
-\renewcommand{\sectionmark}[1]{ \markright{#1}{} }
-\fi
 
 
 \begin{document}
@@ -1330,7 +1321,7 @@ Actually, choosing the set $\mathcal{T}$ according to the fund lifetime seems to
 		Simulation study to compare the simple linear with the exponential affine SDF and to determine the optimal size of the set $\mathcal{T}$.
 		Here, we always use vintage year-portfolios and 1000 simulation iterations.
 		For better readability, $\beta_{\mathrm{MKT}}=\beta$.
-		For the unity and high beta model, we test true and false model specifications (with and without the $\alpha$ term).
+		For the unity and high beta model, we test true and false model specifications (with and without the monthly $\alpha$ term).
 	} 
 	\label{tab:simulation_study}
 \end{table}

@@ -176,9 +176,12 @@ create.simulation <- function(
   head(df.vyp)
   
   timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
-  filename.vyp <- paste0("data_prepared_sim/", timestamp,"_simulated_cashflows_EW_VYP.csv")
-  filename.fund <- paste0("data_prepared_sim/", timestamp,"_simulated_cashflows_EW.csv")
-  filename.meta <- paste0("data_prepared_sim/", timestamp,"_simulated_cashflows_EW_meta.csv")
+  DATA_PREPARED_SIM_PATH =  paste0("simulation/", "data_prepared_sim-test2026-X/", timestamp, "/")
+  dir.create(DATA_PREPARED_SIM_PATH, recursive = TRUE)
+  
+  filename.vyp <- paste0(DATA_PREPARED_SIM_PATH, timestamp,"_simulated_cashflows_EW_VYP.csv")
+  filename.fund <- paste0(DATA_PREPARED_SIM_PATH, timestamp,"_simulated_cashflows_EW.csv")
+  filename.meta <- paste0(DATA_PREPARED_SIM_PATH, timestamp,"_simulated_cashflows_EW_meta.csv")
   
   df.meta <- data.frame(
     investment.period=investment.period,
