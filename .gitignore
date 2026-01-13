@@ -14,6 +14,7 @@
 
 # R related
 *.Rhistory
+*.Rproj
 *result_msci_market_factors*
 r_project/data_in/*
 r_project/data_out/*
@@ -36,3 +37,4 @@ r_project/simulation/data_results_sim/*
 
 !r_project/data_out/cache_simulation_1000
 !r_project/simulation/data_results_sim/data_out_2020
+.Rproj.user

@@ -9,7 +9,12 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
 set.seed(100)
 
-df.q5 <- read.csv("data_prepared/q_factors.csv")
+# Set path to q_factors.csv
+current_dir <- getwd()
+parent_dir <- dirname(current_dir)
+file_path_q_factor <- file.path(parent_dir, "data_prepared", "q_factors.csv")
+
+df.q5 <- read.csv(file_path_q_factor)
 df.q5$Date <- as.Date(df.q5$Date)
 
 sim.sd <- function(stdv = 0.312) {
