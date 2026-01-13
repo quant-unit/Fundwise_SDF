@@ -21,14 +21,14 @@ file.name <- paste("df0", private.source, public.filename, weighting, cutoff, se
 if(cutoff == "") file.name <- paste("df0", private.source, public.filename, weighting, sep ="_")
 file.name <- paste(file.name, "csv", sep=".")
 file.name
-df0 <- read.csv2(paste0("data_private_public/", file.name))
+df0 <- read.csv2(paste0("empirical/data_private_public/", file.name))
 df0$Date <- as.Date(df0$Date)
 aggregate(Date ~ type, df0, min)
 
 rm(file.name)
 
 # load df.public
-df.public <- read.csv2(paste0("data_private_public/public_", public.filename, ".csv"))
+df.public <- read.csv2(paste0("empirical/data_private_public/public_", public.filename, ".csv"))
 df.public$Date <- as.Date(df.public$Date)
 df.public$X <- NULL
 
@@ -38,7 +38,7 @@ lambda <- 0
 
 
 # source getNPVs.R
-source("getNPVs.R")
+source("helper/getNPVs.R")
 
 # load cached SDF factor estimates
 if (public.filename == "q_factors") {
@@ -47,14 +47,14 @@ if (public.filename == "q_factors") {
   sdf.model <- paste0("cache_", public.filename, "_pitchbook_2023_alpha_", weighting)
   sdf.model <- paste0("cache_", public.filename, "_pitchbook_2023_", weighting)
 }
-filenames <- list.files(paste0("data_out/", sdf.model), pattern="*cached_res.csv", full.names=TRUE)
+filenames <- list.files(paste0("results/data_out/", sdf.model), pattern="*cached_res.csv", full.names=TRUE)
 df.sdf <- data.frame(Reduce(rbind.all.columns, lapply(filenames, read.csv)))
 df.sdf[is.na(df.sdf)] <- 0
 types <- levels(as.factor(df.sdf$Type))
 type <- types[1]
 type <- "ALL" # "PE" # "PD" # "MEZZ" # "NATRES" # "INF" # "DD" # "RE" # "BO" # "VC"
 type <- "BO"; length(types); type
-RUN <- FALSE
+RUN <- TRUE
 
 sdf.factors <- colnames(df.sdf)[grep(".indep", colnames(df.sdf))]
 sdf.factors <- sub(".indep", "", sdf.factors)
@@ -388,8 +388,8 @@ multi.cwb.iterations <- function(n.boost,
   
   # load cached csv
   if (load.cached.idi) {
-    df.idi <- read.csv2("data_idi/df.idi.csv")
-    df.res.before <- read.csv2("data_idi/df.res.csv")
+    df.idi <- read.csv2("results/data_idi/df.idi.csv")
+    df.res.before <- read.csv2("results/data_idi/df.res.csv")
     
     df.idi$X <- NULL
     df.idi$Date <- as.Date(df.idi$Date)
@@ -471,7 +471,7 @@ multi.cwb.iterations <- function(n.boost,
 }
 
 write.out <- function(out, type, tag="") {
-  folder <- paste0("data_idi/", sub.folder)
+  folder <- paste0("results/data_idi/", sub.folder)
   # Check if the folder exists
   if (!file.exists(folder)) {
     # Create the folder if it doesn't exist
@@ -488,8 +488,11 @@ write.out <- function(out, type, tag="") {
 read.out <- function(type, tag="") {
   out <- list()
   for (name in c("idi", "par", "res")) {
-    file <- paste0("data_idi/",sub.folder, "/df_",name, "_", type, tag,".csv")
-    if(! file.exists(file)) return(NA)
+    file <- paste0("results/data_idi/",sub.folder, "/df_",name, "_", type, tag,".csv")
+    if(! file.exists(file)) {
+      print(paste("Does not exist:", file))
+      return(NA)
+    }
     
     df <- read.csv2(file)
     if ("Date" %in% colnames(df)) df$Date <- as.Date(df$Date)
@@ -611,13 +614,13 @@ df.ret$total.return <- df.ret$idi.return + df.ret$factor.return
 ((1+mean(df.ret$FiveFactorReturn))^4-1)
 
 
-df.ca <- read.csv("nav_returns/ca_index_100.csv")
+df.ca <- read.csv("empirical/nav_returns/ca_index_100.csv")
 df.ca$Date <- as.Date(df.ca$Date)
 df.ca <- df.ca[, c("Date", map.types[[type]])]
 df.ret <- merge(df.ret, df.ca, by="Date", all.x = TRUE)
 
 # Pitchbook NAV Returns
-df.pb <- read.csv2("nav_returns/pitchbook_nav_returns_2022Q4.csv")
+df.pb <- read.csv2("empirical/nav_returns/pitchbook_nav_returns_2022Q4.csv")
 colnames(df.pb)
 map.types.pb = list(
   BO = "Buyout",
@@ -636,7 +639,7 @@ df.pb <- df.pb[, c("Date", map.types.pb[[type]])]
 df.ret <- merge(df.ret, df.pb, by="Date", all.x = TRUE)
 
 # Preqin NAV Returns
-df.pr <- openxlsx::read.xlsx("nav_returns/preqin_export_Private Capital Quarterly Index Chart_2023_12_14.xlsx", startRow=2)
+df.pr <- openxlsx::read.xlsx("empirical/nav_returns/preqin_export_Private Capital Quarterly Index Chart_2023_12_14.xlsx", startRow=2)
 df.pr$DATE <- as.Date(df.pr$DATE - 25568) # 2023-06-30
 df.pr$DATE <- as.Date(ifelse(format(df.pr$DATE, "%m") == "01", df.pr$DATE - 1 , df.pr$DATE))
 df.pr$DATE <- as.Date(ifelse(format(df.pr$DATE, "%m-%d") == "04-01", df.pr$DATE - 1 , df.pr$DATE))
@@ -872,4 +875,4 @@ plot.it(df.ret, "post2010")
 (1+mean(df.ret$idi.return[df.ret$Date < as.Date("2010-01-01")]))^4 - 1
 (1+mean(df.ret$idi.return[df.ret$Date > as.Date("2010-01-01")]))^4 - 1
 
-# write.csv2(df.ret, "dfBOmsciIdiReturns.csv")
+write.csv2(df.ret, "results/dfBOmsciIdiReturns.csv")

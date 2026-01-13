@@ -39,7 +39,7 @@ simulation.filename <- paste0("20250808_222540/", cache.folder.tag, ".csv")
 part.to.keep <- 1
 no.partitions <- 1
 
-data.out.folder <- "data_out_2025-2"
+data.out.folder <- "simulation/data_out_2026_new"
 
 factors.to.use <- ""
 

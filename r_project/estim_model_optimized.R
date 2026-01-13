@@ -56,7 +56,7 @@ if (source.internally) {
   #sdf.model <- "exp.aff"
   
   max.months <- c(1, 60, 120, 150, 180, 210, 240, 300, 360) # c(10, 20) * 12 # c(12.5, 15, 17.5) * 12
-  max.months <- c(180)
+  max.months <- c(1, 60, 120, 150, 180)
   
   include.alpha.term <- FALSE
   lambdas <- 0
@@ -74,7 +74,7 @@ if (source.internally) {
   part.to.keep <- 1
   no.partitions <- 1 # 10
   
-  data.out.folder <- "data_out_2025-emp"
+  data.out.folder <- "results/data_out_2026-emp"
   
   factors.to.use <- ""
 }
@@ -83,10 +83,10 @@ if (source.internally) {
 
 # load public data
 if (public.filename == "q_factors") {
-  df.public <- read.csv(paste0("data_prepared/", public.filename, ".csv"))
+  df.public <- read.csv(paste0("empirical/data_prepared/", public.filename, ".csv"))
   
 } else {
-  df.public <- read.csv2(paste0("data_prepared/", public.filename, ".csv"))
+  df.public <- read.csv2(paste0("empirical/data_prepared/", public.filename, ".csv"))
 }
 colnames(df.public) <- gsub("_World", "", colnames(df.public))
 df.public$Date <- as.Date(df.public$Date)
@@ -111,7 +111,7 @@ if (public.filename %in% bond.files ) {
 df.public$Alpha <- 1
 
 if (export.data) {
-  write.csv2(df.public, paste0("data_private_public/public_", public.filename, ".csv"))
+  write.csv2(df.public, paste0("empirical/data_private_public/public_", public.filename, ".csv"))
 }
 
 # Load private data
@@ -119,20 +119,20 @@ if(!use.simulation) {
   
   if (private.source == "preqin") {
     year.tag <- ""
-    df.private.cfs <- read.csv(paste0("data_prepared/preqin_cashflows_", weighting, year.tag, "_NAV.csv"))
+    df.private.cfs <- read.csv(paste0("empirical/data_prepared/preqin_cashflows_", weighting, year.tag, "_NAV.csv"))
     colnames(df.private.cfs)
   }
   
   if (private.source == "pitchbook") {
     year.tag <- "_2023"
-    df.private.cfs <- read.csv(paste0("data_prepared", cutoff, "/pitchbook_cashflows_", weighting, year.tag, ".csv"))
+    df.private.cfs <- read.csv(paste0("empirical/data_prepared", cutoff, "/pitchbook_cashflows_", weighting, year.tag, ".csv"))
     colnames(df.private.cfs)
     print(max(df.private.cfs$Date))
   }
   
 } else {
-  # df.private.cfs <- read.csv(paste0("data_prepared/simulated_cashflows_", weighting, ".csv"))
-  df.private.cfs <- read.csv(paste0("data_prepared_sim/", simulation.filename))
+  # df.private.cfs <- read.csv(paste0("simulation/data_prepared/simulated_cashflows_", weighting, ".csv"))
+  df.private.cfs <- read.csv(paste0("simulation/data_prepared_sim/", simulation.filename))
   
 }
 
@@ -232,7 +232,7 @@ if (!use.simulation) {
 }
 
 # 2.1) getNPVs function ----
-source("getNPVs.R")
+source("helper/getNPVs.R")
 
 # 2.2) err.sqr.calc function ----
 
