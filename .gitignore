@@ -27,6 +27,7 @@ r_project/empirical/nav_returns/*
 r_project/empirical/data_in/*
 r_project/empirical/data_private_public/*
 r_project/empirical/data_prepared/*
+r_project/empirical/data_prepared_main/*
 r_project/empirical/data_prepared_sim/*
 r_project/simulation/data_prepared_sim/*
 r_project/simulation/data_prepared_sim-test2026*

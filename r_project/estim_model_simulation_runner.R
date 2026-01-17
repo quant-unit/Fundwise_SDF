@@ -1,4 +1,4 @@
-### estimate model runner
+### estimate model runner: Simulation
 # 0. Prologue ----
 if(sys.nframe() == 0L) rm(list = ls())
 

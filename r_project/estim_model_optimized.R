@@ -1,6 +1,9 @@
 #### estimate model
 # 0) Prologue -----
-source.internally <- TRUE
+
+if(!exists("source.internally", envir = .GlobalEnv)) {
+  source.internally <- TRUE
+}
 
 if (source.internally) {
   
@@ -16,8 +19,6 @@ if (source.internally) {
   
   setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
   getwd()
-  
-  source.internally <- TRUE
   
 }
 
@@ -62,8 +63,8 @@ if (source.internally) {
   lambdas <- 0
   kernel.bandwidth <- 12
   if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
-  cache.folder.tag <- paste0("pitchbook_2023", ifelse(do.cross.validation, "_cv_", "_"))
-  cache.folder.tag <- paste0("preqin_2025", ifelse(do.cross.validation, "_cv_", "_"))
+  cache.folder.tag <- paste0(private.source, "_")
+  # cache.folder.tag <- paste0(private.source, ifelse(do.cross.validation, "_cv_", "_"))
   cache.folder.tag <- paste0(cache.folder.tag, ifelse(include.alpha.term, "alpha_", ""))
   cache.folder.tag <- paste0(cache.folder.tag, weighting)
   cache.folder.tag
@@ -227,7 +228,8 @@ if (!use.simulation) {
   df1 <- as.data.frame.matrix(table(df1$Vintage, df1$type))
   # df1 <- df1[, colnames(df1) %in% c("BO", "DD", "INF", "MEZZ", "NATRES", "PD", "RE", "VC")]
   df1["Total", ] <- as.integer(colSums(df1))
-  print(xtable::xtable(df1, caption = "Number of funds per vintage year.", label = "tab:pitchbook_data"), include.rownames = TRUE)
+  print(xtable::xtable(df1, caption = "Number of funds per vintage year.", 
+                       label =paste0("tab:", private.source, "_data")), include.rownames = TRUE)
   rm(df1)
 }
 

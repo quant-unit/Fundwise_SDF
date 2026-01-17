@@ -1,13 +1,23 @@
 # analyze results -----
-if(sys.nframe() == 0L) rm(list = ls())
 
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-getwd()
+if(!exists("source.internally", envir = .GlobalEnv)) {
+  source.internally <- TRUE
+}
+
+if (source.internally) {
+  
+  if(sys.nframe() == 0L) rm(list = ls())
+  
+  setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+  getwd()
+  
+  prefix <- "q_factors_preqin_cv_"
+  suffix <- "EW_VYP"
+  data.out.folder <- "data_out_2026-emp"
+}
 
 list.cache <- list()
-prefix <- "q_factors_preqin_2025_cv_"
-suffix <- "EW_VYP"
-dir.cache <- paste0("data_out_2025-emp/cache_", prefix, suffix)
+dir.cache <- paste0(data.out.folder, "/cache_", prefix, suffix)
 
 for(file in list.files(dir.cache)) {
   if(substr(file,1,1) == 0) next
@@ -96,7 +106,7 @@ df.cv.rank$key <- paste(df.cv.rank$Type, df.cv.rank$max.month, df.cv.rank$Factor
 df.cv.rank <- df.cv.rank[, c("key", "validation.error")]
 
 
-# summarize all coefs ----
+# summarize ALL coefs with asymptotic inference ----
 df.all <- df.f[(df.f$CV.key == "ALL"), ]
 for(i in 1:nrow(df.all)) {
   factor <- as.character(df.all$Factor[i])
@@ -157,7 +167,7 @@ print(xtable::xtable(df.abs,
 write.csv(df.cv.abs, paste0(dir.cache,"/0_cross_validation_sumabs.csv"))
 write.csv(df.all.abs, paste0(dir.cache,"/0_asymptotic_inference_sumabs.csv"))
 
-
+# Write Corss-Validation
 df.cv$t.MKT <- df.cv$MKT / df.cv$SE.MKT
 df.cv$t.Coef <- df.cv$Coef / df.cv$SE.Coef
 df.cv$sig <- ((abs(df.cv$t.MKT) > 1.96) & (abs(df.cv$t.Coef) > 1.96))
@@ -165,6 +175,7 @@ sum(df.cv$sig) ; nrow(df.cv)
 
 write.csv(df.cv, paste0(dir.cache,"/0_cross_validation_summary.csv"))
 
+# Write asymptotic inference
 df.all$t.MKT <- df.all$MKT / df.all$SE.MKT
 df.all$t.MKT.indep <- df.all$MKT / df.all$SE.MKT.indep
 df.all$t.Coef <- df.all$MKT / df.all$SE.Coef
@@ -180,8 +191,8 @@ write.csv(df.all, paste0(dir.cache,"/0_asymptotic_inference_summary.csv"))
 
 # summarize both best ----
 df.cv.best <- list()
-for(Type in df.cv$Type) {
-  for(max.month in df.cv$max.month) {
+for(Type in unique(df.cv$Type)) {
+  for(max.month in unique(df.cv$max.month)) {
     df.ss <- df.cv[(df.cv$Type == Type) & (df.cv$max.month == max.month), ]
     df.ss <- df.ss[df.ss$validation.error == min(df.ss$validation.error), ]
     # we just want "one best" model

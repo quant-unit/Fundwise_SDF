@@ -4,13 +4,17 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
 
 
-list.cache <- list()
+data.out.folder <- "data_out_2026-emp"
 prefix <- "q_factors_"
 suffixes <- c("EW", "EW_VYP", "FW", "FW_VYP")
+suffixes <- c("preqin_EW_VYP", "preqin_FW_VYP")
+
 files <- c("asymptotic_inference", "cross_validation")
+
+list.cache <- list()
 for(suffix in suffixes) {
   for(file in files) {
-    path <- paste0("data_out/cache_", prefix, suffix, "/0_", file, "_summary.csv")
+    path <- paste0(data.out.folder, "/cache_", prefix, suffix, "/0_", file, "_summary.csv")
     df <- read.csv(path)
     df$X <- NULL
     if("Max.Quarter" %in% colnames(df)) {

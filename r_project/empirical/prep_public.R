@@ -110,10 +110,10 @@ if (FALSE) {
 
 # q-factor data ----
 
-if (FALSE) {
+if (TRUE) {
   url <- "http://global-q.org/uploads/1/2/2/6/122679606/q5_factors_monthly_2019.csv"
   url <- "https://global-q.org/uploads/1/2/2/6/122679606/q5_factors_monthly_2022.csv"
-  #url <- "data_in/q5_factors_monthly_2019.csv"
+  url <- "data_in/q5_factors_monthly_2019.csv"
   df.q <- read.csv(url)
   cor(df.q[, 3:8])
   
