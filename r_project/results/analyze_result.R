@@ -20,6 +20,7 @@ dir.cache <- paste0(data.out.folder, "/cache_", prefix, suffix)
 
 for (file in list.files(dir.cache)) {
   if (substr(file, 1, 1) == 0) next
+  if (!grepl("\\.csv$", file)) next
   df.f <- read.csv(paste0(dir.cache, "/", file))
   df.f$CV.key <- as.character(df.f$CV.key)
   list.cache[[file]] <- df.f
@@ -127,66 +128,118 @@ df.all <- df.all[, c(
 
 df.all <- df.all[order(df.all$Type, df.all$Factor, as.numeric(df.all$max.month)), ]
 
-# print LaTeX tables -----
+# print 2 LaTeX tables -----
 spec <- paste0(strsplit(suffix, "_")[[1]], collapse = "-")
 types2print <- c("PE", "VC")
 
 # Define header for repeated pages
-add.to.row <- list(pos = list(0), command = "\\hline\\endhead ")
+add.to.row <- list(pos = list(0), command = "\\hline ")
 
-# Helper to suppress repeated values for cleaner tables
-clean_for_print <- function(df) {
-  df <- df[order(df$Type, as.numeric(df$max.month), df$Factor), ]
-  df$Type <- as.character(df$Type)
-  df$max.month <- as.character(df$max.month)
+# Helper to suppress repeated values for cleaner tables and rename cols
+# Helper to suppress repeated values for cleaner tables and rename cols
+prepare_and_print_tables <- function(df, types, table_type, suffix, spec) {
+  # Determine weighting scheme for caption
+  weighting_text <- "Vintage-Year Portfolios"
+  if (grepl("FW", suffix)) {
+    weighting_text <- "Fund-Size Weighted Vintage-Year Portfolios"
+  } else if (grepl("EW", suffix)) {
+    weighting_text <- "Equal-Weighted Vintage-Year Portfolios"
+  }
 
-  # Suppress repeats
-  df$Type[duplicated(df$Type)] <- ""
-  # Only suppress max.month if Type is also the same (handled by paste check)
-  # Actually, since we sorted, we can just check duplicates on the combination
-  # But simple duplicated on vector works if we processed Type first?
-  # No, we need to respect the grouping.
-  # If Type changed, we must show max.month even if it's same as previous row's max.month
+  for (type in types) {
+    df.sub <- df[df$Type == type, ]
 
-  # Robust way:
-  mask_type <- duplicated(df$Type)
-  mask_month <- duplicated(paste(df$Type, df$max.month))
+    # Sort by Factor then MCM (numeric)
+    # Ensure max.month is treated as numeric for sorting
+    df.sub <- df.sub[order(df.sub$Factor, as.numeric(df.sub$max.month)), ]
 
-  df$Type[mask_type] <- ""
-  df$max.month[mask_month] <- ""
+    # Remove Type column as it's now in the caption
+    df.sub$Type <- NULL
 
-  return(df)
+    # Rename columns based on table type
+    if (table_type == "AI") {
+      # Asymptotic Inference
+      # Desired columns: Factor, MCM, Market, SE(Mkt), SE(Mkt)Ind, Loading, SE(Load), SE(Load)Ind
+
+      # Rename for internal consistency before printing (though headers will be custom)
+      # We need correct column order for the data rows
+
+      # Map original names to temp names to ensure correct ordering
+      # Original cols: MKT, SE.MKT, SE.MKT.indep, Factor, Coef, SE.Coef, SE.Coef.indep, max.month
+
+      df.sub <- df.sub[, c("Factor", "max.month", "MKT", "SE.MKT", "SE.MKT.indep", "Coef", "SE.Coef", "SE.Coef.indep")]
+
+      cap <- paste0(
+        "Asymptotic results for ", type, " Funds. ",
+        "This table reports asymptotic parameter estimates for linear two-factor models using ", weighting_text, ". ",
+        "Standard errors are estimated by a SHAC estimator (Equation \\ref{eq:asy_se}) with a Bartlett kernel bandwidth of $D=12$ vintage years to correct for dependence between overlapping funds. ",
+        "MCM (Maximum Compounding Month) denotes the maximum cash flow compounding horizon."
+      )
+      lab <- paste0("tab:ai_", suffix, "_", type)
+
+      # Custom Header for AI
+      # Factor | MCM | Market | SE(Mkt) | SE(Mkt)Ind | Loading | SE(Load) | SE(Load)Ind
+      header_row <- paste0(
+        "\\hline\n",
+        "\\textbf{Second} & & & \\textbf{SE} & \\textbf{SE (Mkt)} & & \\textbf{SE} & \\textbf{SE (Load)} \\\\ \n",
+        "\\textbf{Factor} & \\textbf{MCM} & \\textbf{Market} & \\textbf{(Mkt)} & \\textbf{Ind.} & \\textbf{Loading} & \\textbf{(Load)} & \\textbf{Ind.} \\\\ \n",
+        "\\hline\n"
+      )
+    } else {
+      # Cross Validation
+      # Desired columns: Factor, MCM, Market, SE(Mkt), Loading, SE(Load), Val. Error
+
+      # Original cols: MKT, SE.MKT, Factor, Coef, SE.Coef, validation.error, max.month
+      df.sub <- df.sub[, c("Factor", "max.month", "MKT", "SE.MKT", "Coef", "SE.Coef", "validation.error")]
+
+      cap <- paste0(
+        "Cross-validation results for ", type, " Funds. ",
+        "The table reports the validation error and average parameter estimates from $hv$-block cross-validation. ",
+        "The estimation uses ", weighting_text, ". ",
+        "MCM (Maximum Compounding Month) denotes the maximum cash flow compounding horizon."
+      )
+      lab <- paste0("tab:cv_", suffix, "_", type)
+
+      # Custom Header for CV
+      # Factor | MCM | Market | SE(Mkt) | Loading | SE(Load) | Val. Error
+      header_row <- paste0(
+        "\\hline\n",
+        "\\textbf{Second} & & & \\textbf{SE} & & \\textbf{SE} & \\textbf{Val.} \\\\ \n",
+        "\\textbf{Factor} & \\textbf{MCM} & \\textbf{Market} & \\textbf{(Mkt)} & \\textbf{Loading} & \\textbf{(Load)} & \\textbf{Error} \\\\ \n",
+        "\\hline\n"
+      )
+    }
+
+    # No longer suppressing repeated MCM values
+    # df.sub$MCM <- as.character(df.sub$MCM) # Not needed if we keep original max.month
+
+    # Define add.to.row list
+    add.to.row <- list(pos = list(0), command = header_row)
+
+    print(
+      xtable::xtable(df.sub,
+        caption = cap,
+        label = lab, digits = 3
+      ),
+      include.rownames = FALSE,
+      include.colnames = FALSE, # We provide our own headers
+      floating = TRUE,
+      # tabular.environment = "longtable", # we want to use normal tables!
+      add.to.row = add.to.row,
+      hline.after = c(nrow(df.sub)), # Only hline at bottom, top handled by header
+      file = outfile,
+      append = TRUE
+    )
+  }
 }
 
-df.all.print <- df.all[df.all$Type %in% types2print, ]
-# df.all.print <- clean_for_print(df.all.print)
+outfile <- paste0(dir.cache, "/empirical_tables.tex")
+# Clear file if it exists
+cat("", file = outfile)
 
-print(
-  xtable::xtable(df.all.print,
-    caption = paste("Asymptotic inference with", spec, "max month 180, and $D=12$."),
-    label = paste0("tab:ai_180_", suffix), digits = 3
-  ),
-  include.rownames = FALSE,
-  tabular.environment = "longtable",
-  floating = FALSE,
-  add.to.row = add.to.row,
-  hline.after = c(-1)
-) # -1 adds top line, add.to.row adds the rest
-
-df.cv.print <- df.cv[df.cv$Type %in% types2print, ]
-# df.cv.print <- clean_for_print(df.cv.print)
-
-print(
-  xtable::xtable(df.cv.print,
-    caption = paste("$hv$-block cross-validation with", spec, "weighting and max month 180"),
-    label = paste0("tab:cv_180_", suffix), digits = 3
-  ),
-  include.rownames = FALSE,
-  tabular.environment = "longtable",
-  floating = FALSE,
-  add.to.row = add.to.row,
-  hline.after = c(-1)
-)
+prepare_and_print_tables(df.all, types2print, "AI", suffix, spec)
+cat("\\clearpage\n", file = outfile, append = TRUE)
+prepare_and_print_tables(df.cv, types2print, "CV", suffix, spec)
 
 
 # abs summary ----
