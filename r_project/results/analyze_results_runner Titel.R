@@ -21,12 +21,14 @@ suffix <- "FW_VYP"
 
 source("analyze_result.R")
 
-prefix <- "q_factors_preqin_alpha_"
-suffix <- "EW_VYP"
-
-source("analyze_result.R")
-
-prefix <- "q_factors_preqin_alpha_"
-suffix <- "FW_VYP"
-
-source("analyze_result.R")
+if (FALSE) {
+  prefix <- "q_factors_preqin_alpha_"
+  suffix <- "EW_VYP"
+  
+  source("analyze_result.R")
+  
+  prefix <- "q_factors_preqin_alpha_"
+  suffix <- "FW_VYP"
+  
+  source("analyze_result.R")
+}
