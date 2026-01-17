@@ -11,7 +11,7 @@ if (source.internally) {
   getwd()
 
   prefix <- "q_factors_preqin_cv_"
-  suffix <- "EW_VYP"
+  suffix <- "FW_VYP"
   data.out.folder <- "data_out_2026-emp"
 }
 
@@ -95,13 +95,13 @@ for (i in 1:nrow(df.cv)) {
 }
 df.cv <- df.cv[, c("Type", "max.month", "MKT", "SE.MKT", "Factor", "Coef", "SE.Coef", "validation.error")]
 df.cv$validation.error <- as.numeric(df.cv$validation.error)
-df.cv <- df.cv[order(df.cv$Type, as.numeric(df.cv$max.month), df.cv$Factor), ]
+df.cv <- df.cv[order(df.cv$Type, df.cv$Factor, as.numeric(df.cv$max.month)), ]
 
 max.months.to.keep <- c("1", "30", "60", "120", "180")
 df.cv <- df.cv[df.cv$max.month %in% max.months.to.keep, ]
 
 df.cv.rank <- df.cv
-df.cv.rank$key <- paste(df.cv.rank$Type, as.numeric(df.cv.rank$max.month), df.cv.rank$Factor)
+df.cv.rank$key <- paste(df.cv.rank$Type, df.cv.rank$Factor, as.numeric(df.cv.rank$max.month))
 df.cv.rank <- df.cv.rank[, c("key", "validation.error")]
 
 
@@ -125,32 +125,69 @@ df.all <- df.all[, c(
   "Factor", "Coef", "SE.Coef", "SE.Coef.indep"
 )]
 
-df.all$key <- paste(df.all$Type, df.all$max.month, df.all$Factor)
-df.all <- merge(df.all, df.cv.rank, by = "key")
-df.all <- df.all[base::order(df.all$Type, as.numeric(df.all$max.month), df.all$Factor), ]
-df.all$key <- df.all$validation.error <- NULL # Keep max.month for unambiguous identification
+df.all <- df.all[order(df.all$Type, df.all$Factor, as.numeric(df.all$max.month)), ]
 
 # print LaTeX tables -----
 spec <- paste0(strsplit(suffix, "_")[[1]], collapse = "-")
 types2print <- c("PE", "VC")
+
+# Define header for repeated pages
+add.to.row <- list(pos = list(0), command = "\\hline\\endhead ")
+
+# Helper to suppress repeated values for cleaner tables
+clean_for_print <- function(df) {
+  df <- df[order(df$Type, as.numeric(df$max.month), df$Factor), ]
+  df$Type <- as.character(df$Type)
+  df$max.month <- as.character(df$max.month)
+
+  # Suppress repeats
+  df$Type[duplicated(df$Type)] <- ""
+  # Only suppress max.month if Type is also the same (handled by paste check)
+  # Actually, since we sorted, we can just check duplicates on the combination
+  # But simple duplicated on vector works if we processed Type first?
+  # No, we need to respect the grouping.
+  # If Type changed, we must show max.month even if it's same as previous row's max.month
+
+  # Robust way:
+  mask_type <- duplicated(df$Type)
+  mask_month <- duplicated(paste(df$Type, df$max.month))
+
+  df$Type[mask_type] <- ""
+  df$max.month[mask_month] <- ""
+
+  return(df)
+}
+
+df.all.print <- df.all[df.all$Type %in% types2print, ]
+# df.all.print <- clean_for_print(df.all.print)
+
 print(
-  xtable::xtable(df.all[df.all$Type %in% types2print, ],
+  xtable::xtable(df.all.print,
     caption = paste("Asymptotic inference with", spec, "max month 180, and $D=12$."),
     label = paste0("tab:ai_180_", suffix), digits = 3
   ),
   include.rownames = FALSE,
   tabular.environment = "longtable",
-  floating = FALSE
-)
+  floating = FALSE,
+  add.to.row = add.to.row,
+  hline.after = c(-1)
+) # -1 adds top line, add.to.row adds the rest
+
+df.cv.print <- df.cv[df.cv$Type %in% types2print, ]
+# df.cv.print <- clean_for_print(df.cv.print)
+
 print(
-  xtable::xtable(df.cv[df.cv$Type %in% types2print, ],
+  xtable::xtable(df.cv.print,
     caption = paste("$hv$-block cross-validation with", spec, "weighting and max month 180"),
     label = paste0("tab:cv_180_", suffix), digits = 3
   ),
   include.rownames = FALSE,
   tabular.environment = "longtable",
-  floating = FALSE
+  floating = FALSE,
+  add.to.row = add.to.row,
+  hline.after = c(-1)
 )
+
 
 # abs summary ----
 sum.abs <- function(df, inference = "") {
