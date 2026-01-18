@@ -16,6 +16,7 @@ if (source.internally) {
   }
   
   if(sys.nframe() == 0L) rm(list = ls())
+  source.internally <- TRUE
   
   setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
   getwd()
@@ -75,19 +76,22 @@ if (source.internally) {
   part.to.keep <- 1
   no.partitions <- 1 # 10
   
-  data.out.folder <- "results/data_out_2026-emp"
+  data.out.folder <- "results/data_out_2026-emp-B"
+  if(!dir.exists(data.out.folder)) dir.create(data.out.folder)
   
   factors.to.use <- ""
 }
 
 # 1.2) load data -----
 
+data.prepared.folder <- "data_prepared"
+
 # load public data
 if (public.filename == "q_factors") {
-  df.public <- read.csv(paste0("empirical/data_prepared/", public.filename, ".csv"))
+  df.public <- read.csv(paste0("empirical/", data.prepared.folder, "/", public.filename, ".csv"))
   
 } else {
-  df.public <- read.csv2(paste0("empirical/data_prepared/", public.filename, ".csv"))
+  df.public <- read.csv2(paste0("empirical/", data.prepared.folder, "/", public.filename, ".csv"))
 }
 colnames(df.public) <- gsub("_World", "", colnames(df.public))
 df.public$Date <- as.Date(df.public$Date)
@@ -99,7 +103,7 @@ if (public.filename %in% bond.files ) {
   df.public <- df.public[complete.cases(df.public[, 2:5]), ]
   df.public[is.na(df.public)] <- 0
   public.equity <- "msci_market_factors"
-  df.pubeq <- read.csv2(paste0("data_prepared/", public.equity, ".csv"))
+  df.pubeq <- read.csv2(paste0(data.prepared.folder, "/", public.equity, ".csv"))
   colnames(df.pubeq) <- gsub("_World", "", colnames(df.pubeq))
   df.pubeq$Date <- as.Date(df.pubeq$Date)
   
@@ -120,19 +124,19 @@ if(!use.simulation) {
   
   if (private.source == "preqin") {
     year.tag <- ""
-    df.private.cfs <- read.csv(paste0("empirical/data_prepared/preqin_cashflows_", weighting, year.tag, "_NAV.csv"))
+    df.private.cfs <- read.csv(paste0("empirical/", data.prepared.folder, "/preqin_cashflows_", weighting, year.tag, "_NAV.csv"))
     colnames(df.private.cfs)
   }
   
   if (private.source == "pitchbook") {
     year.tag <- "_2023"
-    df.private.cfs <- read.csv(paste0("empirical/data_prepared", cutoff, "/pitchbook_cashflows_", weighting, year.tag, ".csv"))
+    df.private.cfs <- read.csv(paste0("empirical/", data.prepared.folder, cutoff, "/pitchbook_cashflows_", weighting, year.tag, ".csv"))
     colnames(df.private.cfs)
     print(max(df.private.cfs$Date))
   }
   
 } else {
-  # df.private.cfs <- read.csv(paste0("simulation/data_prepared/simulated_cashflows_", weighting, ".csv"))
+  # df.private.cfs <- read.csv(paste0("simulation/", data.prepared.folder, "/simulated_cashflows_", weighting, ".csv"))
   df.private.cfs <- read.csv(paste0("simulation/data_prepared_sim/", simulation.filename))
   
 }

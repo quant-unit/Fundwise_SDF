@@ -10,9 +10,9 @@ if (source.internally) {
   setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
   getwd()
 
-  prefix <- "q_factors_preqin_cv_"
+  prefix <- "q_factors_preqin_"
   suffix <- "FW_VYP"
-  data.out.folder <- "data_out_2026-emp"
+  data.out.folder <- "data_out_2026-emp-B"
 }
 
 list.cache <- list()
@@ -128,7 +128,7 @@ df.all <- df.all[order(df.all$Type, df.all$Factor, as.numeric(df.all$max.month))
 
 # print 2 LaTeX tables -----
 spec <- paste0(strsplit(suffix, "_")[[1]], collapse = "-")
-types2print <- c("PE", "VC")
+types2print <- c("PE")
 
 # Define header for repeated pages
 add.to.row <- list(pos = list(0), command = "\\hline ")

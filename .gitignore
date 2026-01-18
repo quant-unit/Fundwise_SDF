@@ -19,6 +19,7 @@ r_project/results/data_out/*
 r_project/results/data_out_2025/*
 r_project/results/data_out_2025-emp/*
 r_project/results/data_out_2026-emp/*
+r_project/results/data_out_2026-emp-B/*
 r_project/results/data_out_2025-2/*
 r_project/results/data_idi/*
 r_project/results/data_idi_published_2024/*
@@ -27,6 +28,7 @@ r_project/empirical/nav_returns/*
 r_project/empirical/data_in/*
 r_project/empirical/data_private_public/*
 r_project/empirical/data_prepared/*
+r_project/empirical/data_prepared_2026/*
 r_project/empirical/data_prepared_main/*
 r_project/empirical/data_prepared_sim/*
 r_project/simulation/data_prepared_sim/*

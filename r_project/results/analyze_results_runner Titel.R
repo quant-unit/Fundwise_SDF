@@ -7,7 +7,7 @@ getwd()
 
 source.internally <- FALSE
 
-data.out.folder <- "data_out_2026-emp"
+data.out.folder <- "data_out_2026-emp-B"
 
 # 1. analyze all results ----
 
@@ -20,15 +20,3 @@ prefix <- "q_factors_preqin_"
 suffix <- "FW_VYP"
 
 source("analyze_result.R")
-
-if (FALSE) {
-  prefix <- "q_factors_preqin_alpha_"
-  suffix <- "EW_VYP"
-  
-  source("analyze_result.R")
-  
-  prefix <- "q_factors_preqin_alpha_"
-  suffix <- "FW_VYP"
-  
-  source("analyze_result.R")
-}

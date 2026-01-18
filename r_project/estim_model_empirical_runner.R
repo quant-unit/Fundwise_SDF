@@ -19,31 +19,21 @@ lambdas <- 0
 kernel.bandwidth <- 12
 part.to.keep <- 1
 no.partitions <- 1 # 10
-data.out.folder <- "results/data_out_2026-emp"
+data.out.folder <- "results/data_out_2026-emp-B"
+if(!dir.exists(data.out.folder)) dir.create(data.out.folder)
 factors.to.use <- ""
+cutoff <- ""
 
-# 1. Preqin, FW, No CV, L2_Lasso, linear, No Alpha ----
+private.source <- "preqin"
+error.function <- "L2_Lasso"
+sdf.model <- "linear"
+include.alpha.term <- FALSE
+
+# 1. FW & No CV ----
 
 # CHOICES
-
 do.cross.validation <- FALSE
-
-private.source <- "pitchbook"
-private.source <- "preqin"
-
-cutoff <- "" # "_cutoff_2019" # only available for PitchBook (2024-09-28)
-cutoff <- "_cutoff_2021"
-
-weighting <- "EW"
 weighting <- "FW"
-
-#error.function <- "L1_Ridge"
-error.function <- "L2_Lasso"
-
-sdf.model <- "linear"
-#sdf.model <- "exp.aff"
-
-include.alpha.term <- FALSE
 
 # SET cache.folder.tag
 if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
@@ -54,32 +44,12 @@ cache.folder.tag
 # RUN
 source("estim_model_optimized.R")
 
-
-
-
-# 2. Preqin, FW, CV, L2_Lasso, linear, No Alpha ----
+# 2. FW & CV ----
 
 # CHOICES
-
 do.cross.validation <- TRUE
-
-private.source <- "pitchbook"
-private.source <- "preqin"
-
-cutoff <- "" # "_cutoff_2019" # only available for PitchBook (2024-09-28)
-cutoff <- "_cutoff_2021"
-
-weighting <- "EW"
 weighting <- "FW"
 
-#error.function <- "L1_Ridge"
-error.function <- "L2_Lasso"
-
-sdf.model <- "linear"
-#sdf.model <- "exp.aff"
-
-include.alpha.term <- FALSE
-
 # SET cache.folder.tag
 if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
 cache.folder.tag <- paste0(private.source, ifelse(include.alpha.term, "_alpha_", "_"))
@@ -89,29 +59,11 @@ cache.folder.tag
 # RUN
 source("estim_model_optimized.R")
 
-
-# 3. Preqin, EW, No CV, L2_Lasso, linear, No Alpha ----
+# 3. EW & No CV ----
 
 # CHOICES
-
 do.cross.validation <- FALSE
-
-private.source <- "pitchbook"
-private.source <- "preqin"
-
-cutoff <- "" # "_cutoff_2019" # only available for PitchBook (2024-09-28)
-cutoff <- "_cutoff_2021"
-
 weighting <- "EW"
-# weighting <- "FW"
-
-#error.function <- "L1_Ridge"
-error.function <- "L2_Lasso"
-
-sdf.model <- "linear"
-#sdf.model <- "exp.aff"
-
-include.alpha.term <- FALSE
 
 # SET cache.folder.tag
 if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
@@ -122,30 +74,11 @@ cache.folder.tag
 # RUN
 source("estim_model_optimized.R")
 
-
-
-# 4. Preqin, EW, CV, L2_Lasso, linear, No Alpha ----
+# 4. EW & CV ----
 
 # CHOICES
-
 do.cross.validation <- TRUE
-
-private.source <- "pitchbook"
-private.source <- "preqin"
-
-cutoff <- "" # "_cutoff_2019" # only available for PitchBook (2024-09-28)
-cutoff <- "_cutoff_2021"
-
 weighting <- "EW"
-# weighting <- "FW"
-
-#error.function <- "L1_Ridge"
-error.function <- "L2_Lasso"
-
-sdf.model <- "linear"
-#sdf.model <- "exp.aff"
-
-include.alpha.term <- FALSE
 
 # SET cache.folder.tag
 if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
@@ -155,217 +88,4 @@ cache.folder.tag
 
 # RUN
 source("estim_model_optimized.R")
-
-
-
-# 5. Preqin, FW, No CV, L2_Lasso, linear, Alpha ----
-
-# CHOICES
-
-do.cross.validation <- FALSE
-
-private.source <- "pitchbook"
-private.source <- "preqin"
-
-cutoff <- "" # "_cutoff_2019" # only available for PitchBook (2024-09-28)
-cutoff <- "_cutoff_2021"
-
-weighting <- "EW"
-weighting <- "FW"
-
-#error.function <- "L1_Ridge"
-error.function <- "L2_Lasso"
-
-sdf.model <- "linear"
-#sdf.model <- "exp.aff"
-
-include.alpha.term <- TRUE
-
-# SET cache.folder.tag
-if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
-cache.folder.tag <- paste0(private.source, ifelse(include.alpha.term, "_alpha_", "_"))
-cache.folder.tag <- paste0(cache.folder.tag, weighting)
-cache.folder.tag
-
-# RUN
-source("estim_model_optimized.R")
-
-
-
-
-# 6. Preqin, FW, CV, L2_Lasso, linear, Alpha ----
-
-# CHOICES
-
-do.cross.validation <- TRUE
-
-private.source <- "pitchbook"
-private.source <- "preqin"
-
-cutoff <- "" # "_cutoff_2019" # only available for PitchBook (2024-09-28)
-cutoff <- "_cutoff_2021"
-
-weighting <- "EW"
-weighting <- "FW"
-
-#error.function <- "L1_Ridge"
-error.function <- "L2_Lasso"
-
-sdf.model <- "linear"
-#sdf.model <- "exp.aff"
-
-include.alpha.term <- TRUE
-
-# SET cache.folder.tag
-if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
-cache.folder.tag <- paste0(private.source, ifelse(include.alpha.term, "_alpha_", "_"))
-cache.folder.tag <- paste0(cache.folder.tag, weighting)
-cache.folder.tag
-
-# RUN
-source("estim_model_optimized.R")
-
-
-# 7. Preqin, EW, No CV, L2_Lasso, linear, Alpha ----
-
-# CHOICES
-
-do.cross.validation <- FALSE
-
-private.source <- "pitchbook"
-private.source <- "preqin"
-
-cutoff <- "" # "_cutoff_2019" # only available for PitchBook (2024-09-28)
-cutoff <- "_cutoff_2021"
-
-weighting <- "EW"
-# weighting <- "FW"
-
-#error.function <- "L1_Ridge"
-error.function <- "L2_Lasso"
-
-sdf.model <- "linear"
-#sdf.model <- "exp.aff"
-
-include.alpha.term <- TRUE
-
-# SET cache.folder.tag
-if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
-cache.folder.tag <- paste0(private.source, ifelse(include.alpha.term, "_alpha_", "_"))
-cache.folder.tag <- paste0(cache.folder.tag, weighting)
-cache.folder.tag
-
-# RUN
-source("estim_model_optimized.R")
-
-
-
-# 8. Preqin, EW, CV, L2_Lasso, linear, Alpha ----
-
-# CHOICES
-
-do.cross.validation <- TRUE
-
-private.source <- "pitchbook"
-private.source <- "preqin"
-
-cutoff <- "" # "_cutoff_2019" # only available for PitchBook (2024-09-28)
-cutoff <- "_cutoff_2021"
-
-weighting <- "EW"
-# weighting <- "FW"
-
-#error.function <- "L1_Ridge"
-error.function <- "L2_Lasso"
-
-sdf.model <- "linear"
-#sdf.model <- "exp.aff"
-
-include.alpha.term <- TRUE
-
-# SET cache.folder.tag
-if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
-cache.folder.tag <- paste0(private.source, ifelse(include.alpha.term, "_alpha_", "_"))
-cache.folder.tag <- paste0(cache.folder.tag, weighting)
-cache.folder.tag
-
-# RUN
-source("estim_model_optimized.R")
-
-
-
-# 9. Preqin, FW, No CV, L2_Lasso, linear, No Alpha, Single-FP ----
-
-# CHOICES
-
-use.vintage.year.pfs <- FALSE
-
-do.cross.validation <- FALSE
-
-private.source <- "pitchbook"
-private.source <- "preqin"
-
-cutoff <- "" # "_cutoff_2019" # only available for PitchBook (2024-09-28)
-cutoff <- "_cutoff_2021"
-
-weighting <- "EW"
-weighting <- "FW"
-
-#error.function <- "L1_Ridge"
-error.function <- "L2_Lasso"
-
-sdf.model <- "linear"
-#sdf.model <- "exp.aff"
-
-include.alpha.term <- FALSE
-
-# SET cache.folder.tag
-if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
-cache.folder.tag <- paste0(private.source, ifelse(include.alpha.term, "_alpha_", "_"))
-cache.folder.tag <- paste0(cache.folder.tag, weighting)
-cache.folder.tag
-
-# RUN
-source("estim_model_optimized.R")
-
-
-
-
-
-# 10. Preqin, EW, No CV, L2_Lasso, linear, No Alpha, Single-FP ----
-
-# CHOICES
-
-use.vintage.year.pfs <- FALSE
-
-do.cross.validation <- FALSE
-
-private.source <- "pitchbook"
-private.source <- "preqin"
-
-cutoff <- "" # "_cutoff_2019" # only available for PitchBook (2024-09-28)
-cutoff <- "_cutoff_2021"
-
-weighting <- "EW"
-# weighting <- "FW"
-
-#error.function <- "L1_Ridge"
-error.function <- "L2_Lasso"
-
-sdf.model <- "linear"
-#sdf.model <- "exp.aff"
-
-include.alpha.term <- FALSE
-
-# SET cache.folder.tag
-if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
-cache.folder.tag <- paste0(private.source, ifelse(include.alpha.term, "_alpha_", "_"))
-cache.folder.tag <- paste0(cache.folder.tag, weighting)
-cache.folder.tag
-
-# RUN
-source("estim_model_optimized.R")
-
-
-
 

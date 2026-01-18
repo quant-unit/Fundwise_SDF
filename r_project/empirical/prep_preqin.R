@@ -1,15 +1,15 @@
 ## prepare preqin
 # prep ----
-
-# do we need to improve this file?
+if(sys.nframe() == 0L) rm(list = ls())
 
 library(readxl)
 
-if(sys.nframe() == 0L) rm(list = ls())
+data.prepared.folder <- "data_prepared_2026"
+
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
-if(!dir.exists("data_prepared")) dir.create("data_prepared")
+if(!dir.exists(data.prepared.folder)) dir.create(data.prepared.folder)
 
 
 path <- "data_in/Preqin_Cashflow_export-26_Feb_20e003d5aa-5a18-4c12-aba8-7586a7435ac9.xlsx"
@@ -51,7 +51,27 @@ make.strategy.summary <- function() {
 }
 make.strategy.summary()
 
-
+make.vintage.summary <- function(asset.class = "Private Equity") {
+  df <- df.xl[df.xl$ASSET.CLASS == asset.class, ]
+  df <- df[!duplicated(df$FUND.ID), ]
+  
+  # Create the frequency table
+  tbl <- table(df$VINTAGE...INCEPTION.YEAR)
+  
+  # Convert table to the desired string format: "Year (Count)"
+  # names(tbl) gets the years, and tbl itself contains the counts
+  output_string <- paste(paste0(names(tbl), " (", tbl, ")"), collapse = ", ")
+  
+  print(paste0("The ", asset.class, " sample contains ", length(unique(df$FUND.ID)), 
+               " distinct funds spreading over ",  length(tbl), " vintage years."))
+  print(paste0("The region distribution is as follows: ", output_string, "."))
+  
+  # Region split
+  tbl <- table(df$REGION)
+  output_string <- paste(paste0(names(tbl), " (", tbl, ")"), collapse = ", ")
+  print(paste0("The region distribution is as follows: ", output_string, "."))
+}
+make.vintage.summary("Private Equity")
 
 make.preqin.df <- function(
   df = df.xl,
@@ -151,7 +171,7 @@ make.preqin.df <- function(
   
   return(df)
 }
-df <- make.preqin.df(acs.filter = "Natural Resources")
+df <- make.preqin.df(acs.filter = "Private Equity")
 length(df$Fund.ID[!duplicated(df$Fund.ID)])
 
 # run ----
@@ -188,8 +208,8 @@ make.preqin.csv <- function(fund.size.weighting, vin.year.pfs, region.filter) {
   tag <- ifelse(fund.size.weighting, "FW", "EW")
   tag <- ifelse(vin.year.pfs, paste0(tag, "_VYP"), tag)
   tag <- ifelse(is.na(region.filter), tag, paste0(tag, "_", region.filter))
-  file = paste0("data_prepared/preqin_cashflows_2022_", tag, "_NAV.csv")
-  file = paste0("data_prepared/preqin_cashflows_", tag, "_NAV.csv")
+  file = paste0(data.prepared.folder, "/preqin_cashflows_2022_", tag, "_NAV.csv")
+  file = paste0(data.prepared.folder, "/preqin_cashflows_", tag, "_NAV.csv")
   write.csv(df.out, file, row.names = FALSE)
   invisible(df.out)
 }
