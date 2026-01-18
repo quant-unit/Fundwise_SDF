@@ -89,13 +89,11 @@ for (Factor in q.factors) {
 }
 
 df.cv <- data.frame(Reduce(rbind.all.columns, cv.res))
-df.cv$validation.error <- as.character(round(df.cv$validation.error))
 for (i in 1:nrow(df.cv)) {
   df.cv[i, "Type"] <- strsplit(df.cv$id, "_")[[i]][1]
   df.cv[i, "max.month"] <- strsplit(df.cv$id, "_")[[i]][2]
 }
 df.cv <- df.cv[, c("Type", "max.month", "MKT", "SE.MKT", "Factor", "Coef", "SE.Coef", "validation.error")]
-df.cv$validation.error <- as.numeric(df.cv$validation.error)
 df.cv <- df.cv[order(df.cv$Type, df.cv$Factor, as.numeric(df.cv$max.month)), ]
 
 max.months.to.keep <- c("1", "30", "60", "120", "180")
@@ -159,7 +157,7 @@ prepare_and_print_tables <- function(df, types, table_type, suffix, spec) {
     # Rename columns based on table type
     if (table_type == "AI") {
       # Asymptotic Inference
-      # Desired columns: Factor, MCM, Market, SE(Mkt), SE(Mkt)Ind, Loading, SE(Load), SE(Load)Ind
+      # Desired columns: MCM, Market Loading, Market SE, Market SE Ind., Second Name, Second Loading, Second SE, Second SE Ind.
 
       # Rename for internal consistency before printing (though headers will be custom)
       # We need correct column order for the data rows
@@ -167,7 +165,7 @@ prepare_and_print_tables <- function(df, types, table_type, suffix, spec) {
       # Map original names to temp names to ensure correct ordering
       # Original cols: MKT, SE.MKT, SE.MKT.indep, Factor, Coef, SE.Coef, SE.Coef.indep, max.month
 
-      df.sub <- df.sub[, c("Factor", "max.month", "MKT", "SE.MKT", "SE.MKT.indep", "Coef", "SE.Coef", "SE.Coef.indep")]
+      df.sub <- df.sub[, c("max.month", "MKT", "SE.MKT", "SE.MKT.indep", "Factor", "Coef", "SE.Coef", "SE.Coef.indep")]
 
       cap <- paste0(
         "Asymptotic results for ", type, " Funds. ",
@@ -178,19 +176,19 @@ prepare_and_print_tables <- function(df, types, table_type, suffix, spec) {
       lab <- paste0("tab:ai_", suffix, "_", type)
 
       # Custom Header for AI
-      # Factor | MCM | Market | SE(Mkt) | SE(Mkt)Ind | Loading | SE(Load) | SE(Load)Ind
+      # MCM | Market Loading | Market SE | Market SE Ind. | Second Name | Second Loading | Second SE | Second SE Ind.
       header_row <- paste0(
         "\\hline\n",
-        "\\textbf{Second} & & & \\textbf{SE} & \\textbf{SE (Mkt)} & & \\textbf{SE} & \\textbf{SE (Load)} \\\\ \n",
-        "\\textbf{Factor} & \\textbf{MCM} & \\textbf{Market} & \\textbf{(Mkt)} & \\textbf{Ind.} & \\textbf{Loading} & \\textbf{(Load)} & \\textbf{Ind.} \\\\ \n",
+        " & Market& Market & Market & Second & Second & Second & Second \\\\ \n",
+        "\\textbf{MCM} & \\textbf{Loading} & \\textbf{SE} & \\textbf{SE Ind.} & \\textbf{Name} & \\textbf{Loading} & \\textbf{SE} & \\textbf{SE Ind.} \\\\ \n",
         "\\hline\n"
       )
     } else {
       # Cross Validation
-      # Desired columns: Factor, MCM, Market, SE(Mkt), Loading, SE(Load), Val. Error
+      # Desired columns: MCM, Market Loading, Market SE, Second Name, Second Loading, Second SE, CV-Error
 
       # Original cols: MKT, SE.MKT, Factor, Coef, SE.Coef, validation.error, max.month
-      df.sub <- df.sub[, c("Factor", "max.month", "MKT", "SE.MKT", "Coef", "SE.Coef", "validation.error")]
+      df.sub <- df.sub[, c("max.month", "MKT", "SE.MKT", "Factor", "Coef", "SE.Coef", "validation.error")]
 
       cap <- paste0(
         "Cross-validation results for ", type, " Funds. ",
@@ -201,11 +199,11 @@ prepare_and_print_tables <- function(df, types, table_type, suffix, spec) {
       lab <- paste0("tab:cv_", suffix, "_", type)
 
       # Custom Header for CV
-      # Factor | MCM | Market | SE(Mkt) | Loading | SE(Load) | Val. Error
+      # MCM | Market Loading | Market SE | Second Name | Second Loading | Second SE | CV-Error
       header_row <- paste0(
         "\\hline\n",
-        "\\textbf{Second} & & & \\textbf{SE} & & \\textbf{SE} & \\textbf{Val.} \\\\ \n",
-        "\\textbf{Factor} & \\textbf{MCM} & \\textbf{Market} & \\textbf{(Mkt)} & \\textbf{Loading} & \\textbf{(Load)} & \\textbf{Error} \\\\ \n",
+        " & Market & Market & Second & Second & Second &  \\\\ \n",
+        "\\textbf{MCM} & \\textbf{Loading} & \\textbf{SE} & \\textbf{Name} & \\textbf{Loading} & \\textbf{SE} & \\textbf{CV-Error} \\\\ \n",
         "\\hline\n"
       )
     }
