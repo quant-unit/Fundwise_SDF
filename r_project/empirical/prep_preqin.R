@@ -64,12 +64,19 @@ make.vintage.summary <- function(asset.class = "Private Equity") {
   
   print(paste0("The ", asset.class, " sample contains ", length(unique(df$FUND.ID)), 
                " distinct funds spreading over ",  length(tbl), " vintage years."))
-  print(paste0("The region distribution is as follows: ", output_string, "."))
+  print(paste0("The vintage year distribution is as follows: ", output_string, "."))
   
   # Region split
   tbl <- table(df$REGION)
   output_string <- paste(paste0(names(tbl), " (", tbl, ")"), collapse = ", ")
   print(paste0("The region distribution is as follows: ", output_string, "."))
+  
+  # Strategy split (sub-strategy of the asst class)
+  tbl <- table(df$STRATEGY)
+  output_string <- paste(paste0(names(tbl), " (", tbl, ")"), collapse = ", ")
+  msg <- paste0("The strategy distribution is as follows: ", output_string, ".")
+  # cat(paste(strwrap(msg, width = 80), collapse = "\n"), "\n")
+  print(msg)
 }
 make.vintage.summary("Private Equity")
 
