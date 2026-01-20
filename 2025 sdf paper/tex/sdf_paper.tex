@@ -997,89 +997,6 @@ Table \ref{tab:comparison} summarizes the most prominent distinctions between th
 
 \subsection{Data}
 
-We use the Preqin cash flow data set as of 26th February 2020 that is well known in the academic private equity literature \citep{HJK14,KN16,ACGP18}.
-For an overview of the available asset classes and strategies in the unprepared raw Preqin dataset, see Table  \ref{tab:summary_preqin_strategy}.
-After data preparation, we pool all regions and group the remaining funds according to the Preqin asset class classification:
-PE ("Private Equity"; 2248 distinct funds in data set; 36 vintage years) and
-VC ("Venture Capital"; 871; 36).
-%RE ("Real Estate"; 742; 27),
-%PD ("Private Debt"; 441; 31),
-%INF ("Infrastructure", 144; 17), 
-%NR ("Natural Resources", 138; 26).
-For this subset of PE fund types, we extract all (i) equal-weighted and (ii) fund-size-weighted cash flow series.
-For non-liquidated funds, we treat the latest net asset value as final cash flow.
-We explicitly refrain from excluding the most recent vintage years.
-Thus, the minimum vintage year is 1983 (just for PE), and the maximum is 2019.
-
-The public market factors that enter our SDF draw on the US data set of the recently popularized $q^5$ investment factor model sourced from \url{http://global-q.org/factors.html} \citep{HXZ15,HXZ20}. 
-Their five-factor model includes the market excess return (MKT), a size factor (ME), an investment factor (IA), a return on equity factor (ROE), and an expected growth factor (EG).
-
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Fri Nov 19 08:43:30 2021
-\begin{table}[H]
-	\centering	
-	\begin{tabularx}{0.9\textwidth}{lcXr}
-			\hline
-			Type & Asset Class & Strategy & Fund Count \\ 
-			%\hline
-			%Infrastructure & Infrastructure Core &   32 \\ 
-			%Infrastructure & Infrastructure Core Plus &   58 \\ 
-			%Infrastructure & Infrastructure Debt &   26 \\ 
-			%Infrastructure & Infrastructure Fund of Funds &    6 \\ 
-			%Infrastructure & Infrastructure Opportunistic &   12 \\ 
-			%Infrastructure & Infrastructure Secondaries &    4 \\ 
-			%Infrastructure & Infrastructure Value Added &   36 \\ 
-			%\hline
-			%Natural Resources & Energy &    2 \\ 
-			%Natural Resources & Natural Resources &  146 \\ 
-			%Natural Resources & Timber &   19 \\ 
-			%\hline
-			%Private Debt & Direct Lending &    3 \\ 
-			%Private Debt & Direct Lending - Blended / Opportunistic Debt &   21 \\ 
-			%Private Debt & Direct Lending - Junior / Subordinated Debt &    9 \\ 
-			%Private Debt & Direct Lending - Senior Debt &   89 \\ 
-			%Private Debt & Direct Lending - Unitranche Debt &    4 \\ 
-			%Private Debt & Distressed Debt &  153 \\ 
-			%Private Debt & Mezzanine &  147 \\ 
-			%Private Debt & Private Debt Fund of Funds &    4 \\ 
-			%Private Debt & Special Situations &   58 \\ 
-			\hline
-			PE & Private Equity & Balanced &   63 \\ 
-			PE & Private Equity & Buyout & 1251 \\ 
-			PE & Private Equity & Co-Investment &   75 \\ 
-			PE & Private Equity & Co-Investment Multi-Manager &   58 \\ 
-			PE & Private Equity & Direct Secondaries &   24 \\ 
-			PE & Private Equity & Fund of Funds &  589 \\ 
-			PE & Private Equity & Growth &  265 \\ 
-			PE & Private Equity & Secondaries &  131 \\ 
-			PE & Private Equity & Turnaround &   18 \\ 
-			%\hline
-			%Real Estate & Real Asset &    1 \\ 
-			%Real Estate & Real Estate Co-Investment &   15 \\ 
-			%Real Estate & Real Estate Core &   33 \\ 
-			%Real Estate & Real Estate Core-Plus &   44 \\ 
-			%Real Estate & Real Estate Debt &  106 \\ 
-			%Real Estate & Real Estate Distressed &   27 \\ 
-			%Real Estate & Real Estate Fund of Funds &   29 \\ 
-			%Real Estate & Real Estate Opportunistic &  225 \\ 
-			%Real Estate & Real Estate Secondaries &   15 \\ 
-			%Real Estate & Real Estate Value Added &  315 \\ 
-			\hline
-			VC & Venture Capital & Early Stage &  262 \\ 
-			VC & Venture Capital & Early Stage: Seed &   42 \\ 
-			VC & Venture Capital & Early Stage: Start-up &   37 \\ 
-			VC & Venture Capital & Expansion / Late Stage &  110 \\ 
-			VC & Venture Capital & Venture (General) &  513 \\ 
-			VC & Venture Capital & Venture Debt &   21 \\ 
-			\hline
-	\end{tabularx}
-	\caption{Summary of asset classes and strategies in the unprepared raw Preqin dataset.} 
-	\label{tab:summary_preqin_strategy}
-\end{table}
-
-
-\subsection{Data New}
-
 We use the Preqin cash flow data set as of 14th April 2022 that is well known in the academic private equity literature \citep{HJK14,KN16,ACGP18}.
 To keep the empirical analysis clear and concise, we filter the dataset for Private Equity (PE) funds.
 
@@ -1854,8 +1771,492 @@ Interestingly, the PE and VC results regarding $\beta_{\mathrm{MKT}}$ and $\alph
 
 
 
+% BO
+
+% latex table generated in R 4.3.1 by xtable 1.8-4 package
+% Mon Jan 19 18:27:20 2026
+\begin{table}[H]
+	\centering
+	\begin{tabular}{rrrrlrrr}
+		\hline
+		& Market& Market & Market & Second & Second & Second & Second \\ 
+		\textbf{MCM} & \textbf{Loading} & \textbf{SE} & \textbf{SE Ind.} & \textbf{Name} & \textbf{Loading} & \textbf{SE} & \textbf{SE Ind.} \\ 
+		\hline
+		1 & -614.990 &  &  & Alpha & 729.827 &  &  \\ 
+		30 & -0.515 & 13.609 & 5.766 & Alpha & 0.011 & 0.075 & 0.031 \\ 
+		60 & -0.535 & 0.376 & 0.156 & Alpha & 0.011 & 0.001 & 0.000 \\ 
+		120 & -0.320 & 0.397 & 0.213 & Alpha & 0.009 & 0.003 & 0.001 \\ 
+		150 & -0.445 & 0.116 & 0.062 & Alpha & 0.009 & 0.001 & 0.000 \\ 
+		180 & -0.517 & 10.021 & 5.356 & Alpha & 0.009 & 0.270 & 0.131 \\ 
+		1 & 0.819 & 0.855 & 0.429 & EG & 1.186 & 0.375 & 0.219 \\ 
+		30 & 0.844 & 1.237 & 1.245 & EG & 0.547 & 0.990 & 0.863 \\ 
+		60 & 0.786 & 1.560 & 1.296 & EG & 0.349 & 1.279 & 1.058 \\ 
+		120 & 0.843 & 10.488 & 6.247 & EG & 0.006 & 8.125 & 4.840 \\ 
+		150 & 0.816 & 2.363 & 1.415 & EG & -0.076 & 2.352 & 1.413 \\ 
+		180 & 0.765 & 1.417 & 1.041 & EG & -0.100 & 1.921 & 1.085 \\ 
+		1 & 1.094 & 0.870 & 0.502 & IA & 0.940 & 2.029 & 1.068 \\ 
+		30 & 0.956 & 0.919 & 0.614 & IA & 0.957 & 2.252 & 1.378 \\ 
+		60 & 0.804 & 0.923 & 0.777 & IA & 0.902 & 2.259 & 1.762 \\ 
+		120 & 0.697 & 11.213 & 7.514 & IA & 0.468 & 24.713 & 16.906 \\ 
+		150 & 0.636 & 38.886 & 25.869 & IA & 0.291 & 89.846 & 59.368 \\ 
+		180 & 0.541 & 1.344 & 0.969 & IA & 0.291 & 3.578 & 2.151 \\ 
+		1 & 0.903 & 0.463 & 0.757 & ME & 1.533 & 3.191 & 1.969 \\ 
+		30 & 0.877 & 3.811 & 2.037 & ME & 2.113 & 6.072 & 3.698 \\ 
+		60 & 0.864 & 0.009 & 0.005 & ME & 2.168 & 0.117 & 0.061 \\ 
+		120 & 0.768 & 4.705 & 3.641 & ME & 1.690 & 5.380 & 4.418 \\ 
+		150 & 0.728 & 5.266 & 4.054 & ME & 1.660 & 5.710 & 4.609 \\ 
+		180 & 0.674 & 4.798 & 3.797 & ME & 1.582 & 4.375 & 3.542 \\ 
+		1 & 1.199 & 1.314 & 0.668 & MKT & 1.199 & 1.314 & 0.668 \\ 
+		30 & 1.109 & 1.311 & 0.671 & MKT & 1.109 & 1.311 & 0.671 \\ 
+		60 & 1.005 & 1.098 & 0.617 & MKT & 1.005 & 1.098 & 0.617 \\ 
+		120 & 0.847 & 1.199 & 0.731 & MKT & 0.847 & 1.199 & 0.731 \\ 
+		150 & 0.745 & 1.146 & 0.924 & MKT & 0.745 & 1.146 & 0.924 \\ 
+		180 & 0.662 & 1.167 & 0.926 & MKT & 0.662 & 1.167 & 0.926 \\ 
+		1 & 1.056 & 0.904 & 0.447 & ROE & 1.208 & 0.739 & 0.360 \\ 
+		30 & 0.949 & 2.555 & 1.994 & ROE & 0.665 & 2.465 & 1.774 \\ 
+		60 & 0.899 & 5.062 & 3.140 & ROE & 0.277 & 4.505 & 2.852 \\ 
+		120 & 0.919 & 2.451 & 1.459 & ROE & -0.118 & 2.172 & 1.384 \\ 
+		150 & 0.894 & 2.383 & 1.422 & ROE & -0.208 & 1.923 & 1.247 \\ 
+		180 & 0.841 & 2.035 & 1.229 & ROE & -0.224 & 1.580 & 1.080 \\ 
+		\hline
+	\end{tabular}
+	\caption{Asymptotic results for BO Funds. This table reports asymptotic parameter estimates for linear two-factor models using Fund-Size Weighted Vintage-Year Portfolios. Standard errors are estimated by a SHAC estimator (Equation \ref{eq:asy_se}) with a Bartlett kernel bandwidth of $D=12$ vintage years to correct for dependence between overlapping funds. MCM (Maximum Compounding Month) denotes the maximum cash flow compounding horizon.} 
+	\label{tab:ai_FW_VYP_BO}
+\end{table}
+
+% latex table generated in R 4.3.1 by xtable 1.8-4 package
+% Mon Jan 19 18:27:20 2026
+\begin{table}[H]
+	\centering
+	\begin{tabular}{lrrlrrr}
+		\hline
+		& Market & Market & Second & Second & Second &  \\ 
+		\textbf{MCM} & \textbf{Loading} & \textbf{SE} & \textbf{Name} & \textbf{Loading} & \textbf{SE} & \textbf{CV-Error} \\ 
+		\hline
+		1 & -269.444 & 363.535 & Alpha & 698.091 & 82.059 & 74.488 \\ 
+		30 & -0.469 & 0.319 & Alpha & 0.011 & 0.003 & 301.582 \\ 
+		60 & -0.487 & 0.333 & Alpha & 0.010 & 0.003 & 354.150 \\ 
+		120 & -0.271 & 0.277 & Alpha & 0.008 & 0.002 & 432.760 \\ 
+		180 & -0.456 & 0.316 & Alpha & 0.009 & 0.003 & 535.158 \\ 
+		1 & 1.129 & 1.060 & EG & 3.925 & 4.456 & 399.455 \\ 
+		30 & 0.831 & 0.294 & EG & 0.454 & 0.357 & 396.194 \\ 
+		60 & 0.751 & 0.304 & EG & 0.311 & 0.317 & 461.124 \\ 
+		120 & 0.764 & 0.351 & EG & 0.071 & 0.335 & 591.243 \\ 
+		180 & 0.648 & 0.351 & EG & 0.034 & 0.353 & 768.587 \\ 
+		1 & 1.175 & 0.296 & IA & 0.684 & 0.792 & 423.984 \\ 
+		30 & 0.931 & 0.298 & IA & 0.760 & 0.586 & 403.284 \\ 
+		60 & 0.767 & 0.291 & IA & 0.807 & 0.547 & 440.169 \\ 
+		120 & 0.658 & 0.302 & IA & 0.490 & 0.614 & 587.313 \\ 
+		180 & 0.509 & 0.310 & IA & 0.422 & 0.638 & 763.356 \\ 
+		1 & 0.930 & 0.140 & ME & 1.325 & 0.624 & 293.925 \\ 
+		30 & 0.853 & 0.161 & ME & 1.977 & 0.449 & 280.106 \\ 
+		60 & 0.849 & 0.184 & ME & 2.120 & 0.473 & 320.616 \\ 
+		120 & 0.767 & 0.167 & ME & 1.828 & 0.526 & 421.361 \\ 
+		180 & 0.688 & 0.171 & ME & 1.701 & 0.517 & 532.747 \\ 
+		1 & 1.160 & 0.187 & MKT & 1.160 & 0.187 & 319.241 \\ 
+		30 & 1.046 & 0.241 & MKT & 1.046 & 0.241 & 361.092 \\ 
+		60 & 0.956 & 0.241 & MKT & 0.956 & 0.241 & 406.197 \\ 
+		120 & 0.806 & 0.195 & MKT & 0.806 & 0.195 & 475.575 \\ 
+		180 & 0.644 & 0.178 & MKT & 0.644 & 0.178 & 559.123 \\ 
+		1 & 1.128 & 0.283 & ROE & 1.041 & 0.894 & 381.158 \\ 
+		30 & 0.922 & 0.278 & ROE & 0.595 & 0.614 & 406.232 \\ 
+		60 & 0.855 & 0.272 & ROE & 0.309 & 0.495 & 480.460 \\ 
+		120 & 0.856 & 0.264 & ROE & 0.003 & 0.479 & 635.620 \\ 
+		180 & 0.754 & 0.252 & ROE & -0.037 & 0.505 & 900.770 \\ 
+		\hline
+	\end{tabular}
+	\caption{Cross-validation results for BO Funds. The table reports the validation error and average parameter estimates from $hv$-block cross-validation. The estimation uses Fund-Size Weighted Vintage-Year Portfolios. MCM (Maximum Compounding Month) denotes the maximum cash flow compounding horizon.} 
+	\label{tab:cv_FW_VYP_BO}
+\end{table}
 
 
+
+% latex table generated in R 4.3.1 by xtable 1.8-4 package
+% Mon Jan 19 22:15:04 2026
+\begin{table}[H]
+	\centering
+	\begin{tabular}{rrrrlrrr}
+		\hline
+		& Market& Market & Market & Second & Second & Second & Second \\ 
+		\textbf{MCM} & \textbf{Loading} & \textbf{SE} & \textbf{SE Ind.} & \textbf{Name} & \textbf{Loading} & \textbf{SE} & \textbf{SE Ind.} \\ 
+		\hline
+		1 & -284.624 &  &  & Alpha & 867.416 &  &  \\ 
+		30 & 1.662 & 1.900 & 0.846 & Alpha & 0.005 & 0.011 & 0.005 \\ 
+		60 & 1.817 & 0.334 & 0.143 & Alpha & 0.003 & 0.002 & 0.001 \\ 
+		120 & 1.571 & 0.961 & 0.405 & Alpha & -0.000 & 0.005 & 0.002 \\ 
+		150 & 1.548 & 27.204 & 11.365 & Alpha & -0.002 & 0.183 & 0.075 \\ 
+		180 & 1.582 & 9.568 & 3.919 & Alpha & -0.003 & 0.079 & 0.031 \\ 
+		1 & 1.642 & 0.636 & 0.351 & EG & 1.239 & 0.377 & 0.217 \\ 
+		30 & 1.954 & 2.053 & 0.958 & EG & 0.636 & 1.254 & 0.597 \\ 
+		60 & 2.020 & 3.993 & 1.889 & EG & 0.312 & 2.464 & 1.176 \\ 
+		120 & 1.734 & 5.957 & 2.796 & EG & -0.304 & 4.573 & 2.078 \\ 
+		150 & 1.674 & 4.033 & 1.900 & EG & -0.465 & 3.405 & 1.503 \\ 
+		180 & 1.626 & 2.513 & 1.236 & EG & -0.513 & 2.217 & 0.926 \\ 
+		1 & 1.938 & 2.260 & 1.203 & IA & 0.928 & 4.017 & 2.108 \\ 
+		30 & 2.146 & 2.808 & 1.432 & IA & 0.849 & 4.548 & 2.286 \\ 
+		60 & 2.104 & 10.169 & 5.063 & IA & 0.364 & 16.032 & 7.983 \\ 
+		120 & 1.632 & 3.592 & 1.771 & IA & -0.684 & 7.013 & 3.333 \\ 
+		150 & 1.515 & 1.458 & 0.760 & IA & -0.932 & 2.564 & 1.144 \\ 
+		180 & 1.454 & 1.356 & 0.749 & IA & -1.001 & 2.492 & 1.122 \\ 
+		1 & 1.905 & 0.976 & 0.495 & ME & 1.038 & 1.994 & 1.170 \\ 
+		30 & 2.229 & 0.816 & 0.413 & ME & 1.262 & 2.685 & 1.328 \\ 
+		60 & 2.287 & 0.676 & 0.385 & ME & 1.402 & 3.221 & 1.476 \\ 
+		120 & 1.599 & 1.060 & 0.570 & ME & 1.135 & 1.786 & 1.235 \\ 
+		150 & 1.418 & 0.607 & 0.658 & ME & 1.461 & 4.833 & 3.317 \\ 
+		180 & 1.323 & 1.682 & 1.154 & ME & 1.639 & 8.493 & 5.020 \\ 
+		1 & 1.717 & 0.959 & 0.512 & MKT & 1.717 & 0.959 & 0.512 \\ 
+		30 & 1.913 & 1.045 & 0.530 & MKT & 1.913 & 1.045 & 0.530 \\ 
+		60 & 2.036 & 1.098 & 0.553 & MKT & 2.036 & 1.098 & 0.553 \\ 
+		120 & 1.545 & 0.912 & 0.494 & MKT & 1.545 & 0.912 & 0.494 \\ 
+		150 & 1.319 & 0.948 & 0.540 & MKT & 1.319 & 0.948 & 0.540 \\ 
+		180 & 1.195 & 0.917 & 0.532 & MKT & 1.195 & 0.917 & 0.532 \\ 
+		1 & 1.760 & 0.715 & 0.431 & ROE & 1.616 & 0.644 & 0.380 \\ 
+		30 & 2.008 & 1.754 & 0.881 & ROE & 0.960 & 1.520 & 0.764 \\ 
+		60 & 2.040 & 10.011 & 4.998 & ROE & 0.374 & 8.347 & 4.162 \\ 
+		120 & 1.743 & 4.162 & 2.020 & ROE & -0.457 & 4.064 & 1.900 \\ 
+		150 & 1.670 & 2.207 & 1.099 & ROE & -0.639 & 2.453 & 1.075 \\ 
+		180 & 1.602 & 2.151 & 1.093 & ROE & -0.679 & 2.187 & 0.949 \\ 
+		\hline
+	\end{tabular}
+	\caption{Asymptotic results for BO Funds. This table reports asymptotic parameter estimates for linear two-factor models using Fund-Size Weighted Vintage-Year Portfolios. Standard errors are estimated by a SHAC estimator (Equation \ref{eq:asy_se}) with a Bartlett kernel bandwidth of $D=12$ vintage years to correct for dependence between overlapping funds. MCM (Maximum Compounding Month) denotes the maximum cash flow compounding horizon.} 
+	\label{tab:ai_FW_VYP_BO}
+\end{table}
+
+% latex table generated in R 4.3.1 by xtable 1.8-4 package
+% Mon Jan 19 22:15:04 2026
+\begin{table}[H]
+	\centering
+	\begin{tabular}{lrrlrrr}
+		\hline
+		& Market & Market & Second & Second & Second &  \\ 
+		\textbf{MCM} & \textbf{Loading} & \textbf{SE} & \textbf{Name} & \textbf{Loading} & \textbf{SE} & \textbf{CV-Error} \\ 
+		\hline
+		1 & -317.660 & 104.471 & Alpha & 853.657 & 43.510 & 76.377 \\ 
+		30 & 1.700 & 0.623 & Alpha & 0.004 & 0.004 & 579.563 \\ 
+		60 & 1.815 & 0.631 & Alpha & 0.003 & 0.003 & 679.432 \\ 
+		120 & 1.599 & 0.595 & Alpha & -0.001 & 0.004 & 913.555 \\ 
+		180 & 1.544 & 0.694 & Alpha & -0.003 & 0.004 & 1068.648 \\ 
+		1 & 1.727 & 0.420 & EG & 1.095 & 0.799 & 456.053 \\ 
+		30 & 2.001 & 0.425 & EG & 0.475 & 0.490 & 561.204 \\ 
+		60 & 2.038 & 0.420 & EG & 0.210 & 0.373 & 677.760 \\ 
+		120 & 1.754 & 0.313 & EG & -0.302 & 0.345 & 930.674 \\ 
+		180 & 1.637 & 0.296 & EG & -0.474 & 0.315 & 1089.035 \\ 
+		1 & 2.019 & 0.519 & IA & 0.903 & 1.262 & 783.720 \\ 
+		30 & 2.125 & 0.419 & IA & 0.531 & 1.006 & 773.257 \\ 
+		60 & 2.092 & 0.396 & IA & 0.139 & 0.802 & 806.259 \\ 
+		120 & 1.637 & 0.260 & IA & -0.668 & 0.561 & 897.193 \\ 
+		180 & 1.468 & 0.223 & IA & -0.930 & 0.452 & 986.780 \\ 
+		1 & 1.872 & 0.364 & ME & 0.788 & 0.991 & 715.918 \\ 
+		30 & 2.142 & 0.399 & ME & 1.215 & 0.980 & 597.849 \\ 
+		60 & 2.219 & 0.399 & ME & 1.441 & 0.793 & 618.364 \\ 
+		120 & 1.592 & 0.278 & ME & 0.856 & 1.172 & 928.856 \\ 
+		180 & 1.307 & 0.228 & ME & 1.544 & 0.676 & 894.396 \\ 
+		1 & 1.721 & 0.251 & MKT & 1.721 & 0.251 & 410.908 \\ 
+		30 & 1.912 & 0.300 & MKT & 1.912 & 0.300 & 464.921 \\ 
+		60 & 2.016 & 0.335 & MKT & 2.016 & 0.335 & 556.633 \\ 
+		120 & 1.524 & 0.241 & MKT & 1.524 & 0.241 & 731.665 \\ 
+		180 & 1.168 & 0.192 & MKT & 1.168 & 0.192 & 860.009 \\ 
+		1 & 1.814 & 0.375 & ROE & 1.247 & 1.008 & 526.564 \\ 
+		30 & 2.043 & 0.411 & ROE & 0.724 & 0.759 & 580.653 \\ 
+		60 & 2.058 & 0.394 & ROE & 0.252 & 0.549 & 700.426 \\ 
+		120 & 1.762 & 0.298 & ROE & -0.428 & 0.486 & 960.070 \\ 
+		180 & 1.620 & 0.285 & ROE & -0.597 & 0.469 & 1173.863 \\ 
+		\hline
+	\end{tabular}
+	\caption{Cross-validation results for BO Funds. The table reports the validation error and average parameter estimates from $hv$-block cross-validation. The estimation uses Fund-Size Weighted Vintage-Year Portfolios. MCM (Maximum Compounding Month) denotes the maximum cash flow compounding horizon.} 
+	\label{tab:cv_FW_VYP_BO}
+\end{table}
+
+
+% latex table generated in R 4.3.1 by xtable 1.8-4 package
+% Mon Jan 19 22:21:34 2026
+\begin{table}[H]
+	\centering
+	\begin{tabular}{rrrrlrrr}
+		\hline
+		& Market& Market & Market & Second & Second & Second & Second \\ 
+		\textbf{MCM} & \textbf{Loading} & \textbf{SE} & \textbf{SE Ind.} & \textbf{Name} & \textbf{Loading} & \textbf{SE} & \textbf{SE Ind.} \\ 
+		\hline
+		1 & -284.624 &  &  & Alpha & 867.416 &  &  \\ 
+		30 & 1.807 & 1.744 & 0.795 & Alpha & 0.005 & 0.010 & 0.005 \\ 
+		60 & 1.929 & 1.072 & 0.521 & Alpha & 0.003 & 0.002 & 0.001 \\ 
+		120 & 1.599 & 24.091 & 10.300 & Alpha & -0.001 & 0.156 & 0.067 \\ 
+		150 & 1.536 & 26.945 & 11.913 & Alpha & -0.002 & 0.183 & 0.080 \\ 
+		180 & 1.579 & 8.828 & 3.830 & Alpha & -0.003 & 0.070 & 0.029 \\ 
+		1 & 1.802 & 0.698 & 0.370 & EG & 1.023 & 0.444 & 0.236 \\ 
+		30 & 2.095 & 1.725 & 0.786 & EG & 0.626 & 1.011 & 0.474 \\ 
+		60 & 2.101 & 4.304 & 2.047 & EG & 0.294 & 2.526 & 1.208 \\ 
+		120 & 1.749 & 6.056 & 2.948 & EG & -0.348 & 4.373 & 2.086 \\ 
+		150 & 1.678 & 4.452 & 2.172 & EG & -0.506 & 3.542 & 1.674 \\ 
+		180 & 1.637 & 2.492 & 1.242 & EG & -0.547 & 2.205 & 1.018 \\ 
+		1 & 1.989 & 1.846 & 0.978 & IA & 0.889 & 3.240 & 1.683 \\ 
+		30 & 2.207 & 1.999 & 1.045 & IA & 0.886 & 3.182 & 1.634 \\ 
+		60 & 2.156 & 5.420 & 2.680 & IA & 0.383 & 8.311 & 4.108 \\ 
+		120 & 1.640 & 5.551 & 2.791 & IA & -0.696 & 10.654 & 5.313 \\ 
+		150 & 1.510 & 1.558 & 0.822 & IA & -0.943 & 2.463 & 1.234 \\ 
+		180 & 1.453 & 1.682 & 0.888 & IA & -0.999 & 2.453 & 1.231 \\ 
+		1 & 1.933 & 0.974 & 0.493 & ME & 0.954 & 1.963 & 1.162 \\ 
+		30 & 2.285 & 0.748 & 0.427 & ME & 1.379 & 2.973 & 1.432 \\ 
+		60 & 2.392 & 0.538 & 0.374 & ME & 1.587 & 3.536 & 1.645 \\ 
+		120 & 1.593 & 0.464 & 0.461 & ME & 1.373 & 3.431 & 2.059 \\ 
+		150 & 1.396 & 1.229 & 0.665 & ME & 1.704 & 5.756 & 2.850 \\ 
+		180 & 1.267 & 1.579 & 0.843 & ME & 1.732 & 6.762 & 3.475 \\ 
+		1 & 1.776 & 1.002 & 0.525 & MKT & 1.776 & 1.002 & 0.525 \\ 
+		30 & 1.922 & 1.064 & 0.536 & MKT & 1.922 & 1.064 & 0.536 \\ 
+		60 & 2.061 & 1.124 & 0.564 & MKT & 2.061 & 1.124 & 0.564 \\ 
+		120 & 1.515 & 0.959 & 0.520 & MKT & 1.515 & 0.959 & 0.520 \\ 
+		150 & 1.246 & 0.925 & 0.513 & MKT & 1.246 & 0.925 & 0.513 \\ 
+		180 & 1.121 & 0.908 & 0.499 & MKT & 1.121 & 0.908 & 0.499 \\ 
+		1 & 1.856 & 0.912 & 0.468 & ROE & 1.330 & 0.820 & 0.417 \\ 
+		30 & 2.126 & 1.530 & 0.739 & ROE & 0.977 & 1.259 & 0.614 \\ 
+		60 & 2.103 & 12.191 & 5.931 & ROE & 0.325 & 9.526 & 4.635 \\ 
+		120 & 1.755 & 4.738 & 2.376 & ROE & -0.489 & 4.149 & 2.053 \\ 
+		150 & 1.671 & 2.401 & 1.206 & ROE & -0.666 & 2.513 & 1.166 \\ 
+		180 & 1.605 & 2.205 & 1.120 & ROE & -0.695 & 2.280 & 1.051 \\ 
+		\hline
+	\end{tabular}
+	\caption{Asymptotic results for PE Funds. This table reports asymptotic parameter estimates for linear two-factor models using Fund-Size Weighted Vintage-Year Portfolios. Standard errors are estimated by a SHAC estimator (Equation \ref{eq:asy_se}) with a Bartlett kernel bandwidth of $D=12$ vintage years to correct for dependence between overlapping funds. MCM (Maximum Compounding Month) denotes the maximum cash flow compounding horizon.} 
+	\label{tab:ai_FW_VYP_PE}
+\end{table}
+
+% latex table generated in R 4.3.1 by xtable 1.8-4 package
+% Mon Jan 19 22:21:34 2026
+\begin{table}[H]
+	\centering
+	\begin{tabular}{lrrlrrr}
+		\hline
+		& Market & Market & Second & Second & Second &  \\ 
+		\textbf{MCM} & \textbf{Loading} & \textbf{SE} & \textbf{Name} & \textbf{Loading} & \textbf{SE} & \textbf{CV-Error} \\ 
+		\hline
+		1 & -338.928 & 150.054 & Alpha & 804.461 & 117.287 & 64.218 \\ 
+		30 & 1.887 & 0.631 & Alpha & 0.004 & 0.004 & 449.436 \\ 
+		60 & 1.969 & 0.642 & Alpha & 0.003 & 0.003 & 519.519 \\ 
+		120 & 1.674 & 0.613 & Alpha & -0.001 & 0.004 & 726.817 \\ 
+		180 & 1.578 & 0.681 & Alpha & -0.003 & 0.004 & 843.737 \\ 
+		1 & 1.912 & 0.437 & EG & 1.021 & 1.213 & 404.005 \\ 
+		30 & 2.160 & 0.448 & EG & 0.420 & 0.549 & 474.039 \\ 
+		60 & 2.148 & 0.448 & EG & 0.160 & 0.427 & 555.361 \\ 
+		120 & 1.795 & 0.337 & EG & -0.351 & 0.368 & 736.034 \\ 
+		180 & 1.647 & 0.289 & EG & -0.497 & 0.322 & 843.351 \\ 
+		1 & 2.074 & 0.465 & IA & 0.798 & 1.212 & 568.274 \\ 
+		30 & 2.225 & 0.428 & IA & 0.490 & 1.064 & 653.093 \\ 
+		60 & 2.188 & 0.423 & IA & 0.102 & 0.894 & 684.295 \\ 
+		120 & 1.672 & 0.282 & IA & -0.681 & 0.619 & 709.890 \\ 
+		180 & 1.468 & 0.225 & IA & -0.895 & 0.511 & 784.811 \\ 
+		1 & 1.917 & 0.338 & ME & 0.642 & 0.979 & 535.538 \\ 
+		30 & 2.224 & 0.404 & ME & 1.357 & 0.697 & 376.295 \\ 
+		60 & 2.339 & 0.421 & ME & 1.644 & 0.529 & 411.610 \\ 
+		120 & 1.586 & 0.303 & ME & 1.232 & 0.781 & 581.041 \\ 
+		180 & 1.315 & 0.255 & ME & 1.970 & 0.412 & 687.039 \\ 
+		1 & 1.785 & 0.249 & MKT & 1.785 & 0.249 & 292.526 \\ 
+		30 & 1.958 & 0.334 & MKT & 1.958 & 0.334 & 350.893 \\ 
+		60 & 2.073 & 0.364 & MKT & 2.073 & 0.364 & 415.138 \\ 
+		120 & 1.502 & 0.259 & MKT & 1.502 & 0.259 & 547.456 \\ 
+		180 & 1.108 & 0.212 & MKT & 1.108 & 0.212 & 664.677 \\ 
+		1 & 1.905 & 0.351 & ROE & 0.905 & 0.904 & 408.725 \\ 
+		30 & 2.177 & 0.428 & ROE & 0.678 & 0.817 & 471.319 \\ 
+		60 & 2.153 & 0.421 & ROE & 0.186 & 0.597 & 569.467 \\ 
+		120 & 1.801 & 0.316 & ROE & -0.462 & 0.516 & 771.295 \\ 
+		180 & 1.621 & 0.273 & ROE & -0.599 & 0.483 & 944.016 \\ 
+		\hline
+	\end{tabular}
+	\caption{Cross-validation results for PE Funds. The table reports the validation error and average parameter estimates from $hv$-block cross-validation. The estimation uses Fund-Size Weighted Vintage-Year Portfolios. MCM (Maximum Compounding Month) denotes the maximum cash flow compounding horizon.} 
+	\label{tab:cv_FW_VYP_PE}
+\end{table}
+
+
+% latex table generated in R 4.3.1 by xtable 1.8-4 package
+% Tue Jan 20 00:07:32 2026
+\begin{table}[H]
+	\centering
+	\begin{tabular}{rrrrlrrr}
+		\hline
+		& Market& Market & Market & Second & Second & Second & Second \\ 
+		\textbf{MCM} & \textbf{Loading} & \textbf{SE} & \textbf{SE Ind.} & \textbf{Name} & \textbf{Loading} & \textbf{SE} & \textbf{SE Ind.} \\ 
+		\hline
+		1 & -284.624 &  &  & Alpha & 867.416 &  &  \\ 
+		30 & 1.807 & 1.744 & 0.796 & Alpha & 0.005 & 0.010 & 0.005 \\ 
+		60 & 1.928 & 1.069 & 0.520 & Alpha & 0.003 & 0.002 & 0.001 \\ 
+		120 & 1.599 & 24.046 & 10.281 & Alpha & -0.001 & 0.156 & 0.067 \\ 
+		150 & 1.535 & 27.045 & 11.957 & Alpha & -0.002 & 0.184 & 0.080 \\ 
+		180 & 1.578 & 8.839 & 3.835 & Alpha & -0.003 & 0.071 & 0.029 \\ 
+		1 & 1.801 & 0.702 & 0.372 & EG & 1.019 & 0.447 & 0.238 \\ 
+		30 & 2.094 & 1.863 & 0.850 & EG & 0.624 & 1.086 & 0.508 \\ 
+		60 & 2.100 & 4.311 & 2.051 & EG & 0.293 & 2.531 & 1.211 \\ 
+		120 & 1.749 & 6.054 & 2.947 & EG & -0.348 & 4.372 & 2.086 \\ 
+		150 & 1.678 & 4.448 & 2.170 & EG & -0.507 & 3.541 & 1.673 \\ 
+		180 & 1.637 & 2.491 & 1.242 & EG & -0.547 & 2.205 & 1.018 \\ 
+		1 & 1.988 & 1.847 & 0.979 & IA & 0.888 & 3.243 & 1.685 \\ 
+		30 & 2.207 & 1.999 & 1.045 & IA & 0.886 & 3.184 & 1.635 \\ 
+		60 & 2.156 & 5.414 & 2.677 & IA & 0.383 & 8.304 & 4.106 \\ 
+		120 & 1.640 & 5.565 & 2.798 & IA & -0.696 & 10.687 & 5.331 \\ 
+		150 & 1.509 & 1.558 & 0.823 & IA & -0.943 & 2.466 & 1.236 \\ 
+		180 & 1.453 & 1.681 & 0.888 & IA & -0.998 & 2.457 & 1.232 \\ 
+		1 & 1.932 & 0.974 & 0.493 & ME & 0.955 & 1.964 & 1.163 \\ 
+		30 & 2.284 & 0.748 & 0.427 & ME & 1.380 & 2.974 & 1.433 \\ 
+		60 & 2.392 & 0.537 & 0.374 & ME & 1.589 & 3.539 & 1.646 \\ 
+		120 & 1.594 & 0.462 & 0.461 & ME & 1.375 & 3.435 & 2.060 \\ 
+		150 & 1.396 & 1.230 & 0.666 & ME & 1.705 & 5.757 & 2.849 \\ 
+		180 & 1.267 & 1.579 & 0.843 & ME & 1.733 & 6.760 & 3.473 \\ 
+		1 & 1.775 & 1.002 & 0.525 & MKT & 1.775 & 1.002 & 0.525 \\ 
+		30 & 1.921 & 1.063 & 0.536 & MKT & 1.921 & 1.063 & 0.536 \\ 
+		60 & 2.061 & 1.124 & 0.564 & MKT & 2.061 & 1.124 & 0.564 \\ 
+		120 & 1.515 & 0.958 & 0.520 & MKT & 1.515 & 0.958 & 0.520 \\ 
+		150 & 1.246 & 0.924 & 0.513 & MKT & 1.246 & 0.924 & 0.513 \\ 
+		180 & 1.121 & 0.907 & 0.499 & MKT & 1.121 & 0.907 & 0.499 \\ 
+		1 & 1.856 & 0.921 & 0.472 & ROE & 1.324 & 0.827 & 0.421 \\ 
+		30 & 2.126 & 1.538 & 0.742 & ROE & 0.974 & 1.266 & 0.617 \\ 
+		60 & 2.103 & 12.263 & 5.966 & ROE & 0.323 & 9.586 & 4.664 \\ 
+		120 & 1.755 & 4.741 & 2.378 & ROE & -0.490 & 4.155 & 2.055 \\ 
+		150 & 1.671 & 2.402 & 1.206 & ROE & -0.666 & 2.517 & 1.168 \\ 
+		180 & 1.605 & 2.205 & 1.120 & ROE & -0.695 & 2.282 & 1.053 \\ 
+		\hline
+	\end{tabular}
+	\caption{Asymptotic results for PE Funds. This table reports asymptotic parameter estimates for linear two-factor models using Fund-Size Weighted Vintage-Year Portfolios. Standard errors are estimated by a SHAC estimator (Equation \ref{eq:asy_se}) with a Bartlett kernel bandwidth of $D=12$ vintage years to correct for dependence between overlapping funds. MCM (Maximum Compounding Month) denotes the maximum cash flow compounding horizon.} 
+	\label{tab:ai_FW_VYP_PE}
+\end{table}
+
+% latex table generated in R 4.3.1 by xtable 1.8-4 package
+% Tue Jan 20 00:07:32 2026
+\begin{table}[H]
+	\centering
+	\begin{tabular}{lrrlrrr}
+		\hline
+		& Market & Market & Second & Second & Second &  \\ 
+		\textbf{MCM} & \textbf{Loading} & \textbf{SE} & \textbf{Name} & \textbf{Loading} & \textbf{SE} & \textbf{CV-Error} \\ 
+		\hline
+		1 & -338.928 & 150.054 & Alpha & 804.461 & 117.287 & 64.215 \\ 
+		30 & 1.887 & 0.631 & Alpha & 0.004 & 0.004 & 449.409 \\ 
+		60 & 1.969 & 0.642 & Alpha & 0.003 & 0.003 & 519.444 \\ 
+		120 & 1.674 & 0.613 & Alpha & -0.001 & 0.004 & 726.786 \\ 
+		180 & 1.578 & 0.681 & Alpha & -0.003 & 0.004 & 843.624 \\ 
+		1 & 1.912 & 0.437 & EG & 1.021 & 1.213 & 403.955 \\ 
+		30 & 2.160 & 0.448 & EG & 0.421 & 0.549 & 474.046 \\ 
+		60 & 2.148 & 0.448 & EG & 0.160 & 0.427 & 555.235 \\ 
+		120 & 1.795 & 0.337 & EG & -0.351 & 0.368 & 735.971 \\ 
+		180 & 1.647 & 0.289 & EG & -0.497 & 0.322 & 843.310 \\ 
+		1 & 2.074 & 0.465 & IA & 0.798 & 1.212 & 568.199 \\ 
+		30 & 2.225 & 0.428 & IA & 0.490 & 1.064 & 652.972 \\ 
+		60 & 2.188 & 0.423 & IA & 0.102 & 0.894 & 684.364 \\ 
+		120 & 1.672 & 0.282 & IA & -0.681 & 0.619 & 709.828 \\ 
+		180 & 1.468 & 0.225 & IA & -0.895 & 0.511 & 784.798 \\ 
+		1 & 1.917 & 0.338 & ME & 0.642 & 0.979 & 535.608 \\ 
+		30 & 2.224 & 0.404 & ME & 1.357 & 0.696 & 376.214 \\ 
+		60 & 2.339 & 0.421 & ME & 1.644 & 0.528 & 411.563 \\ 
+		120 & 1.586 & 0.303 & ME & 1.232 & 0.781 & 581.096 \\ 
+		180 & 1.316 & 0.255 & ME & 1.971 & 0.412 & 686.962 \\ 
+		1 & 1.785 & 0.249 & MKT & 1.785 & 0.249 & 292.519 \\ 
+		30 & 1.958 & 0.334 & MKT & 1.958 & 0.334 & 350.929 \\ 
+		60 & 2.073 & 0.364 & MKT & 2.073 & 0.364 & 415.112 \\ 
+		120 & 1.502 & 0.259 & MKT & 1.502 & 0.259 & 547.418 \\ 
+		180 & 1.108 & 0.212 & MKT & 1.108 & 0.212 & 664.661 \\ 
+		1 & 1.905 & 0.351 & ROE & 0.906 & 0.904 & 408.789 \\ 
+		30 & 2.177 & 0.428 & ROE & 0.678 & 0.817 & 471.222 \\ 
+		60 & 2.154 & 0.421 & ROE & 0.186 & 0.597 & 569.432 \\ 
+		120 & 1.801 & 0.316 & ROE & -0.461 & 0.516 & 771.317 \\ 
+		180 & 1.621 & 0.273 & ROE & -0.599 & 0.483 & 944.020 \\ 
+		\hline
+	\end{tabular}
+	\caption{Cross-validation results for PE Funds. The table reports the validation error and average parameter estimates from $hv$-block cross-validation. The estimation uses Fund-Size Weighted Vintage-Year Portfolios. MCM (Maximum Compounding Month) denotes the maximum cash flow compounding horizon.} 
+	\label{tab:cv_FW_VYP_PE}
+\end{table}
+
+
+% latex table generated in R 4.3.1 by xtable 1.8-4 package
+% Tue Jan 20 08:58:14 2026
+\begin{table}[H]
+	\centering
+	\begin{tabular}{rrrrlrrr}
+		\hline
+		& Market& Market & Market & Second & Second & Second & Second \\ 
+		\textbf{MCM} & \textbf{Loading} & \textbf{SE} & \textbf{SE Ind.} & \textbf{Name} & \textbf{Loading} & \textbf{SE} & \textbf{SE Ind.} \\ 
+		\hline
+		1 & -614.990 &  &  & Alpha & 729.827 &  &  \\ 
+		30 & 1.760 & 1.776 & 0.810 & Alpha & 0.005 & 0.010 & 0.005 \\ 
+		60 & 1.899 & 0.953 & 0.470 & Alpha & 0.003 & 0.001 & 0.000 \\ 
+		120 & 1.576 & 21.343 & 9.443 & Alpha & -0.001 & 0.139 & 0.062 \\ 
+		150 & 1.511 & 28.882 & 12.761 & Alpha & -0.002 & 0.198 & 0.086 \\ 
+		180 & 1.555 & 9.033 & 3.913 & Alpha & -0.003 & 0.073 & 0.030 \\ 
+		1 & 1.770 & 0.628 & 0.343 & EG & 1.071 & 0.401 & 0.219 \\ 
+		30 & 2.050 & 1.892 & 0.864 & EG & 0.628 & 1.116 & 0.523 \\ 
+		60 & 2.075 & 4.400 & 2.096 & EG & 0.297 & 2.601 & 1.246 \\ 
+		120 & 1.735 & 5.949 & 2.902 & EG & -0.340 & 4.326 & 2.066 \\ 
+		150 & 1.665 & 4.396 & 2.149 & EG & -0.498 & 3.528 & 1.667 \\ 
+		180 & 1.625 & 2.468 & 1.234 & EG & -0.540 & 2.218 & 1.023 \\ 
+		1 & 1.981 & 1.862 & 0.992 & IA & 0.879 & 3.282 & 1.713 \\ 
+		30 & 2.181 & 2.067 & 1.085 & IA & 0.860 & 3.326 & 1.716 \\ 
+		60 & 2.134 & 5.600 & 2.778 & IA & 0.368 & 8.684 & 4.306 \\ 
+		120 & 1.629 & 5.579 & 2.813 & IA & -0.697 & 10.840 & 5.417 \\ 
+		150 & 1.501 & 1.543 & 0.821 & IA & -0.940 & 2.500 & 1.251 \\ 
+		180 & 1.445 & 1.663 & 0.886 & IA & -0.995 & 2.487 & 1.246 \\ 
+		1 & 1.929 & 0.979 & 0.496 & ME & 0.949 & 1.929 & 1.155 \\ 
+		30 & 2.296 & 0.724 & 0.420 & ME & 1.400 & 3.010 & 1.443 \\ 
+		60 & 2.422 & 0.480 & 0.358 & ME & 1.643 & 3.646 & 1.684 \\ 
+		120 & 1.578 & 0.832 & 0.546 & ME & 1.318 & 2.606 & 1.789 \\ 
+		150 & 1.379 & 0.873 & 0.677 & ME & 1.647 & 5.247 & 2.960 \\ 
+		180 & 1.253 & 1.627 & 0.876 & ME & 1.683 & 7.103 & 3.692 \\ 
+		1 & 1.767 & 0.990 & 0.522 & MKT & 1.767 & 0.990 & 0.522 \\ 
+		30 & 1.899 & 1.048 & 0.531 & MKT & 1.899 & 1.048 & 0.531 \\ 
+		60 & 2.042 & 1.108 & 0.557 & MKT & 2.042 & 1.108 & 0.557 \\ 
+		120 & 1.505 & 0.943 & 0.517 & MKT & 1.505 & 0.943 & 0.517 \\ 
+		150 & 1.239 & 0.908 & 0.511 & MKT & 1.239 & 0.908 & 0.511 \\ 
+		180 & 1.115 & 0.890 & 0.498 & MKT & 1.115 & 0.890 & 0.498 \\ 
+		1 & 1.843 & 0.908 & 0.471 & ROE & 1.331 & 0.819 & 0.420 \\ 
+		30 & 2.093 & 1.596 & 0.773 & ROE & 0.960 & 1.325 & 0.648 \\ 
+		60 & 2.082 & 13.672 & 6.664 & ROE & 0.319 & 10.764 & 5.247 \\ 
+		120 & 1.743 & 4.481 & 2.252 & ROE & -0.485 & 3.992 & 1.975 \\ 
+		150 & 1.660 & 2.378 & 1.197 & ROE & -0.660 & 2.535 & 1.176 \\ 
+		180 & 1.594 & 2.103 & 1.102 & ROE & -0.690 & 2.242 & 1.045 \\ 
+		\hline
+	\end{tabular}
+	\caption{Asymptotic results for PE Funds. This table reports asymptotic parameter estimates for linear two-factor models using Fund-Size Weighted Vintage-Year Portfolios. Standard errors are estimated by a SHAC estimator (Equation \ref{eq:asy_se}) with a Bartlett kernel bandwidth of $D=12$ vintage years to correct for dependence between overlapping funds. MCM (Maximum Compounding Month) denotes the maximum cash flow compounding horizon.} 
+	\label{tab:ai_FW_VYP_PE}
+\end{table}
+
+% latex table generated in R 4.3.1 by xtable 1.8-4 package
+% Tue Jan 20 08:58:14 2026
+\begin{table}[H]
+	\centering
+	\begin{tabular}{lrrlrrr}
+		\hline
+		& Market & Market & Second & Second & Second &  \\ 
+		\textbf{MCM} & \textbf{Loading} & \textbf{SE} & \textbf{Name} & \textbf{Loading} & \textbf{SE} & \textbf{CV-Error} \\ 
+		\hline
+		1 & -570.184 & 141.688 & Alpha & 708.149 & 68.552 & 64.207 \\ 
+		30 & 1.845 & 0.627 & Alpha & 0.004 & 0.004 & 444.452 \\ 
+		60 & 1.941 & 0.642 & Alpha & 0.003 & 0.003 & 518.588 \\ 
+		120 & 1.649 & 0.614 & Alpha & -0.001 & 0.004 & 722.843 \\ 
+		180 & 1.551 & 0.685 & Alpha & -0.003 & 0.004 & 842.841 \\ 
+		1 & 1.905 & 0.463 & EG & 1.187 & 1.532 & 401.096 \\ 
+		30 & 2.122 & 0.442 & EG & 0.421 & 0.544 & 467.132 \\ 
+		60 & 2.125 & 0.448 & EG & 0.163 & 0.427 & 554.380 \\ 
+		120 & 1.780 & 0.338 & EG & -0.341 & 0.373 & 735.911 \\ 
+		180 & 1.632 & 0.289 & EG & -0.488 & 0.328 & 848.835 \\ 
+		1 & 2.068 & 0.469 & IA & 0.795 & 1.212 & 566.446 \\ 
+		30 & 2.201 & 0.431 & IA & 0.477 & 1.063 & 645.960 \\ 
+		60 & 2.166 & 0.425 & IA & 0.093 & 0.893 & 681.517 \\ 
+		120 & 1.658 & 0.282 & IA & -0.680 & 0.616 & 706.392 \\ 
+		180 & 1.457 & 0.224 & IA & -0.891 & 0.507 & 778.635 \\ 
+		1 & 1.911 & 0.339 & ME & 0.621 & 1.011 & 559.787 \\ 
+		30 & 2.242 & 0.416 & ME & 1.354 & 0.808 & 392.441 \\ 
+		60 & 2.385 & 0.435 & ME & 1.730 & 0.546 & 415.122 \\ 
+		120 & 1.595 & 0.307 & ME & 0.904 & 1.302 & 786.977 \\ 
+		180 & 1.292 & 0.251 & ME & 1.899 & 0.385 & 682.764 \\ 
+		1 & 1.776 & 0.248 & MKT & 1.776 & 0.248 & 292.435 \\ 
+		30 & 1.932 & 0.328 & MKT & 1.932 & 0.328 & 349.625 \\ 
+		60 & 2.053 & 0.362 & MKT & 2.053 & 0.362 & 414.842 \\ 
+		120 & 1.491 & 0.258 & MKT & 1.491 & 0.258 & 546.106 \\ 
+		180 & 1.101 & 0.211 & MKT & 1.101 & 0.211 & 663.749 \\ 
+		1 & 1.893 & 0.350 & ROE & 0.909 & 0.905 & 407.286 \\ 
+		30 & 2.148 & 0.425 & ROE & 0.668 & 0.812 & 466.802 \\ 
+		60 & 2.133 & 0.421 & ROE & 0.183 & 0.597 & 568.490 \\ 
+		120 & 1.785 & 0.315 & ROE & -0.455 & 0.517 & 768.976 \\ 
+		180 & 1.608 & 0.271 & ROE & -0.591 & 0.485 & 944.079 \\ 
+		\hline
+	\end{tabular}
+	\caption{Cross-validation results for PE Funds. The table reports the validation error and average parameter estimates from $hv$-block cross-validation. The estimation uses Fund-Size Weighted Vintage-Year Portfolios. MCM (Maximum Compounding Month) denotes the maximum cash flow compounding horizon.} 
+	\label{tab:cv_FW_VYP_PE}
+\end{table}
 
 
 

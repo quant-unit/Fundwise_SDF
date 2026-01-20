@@ -76,15 +76,16 @@ if (source.internally) {
   part.to.keep <- 1
   no.partitions <- 1 # 10
   
-  data.out.folder <- "results/data_out_2026-emp-B"
+  data.out.folder <- "results/data_out_2026-emp-F-max-vin-2019"
   if(!dir.exists(data.out.folder)) dir.create(data.out.folder)
   
   factors.to.use <- ""
+  
+  data.prepared.folder <- "data_prepared_2026"
+  
 }
 
 # 1.2) load data -----
-
-data.prepared.folder <- "data_prepared"
 
 # load public data
 if (public.filename == "q_factors") {
@@ -194,9 +195,11 @@ length(levels(df.private.cfs$type))
 
 
 # merge private and public data
-df0 <- merge(df.private.cfs, df.public, by="Date")
+df0 <- base::merge(df.private.cfs, df.public, by="Date", all.x=TRUE)
 df0$Fund.ID <- as.factor(df0$Fund.ID)
 rm(df.private.cfs)
+
+table(df0$Date)
 
 # check if we have enough public data
 min(df0$Vintage)
@@ -224,6 +227,7 @@ aggregate(Vintage ~ type , df0, min)
 number.of <- function(x) length(table(x))
 aggregate(Vintage ~ type , df0, number.of)
 aggregate(as.character(Fund.ID) ~ type , df0, number.of)
+table(df0$Vintage)
 
 if (!use.simulation) {
   # print summary: funds per vintage
@@ -551,7 +555,7 @@ iter.run <- function(input.list) {
     factors <- c(factors, "Alpha")
     #factors <- c("ALL", factors)
     
-    types <- c("PE", "VC", "PD", "RE", "NATRES", "INF") # asset classes
+    types <- c("PE", "VC", "PD", "RE", "NATRES", "INF", "BO", "GroBO") # asset classes
     if (use.simulation) types <- levels(df0$type)
   }
   if (public.filename %in% bond.files) {

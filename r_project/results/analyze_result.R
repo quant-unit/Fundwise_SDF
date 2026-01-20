@@ -12,7 +12,7 @@ if (source.internally) {
 
   prefix <- "q_factors_preqin_"
   suffix <- "FW_VYP"
-  data.out.folder <- "data_out_2026-emp-B"
+  data.out.folder <- "data_out_2026-emp-E"
 }
 
 list.cache <- list()

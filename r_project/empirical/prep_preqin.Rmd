@@ -48,6 +48,9 @@ if ("GEOGRAPHIC.FOCUS" %in% colnames(df.xl)) df.xl$PRIMARY.GEOGRAPHIC.FOCUS <- d
 table(df.xl$PRIMARY.GEOGRAPHIC.FOCUS)
 colnames(df.xl)
 
+# Exclude too recent vintages
+df.xl <- df.xl[df.xl$VINTAGE...INCEPTION.YEAR <= 2019, ]
+
 # df <- df.xl
 table(df.xl$ASSET.CLASS[!duplicated(df.xl$FUND.ID)])
 table(df.xl$STRATEGY[!duplicated(df.xl$FUND.ID)])
@@ -188,6 +191,7 @@ make.preqin.df <- function(
     list.df <- list()
     for (fund.id in levels(df$FUND.ID)) {
         df.ss <- df[df$FUND.ID == fund.id, ]
+        df.ss <- df.ss[order(df.ss$TRANSACTION.DATE), ]
         df.ss$CF <- c(df.ss$NET.CASHFLOW[1], diff(df.ss$NET.CASHFLOW))
         df.ss$CUMULATIVE.CONTRIBUTION <- c(df.ss$CUMULATIVE.CONTRIBUTION[1], diff(df.ss$CUMULATIVE.CONTRIBUTION))
         df.ss$CUMULATIVE.DISTRIBUTION <- c(df.ss$CUMULATIVE.DISTRIBUTION[1], diff(df.ss$CUMULATIVE.DISTRIBUTION))
@@ -245,7 +249,7 @@ make.preqin.df <- function(
         dfx <- split(df, df$Vintage)
         df <- data.frame(do.call(rbind, lapply(dfx, agg.vin.year.pf)))
     }
-
+  
     return(df)
 }
 df <- make.preqin.df(acs.filter = "Private Equity")
@@ -268,7 +272,8 @@ acs <- list(
     VC = "Venture Capital",
     MEZZ = "Mezzanine",
     DD = c("Special Situations", "Distressed Debt"),
-    BO = c("Growth", "Buyout"),
+    BO = "Buyout",
+    GroBO = c("Growth", "Buyout"),
     FOF = "Fund of Funds",
     SEC = "Secondaries"
 )

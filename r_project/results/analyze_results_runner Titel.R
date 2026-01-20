@@ -7,7 +7,7 @@ getwd()
 
 source.internally <- FALSE
 
-data.out.folder <- "data_out_2026-emp-B"
+data.out.folder <- "data_out_2026-emp-F-max-vin-2019"
 
 # 1. analyze all results ----
 

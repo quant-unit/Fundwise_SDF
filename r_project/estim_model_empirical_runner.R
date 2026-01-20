@@ -19,11 +19,12 @@ lambdas <- 0
 kernel.bandwidth <- 12
 part.to.keep <- 1
 no.partitions <- 1 # 10
-data.out.folder <- "results/data_out_2026-emp-B"
+data.out.folder <- "results/data_out_2026-emp-F-max-vin-2019"
 if(!dir.exists(data.out.folder)) dir.create(data.out.folder)
 factors.to.use <- ""
 cutoff <- ""
 
+data.prepared.folder <- "data_prepared_2026"
 private.source <- "preqin"
 error.function <- "L2_Lasso"
 sdf.model <- "linear"

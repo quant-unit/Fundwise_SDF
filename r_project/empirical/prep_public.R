@@ -12,7 +12,9 @@ if(sys.nframe() == 0L) rm(list = ls())
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
-if(!dir.exists("data_prepared")) dir.create("data_prepared")
+
+data.prepared.folder <- "data_prepared_2026"
+if(!dir.exists(data.prepared.folder)) dir.create(data.prepared.folder)
 
 path <- "data_in/2020-02-26 150100 Update-51aec0-52aa6c.xlsx"
 path <- "data_in/2023-05-22 132257 Update-0386e9-45537d.xlsx"
@@ -57,7 +59,7 @@ if (FALSE) {
   
   df <- df[, c("Date", setdiff(colnames(df), col.before))]
   
-  write.csv(df, "data_prepared/public_returns.csv", row.names = FALSE)
+  write.csv(df, paste0(data.prepared.folder, "/public_returns.csv"), row.names = FALSE)
 }
 
 # msci_market_factors ----
@@ -78,7 +80,7 @@ if (FALSE) {
     col.before <- colnames(df)
     
     # Risk Free Rate
-    df.RF <- read.csv("data_prepared/public_returns.csv")[, c("Date", "RF")]
+    df.RF <- read.csv(paste0(data.prepared.folder, "/public_returns.csv"))[, c("Date", "RF")]
     df <- merge(df, df.RF, by="Date")
     
     df$MKT <- df$Market.World - df$RF
@@ -105,7 +107,7 @@ if (FALSE) {
   apply(df[(df$Date > s.date) & (df$Date < e.date), -1], 2, function(x) prod(1+x))
   cor(df[(df$Date > s.date) & (df$Date < e.date), -1])
   
-  write.csv(df, "data_prepared/msci_market_factors.csv", row.names = FALSE)
+  write.csv(df, paste0(data.prepared.folder, "/msci_market_factors.csv"), row.names = FALSE)
 }
 
 # q-factor data ----
@@ -113,7 +115,8 @@ if (FALSE) {
 if (TRUE) {
   url <- "http://global-q.org/uploads/1/2/2/6/122679606/q5_factors_monthly_2019.csv"
   url <- "https://global-q.org/uploads/1/2/2/6/122679606/q5_factors_monthly_2022.csv"
-  url <- "data_in/q5_factors_monthly_2019.csv"
+  url <- "https://global-q.org/uploads/1/2/2/6/122679606/q5_factors_monthly_2024.csv"
+  #url <- "data_in/q5_factors_monthly_2019.csv"
   df.q <- read.csv(url)
   cor(df.q[, 3:8])
   
@@ -129,14 +132,14 @@ if (TRUE) {
   
   apply(df.q[, 1:6], 2, function(x) prod(1+x))
   
-  write.csv(df.q, "data_prepared/q_factors.csv", row.names = FALSE)
+  write.csv(df.q, paste0(data.prepared.folder, "/q_factors.csv"), row.names = FALSE)
   
   # add future (yields worse results)
   if (FALSE) {
     df.q2 <- df.q
     df.q2$Date <- seq(as.Date("2020-02-01"), by = "month", length.out = nrow(df.q)) - 1
     df.q <- data.frame(rbind(df.q, df.q2))
-    write.csv(df.q, "data_prepared/q_factors.csv", row.names = FALSE)
+    write.csv(df.q, paste0(data.prepared.folder, "/q_factors.csv"), row.names = FALSE)
   }
 }
 
@@ -254,9 +257,9 @@ rownames2col <- function(df) {
   return(df)
 }
 
-write.csv(rownames2col(df.eur.fac), file = "data_prepared/DebtFactorsEUR.csv", row.names = FALSE)
-write.csv(rownames2col(df.usd.fac), file = "data_prepared/DebtFactorsUSD.csv", row.names = FALSE)
-write.csv(rownames2col(df.eur.usd.fac), file = "data_prepared/DebtFactorsEURUSD.csv", row.names = FALSE)
+write.csv(rownames2col(df.eur.fac), file = paste0(data.prepared.folder, "/DebtFactorsEUR.csv"), row.names = FALSE)
+write.csv(rownames2col(df.usd.fac), file = paste0(data.prepared.folder, "/DebtFactorsUSD.csv"), row.names = FALSE)
+write.csv(rownames2col(df.eur.usd.fac), file = paste0(data.prepared.folder, "/DebtFactorsEURUSD.csv"), row.names = FALSE)
 
 # load PPP factors -------
 
@@ -271,9 +274,9 @@ colnames(df.iboxx.usd) <- sub("_NA", "", colnames(df.iboxx.usd))
 df.iboxx.mix <- df.iboxx[, grepl("_MIX", colnames(df.iboxx))]
 colnames(df.iboxx.mix) <- sub("_MIX", "", colnames(df.iboxx.mix))
 
-write.csv2(rownames2col(df.iboxx.eur), file = "data_prepared/iBoxxFactorsEUR.csv", row.names = FALSE)
-write.csv2(rownames2col(df.iboxx.usd), file = "data_prepared/iBoxxFactorsUSD.csv", row.names = FALSE)
-write.csv2(rownames2col(df.iboxx.mix), file = "data_prepared/iBoxxFactorsMIX.csv", row.names = FALSE)
+write.csv2(rownames2col(df.iboxx.eur), file = paste(data.prepared.folder, "/iBoxxFactorsEUR.csv"), row.names = FALSE)
+write.csv2(rownames2col(df.iboxx.usd), file = paste(data.prepared.folder, "/iBoxxFactorsUSD.csv"), row.names = FALSE)
+write.csv2(rownames2col(df.iboxx.mix), file = paste(data.prepared.folder, "/iBoxxFactorsMIX.csv"), row.names = FALSE)
 
 # analyze factors ------
 factor.summary <- function(df) {

@@ -11,7 +11,7 @@
 
 <meta name="author" content="Research Team" />
 
-<meta name="date" content="2026-01-18" />
+<meta name="date" content="2026-01-20" />
 
 <title>Documentation of Preqin Data Preparation</title>
 
@@ -1624,7 +1624,7 @@ display: none;
 <h1 class="title toc-ignore">Documentation of Preqin Data
 Preparation</h1>
 <h4 class="author">Research Team</h4>
-<h4 class="date">2026-01-18</h4>
+<h4 class="date">2026-01-20</h4>
 
 </div>
 
@@ -1764,55 +1764,56 @@ table(df.xl$PRIMARY.GEOGRAPHIC.FOCUS)</code></pre>
 ## [33] &quot;OTHER.GEOGRAPHIES&quot;          &quot;FUND.CURRENCY&quot;             
 ## [35] &quot;TARGET.SIZE.CURR..MN.&quot;      &quot;FINAL.CLOSE.SIZE.CURR..MN.&quot;
 ## [37] &quot;PRIMARY.GEOGRAPHIC.FOCUS&quot;</code></pre>
-<pre class="r"><code># df &lt;- df.xl
+<pre class="r"><code># Exclude too recent vintages
+df.xl &lt;- df.xl[df.xl$VINTAGE...INCEPTION.YEAR &lt;= 2019, ]
+
+# df &lt;- df.xl
 table(df.xl$ASSET.CLASS[!duplicated(df.xl$FUND.ID)])</code></pre>
 <pre><code>## 
 ##       Hedge Funds    Infrastructure             Multi Natural Resources 
-##                 3               218                36               171 
+##                 2               194                34               163 
 ##      Private Debt    Private Equity       Real Estate   Venture Capital 
-##               623              3004              1076              1240</code></pre>
+##               547              2744               990              1116</code></pre>
 <pre class="r"><code>table(df.xl$STRATEGY[!duplicated(df.xl$FUND.ID)])</code></pre>
 <pre><code>## 
 ##                                      Balanced 
-##                                            71 
+##                                            69 
 ##                                        Buyout 
-##                                          1449 
+##                                          1354 
 ##                                 Co-Investment 
-##                                           108 
+##                                            87 
 ##                   Co-Investment Multi-Manager 
-##                                            67 
+##                                            59 
 ##                                Direct Lending 
-##                                            21 
+##                                             9 
 ## Direct Lending - Blended / Opportunistic Debt 
-##                                            28 
+##                                            21 
 ##   Direct Lending - Junior / Subordinated Debt 
 ##                                            10 
 ##                  Direct Lending - Senior Debt 
-##                                           140 
+##                                           114 
 ##              Direct Lending - Unitranche Debt 
-##                                            10 
+##                                             8 
 ##                            Direct Secondaries 
-##                                            34 
+##                                            30 
 ##                               Distressed Debt 
-##                                           162 
+##                                           148 
 ##                                   Early Stage 
-##                                           348 
+##                                           316 
 ##                             Early Stage: Seed 
-##                                            66 
+##                                            57 
 ##                         Early Stage: Start-up 
-##                                            42 
+##                                            35 
 ##                                        Energy 
 ##                                             4 
 ##                        Expansion / Late Stage 
-##                                           153 
+##                                           130 
 ##                                 Fund of Funds 
-##                                           696 
-##                           Fund of Hedge Funds 
-##                                             1 
+##                                           643 
 ##            Fund of Hedge Funds Multi-Strategy 
 ##                                             1 
 ##                                        Growth 
-##                                           386 
+##                                           331 
 ##                  Hedge Fund Credit Strategies 
 ##                                             1 
 ##                                        Hybrid 
@@ -1820,9 +1821,9 @@ table(df.xl$ASSET.CLASS[!duplicated(df.xl$FUND.ID)])</code></pre>
 ##                          Hybrid Fund of Funds 
 ##                                             3 
 ##                           Infrastructure Core 
-##                                            53 
+##                                            46 
 ##                      Infrastructure Core Plus 
-##                                            81 
+##                                            71 
 ##                           Infrastructure Debt 
 ##                                            23 
 ##                  Infrastructure Fund of Funds 
@@ -1830,61 +1831,59 @@ table(df.xl$ASSET.CLASS[!duplicated(df.xl$FUND.ID)])</code></pre>
 ##                  Infrastructure Opportunistic 
 ##                                            12 
 ##                    Infrastructure Secondaries 
-##                                             3 
+##                                             2 
 ##                    Infrastructure Value Added 
-##                                            41 
+##                                            35 
 ##                             Metals and Mining 
-##                                             3 
+##                                             2 
 ##                                     Mezzanine 
-##                                           173 
+##                                           168 
 ##                             Natural Resources 
-##                                           136 
+##                                           131 
 ##                    Private Debt Fund of Funds 
-##                                             4 
+##                                             3 
 ##                                    Real Asset 
 ##                                             1 
 ##                      Real Asset Fund of Funds 
 ##                                             9 
 ##                     Real Estate Co-Investment 
-##                                            16 
+##                                            15 
 ##                              Real Estate Core 
-##                                            61 
+##                                            57 
 ##                         Real Estate Core-Plus 
-##                                            76 
+##                                            65 
 ##                              Real Estate Debt 
-##                                           160 
+##                                           135 
 ##                        Real Estate Distressed 
-##                                            35 
+##                                            31 
 ##                     Real Estate Fund of Funds 
 ##                                            36 
 ##                     Real Estate Opportunistic 
-##                                           275 
+##                                           262 
 ##                       Real Estate Secondaries 
 ##                                            21 
 ##                       Real Estate Value Added 
-##                                           396 
+##                                           368 
 ##                                   Secondaries 
-##                                           174 
+##                                           152 
 ##                            Special Situations 
-##                                            89 
+##                                            78 
 ##                                        Timber 
-##                                            27 
-##                                    Timberland 
-##                                             1 
+##                                            26 
 ##                                    Turnaround 
 ##                                            19 
 ##                             Venture (General) 
-##                                           600 
+##                                           550 
 ##                                  Venture Debt 
-##                                            31</code></pre>
+##                                            28</code></pre>
 <pre class="r"><code>table(df.xl$VINTAGE...INCEPTION.YEAR[!duplicated(df.xl$FUND.ID)])</code></pre>
 <pre><code>## 
 ## 1982 1983 1985 1986 1987 1988 1989 1990 1991 1992 1993 1994 1995 1996 1997 1998 
 ##    1    1    6    8    8    8    1   11   10   20   20   32   27   49   54  101 
 ## 1999 2000 2001 2002 2003 2004 2005 2006 2007 2008 2009 2010 2011 2012 2013 2014 
 ##  102  171  114   89   84  133  215  290  340  351  148  225  281  268  313  350 
-## 2015 2016 2017 2018 2019 2020 2021 
-##  360  387  391  382  439  337  243</code></pre>
+## 2015 2016 2017 2018 2019 
+##  360  387  391  382  439</code></pre>
 <p>The tables above provide an initial overview of the dataset
 composition across asset classes, strategies, and vintage years.</p>
 </div>
@@ -1921,66 +1920,64 @@ helps in understanding the coverage of the dataset.</p>
 }
 make.strategy.summary()</code></pre>
 <pre><code>## % latex table generated in R 4.3.1 by xtable 1.8-4 package
-## % Sun Jan 18 21:34:53 2026
+## % Tue Jan 20 00:19:43 2026
 ## \begin{table}[ht]
 ## \centering
 ## \begin{tabular}{llr}
 ##   \hline
 ## Asset.Class &amp; Strategy &amp; Fund.Count \\ 
 ##   \hline
-## Hedge Funds &amp; Fund of Hedge Funds &amp;    1 \\ 
-##   Hedge Funds &amp; Fund of Hedge Funds Multi-Strategy &amp;    1 \\ 
+## Hedge Funds &amp; Fund of Hedge Funds Multi-Strategy &amp;    1 \\ 
 ##   Hedge Funds &amp; Hedge Fund Credit Strategies &amp;    1 \\ 
-##   Infrastructure &amp; Infrastructure Core &amp;   53 \\ 
-##   Infrastructure &amp; Infrastructure Core Plus &amp;   81 \\ 
+##   Infrastructure &amp; Infrastructure Core &amp;   46 \\ 
+##   Infrastructure &amp; Infrastructure Core Plus &amp;   71 \\ 
 ##   Infrastructure &amp; Infrastructure Debt &amp;   23 \\ 
 ##   Infrastructure &amp; Infrastructure Fund of Funds &amp;    5 \\ 
 ##   Infrastructure &amp; Infrastructure Opportunistic &amp;   12 \\ 
-##   Infrastructure &amp; Infrastructure Secondaries &amp;    3 \\ 
-##   Infrastructure &amp; Infrastructure Value Added &amp;   41 \\ 
+##   Infrastructure &amp; Infrastructure Secondaries &amp;    2 \\ 
+##   Infrastructure &amp; Infrastructure Value Added &amp;   35 \\ 
 ##   Multi &amp; Hybrid &amp;    9 \\ 
 ##   Multi &amp; Hybrid Fund of Funds &amp;    3 \\ 
 ##   Multi &amp; Real Asset &amp;    1 \\ 
 ##   Multi &amp; Real Asset Fund of Funds &amp;    9 \\ 
-##   Multi &amp; Special Situations &amp;   14 \\ 
+##   Multi &amp; Special Situations &amp;   12 \\ 
 ##   Natural Resources &amp; Energy &amp;    4 \\ 
-##   Natural Resources &amp; Metals and Mining &amp;    3 \\ 
-##   Natural Resources &amp; Natural Resources &amp;  136 \\ 
-##   Natural Resources &amp; Timber &amp;   27 \\ 
-##   Natural Resources &amp; Timberland &amp;    1 \\ 
-##   Private Debt &amp; Direct Lending &amp;   21 \\ 
-##   Private Debt &amp; Direct Lending - Blended / Opportunistic Debt &amp;   28 \\ 
+##   Natural Resources &amp; Metals and Mining &amp;    2 \\ 
+##   Natural Resources &amp; Natural Resources &amp;  131 \\ 
+##   Natural Resources &amp; Timber &amp;   26 \\ 
+##   Private Debt &amp; Direct Lending &amp;    9 \\ 
+##   Private Debt &amp; Direct Lending - Blended / Opportunistic Debt &amp;   21 \\ 
 ##   Private Debt &amp; Direct Lending - Junior / Subordinated Debt &amp;   10 \\ 
-##   Private Debt &amp; Direct Lending - Senior Debt &amp;  140 \\ 
-##   Private Debt &amp; Direct Lending - Unitranche Debt &amp;   10 \\ 
-##   Private Debt &amp; Distressed Debt &amp;  162 \\ 
-##   Private Debt &amp; Mezzanine &amp;  173 \\ 
-##   Private Debt &amp; Private Debt Fund of Funds &amp;    4 \\ 
-##   Private Debt &amp; Special Situations &amp;   75 \\ 
-##   Private Equity &amp; Balanced &amp;   71 \\ 
-##   Private Equity &amp; Buyout &amp; 1449 \\ 
-##   Private Equity &amp; Co-Investment &amp;  108 \\ 
-##   Private Equity &amp; Co-Investment Multi-Manager &amp;   67 \\ 
-##   Private Equity &amp; Direct Secondaries &amp;   34 \\ 
-##   Private Equity &amp; Fund of Funds &amp;  696 \\ 
-##   Private Equity &amp; Growth &amp;  386 \\ 
-##   Private Equity &amp; Secondaries &amp;  174 \\ 
+##   Private Debt &amp; Direct Lending - Senior Debt &amp;  114 \\ 
+##   Private Debt &amp; Direct Lending - Unitranche Debt &amp;    8 \\ 
+##   Private Debt &amp; Distressed Debt &amp;  148 \\ 
+##   Private Debt &amp; Mezzanine &amp;  168 \\ 
+##   Private Debt &amp; Private Debt Fund of Funds &amp;    3 \\ 
+##   Private Debt &amp; Special Situations &amp;   66 \\ 
+##   Private Equity &amp; Balanced &amp;   69 \\ 
+##   Private Equity &amp; Buyout &amp; 1354 \\ 
+##   Private Equity &amp; Co-Investment &amp;   87 \\ 
+##   Private Equity &amp; Co-Investment Multi-Manager &amp;   59 \\ 
+##   Private Equity &amp; Direct Secondaries &amp;   30 \\ 
+##   Private Equity &amp; Fund of Funds &amp;  643 \\ 
+##   Private Equity &amp; Growth &amp;  331 \\ 
+##   Private Equity &amp; Secondaries &amp;  152 \\ 
 ##   Private Equity &amp; Turnaround &amp;   19 \\ 
-##   Real Estate &amp; Real Estate Co-Investment &amp;   16 \\ 
-##   Real Estate &amp; Real Estate Core &amp;   61 \\ 
-##   Real Estate &amp; Real Estate Core-Plus &amp;   76 \\ 
-##   Real Estate &amp; Real Estate Debt &amp;  160 \\ 
-##   Real Estate &amp; Real Estate Distressed &amp;   35 \\ 
+##   Real Estate &amp; Real Estate Co-Investment &amp;   15 \\ 
+##   Real Estate &amp; Real Estate Core &amp;   57 \\ 
+##   Real Estate &amp; Real Estate Core-Plus &amp;   65 \\ 
+##   Real Estate &amp; Real Estate Debt &amp;  135 \\ 
+##   Real Estate &amp; Real Estate Distressed &amp;   31 \\ 
 ##   Real Estate &amp; Real Estate Fund of Funds &amp;   36 \\ 
-##   Real Estate &amp; Real Estate Opportunistic &amp;  275 \\ 
+##   Real Estate &amp; Real Estate Opportunistic &amp;  262 \\ 
 ##   Real Estate &amp; Real Estate Secondaries &amp;   21 \\ 
-##   Real Estate &amp; Real Estate Value Added &amp;  396 \\ 
-##   Venture Capital &amp; Early Stage &amp;  348 \\ 
-##   Venture Capital &amp; Early Stage: Seed &amp;   66 \\ 
-##   Venture Capital &amp; Early Stage: Start-up &amp;   42 \\ 
-##   Venture Capital &amp; Expansion / Late Stage &amp;  153 \\ 
-##   Venture Capital &amp; Venture (General) &amp;  600 \\ 
-##   Venture Capital &amp; Venture Debt &amp;   31 \\ 
+##   Real Estate &amp; Real Estate Value Added &amp;  368 \\ 
+##   Venture Capital &amp; Early Stage &amp;  316 \\ 
+##   Venture Capital &amp; Early Stage: Seed &amp;   57 \\ 
+##   Venture Capital &amp; Early Stage: Start-up &amp;   35 \\ 
+##   Venture Capital &amp; Expansion / Late Stage &amp;  130 \\ 
+##   Venture Capital &amp; Venture (General) &amp;  550 \\ 
+##   Venture Capital &amp; Venture Debt &amp;   28 \\ 
 ##    \hline
 ## \end{tabular}
 ## \caption{Summary of asset classes in Preqin dataset.} 
@@ -1988,7 +1985,7 @@ make.strategy.summary()</code></pre>
 ## \end{table}</code></pre>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
-{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Asset.Class"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Strategy"],"name":[2],"type":["fct"],"align":["left"]},{"label":["Fund.Count"],"name":[3],"type":["int"],"align":["right"]}],"data":[{"1":"Hedge Funds","2":"Fund of Hedge Funds","3":"1","_rn_":"Hedge Funds.1"},{"1":"Hedge Funds","2":"Fund of Hedge Funds Multi-Strategy","3":"1","_rn_":"Hedge Funds.2"},{"1":"Hedge Funds","2":"Hedge Fund Credit Strategies","3":"1","_rn_":"Hedge Funds.3"},{"1":"Infrastructure","2":"Infrastructure Core","3":"53","_rn_":"Infrastructure.1"},{"1":"Infrastructure","2":"Infrastructure Core Plus","3":"81","_rn_":"Infrastructure.2"},{"1":"Infrastructure","2":"Infrastructure Debt","3":"23","_rn_":"Infrastructure.3"},{"1":"Infrastructure","2":"Infrastructure Fund of Funds","3":"5","_rn_":"Infrastructure.4"},{"1":"Infrastructure","2":"Infrastructure Opportunistic","3":"12","_rn_":"Infrastructure.5"},{"1":"Infrastructure","2":"Infrastructure Secondaries","3":"3","_rn_":"Infrastructure.6"},{"1":"Infrastructure","2":"Infrastructure Value Added","3":"41","_rn_":"Infrastructure.7"},{"1":"Multi","2":"Hybrid","3":"9","_rn_":"Multi.1"},{"1":"Multi","2":"Hybrid Fund of Funds","3":"3","_rn_":"Multi.2"},{"1":"Multi","2":"Real Asset","3":"1","_rn_":"Multi.3"},{"1":"Multi","2":"Real Asset Fund of Funds","3":"9","_rn_":"Multi.4"},{"1":"Multi","2":"Special Situations","3":"14","_rn_":"Multi.5"},{"1":"Natural Resources","2":"Energy","3":"4","_rn_":"Natural Resources.1"},{"1":"Natural Resources","2":"Metals and Mining","3":"3","_rn_":"Natural Resources.2"},{"1":"Natural Resources","2":"Natural Resources","3":"136","_rn_":"Natural Resources.3"},{"1":"Natural Resources","2":"Timber","3":"27","_rn_":"Natural Resources.4"},{"1":"Natural Resources","2":"Timberland","3":"1","_rn_":"Natural Resources.5"},{"1":"Private Debt","2":"Direct Lending","3":"21","_rn_":"Private Debt.1"},{"1":"Private Debt","2":"Direct Lending - Blended / Opportunistic Debt","3":"28","_rn_":"Private Debt.2"},{"1":"Private Debt","2":"Direct Lending - Junior / Subordinated Debt","3":"10","_rn_":"Private Debt.3"},{"1":"Private Debt","2":"Direct Lending - Senior Debt","3":"140","_rn_":"Private Debt.4"},{"1":"Private Debt","2":"Direct Lending - Unitranche Debt","3":"10","_rn_":"Private Debt.5"},{"1":"Private Debt","2":"Distressed Debt","3":"162","_rn_":"Private Debt.6"},{"1":"Private Debt","2":"Mezzanine","3":"173","_rn_":"Private Debt.7"},{"1":"Private Debt","2":"Private Debt Fund of Funds","3":"4","_rn_":"Private Debt.8"},{"1":"Private Debt","2":"Special Situations","3":"75","_rn_":"Private Debt.9"},{"1":"Private Equity","2":"Balanced","3":"71","_rn_":"Private Equity.1"},{"1":"Private Equity","2":"Buyout","3":"1449","_rn_":"Private Equity.2"},{"1":"Private Equity","2":"Co-Investment","3":"108","_rn_":"Private Equity.3"},{"1":"Private Equity","2":"Co-Investment Multi-Manager","3":"67","_rn_":"Private Equity.4"},{"1":"Private Equity","2":"Direct Secondaries","3":"34","_rn_":"Private Equity.5"},{"1":"Private Equity","2":"Fund of Funds","3":"696","_rn_":"Private Equity.6"},{"1":"Private Equity","2":"Growth","3":"386","_rn_":"Private Equity.7"},{"1":"Private Equity","2":"Secondaries","3":"174","_rn_":"Private Equity.8"},{"1":"Private Equity","2":"Turnaround","3":"19","_rn_":"Private Equity.9"},{"1":"Real Estate","2":"Real Estate Co-Investment","3":"16","_rn_":"Real Estate.1"},{"1":"Real Estate","2":"Real Estate Core","3":"61","_rn_":"Real Estate.2"},{"1":"Real Estate","2":"Real Estate Core-Plus","3":"76","_rn_":"Real Estate.3"},{"1":"Real Estate","2":"Real Estate Debt","3":"160","_rn_":"Real Estate.4"},{"1":"Real Estate","2":"Real Estate Distressed","3":"35","_rn_":"Real Estate.5"},{"1":"Real Estate","2":"Real Estate Fund of Funds","3":"36","_rn_":"Real Estate.6"},{"1":"Real Estate","2":"Real Estate Opportunistic","3":"275","_rn_":"Real Estate.7"},{"1":"Real Estate","2":"Real Estate Secondaries","3":"21","_rn_":"Real Estate.8"},{"1":"Real Estate","2":"Real Estate Value Added","3":"396","_rn_":"Real Estate.9"},{"1":"Venture Capital","2":"Early Stage","3":"348","_rn_":"Venture Capital.1"},{"1":"Venture Capital","2":"Early Stage: Seed","3":"66","_rn_":"Venture Capital.2"},{"1":"Venture Capital","2":"Early Stage: Start-up","3":"42","_rn_":"Venture Capital.3"},{"1":"Venture Capital","2":"Expansion / Late Stage","3":"153","_rn_":"Venture Capital.4"},{"1":"Venture Capital","2":"Venture (General)","3":"600","_rn_":"Venture Capital.5"},{"1":"Venture Capital","2":"Venture Debt","3":"31","_rn_":"Venture Capital.6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["Asset.Class"],"name":[1],"type":["chr"],"align":["left"]},{"label":["Strategy"],"name":[2],"type":["fct"],"align":["left"]},{"label":["Fund.Count"],"name":[3],"type":["int"],"align":["right"]}],"data":[{"1":"Hedge Funds","2":"Fund of Hedge Funds Multi-Strategy","3":"1","_rn_":"Hedge Funds.1"},{"1":"Hedge Funds","2":"Hedge Fund Credit Strategies","3":"1","_rn_":"Hedge Funds.2"},{"1":"Infrastructure","2":"Infrastructure Core","3":"46","_rn_":"Infrastructure.1"},{"1":"Infrastructure","2":"Infrastructure Core Plus","3":"71","_rn_":"Infrastructure.2"},{"1":"Infrastructure","2":"Infrastructure Debt","3":"23","_rn_":"Infrastructure.3"},{"1":"Infrastructure","2":"Infrastructure Fund of Funds","3":"5","_rn_":"Infrastructure.4"},{"1":"Infrastructure","2":"Infrastructure Opportunistic","3":"12","_rn_":"Infrastructure.5"},{"1":"Infrastructure","2":"Infrastructure Secondaries","3":"2","_rn_":"Infrastructure.6"},{"1":"Infrastructure","2":"Infrastructure Value Added","3":"35","_rn_":"Infrastructure.7"},{"1":"Multi","2":"Hybrid","3":"9","_rn_":"Multi.1"},{"1":"Multi","2":"Hybrid Fund of Funds","3":"3","_rn_":"Multi.2"},{"1":"Multi","2":"Real Asset","3":"1","_rn_":"Multi.3"},{"1":"Multi","2":"Real Asset Fund of Funds","3":"9","_rn_":"Multi.4"},{"1":"Multi","2":"Special Situations","3":"12","_rn_":"Multi.5"},{"1":"Natural Resources","2":"Energy","3":"4","_rn_":"Natural Resources.1"},{"1":"Natural Resources","2":"Metals and Mining","3":"2","_rn_":"Natural Resources.2"},{"1":"Natural Resources","2":"Natural Resources","3":"131","_rn_":"Natural Resources.3"},{"1":"Natural Resources","2":"Timber","3":"26","_rn_":"Natural Resources.4"},{"1":"Private Debt","2":"Direct Lending","3":"9","_rn_":"Private Debt.1"},{"1":"Private Debt","2":"Direct Lending - Blended / Opportunistic Debt","3":"21","_rn_":"Private Debt.2"},{"1":"Private Debt","2":"Direct Lending - Junior / Subordinated Debt","3":"10","_rn_":"Private Debt.3"},{"1":"Private Debt","2":"Direct Lending - Senior Debt","3":"114","_rn_":"Private Debt.4"},{"1":"Private Debt","2":"Direct Lending - Unitranche Debt","3":"8","_rn_":"Private Debt.5"},{"1":"Private Debt","2":"Distressed Debt","3":"148","_rn_":"Private Debt.6"},{"1":"Private Debt","2":"Mezzanine","3":"168","_rn_":"Private Debt.7"},{"1":"Private Debt","2":"Private Debt Fund of Funds","3":"3","_rn_":"Private Debt.8"},{"1":"Private Debt","2":"Special Situations","3":"66","_rn_":"Private Debt.9"},{"1":"Private Equity","2":"Balanced","3":"69","_rn_":"Private Equity.1"},{"1":"Private Equity","2":"Buyout","3":"1354","_rn_":"Private Equity.2"},{"1":"Private Equity","2":"Co-Investment","3":"87","_rn_":"Private Equity.3"},{"1":"Private Equity","2":"Co-Investment Multi-Manager","3":"59","_rn_":"Private Equity.4"},{"1":"Private Equity","2":"Direct Secondaries","3":"30","_rn_":"Private Equity.5"},{"1":"Private Equity","2":"Fund of Funds","3":"643","_rn_":"Private Equity.6"},{"1":"Private Equity","2":"Growth","3":"331","_rn_":"Private Equity.7"},{"1":"Private Equity","2":"Secondaries","3":"152","_rn_":"Private Equity.8"},{"1":"Private Equity","2":"Turnaround","3":"19","_rn_":"Private Equity.9"},{"1":"Real Estate","2":"Real Estate Co-Investment","3":"15","_rn_":"Real Estate.1"},{"1":"Real Estate","2":"Real Estate Core","3":"57","_rn_":"Real Estate.2"},{"1":"Real Estate","2":"Real Estate Core-Plus","3":"65","_rn_":"Real Estate.3"},{"1":"Real Estate","2":"Real Estate Debt","3":"135","_rn_":"Real Estate.4"},{"1":"Real Estate","2":"Real Estate Distressed","3":"31","_rn_":"Real Estate.5"},{"1":"Real Estate","2":"Real Estate Fund of Funds","3":"36","_rn_":"Real Estate.6"},{"1":"Real Estate","2":"Real Estate Opportunistic","3":"262","_rn_":"Real Estate.7"},{"1":"Real Estate","2":"Real Estate Secondaries","3":"21","_rn_":"Real Estate.8"},{"1":"Real Estate","2":"Real Estate Value Added","3":"368","_rn_":"Real Estate.9"},{"1":"Venture Capital","2":"Early Stage","3":"316","_rn_":"Venture Capital.1"},{"1":"Venture Capital","2":"Early Stage: Seed","3":"57","_rn_":"Venture Capital.2"},{"1":"Venture Capital","2":"Early Stage: Start-up","3":"35","_rn_":"Venture Capital.3"},{"1":"Venture Capital","2":"Expansion / Late Stage","3":"130","_rn_":"Venture Capital.4"},{"1":"Venture Capital","2":"Venture (General)","3":"550","_rn_":"Venture Capital.5"},{"1":"Venture Capital","2":"Venture Debt","3":"28","_rn_":"Venture Capital.6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 </div>
@@ -2035,10 +2032,10 @@ across vintage years and regions.</p>
     print(msg)
 }
 make.vintage.summary(&quot;Private Equity&quot;)</code></pre>
-<pre><code>## [1] &quot;The Private Equity sample contains 3004 distinct funds spreading over 37 vintage years.&quot;
-## [1] &quot;The vintage year distribution is as follows: 1983 (1), 1985 (2), 1986 (4), 1987 (5), 1988 (7), 1990 (2), 1991 (4), 1992 (9), 1993 (13), 1994 (20), 1995 (16), 1996 (20), 1997 (24), 1998 (59), 1999 (46), 2000 (72), 2001 (51), 2002 (41), 2003 (45), 2004 (64), 2005 (117), 2006 (154), 2007 (176), 2008 (183), 2009 (83), 2010 (92), 2011 (146), 2012 (136), 2013 (142), 2014 (182), 2015 (152), 2016 (186), 2017 (143), 2018 (157), 2019 (190), 2020 (140), 2021 (120).&quot;
-## [1] &quot;The region distribution is as follows: Africa (21), Asia (173), Australasia (41), Europe (749), Latin America &amp; Caribbean (34), Middle East (17), North America (1968).&quot;
-## [1] &quot;The strategy distribution is as follows: Balanced (71), Buyout (1449), Co-Investment (108), Co-Investment Multi-Manager (67), Direct Secondaries (34), Fund of Funds (696), Growth (386), Secondaries (174), Turnaround (19).&quot;</code></pre>
+<pre><code>## [1] &quot;The Private Equity sample contains 2745 distinct funds spreading over 35 vintage years.&quot;
+## [1] &quot;The vintage year distribution is as follows: 1983 (1), 1985 (2), 1986 (4), 1987 (5), 1988 (7), 1990 (2), 1991 (4), 1992 (9), 1993 (13), 1994 (20), 1995 (16), 1996 (20), 1997 (24), 1998 (59), 1999 (46), 2000 (72), 2001 (51), 2002 (41), 2003 (45), 2004 (64), 2005 (117), 2006 (154), 2007 (176), 2008 (183), 2009 (83), 2010 (92), 2011 (146), 2012 (136), 2013 (142), 2014 (182), 2015 (152), 2016 (186), 2017 (143), 2018 (157), 2019 (190).&quot;
+## [1] &quot;The region distribution is as follows: Africa (20), Asia (150), Australasia (39), Europe (681), Latin America &amp; Caribbean (33), Middle East (14), North America (1807).&quot;
+## [1] &quot;The strategy distribution is as follows: Balanced (69), Buyout (1354), Co-Investment (87), Co-Investment Multi-Manager (59), Direct Secondaries (30), Fund of Funds (643), Growth (331), Secondaries (152), Turnaround (19).&quot;</code></pre>
 </div>
 </div>
 <div id="core-methodology-cash-flow-construction" class="section level1">
@@ -2104,6 +2101,7 @@ Year Portfolios (VYP) by averaging metadata-matched cash flows.</p>
     list.df &lt;- list()
     for (fund.id in levels(df$FUND.ID)) {
         df.ss &lt;- df[df$FUND.ID == fund.id, ]
+        df.ss &lt;- df.ss[order(df.ss$TRANSACTION.DATE), ]
         df.ss$CF &lt;- c(df.ss$NET.CASHFLOW[1], diff(df.ss$NET.CASHFLOW))
         df.ss$CUMULATIVE.CONTRIBUTION &lt;- c(df.ss$CUMULATIVE.CONTRIBUTION[1], diff(df.ss$CUMULATIVE.CONTRIBUTION))
         df.ss$CUMULATIVE.DISTRIBUTION &lt;- c(df.ss$CUMULATIVE.DISTRIBUTION[1], diff(df.ss$CUMULATIVE.DISTRIBUTION))
@@ -2161,12 +2159,12 @@ Year Portfolios (VYP) by averaging metadata-matched cash flows.</p>
         dfx &lt;- split(df, df$Vintage)
         df &lt;- data.frame(do.call(rbind, lapply(dfx, agg.vin.year.pf)))
     }
-
+  
     return(df)
 }
 df &lt;- make.preqin.df(acs.filter = &quot;Private Equity&quot;)
 length(df$Fund.ID[!duplicated(df$Fund.ID)])</code></pre>
-<pre><code>## [1] 3004</code></pre>
+<pre><code>## [1] 2744</code></pre>
 </div>
 <div id="execution-and-output" class="section level1">
 <h1>Execution and Output</h1>
@@ -2186,7 +2184,8 @@ acs &lt;- list(
     VC = &quot;Venture Capital&quot;,
     MEZZ = &quot;Mezzanine&quot;,
     DD = c(&quot;Special Situations&quot;, &quot;Distressed Debt&quot;),
-    BO = c(&quot;Growth&quot;, &quot;Buyout&quot;),
+    BO = &quot;Buyout&quot;,
+    GroBO = c(&quot;Growth&quot;, &quot;Buyout&quot;),
     FOF = &quot;Fund of Funds&quot;,
     SEC = &quot;Secondaries&quot;
 )
@@ -2225,6 +2224,7 @@ df.out &lt;- make.preqin.csv(TRUE, TRUE, NA)</code></pre>
 ## [1] &quot;Venture Capital&quot;
 ## [1] &quot;Mezzanine&quot;
 ## [1] &quot;Special Situations&quot; &quot;Distressed Debt&quot;   
+## [1] &quot;Buyout&quot;
 ## [1] &quot;Growth&quot; &quot;Buyout&quot;
 ## [1] &quot;Fund of Funds&quot;
 ## [1] &quot;Secondaries&quot;</code></pre>
@@ -2237,6 +2237,7 @@ df.out &lt;- make.preqin.csv(TRUE, TRUE, NA)</code></pre>
 ## [1] &quot;Venture Capital&quot;
 ## [1] &quot;Mezzanine&quot;
 ## [1] &quot;Special Situations&quot; &quot;Distressed Debt&quot;   
+## [1] &quot;Buyout&quot;
 ## [1] &quot;Growth&quot; &quot;Buyout&quot;
 ## [1] &quot;Fund of Funds&quot;
 ## [1] &quot;Secondaries&quot;</code></pre>
@@ -2249,6 +2250,7 @@ df.out &lt;- make.preqin.csv(TRUE, TRUE, NA)</code></pre>
 ## [1] &quot;Venture Capital&quot;
 ## [1] &quot;Mezzanine&quot;
 ## [1] &quot;Special Situations&quot; &quot;Distressed Debt&quot;   
+## [1] &quot;Buyout&quot;
 ## [1] &quot;Growth&quot; &quot;Buyout&quot;
 ## [1] &quot;Fund of Funds&quot;
 ## [1] &quot;Secondaries&quot;</code></pre>
@@ -2261,6 +2263,7 @@ df.out &lt;- make.preqin.csv(TRUE, TRUE, NA)</code></pre>
 ## [1] &quot;Venture Capital&quot;
 ## [1] &quot;Mezzanine&quot;
 ## [1] &quot;Special Situations&quot; &quot;Distressed Debt&quot;   
+## [1] &quot;Buyout&quot;
 ## [1] &quot;Growth&quot; &quot;Buyout&quot;
 ## [1] &quot;Fund of Funds&quot;
 ## [1] &quot;Secondaries&quot;</code></pre>
@@ -2273,6 +2276,7 @@ df.out &lt;- make.preqin.csv(TRUE, TRUE, NA)</code></pre>
 ## [1] &quot;Venture Capital&quot;
 ## [1] &quot;Mezzanine&quot;
 ## [1] &quot;Special Situations&quot; &quot;Distressed Debt&quot;   
+## [1] &quot;Buyout&quot;
 ## [1] &quot;Growth&quot; &quot;Buyout&quot;
 ## [1] &quot;Fund of Funds&quot;
 ## [1] &quot;Secondaries&quot;</code></pre>
@@ -2285,6 +2289,7 @@ df.out &lt;- make.preqin.csv(TRUE, TRUE, NA)</code></pre>
 ## [1] &quot;Venture Capital&quot;
 ## [1] &quot;Mezzanine&quot;
 ## [1] &quot;Special Situations&quot; &quot;Distressed Debt&quot;   
+## [1] &quot;Buyout&quot;
 ## [1] &quot;Growth&quot; &quot;Buyout&quot;
 ## [1] &quot;Fund of Funds&quot;
 ## [1] &quot;Secondaries&quot;</code></pre>
