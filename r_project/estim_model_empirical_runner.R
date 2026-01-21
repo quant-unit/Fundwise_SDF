@@ -1,6 +1,7 @@
 ### estimate model runner: Emprical
 # 0. Prologue ----
-if(sys.nframe() == 0L) rm(list = ls())
+# if(sys.nframe() == 0L) rm(list = ls())
+rm(list = setdiff(ls(), "data.out.folder"))
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
@@ -19,8 +20,13 @@ lambdas <- 0
 kernel.bandwidth <- 12
 part.to.keep <- 1
 no.partitions <- 1 # 10
-data.out.folder <- "results/data_out_2026-emp-F-max-vin-2019"
+
+# set output folder
+if(!exists("data.out.folder", envir = .GlobalEnv)) {
+  data.out.folder <- "results/data_out_2026-emp-max-vin-2019"
+}
 if(!dir.exists(data.out.folder)) dir.create(data.out.folder)
+
 factors.to.use <- ""
 cutoff <- ""
 

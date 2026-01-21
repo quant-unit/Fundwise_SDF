@@ -12,11 +12,12 @@ if (source.internally) {
 
   prefix <- "q_factors_preqin_"
   suffix <- "FW_VYP"
-  data.out.folder <- "data_out_2026-emp-E"
+  data.out.folder <- "results/data_out_2026-emp-F-max-vin-2019"
 }
 
 list.cache <- list()
-dir.cache <- paste0(data.out.folder, "/cache_", prefix, suffix)
+dir.cache <- here(paste0(data.out.folder, "/cache_", prefix, suffix))
+dir.cache
 
 for (file in list.files(dir.cache)) {
   if (substr(file, 1, 1) == 0) next
@@ -32,9 +33,7 @@ df.f$RF <- 1
 # df.f[is.na(df.f)] <- 0
 # df.f$validation.error[is.na(df.f$validation.error)] <- Inf
 
-current_dir <- getwd()
-parent_dir <- dirname(current_dir)
-file_path <- file.path(parent_dir, "empirical", "data_prepared", "q_factors.csv")
+file_path <- here("empirical", "data_prepared", "q_factors.csv")
 
 df.q <- read.csv(file_path)
 df.q$Date <- as.Date(df.q$Date)
@@ -128,7 +127,7 @@ df.all <- df.all[order(df.all$Type, df.all$Factor, as.numeric(df.all$max.month))
 
 # print 2 LaTeX tables -----
 spec <- paste0(strsplit(suffix, "_")[[1]], collapse = "-")
-types2print <- c("PE")
+types2print <- c("PE", "BO", "GroBO", "VC", "RE", "PD", "INF", "NATRES")
 
 # Define header for repeated pages
 add.to.row <- list(pos = list(0), command = "\\hline ")
@@ -236,7 +235,7 @@ outfile <- paste0(dir.cache, "/empirical_tables.tex")
 cat("", file = outfile)
 
 prepare_and_print_tables(df.all, types2print, "AI", suffix, spec)
-cat("\\clearpage\n", file = outfile, append = TRUE)
+# cat("\\clearpage\n", file = outfile, append = TRUE)
 prepare_and_print_tables(df.cv, types2print, "CV", suffix, spec)
 
 

@@ -3,22 +3,25 @@
 if(sys.nframe() == 0L) rm(list = ls())
 
 library(readxl)
+library(here)
 
-data.prepared.folder <- "data_prepared_2026"
+data.prepared.folder <- here("empirical/data_prepared_2026")
 
-
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
-getwd()
 if(!dir.exists(data.prepared.folder)) dir.create(data.prepared.folder)
 
 
-path <- "data_in/Preqin_Cashflow_export-26_Feb_20e003d5aa-5a18-4c12-aba8-7586a7435ac9.xlsx"
-path <- "data_in/Preqin_Cashflow_export-14_Apr_22272f54e5-79fe-43c0-8bc0-9206381de0b7.xlsx"
+path <- "empirical/data_in/Preqin_Cashflow_export-26_Feb_20e003d5aa-5a18-4c12-aba8-7586a7435ac9.xlsx"
+path <- "empirical/data_in/Preqin_Cashflow_export-14_Apr_22272f54e5-79fe-43c0-8bc0-9206381de0b7.xlsx"
+path <- here(path)
 sheet <- "Preqin_Export"
 df.xl <- data.frame(readxl::read_excel(path = path, sheet = sheet))
 if ("GEOGRAPHIC.FOCUS" %in% colnames(df.xl)) df.xl$PRIMARY.GEOGRAPHIC.FOCUS <- df.xl$GEOGRAPHIC.FOCUS
 table(df.xl$PRIMARY.GEOGRAPHIC.FOCUS)
 colnames(df.xl)
+
+# Exclude too recent vintages
+preqin.cutoff.vintage <- 2019
+df.xl <- df.xl[df.xl$VINTAGE...INCEPTION.YEAR <= preqin.cutoff.vintage, ]
 
 #df <- df.xl
 table(df.xl$ASSET.CLASS[!duplicated(df.xl$FUND.ID)])
@@ -120,6 +123,7 @@ make.preqin.df <- function(
   list.df <- list()
   for(fund.id in levels(df$FUND.ID)) {
     df.ss <- df[df$FUND.ID == fund.id, ]
+    df.ss <- df.ss[order(df.ss$TRANSACTION.DATE), ]
     df.ss$CF <- c(df.ss$NET.CASHFLOW[1], diff(df.ss$NET.CASHFLOW))
     df.ss$CUMULATIVE.CONTRIBUTION <- c(df.ss$CUMULATIVE.CONTRIBUTION[1], diff(df.ss$CUMULATIVE.CONTRIBUTION))
     df.ss$CUMULATIVE.DISTRIBUTION <- c(df.ss$CUMULATIVE.DISTRIBUTION[1], diff(df.ss$CUMULATIVE.DISTRIBUTION))

@@ -76,7 +76,9 @@ if (source.internally) {
   part.to.keep <- 1
   no.partitions <- 1 # 10
   
-  data.out.folder <- "results/data_out_2026-emp-F-max-vin-2019"
+  if(!exists("data.out.folder", envir = .GlobalEnv)) {
+    data.out.folder <- "results/data_out_2026-emp-max-vin-2019"
+  }
   if(!dir.exists(data.out.folder)) dir.create(data.out.folder)
   
   factors.to.use <- ""
@@ -553,8 +555,7 @@ iter.run <- function(input.list) {
     #factors <- "MKT"
     #factors <- "Alpha"
     factors <- c(factors, "Alpha")
-    #factors <- c("ALL", factors)
-    
+
     types <- c("PE", "VC", "PD", "RE", "NATRES", "INF", "BO", "GroBO") # asset classes
     if (use.simulation) types <- levels(df0$type)
   }

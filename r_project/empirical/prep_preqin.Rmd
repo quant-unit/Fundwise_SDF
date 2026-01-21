@@ -1,6 +1,6 @@
 ---
 title: "Documentation of Preqin Data Preparation"
-author: "Research Team"
+author: "Christian Tausch"
 date: "`r Sys.Date()`"
 output:
   html_document:
@@ -24,8 +24,9 @@ We begin by clearing the workspace and loading necessary libraries. We also defi
 if (sys.nframe() == 0L) rm(list = ls())
 
 library(readxl)
+library(here)
 
-data.prepared.folder <- "data_prepared_2026"
+data.prepared.folder <- here("empirical/data_prepared_2026")
 
 
 # setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
@@ -40,8 +41,9 @@ if (!dir.exists(data.prepared.folder)) dir.create(data.prepared.folder)
 The raw data is imported from an Excel spreadsheet. The script defines paths for the source file and handles potential inconsistencies in column naming (specifically regarding geographic focus).
 
 ```{r load_data}
-path <- "data_in/Preqin_Cashflow_export-26_Feb_20e003d5aa-5a18-4c12-aba8-7586a7435ac9.xlsx"
-path <- "data_in/Preqin_Cashflow_export-14_Apr_22272f54e5-79fe-43c0-8bc0-9206381de0b7.xlsx"
+path <- "empirical/data_in/Preqin_Cashflow_export-26_Feb_20e003d5aa-5a18-4c12-aba8-7586a7435ac9.xlsx"
+path <- "empirical/data_in/Preqin_Cashflow_export-14_Apr_22272f54e5-79fe-43c0-8bc0-9206381de0b7.xlsx"
+path <- here(path)
 sheet <- "Preqin_Export"
 df.xl <- data.frame(readxl::read_excel(path = path, sheet = sheet, guess_max = 100000))
 if ("GEOGRAPHIC.FOCUS" %in% colnames(df.xl)) df.xl$PRIMARY.GEOGRAPHIC.FOCUS <- df.xl$GEOGRAPHIC.FOCUS
@@ -49,7 +51,8 @@ table(df.xl$PRIMARY.GEOGRAPHIC.FOCUS)
 colnames(df.xl)
 
 # Exclude too recent vintages
-df.xl <- df.xl[df.xl$VINTAGE...INCEPTION.YEAR <= 2019, ]
+preqin.cutoff.vintage <- 2019
+df.xl <- df.xl[df.xl$VINTAGE...INCEPTION.YEAR <= preqin.cutoff.vintage, ]
 
 # df <- df.xl
 table(df.xl$ASSET.CLASS[!duplicated(df.xl$FUND.ID)])
@@ -196,10 +199,14 @@ make.preqin.df <- function(
         df.ss$CUMULATIVE.CONTRIBUTION <- c(df.ss$CUMULATIVE.CONTRIBUTION[1], diff(df.ss$CUMULATIVE.CONTRIBUTION))
         df.ss$CUMULATIVE.DISTRIBUTION <- c(df.ss$CUMULATIVE.DISTRIBUTION[1], diff(df.ss$CUMULATIVE.DISTRIBUTION))
         # for last date: CF = CF + NAV, i.e., regard final NAV as final distribution
-        df.ss$CF[nrow(df.ss)] <- df.ss$CF[nrow(df.ss)] + df.ss$TRANSACTION.AMOUNT[nrow(df.ss)]
+        final.nav <- df.ss$TRANSACTION.AMOUNT[nrow(df.ss)]
+        df.ss$CF[nrow(df.ss)] <- df.ss$CF[nrow(df.ss)] + final.nav
 
         year.diff <- min(as.numeric(format(df.ss$TRANSACTION.DATE, "%Y"))) - as.numeric(df.ss$VINTAGE...INCEPTION.YEAR[1])
-        if (abs(year.diff) < 2) {
+        
+        if (is.na(final.nav)) print(paste("Missing Final NAV:", fund.id))
+        
+        if ((abs(year.diff) < 2) & (!is.na(final.nav))) {
             list.df[[fund.id]] <- df.ss
         }
     }
