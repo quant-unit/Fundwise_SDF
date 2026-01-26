@@ -45,7 +45,7 @@ factors.to.use <- ""
 
 ## trigger run
 
-# source("estim_model_optimized.R")
+source("estim_model_optimized.R")
 
 # 1.a) r: base case: VYP - discount to duration date ----
 

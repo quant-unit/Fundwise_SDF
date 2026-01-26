@@ -1,0 +1,455 @@
+# Simulation Scenarios Configuration
+# ===================================
+# This YAML file defines all simulation scenarios for the simulation study.
+# Each scenario specifies: (1) Data Generating Process (DGP) parameters,
+# (2) Estimation settings, and (3) metadata for result linking.
+#
+# Usage:
+#   source("run_simulation_study.R")
+#   run_simulation_study(scenario_ids = c("base_case", "high_beta_alpha"))
+
+# Default values inherited by all scenarios unless overridden
+defaults:
+  dgp:
+    no_deals: 15
+    investment_period: 5
+    max_holding_period: 10
+    alpha: 0
+    beta_MKT: 1
+    beta_ME: 0
+    beta_IA: 0
+    beta_ROE: 0
+    beta_EG: 0
+    no_samples: 1000
+    no_funds: 20
+    min_vin: 1986
+    max_vin: 2005
+    stdvs: 0.2
+    exp_aff_sdf: false
+  estimation:
+    sdf_model: "linear"
+    weighting: "EW_VYP"
+    error_function: "L2_Lasso"
+    max_months: [1, 60, 120, 150, 180, 210, 240, 300, 360]
+    lambdas: 0
+    kernel_bandwidth: 12
+    do_cross_validation: false
+    part_to_keep: 1
+    no_partitions: 1
+
+# ============================================================================
+# ONE-FACTOR MODELS (Market Beta Only)
+# ============================================================================
+
+scenarios:
+  # --------------------------------------------------------------------------
+  # Base Case Scenarios
+  # --------------------------------------------------------------------------
+  base_case_vyp:
+    description: "Base case: β_MKT=1, α=0, Vintage-Year Portfolios"
+    estimation:
+      factors_to_use: ""  # one-factor (MKT only)
+    active: true
+    data_folder: "20250808_222540"
+  
+  base_case_cross_sectional:
+    description: "Base case: β_MKT=1, cross-sectional units (10 partitions)"
+    estimation:
+      weighting: "EW"
+      factors_to_use: ""
+      no_partitions: 10
+    active: false  # Run partitions separately
+    data_folder: "20250808_222540"
+  
+  # --------------------------------------------------------------------------
+  # High Beta, Negative Alpha
+  # --------------------------------------------------------------------------
+  high_beta_negative_alpha:
+    description: "High β_MKT=2.5, α=-0.0025/month"
+    dgp:
+      alpha: -0.0025
+      beta_MKT: 2.5
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: "20250808_224228"
+  
+  # --------------------------------------------------------------------------
+  # Fund Lifetime Variations
+  # --------------------------------------------------------------------------
+  lifetime_5_5:
+    description: "Shorter lifetime: investing=5, holding=5"
+    dgp:
+      investment_period: 5
+      max_holding_period: 5
+    estimation:
+      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
+      factors_to_use: ""
+    active: true
+    data_folder: "20250808_223358"
+  
+  lifetime_2_2:
+    description: "Short lifetime: investing=2, holding=2"
+    dgp:
+      investment_period: 2
+      max_holding_period: 2
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: "20250819_215442"
+  
+  lifetime_4_4:
+    description: "Medium lifetime: investing=4, holding=4"
+    dgp:
+      investment_period: 4
+      max_holding_period: 4
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: "20250819_220526"
+  
+  lifetime_2_4:
+    description: "Asymmetric: investing=2, holding=4"
+    dgp:
+      investment_period: 2
+      max_holding_period: 4
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: "20250819_221615"
+  
+  lifetime_4_2:
+    description: "Asymmetric: investing=4, holding=2"
+    dgp:
+      investment_period: 4
+      max_holding_period: 2
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: "20250819_222708"
+  
+  lifetime_1_5:
+    description: "Quick investment: investing=1, holding=5"
+    dgp:
+      investment_period: 1
+      max_holding_period: 5
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: "20250820_135255"
+  
+  lifetime_5_1:
+    description: "Quick exit: investing=5, holding=1"
+    dgp:
+      investment_period: 5
+      max_holding_period: 1
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: "20250820_140352"
+  
+  lifetime_3_3:
+    description: "Symmetric: investing=3, holding=3"
+    dgp:
+      investment_period: 3
+      max_holding_period: 3
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: "20250820_192412"
+  
+  lifetime_1_1:
+    description: "Very short: investing=1, holding=1"
+    dgp:
+      investment_period: 1
+      max_holding_period: 1
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: "20250821_153327"
+  
+  lifetime_6_6:
+    description: "investing=6, holding=6"
+    dgp:
+      investment_period: 6
+      max_holding_period: 6
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: "20250821_154353"
+  
+  lifetime_7_7:
+    description: "investing=7, holding=7"
+    dgp:
+      investment_period: 7
+      max_holding_period: 7
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: "20250821_155431"
+  
+  lifetime_8_8:
+    description: "investing=8, holding=8"
+    dgp:
+      investment_period: 8
+      max_holding_period: 8
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: "20250821_160511"
+  
+  lifetime_9_9:
+    description: "investing=9, holding=9"
+    dgp:
+      investment_period: 9
+      max_holding_period: 9
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: "20250821_161553"
+  
+  # --------------------------------------------------------------------------
+  # No Investment Period (investing=0)
+  # --------------------------------------------------------------------------
+  no_invest_hold_1:
+    description: "No invest period: investing=0, holding=1"
+    dgp:
+      investment_period: 0
+      max_holding_period: 1
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: "20250825_143009"
+  
+  no_invest_hold_3:
+    description: "No invest period: investing=0, holding=3"
+    dgp:
+      investment_period: 0
+      max_holding_period: 3
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: "20250825_143734"
+  
+  no_invest_hold_5:
+    description: "No invest period: investing=0, holding=5"
+    dgp:
+      investment_period: 0
+      max_holding_period: 5
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: "20250825_144508"
+  
+  no_invest_hold_7:
+    description: "No invest period: investing=0, holding=7"
+    dgp:
+      investment_period: 0
+      max_holding_period: 7
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: "20250825_145244"
+  
+  no_invest_hold_10:
+    description: "No invest period: investing=0, holding=10"
+    dgp:
+      investment_period: 0
+      max_holding_period: 10
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: "20250825_150023"
+  
+  # --------------------------------------------------------------------------
+  # Sample Size Variations
+  # --------------------------------------------------------------------------
+  big_n_v_40funds:
+    description: "Large sample: 40 funds, vintages 1986-2005"
+    dgp:
+      no_funds: 40
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: "20250808_231619"
+  
+  big_v_10funds_1967:
+    description: "Long time span: 10 funds, vintages 1967-2005"
+    dgp:
+      no_funds: 10
+      min_vin: 1967
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: "20250808_232503"
+  
+  big_v_20funds_1967:
+    description: "Long time span: 20 funds, vintages 1967-2005"
+    dgp:
+      min_vin: 1967
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: "20250813_231430"
+  
+  small_v_1986_1995:
+    description: "Short time span: vintages 1986-1995"
+    dgp:
+      max_vin: 1995
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: "20250808_233803"
+  
+  small_v_1996_2005:
+    description: "Recent vintages: 1996-2005"
+    dgp:
+      min_vin: 1996
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: "20250808_234201"
+  
+  # --------------------------------------------------------------------------
+  # Exponential-Affine SDF Models
+  # --------------------------------------------------------------------------
+  exp_aff_base:
+    description: "Exp-affine SDF: β_MKT=1"
+    dgp:
+      exp_aff_sdf: true
+    estimation:
+      sdf_model: "exp.aff"
+      factors_to_use: "MKT"
+    active: true
+    data_folder: "20250808_225102"
+  
+  exp_aff_high_beta_alpha:
+    description: "Exp-affine SDF: β_MKT=2.5, α=-0.0025"
+    dgp:
+      alpha: -0.0025
+      beta_MKT: 2.5
+      exp_aff_sdf: true
+    estimation:
+      sdf_model: "exp.aff"
+      factors_to_use: "Alpha"
+    active: true
+    data_folder: "20250808_225920"
+
+# ============================================================================
+# TWO-FACTOR MODELS (Market Beta + Second Factor)
+# ============================================================================
+
+  # --------------------------------------------------------------------------
+  # Market + Alpha (existing scenarios with alpha estimation)
+  # --------------------------------------------------------------------------
+  no_invest_hold_1_alpha:
+    description: "Two-factor: investing=0, holding=1, estimate α"
+    dgp:
+      investment_period: 0
+      max_holding_period: 1
+    estimation:
+      factors_to_use: "Alpha"
+    active: true
+    data_folder: "20250825_143009"
+  
+  no_invest_hold_3_alpha:
+    description: "Two-factor: investing=0, holding=3, estimate α"
+    dgp:
+      investment_period: 0
+      max_holding_period: 3
+    estimation:
+      factors_to_use: "Alpha"
+    active: true
+    data_folder: "20250825_143734"
+  
+  no_invest_hold_5_alpha:
+    description: "Two-factor: investing=0, holding=5, estimate α"
+    dgp:
+      investment_period: 0
+      max_holding_period: 5
+    estimation:
+      factors_to_use: "Alpha"
+    active: true
+    data_folder: "20250825_144508"
+  
+  no_invest_hold_7_alpha:
+    description: "Two-factor: investing=0, holding=7, estimate α"
+    dgp:
+      investment_period: 0
+      max_holding_period: 7
+    estimation:
+      factors_to_use: "Alpha"
+    active: true
+    data_folder: "20250825_145244"
+  
+  no_invest_hold_10_alpha:
+    description: "Two-factor: investing=0, holding=10, estimate α"
+    dgp:
+      investment_period: 0
+      max_holding_period: 10
+    estimation:
+      factors_to_use: "Alpha"
+    active: true
+    data_folder: "20250825_150023"
+  
+  high_beta_alpha_two_factor:
+    description: "Two-factor: β_MKT=2.5, α=-0.0025, estimate both"
+    dgp:
+      alpha: -0.0025
+      beta_MKT: 2.5
+    estimation:
+      factors_to_use: "Alpha"
+    active: true
+    data_folder: "20250808_224228"
+
+  # --------------------------------------------------------------------------
+  # Market + ME Factor (NEW - to be generated)
+  # --------------------------------------------------------------------------
+  base_case_ME:
+    description: "Two-factor: β_MKT=1, β_ME=0.5, estimate MKT+ME"
+    dgp:
+      beta_MKT: 1
+      beta_ME: 0.5
+    estimation:
+      factors_to_use: "ME"
+    active: false  # Set to true after generating data
+    data_folder: null  # Will be set after data generation
+  
+  # --------------------------------------------------------------------------
+  # Market + IA Factor (NEW - to be generated)
+  # --------------------------------------------------------------------------
+  base_case_IA:
+    description: "Two-factor: β_MKT=1, β_IA=0.5, estimate MKT+IA"
+    dgp:
+      beta_MKT: 1
+      beta_IA: 0.5
+    estimation:
+      factors_to_use: "IA"
+    active: false
+    data_folder: null
+  
+  # --------------------------------------------------------------------------
+  # Market + ROE Factor (NEW - to be generated)
+  # --------------------------------------------------------------------------
+  base_case_ROE:
+    description: "Two-factor: β_MKT=1, β_ROE=0.5, estimate MKT+ROE"
+    dgp:
+      beta_MKT: 1
+      beta_ROE: 0.5
+    estimation:
+      factors_to_use: "ROE"
+    active: false
+    data_folder: null
+  
+  # --------------------------------------------------------------------------
+  # Market + EG Factor (NEW - to be generated)
+  # --------------------------------------------------------------------------
+  base_case_EG:
+    description: "Two-factor: β_MKT=1, β_EG=0.5, estimate MKT+EG"
+    dgp:
+      beta_MKT: 1
+      beta_EG: 0.5
+    estimation:
+      factors_to_use: "EG"
+    active: false
+    data_folder: null

@@ -1,0 +1,164 @@
+# Empirical Scenarios Configuration
+# ==================================
+# This YAML file defines all empirical estimation scenarios.
+# Each scenario specifies data sources and estimation settings.
+#
+# Usage:
+#   source("run_empirical_study.R")
+#   run_empirical_study(scenario_ids = c("fw_no_cv", "ew_cv"))
+
+# Default values inherited by all scenarios unless overridden
+defaults:
+  private_source: "preqin"
+  public_filename: "q_factors"
+  data_prepared_folder: "data_prepared_2026"
+  cutoff: ""
+  sdf_model: "linear"
+  error_function: "L2_Lasso"
+  include_alpha_term: false
+  use_vintage_year_pfs: true
+  max_months: [1, 30, 60, 120, 150, 180]
+  lambdas: 0
+  kernel_bandwidth: 12
+  part_to_keep: 1
+  no_partitions: 1
+  data_out_folder: "results/data_out_2026-emp"
+
+# ============================================================================
+# ONE-FACTOR MODELS (Market Beta Only)
+# ============================================================================
+
+scenarios:
+  # --------------------------------------------------------------------------
+  # Fund-Weighted Scenarios
+  # --------------------------------------------------------------------------
+  fw_no_cv:
+    description: "Fund-weighted VYP, no cross-validation"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+  
+  fw_cv:
+    description: "Fund-weighted VYP, with cross-validation"
+    weighting: "FW"
+    do_cross_validation: true
+    factors_to_use: ""
+    active: true
+  
+  # --------------------------------------------------------------------------
+  # Equal-Weighted Scenarios
+  # --------------------------------------------------------------------------
+  ew_no_cv:
+    description: "Equal-weighted VYP, no cross-validation"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+  
+  ew_cv:
+    description: "Equal-weighted VYP, with cross-validation"
+    weighting: "EW"
+    do_cross_validation: true
+    factors_to_use: ""
+    active: true
+
+# ============================================================================
+# TWO-FACTOR MODELS (Market Beta + Second Factor)
+# ============================================================================
+  
+  # --------------------------------------------------------------------------
+  # Fund-Weighted + Second Factor
+  # --------------------------------------------------------------------------
+  fw_no_cv_alpha:
+    description: "Fund-weighted VYP, no CV, estimate α"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: "Alpha"
+    active: false
+  
+  fw_no_cv_ME:
+    description: "Fund-weighted VYP, no CV, estimate ME"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: "ME"
+    active: false
+  
+  fw_no_cv_IA:
+    description: "Fund-weighted VYP, no CV, estimate IA"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: "IA"
+    active: false
+  
+  fw_no_cv_ROE:
+    description: "Fund-weighted VYP, no CV, estimate ROE"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: "ROE"
+    active: false
+  
+  fw_no_cv_EG:
+    description: "Fund-weighted VYP, no CV, estimate EG"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: "EG"
+    active: false
+  
+  # --------------------------------------------------------------------------
+  # Equal-Weighted + Second Factor
+  # --------------------------------------------------------------------------
+  ew_no_cv_alpha:
+    description: "Equal-weighted VYP, no CV, estimate α"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: "Alpha"
+    active: false
+  
+  ew_no_cv_ME:
+    description: "Equal-weighted VYP, no CV, estimate ME"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: "ME"
+    active: false
+  
+  ew_no_cv_IA:
+    description: "Equal-weighted VYP, no CV, estimate IA"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: "IA"
+    active: false
+  
+  ew_no_cv_ROE:
+    description: "Equal-weighted VYP, no CV, estimate ROE"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: "ROE"
+    active: false
+  
+  ew_no_cv_EG:
+    description: "Equal-weighted VYP, no CV, estimate EG"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: "EG"
+    active: false
+
+# ============================================================================
+# ALTERNATIVE DATA SOURCES
+# ============================================================================
+
+  pitchbook_fw_no_cv:
+    description: "PitchBook data, fund-weighted, no CV"
+    private_source: "pitchbook"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: false
+  
+  pitchbook_ew_no_cv:
+    description: "PitchBook data, equal-weighted, no CV"
+    private_source: "pitchbook"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: false
