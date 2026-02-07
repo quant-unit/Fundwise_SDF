@@ -16,6 +16,7 @@
 *.Rhistory
 *.Rproj
 r_project/results/data_out/*
+r_project/results/data_out*
 r_project/results/data_out_2025/*
 r_project/results/data_out_2025-emp/*
 r_project/results/data_out_2026-emp*
@@ -33,6 +34,7 @@ r_project/empirical/data_prepared_sim/*
 r_project/simulation/data_prepared_sim/*
 r_project/simulation/data_prepared_sim-test2026*
 r_project/simulation/data_results_sim/*
+r_project/simulation/data_out_2026_new/*
 
 !r_project/data_out/cache_q_factors_EW_VYP_SL
 !r_project/data_out/cache_q_factors_FW_VYP_SL

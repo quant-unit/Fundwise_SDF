@@ -261,17 +261,19 @@ create.simulation.multifactor <- function(
     # -------------------------------------------------------------------------
     timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
 
-    # Create output path
+    # Use scenario_id for folder/file naming if provided, otherwise fall back to timestamp
     if (!is.null(scenario_id)) {
-        DATA_PREPARED_SIM_PATH <- file.path(output_folder, paste0(timestamp, "_", scenario_id), "")
+        folder_name <- scenario_id
     } else {
-        DATA_PREPARED_SIM_PATH <- file.path(output_folder, timestamp, "")
+        folder_name <- timestamp
     }
-    dir.create(DATA_PREPARED_SIM_PATH, recursive = TRUE)
 
-    filename.vyp <- paste0(DATA_PREPARED_SIM_PATH, timestamp, "_simulated_cashflows_EW_VYP.csv")
-    filename.fund <- paste0(DATA_PREPARED_SIM_PATH, timestamp, "_simulated_cashflows_EW.csv")
-    filename.meta <- paste0(DATA_PREPARED_SIM_PATH, timestamp, "_simulated_cashflows_EW_meta.csv")
+    DATA_PREPARED_SIM_PATH <- file.path(output_folder, folder_name, "")
+    dir.create(DATA_PREPARED_SIM_PATH, recursive = TRUE, showWarnings = FALSE)
+
+    filename.vyp <- paste0(DATA_PREPARED_SIM_PATH, folder_name, "_simulated_cashflows_EW_VYP.csv")
+    filename.fund <- paste0(DATA_PREPARED_SIM_PATH, folder_name, "_simulated_cashflows_EW.csv")
+    filename.meta <- paste0(DATA_PREPARED_SIM_PATH, folder_name, "_simulated_cashflows_EW_meta.csv")
 
     # Build metadata with all factor loadings
     df.meta <- data.frame(

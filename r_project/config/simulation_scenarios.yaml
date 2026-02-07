@@ -30,12 +30,13 @@ defaults:
     sdf_model: "linear"
     weighting: "EW_VYP"
     error_function: "L2_Lasso"
-    max_months: [1, 60, 120, 150, 180, 210, 240, 300, 360]
+    max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240]
     lambdas: 0
     kernel_bandwidth: 12
     do_cross_validation: false
     part_to_keep: 1
     no_partitions: 1
+    max_vintage: 2021
 
 # ============================================================================
 # ONE-FACTOR MODELS (Market Beta Only)
@@ -50,7 +51,7 @@ scenarios:
     estimation:
       factors_to_use: ""  # one-factor (MKT only)
     active: true
-    data_folder: "20250808_222540"
+    data_folder: auto
   
   base_case_cross_sectional:
     description: "Base case: β_MKT=1, cross-sectional units (10 partitions)"
@@ -59,7 +60,7 @@ scenarios:
       factors_to_use: ""
       no_partitions: 10
     active: false  # Run partitions separately
-    data_folder: "20250808_222540"
+    data_folder: auto
   
   # --------------------------------------------------------------------------
   # High Beta, Negative Alpha
@@ -72,7 +73,7 @@ scenarios:
     estimation:
       factors_to_use: ""
     active: true
-    data_folder: "20250808_224228"
+    data_folder: auto
   
   # --------------------------------------------------------------------------
   # Fund Lifetime Variations
@@ -86,7 +87,7 @@ scenarios:
       max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
       factors_to_use: ""
     active: true
-    data_folder: "20250808_223358"
+    data_folder: auto
   
   lifetime_2_2:
     description: "Short lifetime: investing=2, holding=2"
@@ -96,7 +97,7 @@ scenarios:
     estimation:
       factors_to_use: ""
     active: true
-    data_folder: "20250819_215442"
+    data_folder: auto
   
   lifetime_4_4:
     description: "Medium lifetime: investing=4, holding=4"
@@ -106,7 +107,7 @@ scenarios:
     estimation:
       factors_to_use: ""
     active: true
-    data_folder: "20250819_220526"
+    data_folder: auto
   
   lifetime_2_4:
     description: "Asymmetric: investing=2, holding=4"
@@ -116,7 +117,7 @@ scenarios:
     estimation:
       factors_to_use: ""
     active: true
-    data_folder: "20250819_221615"
+    data_folder: auto
   
   lifetime_4_2:
     description: "Asymmetric: investing=4, holding=2"
@@ -126,7 +127,7 @@ scenarios:
     estimation:
       factors_to_use: ""
     active: true
-    data_folder: "20250819_222708"
+    data_folder: auto
   
   lifetime_1_5:
     description: "Quick investment: investing=1, holding=5"
@@ -136,7 +137,7 @@ scenarios:
     estimation:
       factors_to_use: ""
     active: true
-    data_folder: "20250820_135255"
+    data_folder: auto
   
   lifetime_5_1:
     description: "Quick exit: investing=5, holding=1"
@@ -146,7 +147,7 @@ scenarios:
     estimation:
       factors_to_use: ""
     active: true
-    data_folder: "20250820_140352"
+    data_folder: auto
   
   lifetime_3_3:
     description: "Symmetric: investing=3, holding=3"
@@ -156,7 +157,7 @@ scenarios:
     estimation:
       factors_to_use: ""
     active: true
-    data_folder: "20250820_192412"
+    data_folder: auto
   
   lifetime_1_1:
     description: "Very short: investing=1, holding=1"
@@ -166,7 +167,7 @@ scenarios:
     estimation:
       factors_to_use: ""
     active: true
-    data_folder: "20250821_153327"
+    data_folder: auto
   
   lifetime_6_6:
     description: "investing=6, holding=6"
@@ -176,7 +177,7 @@ scenarios:
     estimation:
       factors_to_use: ""
     active: true
-    data_folder: "20250821_154353"
+    data_folder: auto
   
   lifetime_7_7:
     description: "investing=7, holding=7"
@@ -186,7 +187,7 @@ scenarios:
     estimation:
       factors_to_use: ""
     active: true
-    data_folder: "20250821_155431"
+    data_folder: auto
   
   lifetime_8_8:
     description: "investing=8, holding=8"
@@ -196,7 +197,7 @@ scenarios:
     estimation:
       factors_to_use: ""
     active: true
-    data_folder: "20250821_160511"
+    data_folder: auto
   
   lifetime_9_9:
     description: "investing=9, holding=9"
@@ -206,7 +207,7 @@ scenarios:
     estimation:
       factors_to_use: ""
     active: true
-    data_folder: "20250821_161553"
+    data_folder: auto
   
   # --------------------------------------------------------------------------
   # No Investment Period (investing=0)
@@ -219,7 +220,7 @@ scenarios:
     estimation:
       factors_to_use: ""
     active: true
-    data_folder: "20250825_143009"
+    data_folder: auto
   
   no_invest_hold_3:
     description: "No invest period: investing=0, holding=3"
@@ -229,7 +230,7 @@ scenarios:
     estimation:
       factors_to_use: ""
     active: true
-    data_folder: "20250825_143734"
+    data_folder: auto
   
   no_invest_hold_5:
     description: "No invest period: investing=0, holding=5"
@@ -239,7 +240,7 @@ scenarios:
     estimation:
       factors_to_use: ""
     active: true
-    data_folder: "20250825_144508"
+    data_folder: auto
   
   no_invest_hold_7:
     description: "No invest period: investing=0, holding=7"
@@ -249,7 +250,7 @@ scenarios:
     estimation:
       factors_to_use: ""
     active: true
-    data_folder: "20250825_145244"
+    data_folder: auto
   
   no_invest_hold_10:
     description: "No invest period: investing=0, holding=10"
@@ -259,7 +260,7 @@ scenarios:
     estimation:
       factors_to_use: ""
     active: true
-    data_folder: "20250825_150023"
+    data_folder: auto
   
   # --------------------------------------------------------------------------
   # Sample Size Variations
@@ -271,7 +272,7 @@ scenarios:
     estimation:
       factors_to_use: ""
     active: true
-    data_folder: "20250808_231619"
+    data_folder: auto
   
   big_v_10funds_1967:
     description: "Long time span: 10 funds, vintages 1967-2005"
@@ -281,7 +282,7 @@ scenarios:
     estimation:
       factors_to_use: ""
     active: true
-    data_folder: "20250808_232503"
+    data_folder: auto
   
   big_v_20funds_1967:
     description: "Long time span: 20 funds, vintages 1967-2005"
@@ -290,7 +291,7 @@ scenarios:
     estimation:
       factors_to_use: ""
     active: true
-    data_folder: "20250813_231430"
+    data_folder: auto
   
   small_v_1986_1995:
     description: "Short time span: vintages 1986-1995"
@@ -299,7 +300,7 @@ scenarios:
     estimation:
       factors_to_use: ""
     active: true
-    data_folder: "20250808_233803"
+    data_folder: auto
   
   small_v_1996_2005:
     description: "Recent vintages: 1996-2005"
@@ -308,7 +309,7 @@ scenarios:
     estimation:
       factors_to_use: ""
     active: true
-    data_folder: "20250808_234201"
+    data_folder: auto
   
   # --------------------------------------------------------------------------
   # Exponential-Affine SDF Models
@@ -321,7 +322,7 @@ scenarios:
       sdf_model: "exp.aff"
       factors_to_use: "MKT"
     active: true
-    data_folder: "20250808_225102"
+    data_folder: auto
   
   exp_aff_high_beta_alpha:
     description: "Exp-affine SDF: β_MKT=2.5, α=-0.0025"
@@ -333,7 +334,7 @@ scenarios:
       sdf_model: "exp.aff"
       factors_to_use: "Alpha"
     active: true
-    data_folder: "20250808_225920"
+    data_folder: auto
 
 # ============================================================================
 # TWO-FACTOR MODELS (Market Beta + Second Factor)
@@ -350,7 +351,7 @@ scenarios:
     estimation:
       factors_to_use: "Alpha"
     active: true
-    data_folder: "20250825_143009"
+    data_folder: auto
   
   no_invest_hold_3_alpha:
     description: "Two-factor: investing=0, holding=3, estimate α"
@@ -360,7 +361,7 @@ scenarios:
     estimation:
       factors_to_use: "Alpha"
     active: true
-    data_folder: "20250825_143734"
+    data_folder: auto
   
   no_invest_hold_5_alpha:
     description: "Two-factor: investing=0, holding=5, estimate α"
@@ -370,7 +371,7 @@ scenarios:
     estimation:
       factors_to_use: "Alpha"
     active: true
-    data_folder: "20250825_144508"
+    data_folder: auto
   
   no_invest_hold_7_alpha:
     description: "Two-factor: investing=0, holding=7, estimate α"
@@ -380,7 +381,7 @@ scenarios:
     estimation:
       factors_to_use: "Alpha"
     active: true
-    data_folder: "20250825_145244"
+    data_folder: auto
   
   no_invest_hold_10_alpha:
     description: "Two-factor: investing=0, holding=10, estimate α"
@@ -390,7 +391,7 @@ scenarios:
     estimation:
       factors_to_use: "Alpha"
     active: true
-    data_folder: "20250825_150023"
+    data_folder: auto
   
   high_beta_alpha_two_factor:
     description: "Two-factor: β_MKT=2.5, α=-0.0025, estimate both"
@@ -400,7 +401,7 @@ scenarios:
     estimation:
       factors_to_use: "Alpha"
     active: true
-    data_folder: "20250808_224228"
+    data_folder: auto
 
   # --------------------------------------------------------------------------
   # Market + ME Factor (NEW - to be generated)

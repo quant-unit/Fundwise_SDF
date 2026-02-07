@@ -20,10 +20,11 @@ lambdas <- 0
 kernel.bandwidth <- 12
 part.to.keep <- 1
 no.partitions <- 1 # 10
+max.vintage <- 2021
 
 # set output folder
 if(!exists("data.out.folder", envir = .GlobalEnv)) {
-  data.out.folder <- "results/data_out_2026-emp-max-vin-2019"
+  data.out.folder <- "results/data_out_2029"
 }
 if(!dir.exists(data.out.folder)) dir.create(data.out.folder)
 
@@ -95,4 +96,44 @@ cache.folder.tag
 
 # RUN
 source("estim_model_optimized.R")
+
+
+# 5. FW + Max Vintage 2020 - 2010 Runs -----
+
+# CHOICES
+do.cross.validation <- FALSE
+weighting <- "FW"
+if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
+max.vintages <- 2011:2021
+
+for (max.vintage in max.vintages) {
+  # SET cache.folder.tag
+  cache.folder.tag <- paste0(private.source, ifelse(include.alpha.term, "_alpha_", "_"))
+  cache.folder.tag <- paste0(cache.folder.tag, weighting, "_max_vin_", max.vintage)
+  cache.folder.tag
+  
+  # RUN
+  source("estim_model_optimized.R")
+}
+
+
+
+# 6. EW + Max Vintage 2020 - 2010 Runs -----
+
+# CHOICES
+do.cross.validation <- FALSE
+weighting <- "EW"
+if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
+max.vintages <- 2011:2021
+
+for (max.vintage in max.vintages) {
+  # SET cache.folder.tag
+  cache.folder.tag <- paste0(private.source, ifelse(include.alpha.term, "_alpha_", "_"))
+  cache.folder.tag <- paste0(cache.folder.tag, weighting, "_max_vin_", max.vintage)
+  cache.folder.tag
+  
+  # RUN
+  source("estim_model_optimized.R")
+}
+
 

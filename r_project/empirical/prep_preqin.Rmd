@@ -51,7 +51,7 @@ table(df.xl$PRIMARY.GEOGRAPHIC.FOCUS)
 colnames(df.xl)
 
 # Exclude too recent vintages
-preqin.cutoff.vintage <- 2019
+preqin.cutoff.vintage <- 2021
 df.xl <- df.xl[df.xl$VINTAGE...INCEPTION.YEAR <= preqin.cutoff.vintage, ]
 
 # df <- df.xl
@@ -316,4 +316,6 @@ df.out <- make.preqin.csv(TRUE, FALSE, NA)
 df.out <- make.preqin.csv(FALSE, FALSE, NA)
 df.out <- make.preqin.csv(TRUE, TRUE, "Europe")
 df.out <- make.preqin.csv(FALSE, TRUE, "Europe")
+
+summary(df.out)
 ```

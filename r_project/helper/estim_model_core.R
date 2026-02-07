@@ -14,6 +14,93 @@
 #   )
 
 # ============================================================================
+# Horizon Resume Helpers
+# ============================================================================
+
+#' Get completed (max.month, lambda) pairs from cache folder
+#'
+#' Scans the cache folder for existing *_cached_res.csv files and extracts
+#' the unique (max.month, lambda) combinations that have already been computed.
+#'
+#' @param cache_folder_path Full path to the cache folder
+#' @return data.frame with columns max.month and lambda (empty if none found)
+get_completed_horizons <- function(cache_folder_path) {
+    if (!dir.exists(cache_folder_path)) {
+        return(data.frame(max.month = integer(0), lambda = numeric(0)))
+    }
+
+    csv_files <- list.files(cache_folder_path, pattern = "*_cached_res\\.csv$", full.names = TRUE)
+
+    if (length(csv_files) == 0) {
+        return(data.frame(max.month = integer(0), lambda = numeric(0)))
+    }
+
+    # Read all CSV files and extract unique (max.month, lambda) pairs
+    completed <- do.call(rbind, lapply(csv_files, function(f) {
+        tryCatch(
+            {
+                df <- read.csv(f, stringsAsFactors = FALSE)
+                if ("max.month" %in% colnames(df) && "lambda" %in% colnames(df)) {
+                    unique(df[, c("max.month", "lambda")])
+                } else {
+                    NULL
+                }
+            },
+            error = function(e) NULL
+        )
+    }))
+
+    if (is.null(completed) || nrow(completed) == 0) {
+        return(data.frame(max.month = integer(0), lambda = numeric(0)))
+    }
+
+    return(unique(completed))
+}
+
+#' Filter out completed horizon/lambda combinations
+#'
+#' Compares requested (max_months, lambdas) against completed pairs and
+#' returns only the combinations that still need to be estimated.
+#'
+#' @param max_months Vector of requested max months
+#' @param lambdas Vector of requested lambdas
+#' @param completed data.frame with columns max.month, lambda (from get_completed_horizons)
+#' @return list(max_months, lambdas) with only remaining work, or NULL if all done
+filter_remaining_horizons <- function(max_months, lambdas, completed) {
+    if (nrow(completed) == 0) {
+        return(list(
+            max_months = max_months, lambdas = lambdas,
+            skipped = integer(0), remaining = max_months
+        ))
+    }
+
+    # Build all requested combinations
+    requested <- expand.grid(max.month = max_months, lambda = lambdas)
+
+    # Find which are already done
+    completed$key <- paste(completed$max.month, completed$lambda, sep = "_")
+    requested$key <- paste(requested$max.month, requested$lambda, sep = "_")
+
+    remaining <- requested[!requested$key %in% completed$key, ]
+    skipped <- requested[requested$key %in% completed$key, ]
+
+    if (nrow(remaining) == 0) {
+        return(list(
+            max_months = integer(0), lambdas = numeric(0),
+            skipped = skipped$max.month, remaining = integer(0)
+        ))
+    }
+
+    # Return unique remaining values
+    return(list(
+        max_months = unique(remaining$max.month),
+        lambdas = unique(remaining$lambda),
+        skipped = skipped$max.month,
+        remaining = remaining$max.month
+    ))
+}
+
+# ============================================================================
 # run_estimation() - Main Entry Point
 # ============================================================================
 
@@ -57,6 +144,7 @@ run_estimation <- function(
     public_filename = "q_factors",
     data_prepared_folder = "data_prepared_2026",
     cutoff = "",
+    max_vintage = 2021,
     # Model specification
     sdf_model = "linear",
     factors_to_use = "",
@@ -151,6 +239,51 @@ run_estimation <- function(
     }
 
     # -------------------------------------------------------------------------
+    # Smart Resume: Check for already-completed horizons
+    # -------------------------------------------------------------------------
+    cache_folder_path <- file.path(data_out_folder, paste0("cache_", public_filename, "_", cache_folder_tag))
+
+    completed <- get_completed_horizons(cache_folder_path)
+    filtered <- filter_remaining_horizons(max_months, lambdas, completed)
+
+    if (verbose && nrow(completed) > 0) {
+        cat("\n--- HORIZON RESUME CHECK ---\n")
+        cat("Cache folder: ", basename(cache_folder_path), "\n")
+        cat("Completed horizons: ", paste(sort(unique(completed$max.month)), collapse = ", "), "\n")
+        cat("Requested horizons: ", paste(sort(max_months), collapse = ", "), "\n")
+        cat("Skipping: ", length(filtered$skipped), " horizons\n")
+        cat("Remaining: ", length(filtered$remaining), " horizons\n")
+        if (length(filtered$remaining) > 0) {
+            cat("  -> Will estimate: ", paste(sort(filtered$max_months), collapse = ", "), "\n")
+        }
+        cat("----------------------------\n\n")
+    }
+
+    # If all horizons are already complete, return early
+    if (length(filtered$max_months) == 0) {
+        if (verbose) {
+            cat("All requested horizons already complete. Skipping estimation.\n")
+        }
+        return(list(
+            scenario_id = scenario_id,
+            simulation_file = simulation_file,
+            sdf_model = sdf_model,
+            factors_to_use = factors_to_use,
+            weighting = weighting,
+            cache_folder_tag = cache_folder_tag,
+            public_filename = public_filename,
+            data_out_folder = data_out_folder,
+            elapsed_time = 0,
+            success = TRUE,
+            note = "All horizons already complete - skipped estimation"
+        ))
+    }
+
+    # Update max_months and lambdas to only include remaining work
+    max_months <- filtered$max_months
+    lambdas <- filtered$lambdas
+
+    # -------------------------------------------------------------------------
     # Set global variables for estim_model_optimized.R
     # These are the variables that the legacy script expects to find
     # -------------------------------------------------------------------------
@@ -183,7 +316,8 @@ run_estimation <- function(
     assign("max.months", max_months, envir = .GlobalEnv)
     assign("lambdas", lambdas, envir = .GlobalEnv)
     assign("kernel.bandwidth", kernel_bandwidth, envir = .GlobalEnv)
-
+    assign("max.vintage", max_vintage, envir = .GlobalEnv)
+    
     # Partitioning
     assign("part.to.keep", part_to_keep, envir = .GlobalEnv)
     assign("no.partitions", no_partitions, envir = .GlobalEnv)

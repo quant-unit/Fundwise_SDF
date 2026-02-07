@@ -100,16 +100,16 @@ run_simulation_study <- function(
 
             if (verbose) cat("Generating data for:", id, "\n")
 
-            # Source the simulation generator
-            source("simulation/simulation_improved.R")
+            # Source the simulation generator (multi-factor version)
+            source("simulation/simulation_multifactor.R")
 
             # Extract DGP parameters
             dgp <- scenario$dgp
 
-            # Call create.simulation with parameters
+            # Call create.simulation.multifactor with all factor parameters
             tryCatch(
                 {
-                    create.simulation(
+                    create.simulation.multifactor(
                         no.deals = dgp$no_deals,
                         investment.period = dgp$investment_period,
                         max.holding.period = dgp$max_holding_period,
@@ -151,12 +151,7 @@ run_simulation_study <- function(
                 cat("[", i, "/", length(scenarios), "] ", id, "\n")
             }
 
-            # Check if data exists
-            if (is.null(scenario$data_folder)) {
-                cat("  -> SKIPPED: No data_folder specified\n\n")
-                results[[id]] <- list(success = FALSE, error = "No data_folder")
-                next
-            }
+            # Note: data_folder will be auto-derived from scenario_id if null or "auto"
 
             # Validate scenario
             tryCatch(
@@ -206,8 +201,100 @@ run_simulation_study <- function(
 
             attr(results, "bias_summary") <- bias_summary
 
+            # Save bias results to CSV for aggregation
+            if (nrow(bias_summary) > 0) {
+                # Get output folder from first successful result, or use default
+                output_folder <- if (!is.null(data_out_folder)) {
+                    data_out_folder
+                } else {
+                    # Try to get from first result
+                    first_result <- results[[1]]
+                    if (!is.null(first_result$data_out_folder)) {
+                        first_result$data_out_folder
+                    } else {
+                        "simulation/data_out_2026_new" # Default
+                    }
+                }
+
+                bias_output_dir <- file.path(output_folder, "bias_analysis")
+                if (!dir.exists(bias_output_dir)) dir.create(bias_output_dir, recursive = TRUE)
+
+                timestamp <- format(Sys.time(), "%Y-%m-%d_%H%M%S")
+
+                # 1. Full detailed results (one row per scenario x horizon x factor)
+                full_path <- file.path(bias_output_dir, paste0(timestamp, "_bias_full.csv"))
+                write.csv(bias_summary, full_path, row.names = FALSE)
+
+                # 2. Aggregated by scenario + horizon (for tables and charts)
+                # Use na.action = na.pass to handle columns with NA values
+                # Wrap in tryCatch for robustness when certain columns have all NAs
+                agg_by_scenario_horizon <- tryCatch(
+                    {
+                        aggregate(
+                            cbind(
+                                bias_MKT, bias_second,
+                                rel_bias_MKT_pct, rel_bias_second_pct,
+                                est_beta_MKT, est_second,
+                                true_beta_MKT, true_second
+                            ) ~ scenario_id + max_month,
+                            data = bias_summary,
+                            FUN = function(x) mean(x, na.rm = TRUE),
+                            na.action = na.pass
+                        )
+                    },
+                    error = function(e) {
+                        # Fallback: aggregate columns individually to handle all-NA cases
+                        if (verbose) {
+                            cat("Note: Using fallback aggregation due to NA handling\n")
+                        }
+                        # Get unique scenario/horizon combinations
+                        groups <- unique(bias_summary[, c("scenario_id", "max_month")])
+
+                        # Aggregate each column separately
+                        cols_to_agg <- c(
+                            "bias_MKT", "bias_second",
+                            "rel_bias_MKT_pct", "rel_bias_second_pct",
+                            "est_beta_MKT", "est_second",
+                            "true_beta_MKT", "true_second"
+                        )
+
+                        result <- groups
+                        for (col in cols_to_agg) {
+                            if (col %in% names(bias_summary)) {
+                                agg_col <- aggregate(
+                                    bias_summary[[col]],
+                                    by = list(
+                                        scenario_id = bias_summary$scenario_id,
+                                        max_month = bias_summary$max_month
+                                    ),
+                                    FUN = function(x) mean(x, na.rm = TRUE)
+                                )
+                                names(agg_col)[3] <- col
+                                result <- merge(result, agg_col[, c("scenario_id", "max_month", col)],
+                                    by = c("scenario_id", "max_month"), all.x = TRUE
+                                )
+                            }
+                        }
+                        result
+                    }
+                )
+
+                # Sort by scenario then horizon
+                agg_by_scenario_horizon <- agg_by_scenario_horizon[
+                    order(agg_by_scenario_horizon$scenario_id, agg_by_scenario_horizon$max_month),
+                ]
+                agg_path <- file.path(bias_output_dir, paste0(timestamp, "_bias_by_scenario_horizon.csv"))
+                write.csv(agg_by_scenario_horizon, agg_path, row.names = FALSE)
+
+                if (verbose) {
+                    cat("\nBias results saved to:\n")
+                    cat("  ", full_path, "\n")
+                    cat("  ", agg_path, "\n")
+                }
+            }
+
             if (verbose) {
-                cat("Bias analysis complete. Access via: attr(results, 'bias_summary')\n")
+                cat("\nBias analysis complete. Access via: attr(results, 'bias_summary')\n")
             }
         } else {
             warning("Bias analysis script not found: simulation/analyze_simulation_bias.R")
@@ -282,5 +369,15 @@ if (sys.nframe() == 0L) {
 
     cat("Available scenarios:\n\n")
     list_simulation_scenarios(active_only = FALSE)
-    results <- run_simulation_study(analyze = FALSE)
+    results <- run_simulation_study(
+      scenario_ids = c("base_case_cross_sectional", "base_case_IA", "base_case_ROE", "base_case_EG"),
+      generate_data = TRUE, estimate = TRUE, analyze = FALSE
+    )
+    results <- run_simulation_study(
+        scenario_ids = c("base_case_vyp", "base_case_cross_sectional",
+                         "big_n_v_40funds", "big_v_10funds_1967", "big_v_20funds_1967", "small_v_1986_1995", "small_v_1996_2005",
+                         "exp_aff_base", "exp_aff_high_beta_alpha", "high_beta_alpha_two_factor",
+                         "base_case_ME", "base_case_IA", "base_case_ROE", "base_case_EG"),
+        generate_data = FALSE, estimate = TRUE, analyze = TRUE
+    )
 }

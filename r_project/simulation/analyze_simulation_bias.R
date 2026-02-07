@@ -63,10 +63,14 @@ analyze_simulation_bias <- function(results, scenarios, verbose = TRUE) {
         # Get estimation results
         if (is.null(result$df_res)) {
             # Try to load from cache folder
-            cache_dir <- file.path(
-                result$data_out_folder,
+            # Build cache path with optional public_filename prefix
+            cache_prefix <- if (!is.null(result$public_filename)) {
+                paste0("cache_", result$public_filename, "_", result$cache_folder_tag)
+            } else {
                 paste0("cache_", result$cache_folder_tag)
-            )
+            }
+            cache_dir <- file.path(result$data_out_folder, cache_prefix)
+
             if (dir.exists(cache_dir)) {
                 result$df_res <- load_results_from_cache(cache_dir)
             }
@@ -80,7 +84,7 @@ analyze_simulation_bias <- function(results, scenarios, verbose = TRUE) {
         df_res <- result$df_res
 
         # Compute bias for each row (factor × max.month combination)
-        for (i in 1:nrow(df_res)) {
+        for (i in seq_len(nrow(df_res))) {
             row <- df_res[i, ]
 
             # True values
@@ -312,10 +316,10 @@ compute_bias_from_folder <- function(
             meta_df <- read.csv(meta_files[1], stringsAsFactors = FALSE)
 
             # Create fake DGP object
-            dgp <- as.list(meta_df[1, ])
+            dgp <- as.list(meta_df[1, ]) # nolint: object_usage_linter (TODO: implement bias computation)
 
             # Compute bias for each row
-            for (i in 1:nrow(results_df)) {
+            for (i in seq_len(nrow(results_df))) {
                 # Similar logic as in analyze_simulation_bias...
                 # Simplified version for standalone use
             }
@@ -354,11 +358,34 @@ save_bias_summary <- function(
     write.csv(bias_df, csv_path, row.names = FALSE)
     cat("Saved:", csv_path, "\n")
 
-    # Save aggregated summary
-    agg_df <- aggregate(
-        cbind(bias_MKT, bias_second, rel_bias_MKT_pct, rel_bias_second_pct) ~ scenario_id,
-        data = bias_df,
-        FUN = function(x) mean(x, na.rm = TRUE)
+    # Save aggregated summary (with NA handling for robustness)
+    agg_df <- tryCatch(
+        {
+            aggregate(
+                cbind(bias_MKT, bias_second, rel_bias_MKT_pct, rel_bias_second_pct) ~ scenario_id,
+                data = bias_df,
+                FUN = function(x) mean(x, na.rm = TRUE),
+                na.action = na.pass
+            )
+        },
+        error = function(e) {
+            # Fallback: aggregate columns individually
+            groups <- unique(bias_df[, "scenario_id", drop = FALSE])
+            cols_to_agg <- c("bias_MKT", "bias_second", "rel_bias_MKT_pct", "rel_bias_second_pct")
+            result <- groups
+            for (col in cols_to_agg) {
+                if (col %in% names(bias_df)) {
+                    agg_col <- aggregate(
+                        bias_df[[col]],
+                        by = list(scenario_id = bias_df$scenario_id),
+                        FUN = function(x) mean(x, na.rm = TRUE)
+                    )
+                    names(agg_col)[2] <- col
+                    result <- merge(result, agg_col, by = "scenario_id", all.x = TRUE)
+                }
+            }
+            result
+        }
     )
 
     agg_path <- file.path(output_folder, paste0(prefix, "_aggregated_", timestamp, ".csv"))

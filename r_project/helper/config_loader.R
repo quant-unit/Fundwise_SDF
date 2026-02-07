@@ -241,11 +241,14 @@ scenario_to_estimation_params <- function(scenario, base_path = "simulation") {
     est <- scenario$estimation
 
     # Build simulation file path
-    sim_file <- NULL
-    if (!is.null(scenario$data_folder)) {
-        folder_tag <- paste0(scenario$data_folder, "_simulated_cashflows_EW_VYP")
-        sim_file <- paste0(scenario$data_folder, "/", folder_tag, ".csv")
+    # Use explicit data_folder if provided and not "auto", otherwise derive from scenario_id
+    data_folder <- scenario$data_folder
+    if (is.null(data_folder) || data_folder == "auto") {
+        data_folder <- scenario$id
     }
+
+    # Construct simulation file path
+    sim_file <- paste0(data_folder, "/", data_folder, "_simulated_cashflows_EW_VYP.csv")
 
     # Build weighting string
     weighting <- est$weighting
@@ -262,7 +265,8 @@ scenario_to_estimation_params <- function(scenario, base_path = "simulation") {
         do_cross_validation = isTRUE(est$do_cross_validation),
         part_to_keep = est$part_to_keep,
         no_partitions = est$no_partitions,
-        scenario_id = scenario$id
+        scenario_id = scenario$id,
+        max_vintage = est$max_vintage
     )
 
     return(params)

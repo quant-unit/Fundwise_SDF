@@ -38,6 +38,7 @@ if (source.internally) {
   private.source <- "preqin"
   cutoff <- "" # "_cutoff_2019" # only available for PitchBook (2024-09-28)
   cutoff <- "_cutoff_2021"
+  max.vintage <- 2011
   
   #public.filename <- "public_returns" # outdated
   #public.filename <- "msci_market_factors"
@@ -77,7 +78,7 @@ if (source.internally) {
   no.partitions <- 1 # 10
   
   if(!exists("data.out.folder", envir = .GlobalEnv)) {
-    data.out.folder <- "results/data_out_2026-emp-max-vin-2019"
+    data.out.folder <- "results/data_out_2028"
   }
   if(!dir.exists(data.out.folder)) dir.create(data.out.folder)
   
@@ -210,7 +211,7 @@ min(df0$Date)
 if (public.filename %in% c("DebtFactorsUSD", "DebtFactorsEUR", "DebtFactorsEURUSD") ) {
   df0 <- df0[df0$Vintage > 2000, ]  
 }
-#df0 <- df0[df0$Vintage <= 2011, ]
+df0 <- df0[df0$Vintage <= max.vintage, ]
 
 
 # Export df0
