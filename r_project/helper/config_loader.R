@@ -247,11 +247,20 @@ scenario_to_estimation_params <- function(scenario, base_path = "simulation") {
         data_folder <- scenario$id
     }
 
-    # Construct simulation file path
-    sim_file <- paste0(data_folder, "/", data_folder, "_simulated_cashflows_EW_VYP.csv")
-
-    # Build weighting string
+    # Build weighting string from scenario config (not hardcoded!)
     weighting <- est$weighting
+
+    # Construct simulation file path using the actual weighting
+    # Note: The data generator creates files with the weighting suffix
+    sim_file <- paste0(data_folder, "/", data_folder, "_simulated_cashflows_", weighting, ".csv")
+
+    # Build cache folder tag - must match what estim_model_optimized.R expects
+    # For partitioned runs, the partition suffix is added by estim_model_optimized.R,
+    # but we need to include it here for the resume check to find the correct cache
+    cache_folder_tag <- paste0(data_folder, "_simulated_cashflows_", weighting)
+    if (!is.null(est$no_partitions) && est$no_partitions > 1 && !is.null(est$part_to_keep)) {
+        cache_folder_tag <- paste0(cache_folder_tag, "_part", est$part_to_keep)
+    }
 
     params <- list(
         simulation_file = sim_file,
@@ -266,7 +275,8 @@ scenario_to_estimation_params <- function(scenario, base_path = "simulation") {
         part_to_keep = est$part_to_keep,
         no_partitions = est$no_partitions,
         scenario_id = scenario$id,
-        max_vintage = est$max_vintage
+        max_vintage = est$max_vintage,
+        cache_folder_tag = cache_folder_tag # Pass the correctly constructed cache folder tag
     )
 
     return(params)

@@ -83,6 +83,35 @@ analyze_simulation_bias <- function(results, scenarios, verbose = TRUE) {
 
         df_res <- result$df_res
 
+        # -------------------------------------------------------------------------
+        # Filter by configured factor
+        # -------------------------------------------------------------------------
+        # Get the configured factor(s) for this scenario
+        configured_factor <- if (!is.null(scenarios[[id]]$estimation$factors_to_use)) {
+            scenarios[[id]]$estimation$factors_to_use
+        } else {
+            "" # Default to MKT-only
+        }
+
+        # Determine which factor rows to keep
+        # "" or "MKT" means one-factor model (MKT only)
+        # Any other value means two-factor model (MKT + that factor)
+        if (configured_factor == "" || configured_factor == "MKT") {
+            # One-factor model: only keep "MKT" factor rows
+            factor_filter <- df_res$Factor == "MKT"
+        } else {
+            # Two-factor model: only keep rows for the configured second factor
+            factor_filter <- df_res$Factor == configured_factor
+        }
+
+        # Apply filter
+        df_res <- df_res[factor_filter, , drop = FALSE]
+
+        if (nrow(df_res) == 0) {
+            if (verbose) cat("No matching factor rows for scenario:", id, "(configured:", configured_factor, ")\n")
+            next
+        }
+
         # Compute bias for each row (factor × max.month combination)
         for (i in seq_len(nrow(df_res))) {
             row <- df_res[i, ]

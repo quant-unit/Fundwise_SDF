@@ -283,6 +283,28 @@ run_simulation_study <- function(
                 agg_by_scenario_horizon <- agg_by_scenario_horizon[
                     order(agg_by_scenario_horizon$scenario_id, agg_by_scenario_horizon$max_month),
                 ]
+
+                # Add factor name columns for clarity
+                # First factor is always MKT
+                agg_by_scenario_horizon$first_factor_name <- "MKT"
+
+                # Second factor name based on scenario configuration
+                agg_by_scenario_horizon$second_factor_name <- sapply(
+                    agg_by_scenario_horizon$scenario_id,
+                    function(sid) {
+                        if (sid %in% names(scenarios)) {
+                            factors_cfg <- scenarios[[sid]]$estimation$factors_to_use
+                            if (is.null(factors_cfg) || factors_cfg == "" || factors_cfg == "MKT") {
+                                return(NA_character_) # One-factor model, no second factor
+                            } else {
+                                return(factors_cfg)
+                            }
+                        } else {
+                            return(NA_character_)
+                        }
+                    }
+                )
+
                 agg_path <- file.path(bias_output_dir, paste0(timestamp, "_bias_by_scenario_horizon.csv"))
                 write.csv(agg_by_scenario_horizon, agg_path, row.names = FALSE)
 
@@ -369,15 +391,16 @@ if (sys.nframe() == 0L) {
 
     cat("Available scenarios:\n\n")
     list_simulation_scenarios(active_only = FALSE)
-    results <- run_simulation_study(
-      scenario_ids = c("base_case_cross_sectional", "base_case_IA", "base_case_ROE", "base_case_EG"),
-      generate_data = TRUE, estimate = TRUE, analyze = FALSE
+    scenarios <- c(
+      "base_case_vyp", "base_case_cross_sectional",
+      "base_case_zero_alpha",
+      "base_case_positive_alpha", "base_case_negative_alpha",
+      "big_n_v_40funds", "big_v_10funds_1967", "big_v_20funds_1967", "small_v_1986_1995", "small_v_1996_2005",
+      "exp_aff_base", "exp_aff_high_beta_alpha", "high_beta_alpha_two_factor",
+      "base_case_ME", "base_case_IA", "base_case_ROE", "base_case_EG"
     )
     results <- run_simulation_study(
-        scenario_ids = c("base_case_vyp", "base_case_cross_sectional",
-                         "big_n_v_40funds", "big_v_10funds_1967", "big_v_20funds_1967", "small_v_1986_1995", "small_v_1996_2005",
-                         "exp_aff_base", "exp_aff_high_beta_alpha", "high_beta_alpha_two_factor",
-                         "base_case_ME", "base_case_IA", "base_case_ROE", "base_case_EG"),
-        generate_data = FALSE, estimate = TRUE, analyze = TRUE
+        scenario_ids = scenarios,
+        generate_data = TRUE, estimate = TRUE, analyze = TRUE
     )
 }

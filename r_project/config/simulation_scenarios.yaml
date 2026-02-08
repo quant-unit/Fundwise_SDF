@@ -62,8 +62,38 @@ scenarios:
     active: false  # Run partitions separately
     data_folder: auto
   
+  base_case_zero_alpha:
+    description: "Base case: β_MKT=1, α=0.001, Vintage-Year Portfolios"
+    dgp:
+      alpha: 0
+      beta_MKT: 1
+    estimation:
+      factors_to_use: "Alpha"
+    active: true
+    data_folder: auto
+    
+  base_case_positive_alpha:
+    description: "Base case: β_MKT=1, α=0.001, Vintage-Year Portfolios"
+    dgp:
+      alpha: 0.001
+      beta_MKT: 1
+    estimation:
+      factors_to_use: "Alpha"
+    active: true
+    data_folder: auto
+  
+  base_case_negative_alpha:
+    description: "Base case: β_MKT=1, α=0.001, Vintage-Year Portfolios"
+    dgp:
+      alpha: 0.001
+      beta_MKT: 1
+    estimation:
+      factors_to_use: "Alpha"
+    active: true
+    data_folder: auto
+    
   # --------------------------------------------------------------------------
-  # High Beta, Negative Alpha
+  # High Beta, Negative Alpha # TODO: delete / no alpha factor activated here!
   # --------------------------------------------------------------------------
   high_beta_negative_alpha:
     description: "High β_MKT=2.5, α=-0.0025/month"
