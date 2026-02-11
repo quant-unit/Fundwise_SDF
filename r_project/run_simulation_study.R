@@ -392,15 +392,16 @@ if (sys.nframe() == 0L) {
     cat("Available scenarios:\n\n")
     list_simulation_scenarios(active_only = FALSE)
     scenarios <- c(
-      "base_case_vyp", "base_case_cross_sectional",
-      "base_case_zero_alpha",
-      "base_case_positive_alpha", "base_case_negative_alpha",
-      "big_n_v_40funds", "big_v_10funds_1967", "big_v_20funds_1967", "small_v_1986_1995", "small_v_1996_2005",
+      "base_case_vyp", "base_case_cross_sectional", "base_case_cross_sectional_zero_alpha",
+      "base_case_zero_alpha", "base_case_positive_alpha", "base_case_negative_alpha",
+      "big_n_v_60funds", "big_n_v_40funds", "big_v_10funds_1967", "big_v_20funds_1967", "small_v_1986_1995", "small_v_1996_2005",
+      "big_n_v_40funds_alpha", "big_v_10funds_1967_alpha", "big_v_20funds_1967_alpha", "small_v_1986_1995_alpha", "small_v_1996_2005_alpha",
       "exp_aff_base", "exp_aff_high_beta_alpha", "high_beta_alpha_two_factor",
       "base_case_ME", "base_case_IA", "base_case_ROE", "base_case_EG"
     )
+    scenarios <- c("big_n_v_60funds", "small_n_10funds")
     results <- run_simulation_study(
         scenario_ids = scenarios,
-        generate_data = TRUE, estimate = TRUE, analyze = TRUE
+        generate_data = TRUE, estimate = TRUE, analyze = FALSE
     )
 }

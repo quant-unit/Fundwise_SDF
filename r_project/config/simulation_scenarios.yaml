@@ -50,6 +50,7 @@ scenarios:
     description: "Base case: β_MKT=1, α=0, Vintage-Year Portfolios"
     estimation:
       factors_to_use: ""  # one-factor (MKT only)
+      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: true
     data_folder: auto
   
@@ -59,16 +60,28 @@ scenarios:
       weighting: "EW"
       factors_to_use: ""
       no_partitions: 10
+      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: false  # Run partitions separately
     data_folder: auto
   
+  base_case_cross_sectional_zero_alpha:
+    description: "Base case: β_MKT=1, α=0, cross-sectional units (10 partitions)"
+    estimation:
+      weighting: "EW"
+      factors_to_use: "Alpha"
+      no_partitions: 10
+      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
+    active: false  # Run partitions separately
+    data_folder: auto
+    
   base_case_zero_alpha:
-    description: "Base case: β_MKT=1, α=0.001, Vintage-Year Portfolios"
+    description: "Base case: β_MKT=1, α=0, Vintage-Year Portfolios"
     dgp:
       alpha: 0
       beta_MKT: 1
     estimation:
       factors_to_use: "Alpha"
+      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: true
     data_folder: auto
     
@@ -79,16 +92,18 @@ scenarios:
       beta_MKT: 1
     estimation:
       factors_to_use: "Alpha"
+      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: true
     data_folder: auto
   
   base_case_negative_alpha:
-    description: "Base case: β_MKT=1, α=0.001, Vintage-Year Portfolios"
+    description: "Base case: β_MKT=1, α=-0.001, Vintage-Year Portfolios"
     dgp:
-      alpha: 0.001
+      alpha: -0.001
       beta_MKT: 1
     estimation:
       factors_to_use: "Alpha"
+      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: true
     data_folder: auto
     
@@ -295,6 +310,24 @@ scenarios:
   # --------------------------------------------------------------------------
   # Sample Size Variations
   # --------------------------------------------------------------------------
+  big_n_v_60funds:
+    description: "Large sample: 60 funds, vintages 1986-2005"
+    dgp:
+      no_funds: 60
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: auto
+  
+  small_n_10funds:
+    description: "Large sample: 10 funds, vintages 1986-2005"
+    dgp:
+      no_funds: 10
+    estimation:
+      factors_to_use: ""
+    active: true
+    data_folder: auto
+    
   big_n_v_40funds:
     description: "Large sample: 40 funds, vintages 1986-2005"
     dgp:
@@ -341,6 +374,55 @@ scenarios:
     active: true
     data_folder: auto
   
+  # --------------------------------------------------------------------------
+  # Sample Size Variations plus Alpha
+  # --------------------------------------------------------------------------
+  big_n_v_40funds_alpha:
+    description: "Large sample: 40 funds, vintages 1986-2005 plus Alpha"
+    dgp:
+      no_funds: 40
+    estimation:
+      factors_to_use: "Alpha"
+    active: true
+    data_folder: auto
+  
+  big_v_10funds_1967_alpha:
+    description: "Long time span: 10 funds, vintages 1967-2005 plus Alpha"
+    dgp:
+      no_funds: 10
+      min_vin: 1967
+    estimation:
+      factors_to_use: "Alpha"
+    active: true
+    data_folder: auto
+  
+  big_v_20funds_1967_alpha:
+    description: "Long time span: 20 funds, vintages 1967-2005 plus Alpha"
+    dgp:
+      min_vin: 1967
+    estimation:
+      factors_to_use: "Alpha"
+    active: true
+    data_folder: auto
+  
+  small_v_1986_1995_alpha:
+    description: "Short time span: vintages 1986-1995 plus Alpha"
+    dgp:
+      max_vin: 1995
+    estimation:
+      factors_to_use: "Alpha"
+    active: true
+    data_folder: auto
+  
+  small_v_1996_2005_alpha:
+    description: "Recent vintages: 1996-2005 plus Alpha"
+    dgp:
+      min_vin: 1996
+    estimation:
+      factors_to_use: "Alpha"
+    active: true
+    data_folder: auto
+    
   # --------------------------------------------------------------------------
   # Exponential-Affine SDF Models
   # --------------------------------------------------------------------------
@@ -443,6 +525,7 @@ scenarios:
       beta_ME: 0.5
     estimation:
       factors_to_use: "ME"
+      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: false  # Set to true after generating data
     data_folder: null  # Will be set after data generation
   
@@ -456,6 +539,7 @@ scenarios:
       beta_IA: 0.5
     estimation:
       factors_to_use: "IA"
+      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: false
     data_folder: null
   
@@ -469,6 +553,7 @@ scenarios:
       beta_ROE: 0.5
     estimation:
       factors_to_use: "ROE"
+      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: false
     data_folder: null
   
@@ -482,5 +567,6 @@ scenarios:
       beta_EG: 0.5
     estimation:
       factors_to_use: "EG"
+      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: false
     data_folder: null
