@@ -279,21 +279,23 @@ Moreover, their idea to \textbf{price the difference between PE cash flows and a
 Our general SDF estimation framework is similar to that of \cite{DLP12} and \cite{KN16}; 
 the subtle but important differences are discussed in Section \ref{sec:comparison_to_similar_estimators}.
 
-In a nutshell, the \cite{DLP12} estimator determines the optimal alpha and beta parameters of a linear factor model by minimizing the net present value (NPV) of all $N$ fund cash flows.
+In a nutshell, the \cite{DLP12} estimator determines the optimal alpha and beta parameters of a linear factor model by minimizing the squared net present value (NPV) of all $N$ fund cash flows in a least-squares optimization problem.
 \begin{equation}
-	\min_{\alpha,\beta} = \sum_{i=1}^N \left[ {NPV}_i(\alpha,\beta) \right]^2
+ \left(\hat{\alpha}, \hat{\beta} \right) = \arg \min_{\alpha,\beta} \sum_{i=1}^N \left[ {NPV}_i(\alpha,\beta) \right]^2
 \end{equation}
-with NPV for the $i$th fund
+with $NPV$ for the $i$th fund
 \[
 {NPV}_i(\alpha,\beta) =
 \sum_{t \in \left\{ t_{0,i}, t_{0,i} + 1, \dots \right\}}
 \frac{\mathrm{CashFlow}_{t,i}}{
-	\prod_{s=t_{0,i}}^{t}
+	\prod_{s=t_{0,i}+1}^{t}
 	\left( 
 	1 + r_{\mathrm{free}, s} + \alpha + \beta r_{\mathrm{market}, s}
 	\right)
 } 
 \]
+Here, the \cite{DLP12} approach implicitly assumes that the $NPV$ can be perceived as ``pricing error" with a zero expected value.
+
 In this Methodology section, we will show:
 \begin{enumerate}
 	\item Why this estimator is usually asymptotically biased for pooled cash flows (Section \ref{sec:asset_pricing_pooled}).
@@ -849,7 +851,7 @@ We define the kernel weight $k$ as
 \[
 k_{i,j} \equiv K \left( \frac{d_{i,j}}{b_n} \right)
 \]
-with kernel function $K: \mathbb{R} \to [0,1]$ satisfies $K(0)=1$, $K(x)=K(-x)$, $\int_{-\infty}^{\infty} K^2(x) dx < \infty$, and $K(\cdot)$ continuous at zero and at all but a finite number of other points.
+with kernel function $K: \mathbb{R} \to [0,1]$ that satisfies $K(0)=1$, $K(x)=K(-x)$, $\int_{-\infty}^{\infty} K^2(x) dx < \infty$, and $K(\cdot)$ continuous at zero and at all but a finite number of other points.
 A common choice is the Bartlett kernel $K_{BT}(x)= \max(0, 1-|x|)$; see equation 2.7 in \cite{A91} for other popular kernel choices.
 This means absolute vintage year differences larger than the bandwidth (or truncation) parameter $b_n=D$ are considered independent and are thus excluded from the $\hat{\Lambda}$ estimation formula.
 
@@ -872,7 +874,7 @@ In large samples, the vector of parameter standard errors can thus be estimated 
 		\cdot \frac{1}{n}
 	}
 \end{equation}
-The Wald test statistic for linear hypotheses $H_0: R \theta = r$ and $H_1: R \theta \neq r$ is constructed as (where, $H_0$ and $H_1$ are hypotheses and not Hessian terms $H$)
+The Wald test statistic for linear hypotheses $H_0: R \theta = r$ and $H_1: R \theta \neq r$ is constructed as (where $H_0$ and $H_1$ are hypotheses and not Hessian terms $H$)
 \[
 W = 
 (R \hat{\theta} - r)^\top
@@ -1000,7 +1002,7 @@ Table \ref{tab:comparison} summarizes the most prominent distinctions between th
 We use the Preqin cash flow data set as of 14th April 2022 that is well known in the academic private equity literature \citep{HJK14,KN16,ACGP18}.
 To keep the empirical analysis clear and concise, we filter the dataset for Private Equity (PE) funds.
 
-The Private Equity sample contains 2745 distinct funds spreading over 35 vintage years."[1] "The vintage year distribution is as follows: 1983 (1), 1985 (2), 1986 (4), 1987 (5), 1988 (7), 1990 (2), 1991 (4), 1992 (9), 1993 (13), 1994 (20), 1995 (16), 1996 (20), 1997 (24), 1998 (59), 1999 (46), 2000 (72), 2001 (51), 2002 (41), 2003 (45), 2004 (64), 2005 (117), 2006 (154), 2007 (176), 2008 (183), 2009 (83), 2010 (92), 2011 (146), 2012 (136), 2013 (142), 2014 (182), 2015 (152), 2016 (186), 2017 (143), 2018 (157), 2019 (190).
+The Private Equity sample contains 2745 distinct funds spreading over 35 vintage years. "The vintage year distribution is as follows: 1983 (1), 1985 (2), 1986 (4), 1987 (5), 1988 (7), 1990 (2), 1991 (4), 1992 (9), 1993 (13), 1994 (20), 1995 (16), 1996 (20), 1997 (24), 1998 (59), 1999 (46), 2000 (72), 2001 (51), 2002 (41), 2003 (45), 2004 (64), 2005 (117), 2006 (154), 2007 (176), 2008 (183), 2009 (83), 2010 (92), 2011 (146), 2012 (136), 2013 (142), 2014 (182), 2015 (152), 2016 (186), 2017 (143), 2018 (157), 2019 (190).
 The region distribution is as follows: Africa (20), Asia (150), Australasia (39), Europe (681), Latin America \& Caribbean (33), Middle East (14), North America (1807).
 The strategy distribution is as follows: Balanced (69), Buyout (1354), Co-Investment (87), Co-Investment Multi-Manager (59), Direct Secondaries (30), Fund of Funds (643), Growth (331), Secondaries (152), Turnaround (19).
 
@@ -1084,7 +1086,7 @@ This means we replace the bootstrap standard error calculation of \cite{DLP12} b
 \subsection{Simulation study}
 \label{sec:simulation_study}
 
-Our Monte Carlo experiments examine the following questions related to the bias and variance of our estimation methodology in finite samples.\footnote{As each simulation study it more investigates the ability to identify the assumed data generating process than the corresponding SDF model.}
+Our Monte Carlo experiments examine the following questions related to the bias and variance of our estimation methodology in finite samples.\footnote{As with each simulation study, it investigates the ability to identify the assumed data generating process rather than the corresponding SDF model.}
 Is it beneficial to use vintage-year portfolios instead of individual funds?
 Which SDF model performs better when we also use the corresponding data generating process (i.e., assume correct model specification)?
 How is estimator precision affected by varying numbers of vintage years and cross-sectional units?
@@ -1103,7 +1105,6 @@ In contrast, the error term in the simulations of \cite{DLP12} is more well-beha
 In our base case, the set of discounting dates $\mathcal{T}$ contains all months from the first cash flow to the maximum month 180.
 To assess our estimator's bias and variance, we simulate 1000 test scenarios for vintage year portfolios and only 200 test cases when using individual funds due to the higher computational costs of simulating the individual fund cash flows.
 
-
 \paragraph{Cross-sectional unit $i$:}
 
 As presumed in Subsection \ref{sec:cross_sectional_unit}, vintage year portfolio results appear to have lower bias and variance when compared to individual funds.
@@ -1116,43 +1117,20 @@ On the one hand, vintage year portfolio formation can substantially decrease our
 On the other hand, it also dramatically reduces the number of cross-sectional units and consequentially impairs the importance of asymptotic results.
 These considerations may explain the choice of \cite{KN16} to use individual funds as cross-sectional units in their asymptotic SHAC framework to obtain smaller standard error estimates.
 
-\begin{figure}
-	\centering
-	\includegraphics[width=0.9\textwidth]{Figures/spatial/Simulationfundsvsvyps}
-	\caption{Simulation results comparing individual funds vs. vintage year portfolios (VYPs) with true $\beta=1$ and simple linear SDF (200 simulation iterations).}
-	\label{fig:simulation_funds_vs_vyps}
-\end{figure}
-
-\begin{figure}
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{Figures/bias_comparison1}
-	\caption{Simulation results ...}
+	\caption{\textbf{Simulation ($\beta_{\textrm{MKT}}$, $\alpha$):} Base cases.}
 	\label{fig:sim1}
 \end{figure}
 
-\begin{figure}
-	\centering
-	\includegraphics[width=0.9\textwidth]{Figures/bias_comparison2}
-	\caption{Simulation results ...}
-	\label{fig:sim2}
-\end{figure}
-
-
-\begin{figure}
-	\centering
-	\includegraphics[width=0.9\textwidth]{Figures/bias_comparison3}
-	\caption{Simulation results ...}
-	\label{fig:sim3}
-\end{figure}
-
-\begin{figure}
-	\centering
-	\includegraphics[width=0.9\textwidth]{Figures/bias_comparison4}
-	\caption{Simulation results ...}
-	\label{fig:sim4}
-\end{figure}
-
-
+% TODO: delete
+%\begin{figure}
+%	\centering
+%	\includegraphics[width=0.9\textwidth]{Figures/spatial/Simulationfundsvsvyps}
+%	\caption{Simulation results comparing individual funds vs. vintage year portfolios (VYPs) with true $\beta=1$ and simple linear SDF (200 simulation iterations).}
+%	\label{fig:simulation_funds_vs_vyps}
+%\end{figure}
 
 \paragraph{SDF model $\Psi$:}
 
@@ -1162,46 +1140,76 @@ Figure \ref{fig:simulation_expaff_vs_simlin} visualizes the true $\beta=1$ case,
 
 Moreover, the perceived superiority of exponential affine SDFs is probably rather theoretical than practical as other proponents also emphasize their universality mainly from a mathematical perspective without providing supportive empirical or simulation results \citep{GM07,BMP08}.
 
-\begin{figure}
+\begin{figure}[H]
 	\centering
-	\includegraphics[width=0.9\textwidth]{Figures/spatial/Simulationexpaffvssimlin}
-	\caption{Simulation results comparing exponentially affine and simple linear SDF with true $\beta=1$ and vintage year portfolios (1000 simulation iterations).}
-	\label{fig:simulation_expaff_vs_simlin}
+	\includegraphics[width=0.9\textwidth]{Figures/bias_comparison5}
+	\caption{\textbf{Simulation ($\beta_{\textrm{MKT}}$, $\alpha$):} Exponential affine vs.\ linear models.}
+	\label{fig:sim_exp_aff}
 \end{figure}
+
+% TODO: delete
+%\begin{figure}
+%	\centering
+%	\includegraphics[width=0.9\textwidth]{Figures/spatial/Simulationexpaffvssimlin}
+%	\caption{Simulation results comparing exponentially affine and simple linear SDF with true $\beta=1$ and vintage year portfolios (1000 simulation iterations).}
+%	\label{fig:simulation_expaff_vs_simlin}
+%\end{figure}
 
 
 \paragraph{Varying vintages $V$ and portfolio sizes $n/V$:}
 
-To test the effect of varying data sizes available for MKT factor estimation, we in/decrease the (i) number of vintage years and (ii) the number of funds per vintage year (cf. Table \ref{tab:simulation_study_size}).
+To test the effect of varying data sizes available for MKT factor estimation, we in/decrease the (i) number of vintage years and (ii) the number of funds per vintage year (cf. Figures \ref{fig:sim_vary_vin_sizes} and \ref{fig:sim_vary_vin_sizes_alpha}).
 Here we use vintage year portfolios and the simple linear SDF.
 For our simple data generating process, increasing the number of deals/funds per vintage year portfolio appears to decrease the estimator's variance more effectively than adding more vintage years.
 However, the bias is almost the same for all tested specifications.
 Generally, we seem to need many new data points to ensure a reasonable variance of our estimator.
 
-\begin{table}[ht]
+
+\begin{figure}[H]
 	\centering
-	\resizebox{0.9\textwidth}{!}{%
-	\begin{tabular}{rrrrrrr}
-		& Base & Big $n/V$ & Big $V$ & Big $V$ & Small $V$ & Small $V$ \\ 
-		\hline
-		\hline
-		Start vintage & 1986 & 1986 & 1967 & 1967 & 1986 & 1996 \\ 
-		End vintage & 2005 & 2005 & 2005 & 2005 & 1995 & 2005 \\ 
-		\#Funds per vintage & 20 & 40 & 10 & 20 & 20 & 20 \\ 
-		\hline
-		Mean $\beta_{\mathrm{MKT}}$ & 1.011 & 1.020 & 0.993 & 1.015 & 1.027 & 0.934 \\ 
-		Stdv $\beta_{\mathrm{MKT}}$ & 0.187 & 0.133 & 0.263 & 0.227 & 0.232 & 0.418 \\ 
-		\hline
-		\hline
-	\end{tabular}
-	}
-	\caption{Simulation study for varying  number of vintages and number of funds per vintage. 
-		We use vintage year portfolios, the simple linear SDF with true $\beta_{\mathrm{MKT}}=1$, maximum month 180, and 500 simulation iterations.} 
-	\label{tab:simulation_study_size}
-\end{table}
+	\includegraphics[width=0.9\textwidth]{Figures/bias_comparison3}
+	\caption{\textbf{Simulation ($\beta_{\textrm{MKT}}$, $\alpha$):} Varying vintages $V$ and portfolio sizes $n/V$.}
+	\label{fig:sim_vary_vin_sizes_alpha}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{Figures/bias_comparison2}
+	\caption{\textbf{Simulation ($\beta_{\textrm{MKT}}$):} Varying vintages $V$ and portfolio sizes $n/V$.}
+	\label{fig:sim_vary_vin_sizes}
+\end{figure}
+
+
+
+\paragraph{Two-factor models ($q^5$ factors):}
+
+For the $q^5$-factor models from Figure \ref{fig:sim_q_factors}, we most notably see that the standard deviation of the $\beta_{\mathrm{MKT}}$-factor estimates in the two-factors models appear high for all horizons, especially for the $ROE$ and $EG$ models.
+
+For the $ME+MKT$ factor model, the mean $MKT$ factor estimate drops from $1.15$ for the 0-year horizon to $0.83$ for the 30-year horizon crossing the true $\beta_{\mathrm{MKT}}=1$ line at around the 15-year horizon.
+The $ME$ factor varies from $0.86$ for the 0-year horizon to $-0.02$ for the 30-year horizon crossing the true parameter line $\beta_{\mathrm{ME}}=0.5$ at around the 17.5-year horizon.
+The notable thing here is ...
+
+For the $IA+MKT$ factor model, ...
+
+For the $ROE+MKT$ factor model, ...
+
+For the $EG+MKT$ factor model, ...
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{Figures/bias_comparison4}
+	\caption{\textbf{Simulation ($q^5$ factors):} Two-factor models using VYP.}
+	\label{fig:sim_q_factors}
+\end{figure}
+
 
 \paragraph{Size of set $\mathcal{T}$:}
 
+This is the big question of the simulations study!
+Which max compounding horizon is the optimal one?
+From our diverse simulation results, we can deduce that we cannot determine the optimal horizon from these simulation results.
+
+{\color{red}
 The results in Table \ref{tab:simulation_study} indicate that we can control the asymptotic bias by an appropriate choice of the set $\mathcal{T}$.
 For the one-factor model, the bias almost vanishes when we average over all discounting dates in the maximal fund lifetime of 180 months. 
 For smaller or larger sets for $\mathcal{T}$, we find increasing bias terms.
@@ -1216,83 +1224,14 @@ Thus, our simulation study could not reveal a formula how to determine the optim
 
 In Table \ref{tab:simulation_study} for both true and false model specifications, the $\alpha$ standard deviation is very high compared to its mean value.
 This may indicate it is rather delicate to empirically determine private equity's historical outperformance by our semiparametric estimator. \newline
+}
 
-To conclude, our simulations study rationalizes two key practices from the \cite{DLP12} paper: (i) vintage year portfolio formation helps to improve estimator precision, and (ii) increasing the number of funds per vintage seems to be more effective in controlling estimator variance that increasing the number of vintages\footnote{Finding (ii) may explain the choice of \cite{DLP12} to employ an asymptotic law that lets the number of deals/funds per vintage tend to infinity.}.
+\paragraph{Simulation conclusion:}
+To conclude, our simulations study rationalizes two key practices from the \cite{DLP12} paper: (i) vintage year portfolio formation helps to improve estimator precision, and (ii) increasing the number of funds per vintage seems to be more effective in controlling estimator variance than increasing the number of vintages\footnote{Finding (ii) may explain the choice of \cite{DLP12} to employ an asymptotic law that lets the number of deals/funds per vintage tend to infinity.}.
 However, our examples with correct specification cannot support the assumption of \cite{KN16} that (iii) the exponential affine SDF is (clearly) superior to the simple liner SDF in a multi-period framework; actually, their bias and variances are quite equal.
 Moreover, our simulation study suggests that (iv) averaging pricing errors over multiple dates strikingly reduces the bias inherent to the original procedure of \cite{DLP12} that just discounts all cash flows to the fund inception date.
 Actually, choosing the set $\mathcal{T}$ according to the fund lifetime seems to decrease the bias (and to a lesser extent also the variance) more effectively than all other measures combined.
 
-\begin{table}[H]
-	\centering
-	\resizebox{0.9\textwidth}{!}{%
-		\begin{tabular}{lrrrrrr}
-			\multicolumn{7}{c}{Panel A: simple linear SDF} \\
-			\hline
-			Model==DGP & True & \multicolumn{2}{c}{False} & False & \multicolumn{2}{c}{True} \\
-			MaxMonth & $\beta=1$ & $\alpha=0$ & $\beta=1$ & $\beta=2.5$ & $\alpha=-0.25$ & $\beta=2.5$ \\ 
-			\hline
-			\hline
-			1 - mean & 1.168 & 1625\% & 0.003 & 2.023 & 5879\% & -16.711 \\ 
-			1 - stdv & 0.269 & 2792\% & 9.968 & 0.342 & 866\% & 13.347 \\ 
-			\hline
-			60 - mean & 1.129 & 0.138\% & 0.933 & 2.103 & -0.086\% & 2.285 \\ 
-			60 - stdv & 0.242 & 0.245\% & 0.363 & 0.302 & 0.253\% & 0.406 \\ 
-			\hline
-			120 - mean & 1.058 & 0.112\% & 0.906 & 2.063 & -0.085\% & 2.239 \\ 
-			120 - stdv & 0.200 & 0.214\% & 0.313 & 0.253 & 0.239\% & 0.385 \\ 
-			\hline
-			180 - mean & 1.016 & 0.041\% & 0.965 & 2.052 & -0.161\% & 2.370 \\ 
-			180 - stdv & 0.200 & 0.172\% & 0.334 & 0.277 & 0.173\% & 0.403 \\ 
-			\hline
-			240 - mean & 0.987 & -0.053\% & 1.077 & 2.072 & -0.277\% & 2.589 \\ 
-			240 - stdv & 0.223 & 0.162\% & 0.361 & 0.326 & 0.118\% & 0.375 \\
-			\hline 
-			300 - mean & 0.946 & -0.149\% & 1.175 & 2.080 & -0.357\% & 2.714 \\ 
-			300 - stdv & 0.235 & 0.174\% & 0.377 & 0.398 & 0.114\% & 0.366 \\ 
-			\hline
-			360 - mean & 0.895 & -0.245\% & 1.269 & 2.048 & -0.461\% & 2.859 \\ 
-			360 - stdv & 0.268 & 0.201\% & 0.399 & 0.551 & 0.140\% & 0.386 \\ 
-			\hline
-			\hline
-			\multicolumn{7}{l}{} \\
-			\multicolumn{7}{c}{Panel B: exponential affine SDF} \\
-			\hline
-			Model==DGP & True & \multicolumn{2}{c}{False} & False & \multicolumn{2}{c}{True} \\
-			MaxMonth & $\beta=1$ & $\alpha=0$ & $\beta=1$ & $\beta=2.5$ & $\alpha=-0.25$ & $\beta=2.5$ \\ 
-			\hline
-			\hline
-			1 - mean & 1.207 & 203\% & 1.276 & 2.256 & 692\% & 1.704 \\ 
-			1 - stdv & 0.344 & 314\% & 0.710 & 0.290 & 13\% & 1.666 \\ 
-			\hline
-			60 - mean & 1.146 & 0.126\% & 0.941 & 2.264 & -0.018\% & 2.277 \\ 
-			60 - stdv & 0.275 & 0.264\% & 0.386 & 0.256 & 0.370\% & 0.473 \\ 
-			\hline
-			120 - mean & 1.062 & 0.107\% & 0.908 & 2.221 & 0.009\% & 2.205 \\ 
-			120 - stdv & 0.200 & 0.237\% & 0.333 & 0.187 & 0.357\% & 0.448 \\ 
-			\hline
-			180 - mean & 1.011 & 0.027\% & 0.971 & 2.182 & -0.136\% & 2.358 \\ 
-			180 - stdv & 0.175 & 0.211\% & 0.366 & 0.168 & 0.344\% & 0.505 \\ 
-			\hline
-			240 - mean & 0.972 & -0.088\% & 1.095 & 2.144 & -0.441\% & 2.723 \\ 
-			240 - stdv & 0.174 & 0.224\% & 0.406 & 0.178 & 0.317\% & 0.503 \\ 
-			\hline
-			300 - mean & 0.928 & -0.202\% & 1.203 & 2.083 & -0.717\% & 2.985 \\ 
-			300 - stdv & 0.181 & 0.253\% & 0.426 & 0.254 & 0.340\% & 0.513 \\ 
-			\hline
-			360 - mean & 0.874 & -0.319\% & 1.304 & 1.685 & -1.095\% & 3.272 \\ 
-			360 - stdv & 0.208 & 0.291\% & 0.447 & 0.772 & 0.374\% & 0.586 \\ 
-			\hline
-			\hline
-		\end{tabular}
-	}
-	\caption{
-		Simulation study to compare the simple linear with the exponential affine SDF and to determine the optimal size of the set $\mathcal{T}$.
-		Here, we always use vintage year-portfolios and 1000 simulation iterations.
-		For better readability, $\beta_{\mathrm{MKT}}=\beta$.
-		For the unity and high beta model, we test true and false model specifications (with and without the monthly $\alpha$ term).
-	} 
-	\label{tab:simulation_study}
-\end{table}
 
 \subsection{Empirical results}
 
@@ -1305,37 +1244,11 @@ Throughout this subsection, we define the statistical significance of coefficien
 
 \begin{figure}
 	\centering
-	\includegraphics[width=\textwidth]{Figures/empirical_PE_all_factors}
-	\caption{Empirical results for PE ...}
+	\includegraphics[width=0.9\textwidth]{Figures/empirical_PE_all_factors}
+	\caption{\textbf{Empirical ($q^5$ factors):} Two-factor models for PE using VYP.}
 	\label{fig:empirical}
 \end{figure}
 
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Mon Jun  8 20:27:19 2020
-\begin{table}[ht]
-	\centering
-	\resizebox{0.9\textwidth}{!}{%
-	\begin{tabular}{llrrrrrr}
-		& & \multicolumn{3}{l}{MKT Factor} & \multicolumn{3}{l}{Second Factor} \\ 
-		Weighting & Inference & Coef & SE & SE.indep & Coef & SE & SE.indep \\ 
-		\hline
-		\hline
-		fund-size & asymptotic & 0.75 & 27.06 & 19.73 & 0.80 & 28.95 & 20.94 \\ 
-		fund-size & cross-validation & 0.85 & 0.38 & - & 0.59 & 0.51 & - \\ 
-		\hline
-		equal & asymptotic & 0.76 & 26.75 & 16.16 & 0.76 & 11.25 & 6.69 \\ 
-		equal & cross-validation & 0.84 & 0.34 & - & 0.62 & 0.50 & - \\ 
-		\hline
-		\hline
-	\end{tabular}
-	}
-	\caption{
-		Top-level overview over Table \ref{tab:ai_180_FW_VYP_SL} to \ref{tab:cv_180_EW_VYP_SL}: 
-		Averages of absolute values of coefficient estimates and standard errors (SEs).
-		We see that asymptotic SEs are much higher than the SEs obtained by cross-validation.
-	} 
-	\label{tab:ai_sum_abs}
-\end{table}
 
 Table \ref{tab:ai_sum_abs} helps to get a rough overview of Table \ref{tab:ai_180_FW_VYP_SL} to \ref{tab:cv_180_EW_VYP_SL} as it summarizes their absolute column means.
 Conspicuously, asymptotic standard errors (SEs) seem enormously high and, moreover, contain colossal outliers.
@@ -1351,6 +1264,19 @@ Likewise, the simulation results from the previous subsection indicate a rather 
 Thus, we recommend focusing on single MKT factor models even when their asymptotic t-ratios are below 1.96.
 At least the $hv$-block cross-validation standard deviations imply significant one-factor MKT models for fund types PE, VC, PD, INF.
 In contrast, RE is just significant for equal weighting, and NR is insignificant for both weighting schemes.
+
+\paragraph{Single market-factor models}
+
+\paragraph{Two-factor models}
+
+\paragraph{Focus on varying vintage cutoffs}
+
+Our standard vintage year cutoff in our empirical Preqin dataset is 2019.
+In this section, we  analyze how altering the maximum vintage cutoff from 2019 to older vintages influences the parameter estimates.
+Concretely, we compare yearly cutoff-vintages from 2019 to 2011 making it 9 distinct cutoff dates.
+We only consider asymptotic estimates in this section, i.e., we did not perform cross-validation results for the different vintage cutoffs.
+
+Figure XXX shows ...
 
 \paragraph{Focus on PE and VC estimates}
 
