@@ -55,7 +55,7 @@ scenarios:
     data_folder: auto
   
   base_case_cross_sectional:
-    description: "Base case: β_MKT=1, cross-sectional units (10 partitions)"
+    description: "Base case: β_MKT=1, cross-sectional units (1 partition[s])"
     estimation:
       weighting: "EW"
       factors_to_use: ""
@@ -65,7 +65,7 @@ scenarios:
     data_folder: auto
   
   base_case_cross_sectional_zero_alpha:
-    description: "Base case: β_MKT=1, α=0, cross-sectional units (10 partitions)"
+    description: "Base case: β_MKT=1, α=0, cross-sectional units (1 partition[s])"
     estimation:
       weighting: "EW"
       factors_to_use: "Alpha"

@@ -62,17 +62,42 @@ analyze_simulation_bias <- function(results, scenarios, verbose = TRUE) {
 
         # Get estimation results
         if (is.null(result$df_res)) {
-            # Try to load from cache folder
             # Build cache path with optional public_filename prefix
-            cache_prefix <- if (!is.null(result$public_filename)) {
+            cache_prefix_base <- if (!is.null(result$public_filename)) {
                 paste0("cache_", result$public_filename, "_", result$cache_folder_tag)
             } else {
                 paste0("cache_", result$cache_folder_tag)
             }
-            cache_dir <- file.path(result$data_out_folder, cache_prefix)
 
-            if (dir.exists(cache_dir)) {
-                result$df_res <- load_results_from_cache(cache_dir)
+            # Determine number of partitions
+            n_parts <- if (!is.null(result$no_partitions) && result$no_partitions > 1) {
+                result$no_partitions
+            } else {
+                1
+            }
+
+            # Load from all partition folders (or single folder)
+            all_res <- list()
+            if (n_parts > 1) {
+                for (p in seq_len(n_parts)) {
+                    cache_dir <- file.path(
+                        result$data_out_folder,
+                        paste0(cache_prefix_base, "_part", p)
+                    )
+                    if (dir.exists(cache_dir)) {
+                        part_res <- load_results_from_cache(cache_dir)
+                        if (nrow(part_res) > 0) all_res[[p]] <- part_res
+                    }
+                }
+            } else {
+                cache_dir <- file.path(result$data_out_folder, cache_prefix_base)
+                if (dir.exists(cache_dir)) {
+                    all_res[[1]] <- load_results_from_cache(cache_dir)
+                }
+            }
+
+            if (length(all_res) > 0) {
+                result$df_res <- do.call(rbind, all_res)
             }
         }
 

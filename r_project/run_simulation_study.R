@@ -175,14 +175,62 @@ run_simulation_study <- function(
                 params$data_out_folder <- "simulation/data_out_2026_new"
             }
 
-            # Run estimation
-            result <- do.call(run_estimation, params)
+            # Determine partition range
+            n_partitions <- if (!is.null(scenario$estimation$no_partitions)) {
+                scenario$estimation$no_partitions
+            } else {
+                1
+            }
+
+            # Store base cache tag (without _partN suffix)
+            base_cache_tag <- params$cache_folder_tag
+
+            # Run estimation (loop over partitions if needed)
+            result <- NULL
+            all_partitions_ok <- TRUE
+            total_elapsed <- 0
+
+            if (n_partitions > 1) {
+                for (p in seq_len(n_partitions)) {
+                    # Override partition-specific params
+                    params$part_to_keep <- p
+                    params$cache_folder_tag <- paste0(base_cache_tag, "_part", p)
+
+                    if (verbose) cat("  Partition", p, "/", n_partitions, "\n")
+
+                    result <- do.call(run_estimation, params)
+
+                    if (!isTRUE(result$success)) {
+                        all_partitions_ok <- FALSE
+                        if (verbose) cat("  -> Partition", p, "FAILED:", result$error, "\n")
+                        break
+                    } else {
+                        total_elapsed <- total_elapsed + as.numeric(result$elapsed_time)
+                        if (verbose) {
+                            cat(
+                                "  -> Partition", p, "completed in",
+                                round(as.numeric(result$elapsed_time), 1), "sec\n"
+                            )
+                        }
+                    }
+                }
+
+                # Store combined result info for bias analysis
+                result$cache_folder_tag <- base_cache_tag
+                result$no_partitions <- n_partitions
+                result$elapsed_time <- total_elapsed
+                result$success <- all_partitions_ok
+            } else {
+                # Single partition (or no partitions) - run directly
+                result <- do.call(run_estimation, params)
+            }
+
             result$dgp <- scenario$dgp # Store DGP for bias analysis
             results[[id]] <- result
 
-            if (verbose && result$success) {
+            if (verbose && isTRUE(result$success)) {
                 cat("  -> Completed in", round(as.numeric(result$elapsed_time), 1), "sec\n\n")
-            } else if (verbose) {
+            } else if (verbose && !isTRUE(result$success)) {
                 cat("  -> FAILED:", result$error, "\n\n")
             }
         }
@@ -226,14 +274,15 @@ run_simulation_study <- function(
                 write.csv(bias_summary, full_path, row.names = FALSE)
 
                 # 2. Aggregated by scenario + horizon (for tables and charts)
+                # Aggregate means for bias/estimate columns and sd for estimate columns
                 # Use na.action = na.pass to handle columns with NA values
                 # Wrap in tryCatch for robustness when certain columns have all NAs
                 agg_by_scenario_horizon <- tryCatch(
                     {
-                        aggregate(
+                        # Aggregate mean columns
+                        agg_mean <- aggregate(
                             cbind(
                                 bias_MKT, bias_second,
-                                rel_bias_MKT_pct, rel_bias_second_pct,
                                 est_beta_MKT, est_second,
                                 true_beta_MKT, true_second
                             ) ~ scenario_id + max_month,
@@ -241,6 +290,19 @@ run_simulation_study <- function(
                             FUN = function(x) mean(x, na.rm = TRUE),
                             na.action = na.pass
                         )
+
+                        # Aggregate sd columns for MKT and second factor estimates
+                        agg_sd <- aggregate(
+                            cbind(est_beta_MKT, est_second) ~ scenario_id + max_month,
+                            data = bias_summary,
+                            FUN = function(x) sd(x, na.rm = TRUE),
+                            na.action = na.pass
+                        )
+                        names(agg_sd)[names(agg_sd) == "est_beta_MKT"] <- "sd_MKT"
+                        names(agg_sd)[names(agg_sd) == "est_second"] <- "sd_second"
+
+                        # Merge mean and sd results
+                        merge(agg_mean, agg_sd, by = c("scenario_id", "max_month"))
                     },
                     error = function(e) {
                         # Fallback: aggregate columns individually to handle all-NA cases
@@ -250,16 +312,15 @@ run_simulation_study <- function(
                         # Get unique scenario/horizon combinations
                         groups <- unique(bias_summary[, c("scenario_id", "max_month")])
 
-                        # Aggregate each column separately
-                        cols_to_agg <- c(
+                        # Columns to aggregate with mean
+                        cols_mean <- c(
                             "bias_MKT", "bias_second",
-                            "rel_bias_MKT_pct", "rel_bias_second_pct",
                             "est_beta_MKT", "est_second",
                             "true_beta_MKT", "true_second"
                         )
 
                         result <- groups
-                        for (col in cols_to_agg) {
+                        for (col in cols_mean) {
                             if (col %in% names(bias_summary)) {
                                 agg_col <- aggregate(
                                     bias_summary[[col]],
@@ -275,6 +336,30 @@ run_simulation_study <- function(
                                 )
                             }
                         }
+
+                        # Columns to aggregate with sd
+                        cols_sd <- list(
+                            list(src = "est_beta_MKT", dst = "sd_MKT"),
+                            list(src = "est_second", dst = "sd_second")
+                        )
+
+                        for (item in cols_sd) {
+                            if (item$src %in% names(bias_summary)) {
+                                agg_col <- aggregate(
+                                    bias_summary[[item$src]],
+                                    by = list(
+                                        scenario_id = bias_summary$scenario_id,
+                                        max_month = bias_summary$max_month
+                                    ),
+                                    FUN = function(x) sd(x, na.rm = TRUE)
+                                )
+                                names(agg_col)[3] <- item$dst
+                                result <- merge(result, agg_col[, c("scenario_id", "max_month", item$dst)],
+                                    by = c("scenario_id", "max_month"), all.x = TRUE
+                                )
+                            }
+                        }
+
                         result
                     }
                 )
@@ -392,16 +477,20 @@ if (sys.nframe() == 0L) {
     cat("Available scenarios:\n\n")
     list_simulation_scenarios(active_only = FALSE)
     scenarios <- c(
-      "base_case_vyp", "base_case_cross_sectional", "base_case_cross_sectional_zero_alpha",
-      "base_case_zero_alpha", "base_case_positive_alpha", "base_case_negative_alpha",
-      "big_n_v_60funds", "big_n_v_40funds", "big_v_10funds_1967", "big_v_20funds_1967", "small_v_1986_1995", "small_v_1996_2005",
-      "big_n_v_40funds_alpha", "big_v_10funds_1967_alpha", "big_v_20funds_1967_alpha", "small_v_1986_1995_alpha", "small_v_1996_2005_alpha",
-      "exp_aff_base", "exp_aff_high_beta_alpha", "high_beta_alpha_two_factor",
-      "base_case_ME", "base_case_IA", "base_case_ROE", "base_case_EG"
+        "base_case_vyp", "base_case_cross_sectional", "base_case_cross_sectional_zero_alpha",
+        "base_case_zero_alpha", "base_case_positive_alpha", "base_case_negative_alpha",
+        # "big_n_v_60funds", "small_n_10funds",
+        "big_n_v_40funds", "big_v_10funds_1967", "big_v_20funds_1967", "small_v_1986_1995", "small_v_1996_2005",
+        "big_n_v_40funds_alpha", "big_v_10funds_1967_alpha", "big_v_20funds_1967_alpha", "small_v_1986_1995_alpha", "small_v_1996_2005_alpha",
+        "exp_aff_base", "exp_aff_high_beta_alpha", "high_beta_alpha_two_factor",
+        "base_case_ME", "base_case_IA", "base_case_ROE", "base_case_EG"
     )
-    scenarios <- c("big_n_v_60funds", "small_n_10funds")
+    scenarios <- c(
+        # "big_n_v_60funds", "small_n_10funds",
+        "base_case_cross_sectional", "base_case_cross_sectional_zero_alpha"
+    )
     results <- run_simulation_study(
         scenario_ids = scenarios,
-        generate_data = TRUE, estimate = TRUE, analyze = FALSE
+        generate_data = FALSE, estimate = TRUE, analyze = FALSE
     )
 }

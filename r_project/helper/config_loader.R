@@ -258,9 +258,7 @@ scenario_to_estimation_params <- function(scenario, base_path = "simulation") {
     # For partitioned runs, the partition suffix is added by estim_model_optimized.R,
     # but we need to include it here for the resume check to find the correct cache
     cache_folder_tag <- paste0(data_folder, "_simulated_cashflows_", weighting)
-    if (!is.null(est$no_partitions) && est$no_partitions > 1 && !is.null(est$part_to_keep)) {
-        cache_folder_tag <- paste0(cache_folder_tag, "_part", est$part_to_keep)
-    }
+    # Note: _partN suffix is added by the runner loop, not here
 
     params <- list(
         simulation_file = sim_file,

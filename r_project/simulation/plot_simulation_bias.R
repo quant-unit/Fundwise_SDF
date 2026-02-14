@@ -460,7 +460,7 @@ plot_single_scenario_bias <- function(bias_file, scenario_id) {
 # ============================================================================
 #
 
-file <- "simulation/data_out_2026_new/bias_analysis/2026-02-10_165003_bias_by_scenario_horizon.csv"
+file <- "simulation/data_out_2026_new/bias_analysis/2026-02-11_211903_bias_by_scenario_horizon.csv"
 max.mkt <- 1.25
 max.second <- 0.005
 min.mkt <- 0.6
