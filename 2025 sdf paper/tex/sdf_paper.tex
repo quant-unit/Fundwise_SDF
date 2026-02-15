@@ -144,7 +144,7 @@ with $NPV$ for the $i$th fund
 \[
 {NPV}_i(\alpha,\beta) =
 \sum_{t \in \left\{ t_{0,i}, t_{0,i} + 1, \dots \right\}}
-\frac{\mathrm{CashFlow}_{t,i}}{
+\frac{\mathrm{CashFlow}_{i,t}}{
 	\prod_{s=t_{0,i}+1}^{t}
 	\left( 
 	1 + r_{\mathrm{free}, s} + \alpha + \beta r_{\mathrm{market}, s}
@@ -156,7 +156,7 @@ Here, the \cite{DLP12} approach implicitly assumes that the $NPV$ can be perceiv
 In this Methodology section, we will show:
 \begin{enumerate}
 	\item Why this estimator is unconditionally unbiased for pooled cash flows when we use this Net Present Value approach and analyze the bias term introduced by the Net Future Value approach (Section \ref{sec:asset_pricing_pooled}).
-	\item How to modify the estimator to be able to control the bias term (Sections \ref{sec:fundwise_lmd_estimator} and \ref{subsec:npv_vs_fv}).
+	\item How to modify the estimator to be able to control the bias term (Section \ref{sec:fundwise_lmd_estimator}).
 	\item How we can estimate asymptotic standard errors for the parameters alpha and beta (Sections \ref{sec:asymptotic_framework} and \ref{sec:asymptotic_inference}).
 \end{enumerate}
 
@@ -164,9 +164,9 @@ In this Methodology section, we will show:
 \subsection{Asset Pricing for Pooled Cash Flows}
 \label{sec:asset_pricing_pooled}
 
-Let private equity fund $i=1,2,\dots,n$ be characterized by its net cash flows ${CF}_{t,i}$ (i.e., distributions minus contributions) and its net asset values ${NAV}_{t,i}$ with discrete time index $t=0,1,2,\dots,T$.
-To increase the mathematical tractability of the problem, we assume a  deal-by-deal data generating processes (DGP) for $CF$ where each fund deal consists exactly of one investment and one divestment cash flow in combination with a simple return model for the multi-period deal returns.
-This means the fund-level cash flow process $(CF_{i,t})_{t=0,1,...,T}$ is an aggregation of deal-level cash flow pairs consisting of one negative at deal inception and at least one positive cash flow later $CF_{t,i} = \sum_j^J {cf}_{j,i,t}$.
+Let private equity fund $i=1,2,\dots,n$ be characterized by its net cash flows ${CF}_{i,t}$ (i.e., distributions minus contributions) and its net asset values ${NAV}_{i,t}$ with discrete time index $t=0,1,2,\dots,T$.
+To increase the mathematical tractability of the problem, we assume a  deal-by-deal data generating process (DGP) for $CF$ where each fund deal consists exactly of one investment and one divestment cash flow in combination with a simple return model for the multi-period deal returns.
+This means the fund-level cash flow process $(CF_{i,t})_{t=0,1,...,T}$ is an aggregation of deal-level cash flow pairs consisting of one negative at deal inception and at least one positive cash flow later $CF_{i,t} = \sum_j^J {cf}_{j,i,t}$.
 \begin{assume}
 	\label{ass:deal_level_dgp}
 	Deal-level data generation process: \\
@@ -208,10 +208,10 @@ First we apply the Law of Iterated Expectations (the so-called ``tower property"
 \begin{equation}
 	\mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}} \delta_{i,j} \mid \mathcal{F}_{\tau} \right] 
 	= 
-	\mathbb{E} \left[ \mathbb{E} \left[ \frac{\Psi{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}} \delta_{i,j} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right] \mid \mathcal{F}_{\tau} \right]
+	\mathbb{E} \left[ \mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}} \delta_{i,j} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right] \mid \mathcal{F}_{\tau} \right]
 \end{equation}
 
-Since the term $\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}}$ is fully known at time $t_{i,j}^{\mathrm{Inv}}$, we can be pulled out of this inner expectation to receive
+Since the term $\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}}$ is fully known at time $t_{i,j}^{\mathrm{Inv}}$, it can be pulled out of this inner expectation to receive
 
 \begin{equation}
 	\label{eq:zero_deal_expectation}
@@ -233,53 +233,65 @@ When the discounting/compounding date $\tau$ is after the investment date, the t
 Let $\tau > t_{i,j}^{\mathrm{Inv}}$. The expectation becomes:
 
 \begin{equation}
-	\mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}} \delta_{i,j} \mid \mathcal{F}{\tau} \right] 
+	\mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}} \delta_{i,j} \mid \mathcal{F}_{\tau} \right] 
 	= 
 	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}} \mathbb{E} \left[ \delta_{i,j} \mid \mathcal{F}_{\tau} \right]
 \end{equation}
 
-Since we condition on $\mathcal{F}{\tau}$ and $t{i,j}^{\mathrm{Inv}} < \tau$, the SDF ratio is known and can be pulled out).
+Since we condition on $\mathcal{F}_{\tau}$ and $t_{i,j}^{\mathrm{Inv}} < \tau$, the SDF ratio is known and can be pulled out.
 Then the term $\mathbb{E} \left[ \delta_{i,j} \mid \mathcal{F}_{\tau} \right]$ is the realized pricing error up to time $\tau$ plus the expected future pricing error. It decomposes as:
 
 \begin{equation}
 	\label{eq:non_zero_deal_expectation}
 	\mathbb{E} \left[ \delta_{i,j} \mid \mathcal{F}_{\tau} \right] 
 	= 
-	\underbrace{\mathrm{Inv}_{i,j} + \sum_{t_{i,j,k} \le \tau} \frac{\Psi_{t_{i,j,k}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}} \mathrm{Div}_{i,j,k}}_{\text{Realized Cash Flows}} 
+	\underbrace{\mathrm{Inv}_{i,j} + \sum_{t_{i,j,k}^{\mathrm{Div}} \le \tau} \frac{\Psi_{t_{i,j,k}^{\mathrm{Div}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}} \mathrm{Div}_{i,j,k}}_{\text{Realized Cash Flows}} 
 	+ 
-	\underbrace{\mathbb{E} \left[ \sum_{t_{i,j,k} > \tau} \frac{\Psi_{t_{i,j,k}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}} \mathrm{Div}_{i,j,k} \mid \mathcal{F}_{\tau} \right]}_{\text{Expected Future Cash Flows}}
+	\underbrace{\mathbb{E} \left[ \sum_{t_{i,j,k}^{\mathrm{Div}} > \tau} \frac{\Psi_{t_{i,j,k}^{\mathrm{Div}} }}{\Psi_{t_{i,j}^{\mathrm{Inv}}}} \mathrm{Div}_{i,j,k} \mid \mathcal{F}_{\tau} \right]}_{\text{Expected Future Cash Flows}}
 \end{equation}
 
 Generally, this sum can become (is usually) non-zero because it includes realized shocks (abnormal returns) that occurred between $t_{i,j}^{\mathrm{Inv}}$ and $\tau$.
 
+\paragraph{Case C: Compounding deals to a future date}
 
-\paragraph{Case C: Compounding deals to a future date ($\tau < t_{i,j}^{\mathrm{Inv}} < t_{i,j}^{\mathrm{Future}}$)}
+Let us analyze the following Net Future Value (NFV) case, where $t_{i,j}^{\mathrm{Future}}$ denotes a compounding target date after the deal investment date (i.e., $\tau < t_{i,j}^{\mathrm{Inv}} < t_{i,j}^{\mathrm{Future}}$).
 
-Let us analyze the following Net Future Value (NFV) case
-
-\begin{equation}
+\begin{align}
 	\label{eq:future_value_bias_derivation}
-	\mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{\tau}} \delta_{i,j} \mid \mathcal{F}_{\tau} \right] 
-	= 
+	\mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{\tau}} \delta_{i,j} \mid \mathcal{F}_{\tau} \right] \nonumber
+	&= 
+	\mathbb{E} \left[ 
+	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}} 
+	\frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}}
+	\delta_{i,j} \mid \mathcal{F}_{\tau} \right] 
+		\\ \nonumber
+	&=	
 	\mathbb{E} \left[ 
 	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}}
-	 \mathrm{Cov} \left( \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}}, \delta_{i,j} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right) \mid \mathcal{F}_{\tau} \right]
-\end{equation}
+	\mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}}  \delta_{i,j} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right] \mid \mathcal{F}_{\tau} \right]
+		\\
+	&= 
+	\mathbb{E} \left[ 
+	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}}
+	\mathrm{Cov} \left( \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}}, \delta_{i,j} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right) \mid \mathcal{F}_{\tau} \right]
+\end{align}
 
 The term can generally become non-zero, representing the covariance between the deal's pricing error and the future level of the SDF, effectively a risk premium for the timing mismatch.
 
-This result highlights a fundamental dichotomy. For \emph{ex-ante} asset pricing tests, the Net Future Value approach is misspecified: the non-zero expected covariance implies that standard moment conditions $\mathbb{E}[Error]=0$ are violated, leading to biased parameter estimates if not explicitly corrected for this risk premium.
-Conversely, for \emph{ex-post} performance benchmarking, this compounding approach remains valuable. By compounding realized cash flows to a future date $T$, we facilitate an intuitive comparison of the fund's generated terminal wealth against a public benchmark, provided one acknowledges that the resulting \emph{alpha} implicitly includes the compensation for the timing risk identified above.
+This result highlights a fundamental dichotomy. 
+For \emph{ex-ante} asset pricing tests, the Net Future Value approach is misspecified: the non-zero expected covariance implies that standard moment conditions $\mathbb{E}[Error]=0$ are violated, leading to biased parameter estimates if not explicitly corrected for this risk premium.
+Conversely, for \emph{ex-post} performance benchmarking, this compounding approach remains valuable. 
+By compounding realized cash flows to a future date $T$, we facilitate an intuitive comparison of the fund's generated terminal wealth against a public benchmark, provided one acknowledges that the resulting \emph{alpha} implicitly includes the compensation for the timing risk identified above.
 This entails that any \emph{alpha} measured via Net Future Values is mechanically a composite metric. 
 Specifically, we can mathematically decompose the expected FPV pricing error into two distinct components:
 \begin{align}
 	\label{eq:alpha_decomp}
 	\underbrace{\mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{\tau}} \delta_{i,j} \mid \mathcal{F}_{\tau} \right]}_{\text{Measured Alpha}} 
 	&= 
-	\underbrace{\mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}} \frac{\alpha_{i,j}^{\text{True}}}{R_{f, t_{i,j}^{\mathrm{Inv}} \to t_{i,j}^{\mathrm{Future}}}} \mid \mathcal{F}_{\tau} \right]}_{\text{Compounded Skill}}
+	\underbrace{\mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}} \frac{\alpha_{i,j}^{\text{True}}}{R_{f, t_{i,j}^{\mathrm{Inv}} \to t_{i,j}^{\mathrm{Future}}}} \mid \mathcal{F}_{\tau} \right]}_{\text{Skill}}
 	\\ \nonumber
 	&+ 
-	\underbrace{\mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}} \mathrm{Cov} \left( \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}}, \delta_{i,j} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right) \mid \mathcal{F}_{\tau} \right]}_{\text{Compounded Timing Risk Premium}}
+	\underbrace{\mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}} \mathrm{Cov} \left( \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}}, \delta_{i,j} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right) \mid \mathcal{F}_{\tau} \right]}_{\text{Timing Risk Premium}}
 \end{align}
 where $R_f$ is the gross risk-free return over the holding period and $\alpha^{\text{True}}$ is the deal's expected pricing error at inception.
 Even if a manager has no skill ($\alpha^{\text{True}} = 0$), the measured alpha will include the timing risk premium. 
@@ -306,10 +318,10 @@ This projection $\Psi_t^*$ constitutes our \emph{Macro-Conditioning Kernel}.
 It represents the price of risk conditional on the \emph{ex-post} realization of the economy's path. 
 When we price private equity cash flows using this kernel:
 \begin{equation}
-	\alpha_{i} = \sum_{t=0}^T \Psi_t^* CF_{i,t}
+	\alpha_{i} = \sum_{t=0}^T \frac{\Psi_t}{\Psi_{0}} CF_{i,t}
 \end{equation}
 we are explicitly asking: ``What is the value of this fund's cash flows given the specific sequence of market shocks $F_0, \dots, F_T$ attempting to replicate them?'' 
-Consequently, a non-zero $\alpha_i$ captures the component of performance that is orthogonal to the realized public opportunity set (True Skill), effectively filtering out the systematic timing gains (Macro Luck) that are spanned by $\Psi_t^*$.
+Consequently, a non-zero $\alpha_i$ captures the component of performance that is orthogonal to the realized public opportunity set (True Skill), effectively filtering out the systematic timing gains (Macro Luck) that are spanned by $\Psi_t / \Psi_{0}$.
 
 This interpretation of the SDF as a \emph{Macro-Conditioning Kernel} aligns conceptually with the Generalized Public Market Equivalent (GPME) framework introduced by \cite{KN16,KN22}. 
 While Korteweg and Nagel do not explicitly use the term `kernel projection', their methodology fundamentally relies on the same principle: they construct a valuation benchmark by projecting private cash flows onto a \emph{realized} public market SDF. 
@@ -326,7 +338,7 @@ Let us define the \emph{FPV Error} moment condition for estimation as:
 	m^{\mathrm{FPV}}_{i,j}(\theta) = \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}(\theta)}{\Psi_{\tau}(\theta)} \delta_{i,j}(\theta)
 \end{equation}
 A valid Generalized Method of Moments (GMM) estimator seeks parameters $\hat{\theta}$ that minimize the sample average of moment conditions which are theoretically zero in expectation.
-However, taking the expectation conditional on the fund inception information set $\mathcal{F}_{\tau}$ yields:
+However, taking the expectation conditional on the information set $\mathcal{F}_\tau$ at the reference date $\tau (< t_{i,j}^{\mathrm{Inv}} < t_{i,j}^{\mathrm{Future}})$ yields:
 \begin{equation}
 	\mathbb{E} \left[ m^{\mathrm{FPV}}_{i,j}(\theta) \mid \mathcal{F}_{\tau} \right] = \alpha_{i,j}^{\mathrm{True}}(\theta) + \text{Timing Risk Premium}_{i,j}(\theta)
 \end{equation}
@@ -339,10 +351,13 @@ Consequently, an estimator minimizing the objective function $J(\theta) = \| \fr
 To satisfy the minimization condition, the estimator is forced to ``explain away'' the non-zero systematic risk premium by biasing the alpha estimate downwards. 
 Thus, the FPV formulation generates \textbf{unrelated bias terms} that inevitably confound the identification of the true pricing kernel, rendering it unsuitable for ex-ante estimation.
 
+
+
+% This box can be igonred and will be deleted in the final version!
 \begin{tcolorbox}[colback=gray!10, colframe=gray!50, title=Outlook: Simulation results using realized factor returns]
 	Our simulation results in Section \ref{sec:simulation_study} show a relatively large alpha term when we discount to the fund inception date (as the NPV theory suggests). Adding more ``biased" FPV dates (to the optimal NPV date) in the target function, we want to minimize, reduces this alpha term more and more.
 	This could indicate (as a currently unverified conjecture) that the FPV approach could be beneficial under certain circumstances when we want to condition on realized factor returns (e.g., for benchmarking purposes).
-	\textcolor{orange}{Needs further investigation!}
+	\textcolor{orange}{This will be further investigated in the simulation section!}
 \end{tcolorbox}
 
 
@@ -362,12 +377,13 @@ For the pooled, fund-level cash flow stream, we assume that the true fund valuat
 	\quad \forall \ \tau \geq \ \min_j t_{i,j}^{\mathrm{Inv}}
 \end{equation}
 For active funds with $\tau > \min_j t_{i,j}^{\mathrm{Inv}}$, we merely can observe reported fund NAVs as proxies for the true fund value, which are known to suffer from stale pricing and appraisal-smoothing problems \citep{BGK19,K19,JLRS20}\footnote{In the empirical section, we will treat the most recent NAV as the final distribution cash flow for non-liquidated funds to increase the sample data.}.
+Additionally, we can define the vintage year for each fund in a mathematically convenient way as $v_{i} := \mathrm{YEAR} \left( \min_j t_{i,j}^{\mathrm{Inv}} \right)$.
 
 Only for the fund's first investment date $\tau = \min_j t_{i,j}^{\mathrm{Inv}}$, we can show that the expected fund pricing error is equal to zero.
 
 \begin{proposition}
 	\label{theo:inception_value}
-	Price of a pooled cash flow stream at fund inception: \\
+	(Price of a pooled cash flow stream at fund inception) \\
 	\begin{equation}
 		\label{eq:price_pooled_cash_flows}
 		\mathbb{E} \left[ 
@@ -429,7 +445,7 @@ Ex-ante, without knowledge of realizations, $\tau \leq \min_j t_{i,j}^{\mathrm{I
 \subsection{Least-Mean-Distance estimator}
 \label{sec:fundwise_lmd_estimator}
 
-In this subsection, we introduce a new SDF estimator designed to analyzed the effect of different discounting dates $\tau$ on the bias and variance of the estimated SDF parameters.
+In this subsection, we introduce a new SDF estimator designed to analyze the effect of different discounting dates $\tau$ on the bias and variance of the estimated SDF parameters.
 In the previous subsection, we demonstrated that only the fund inception date yields unconditionally unbiased parameter estimates in a NPV-style optimization formulation.
 However, to be able to empirically test the impact of mixing in biased NFV terms, we choose to generalize our estimation framework so we can handle both cases flexibly.
 With this respect, our general idea is to rather average over multiple ``suitable" discounting date candidates $\tau$ than to select only one candidate for the ``unconditionally optimal" discounting date.
@@ -438,22 +454,21 @@ Henceforth, we assume that the underlying transactions within a private equity f
 The stochastic discount factor $\Psi_{\tau,t}$ is used to calculate the time-$\tau$ ``price" $P_{\tau,t,i}$ of a \textbf{single} time-$t$ cash flow of any given PE fund $i$
 \begin{equation}
 \label{eq:price}
-P_{\tau,t,i} := \Psi_{\tau,t} \cdot CF_{t,i}
-= \frac{\Psi_{t}}{\Psi_{\tau}} \cdot CF_{t,i}
+P_{\tau,t,i} := \Psi_{\tau,t} \cdot CF_{i,t}
+= \frac{\Psi_{t}}{\Psi_{\tau}} \cdot CF_{i,t}
 \qquad \forall \quad \tau,t,i
 \end{equation}
-with multi-period SDF $\Psi_t = \prod_{k=0}^t M_k$.
-As SDFs are commonly parameterized by a vector $\theta \in \mathbb{R}^{p}$, i.e., $\Psi_{t,\tau} \equiv \Psi_{t,\tau} (\theta)$, our goal is to find an estimation method for the optimal $\theta$.
+with multi-period SDF $\Psi_t = \prod_{k=1}^t M_k$ and $M_0 = 1$.
+As SDFs are commonly parameterized by a vector $\theta \in \mathbb{R}^{p}$, i.e., $\Psi_{\tau,t} \equiv \Psi_{\tau,t} (\theta)$, our goal is to find an estimation method for the optimal $\theta$.
 We denote this optimal/best/true parameter vector as $\theta_0$.
 We call the numerator $\Psi_{t}$ the discount part of the multi-period SDF $\Psi_{\tau,t}$ (used for present value calculations) and the denominator $\Psi_{\tau}$ the compound part (used for future value calculations).
 For each fund $i$ and all points $\tau$ within a common fund lifetime, the empirical "pricing error" $\epsilon_{\tau,i}$ of \textbf{all} fund cash flows is calculated as time-$\tau$ ``present value"
 \begin{equation}
 \label{eq:pricing_error}
-\epsilon_{\tau,i} := \sum_{t=1}^T P_{\tau,t,i} 
+\epsilon_{\tau,i} := \sum_{t=0}^T P_{\tau,t,i} 
 \qquad \forall \quad \tau,i
 \end{equation}
-We use the terms ``price", ``pricing error`" and ``net present value" in quotation marks to acknowledge the theoretical asset pricing problem which can arise for pooled cash flows and has been described in the previous subsection.
-
+We use the terms ``price", ``pricing error" and ``net present value" in quotation marks to acknowledge the theoretical asset pricing problem which can arise for pooled cash flows and has been described in the previous subsection.
 
 To better analyze the impact of different discount date $\tau$ on the estimator's bias and variance, we define the ($w_i$-weighted) average pricing error $\bar{\epsilon}_{i}$ that averages over the set $\mathcal{T}_i$
 \begin{equation}
@@ -465,9 +480,52 @@ w_{i} \cdot
 \epsilon_{\tau,i}
 \qquad \forall \quad i
 \end{equation}
-where $\mathcal{T}_i$ gives the set of discounting dates $\tau$ for fund $i$ which is more thoroughly described in the next Subsection \ref{subsec:npv_vs_fv}.
-Additionally, each fund $i$ is characterized by its vintage year which can be expressed by $v_{i}=\min(\mathcal{T}_i) \in \left\{ 1,2,\dots,V \right\}$, where $V$ denotes the maximum vintage year used in a given data set.
+where $\mathcal{T}_i$ gives the set of discounting dates $\tau$ for fund $i$ which is more thoroughly described below.
 Finally, the scalar weighting factor $w_i$ can be (i) one divided by the fund's invested capital for equal weighting of funds, (ii) one divided by the vintage year sum of invested capital for vintage year weighting, (iii) the scalar one for fund-size weighting, or (iv) some macroeconomic deflator.
+
+\paragraph{The role of $\mathcal{T}_i$}
+
+The set $\mathcal{T}_i$ controls which discounting dates enter the 
+averaged pricing error $\bar{\epsilon}_i$ in 
+Equation~\ref{eq:average_pricing_error}, as visualized in 
+Figure~\ref{fig:npvs}. The smallest choice 
+$\mathcal{T}_i = \{\min_j t_{i,j}^{\mathrm{Inv}}\}$ corresponds to 
+a classical NPV calculation and is used by both \cite{DLP12} and 
+\cite{KN16}. The largest candidate set includes all periods from 
+inception to the present.
+
+Averaging over multiple dates in $\mathcal{T}_i$ was originally 
+motivated by the ``exploding alpha'' problem first described by 
+\cite{DLP12}: when the initial cash flow is very small, an 
+arbitrarily large alpha can discount all subsequent cash flows close 
+to zero, rendering the beta factors irrelevant and distorting 
+estimation. Averaging over $\mathcal{T}_i$ mitigates this 
+degeneracy.
+
+However, as shown in Section~\ref{sec:asset_pricing_pooled}, 
+including future value dates in $\mathcal{T}_i$ introduces a timing 
+risk premium bias. The bias--variance tradeoff of different 
+$|\mathcal{T}_i|$ choices is studied empirically in the simulation 
+study (Section~\ref{sec:simulation_study}).
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.9\textwidth]{Figures/spatial/npvs3.eps}
+	\caption{
+		How to calculate and interpret the average pricing error introduced by Equation \ref{eq:average_pricing_error}:
+		The time index $t$ is relevant for the net cash flows (black dots).
+		The time index $\tau$ is used for the pricing error, i.e., the sum of discounted net cash flows (blue boxes).
+		The weighted average of these "pricing errors" gives the average pricing error $\bar{\epsilon}$ as defined in Equation \ref{eq:average_pricing_error} (solid blue line).
+		In this example, $\mathrm{card}(\mathcal{T}_{i})=7$, i.e., the number of blue boxes.
+	}
+	\label{fig:npvs}
+\end{figure}
+
+\begin{assume}
+	\label{ass:unconditional_unbiased}
+	To guarantee an unconditionally unbiased estimator, we assume to always only discount to the fund start date $\mathcal{T}_i = \left\{
+	\min_j t_{i,j}^{\mathrm{Inv}} \right\}$.
+\end{assume}
 
 To find the optimal value for $\theta$, we select an estimator from the broad class of extremum estimators.
 \begin{definition}
@@ -480,17 +538,19 @@ To find the optimal value for $\theta$, we select an estimator from the broad cl
 	for $\theta \in \Theta$ where $\Theta$ is the set of all possible parameter values.
 \end{definition}
 
-Concretely, our Least Mean Distance (LMD) estimator \cite[Equation 7.1]{PP97} minimizes the average loss of $\bar{\epsilon}$
+Concretely, our Least Mean Distance (LMD) estimator \cite[Equation 7.1]{PP97} minimizes the average loss of $\bar{\epsilon}$.
+For consistency with Definition \ref{def:extremum_estimator}, we will technically maximize the average negative loss of $\bar{\epsilon}$, which is equivalent.
+
 \begin{equation}
 \label{eq:estimator}
 \hat{\theta} = 
-\mathrm{arg \ min}_{\theta \in \Theta}
+\arg \max_{\theta \in \Theta}
 \enspace
 Q_n(\theta)
 \quad
 \mathrm{with}
 \quad
-Q_n(\theta) = 
+Q_n(\theta) = -
 \frac{1}{n}
 \sum_{i=1}^n
 L \left( \bar{\epsilon}_{i} \right) 
@@ -500,103 +560,34 @@ Throughout the paper, the weighted average fund pricing error $\bar{\epsilon}_i 
 
 
 
-\subsection{Future and present value dates: the set $\mathcal{T}$}
-\label{subsec:npv_vs_fv}
-
-This subsection helps to explain the importance of the set $\mathcal{T}$ from Equation \ref{eq:average_pricing_error}.
-Initially, we introduced averaging over $\mathcal{T}$ to counter the ``exploding alpha" issue, first described by \cite{DLP12}, for cash flow streams with a very small initial cash flow.
-The exploding alpha problem depicts the mathematical fact that in a net present value formula, a discount factor with a very large alpha term discounts all cash flows (after the first one) close to zero.
-Thus, in this degenerate situation, the beta factors become irrelevant -- an infinite alpha almost perfectly prices the cash flow stream.
-Even more importantly, our simulation study in Section \ref{sec:simulation_study} indicates that averaging over $\mathcal{T}$ seems to decrease the asymptotic bias of the estimator empirically.
-
-A discounting date $\tau \in \mathcal{T}_{i}$ is a discretionary point in time where all fund cash flows are discounted to.
-The cardinality $\mathrm{card}(\mathcal{T}_{i}) = \left| \mathcal{T}_{i} \right|$ gives the number of discounting dates used for the $i$th fund.
-The smallest possible set $\mathcal{T}_i$ contains just the fund's starting date; in this case, $\mathrm{card}(\mathcal{T}_{i})$ consequently is one.
-This corresponds to a typical NPV calculation in finance and is also used by \cite{DLP12} and \cite{KN16}.
-In contrast, the largest candidate set for $\mathcal{T}$ contains all time periods bigger than the fund's starting date until now.
-In Subsection \ref{sec:simulation_study}, we study the optimal set size of $\mathcal{T}$ by Monte Carlo simulations.
-There we show in our example that controlling for the optimal size of $\mathcal{T}$ can control the asymptotic bias and variance of the original \cite{DLP12} estimator that just discounts all cash flows to the fund inception date.
-As we average over $\mathcal{T}_i$ in Equation \ref{eq:average_pricing_error} we call $\bar{\epsilon}_{i}$ the $\mathcal{T}_i$-averaged pricing error, as visualized in Figure \ref{fig:npvs}.
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.9\textwidth]{Figures/spatial/npvs3.eps}
-	\caption{
-		How to calculate and interpret the average pricing error?
-		The time index $t$ is relevant for the net cash flows (black dots).
-		The time index $\tau$ is used for the pricing error, i.e., the sum of discounted net cash flows (blue boxes).
-		The weighted average of these "pricing errors" gives the average pricing error $\bar{\epsilon}$ as defined in Equation \ref{eq:average_pricing_error} (solid blue line).
-		In this example, $\mathrm{card}(\mathcal{T}_{i})=7$, i.e., the number of blue boxes.
-	}
-	\label{fig:npvs}
-\end{figure}
-
-\subsection{Cross-sectional unit: individual fund vs.\ portfolio of funds}
-\label{sec:cross_sectional_unit}
-
-According to the classical value-additivity assumption in \cite{HR87}, SDF models invariably shall hold for all pooled or unpooled assets.
-As discussed in Subsection \ref{sec:asset_pricing_pooled}, it is best to use the underlying deals as test assets for SDF estimation to avoid the bias terms caused by pooled fund cash flows.
-For the second best alternative, it is theoretically not important if the test assets for our SDF are portfolio or individual fund cash flows when the investment dates are the same (see Corollary
-\ref{cor:same_investment_dates}).
-Empirically it makes a difference, and there are arguments both for and against portfolio formation.
-
-In the risk premium literature, portfolio formation mainly helps to attenuate the errors-in-variables bias connected to two-pass asset pricing methods \citep{JNPR19,PRS19}.
-As this is no issue in our case, we could use individual funds.
-\cite{C11} argues that portfolio sorting (seen as an auxiliary nonparametric regression that imposes linearity on the relationship between returns and characteristics) shall be replaced by multivariate panel models due to the curse of dimensionality.
-Following the same nonparametric regression viewpoint, \cite{CCF19} derive a nonparametric framework where the optimal number of portfolio sorts acts as a data-dependent tuning parameter that grows with sample size.
-Generally, the larger the portfolios, the easier any given SDF can price their cash flows since fewer test assets remain.
-
-In the case of private equity funds, the pooling of fund cash flows helps to counter GP financial engineering\footnote{GPs may use bridge credit facilities below the hurdle rate to boost the fund's internal rate of return. This increases the probability of observing funds with only positive or only negative cash flows. However, we want to avoid (the possibility of) cross-sectional units that exhibit just cash flows with the same algebraic sign. Realistic SDFs never can price these cash flow streams.}, which might both change and mask the true risk profile of observed LP cash flows.
-Especially for private equity funds, portfolio formation based on vintage years is compelling due to its time-series-like indexing as done by \cite{DLP12}.
-This procedure also offers substantial computational benefits as it drastically decreases the number of cross-sectional units.
-Further, as stated in \cite{ALS20}, portfolio formation allows more precise factor loading estimates due to decreasing idiosyncratic risk, but at the expense of sacrificing cross-sectional information.
-Finally, small (or fixed) $T$ and large $N$ set-ups may face finite sample problems \citep{RRZ20}.
-\begin{assume}
-	\label{as:portfolio}
-	For each vintage year, we pool fund cash flows to form $n_v$ portfolios that serve as cross-sectional units.
-	Thus, $n = \sum_{v=1}^V n_v$.
-	The two boundary cases are (i) single fund portfolios and (ii) just one portfolio per vintage year. 
-\end{assume}
-Without loss of generality, we refer to our cross-sectional units as funds, although this corresponds to a special case of our portfolio concept.
-In the simulation study in Subsection \ref{sec:simulation_study}, we compare both boundary cases (i) individual funds and (ii) vintage year portfolios.
-
-Thinking more broadly, we could even imagine more extreme boundary cases: 
-(iii) on the one hand, we could pool \emph{all} fund cash flows to form only \emph{one} global moment condition for private equity similar to \cite{KN16} and accept potential under-identification; 
-(iv) on the other hand, we could operate on underlying deal level like \cite{B14,B16a,B16b} and use gross-of-fee cash flows.
-
 \subsection{Asymptotic framework}
 \label{sec:asymptotic_framework}
 
-To allow for multiple funds from the same vintage year in Assumption \ref{as:portfolio}, we employ an auxiliary ``spatial" notion as originally proposed by \cite{KN16}.
-The spatial viewpoint is only a technical means to switch from time-series-like to more panel-data-like indexing.
-Unlike typical panel data, we do not follow multiple subjects over time, but for each point in time, we exclusively observe multiple new cross-sectional units (i.e., funds from that vintage year).
-This unusual two-dimensional indexing causes problems in the PE literature as it neatly fits neither in the (i) time-series, (ii) cross-sectional, nor (iii) panel data literature.
-Thus, we generally consider $\bar{\epsilon}$ from Equation \ref{eq:average_pricing_error} as random field (cf. Figure  \ref{fig:randomfields}).
+By the value-additivity principle \citep{HR87}, our SDF model holds for any aggregation level of cash flows. 
+In practice, we form vintage-year portfolios as cross-sectional units, which mitigates 
+idiosyncratic noise and GP financial engineering artifacts while preserving sufficient test assets for parameter identification.
+
+\begin{assume}
+	\label{as:portfolio}
+	For each vintage year, we pool fund cash flows to form $n_v$ 
+	portfolios. Thus, $n = \sum_{v=1}^V n_v$. The boundary cases 
+	are (i) single-fund portfolios and (ii) one portfolio per 
+	vintage year.
+\end{assume}
+
+Without loss of generality, we refer to cross-sectional units as funds. 
+The detailed comparison of aggregation levels is provided in Section~\ref{sec:simulation_study}.
+
+The pricing error $\bar{\epsilon}{i}$ is naturally indexed by both fund identity and vintage year, yielding a random field $\bar{\epsilon}{i} \equiv \bar{\epsilon}_{i,v_i}$ that fits neither standard time-series, cross-sectional, nor panel data frameworks (cf.\ Figure \ref{fig:randomfields}). 
+We address this by adopting a spatial framework similar to \cite{KN16}, where they measure the economic distance between funds as a function of the cash flow overlap.
+Thus, we generally consider $\bar{\epsilon}$ from Equation \ref{eq:average_pricing_error} as a random field (cf. Figure  \ref{fig:randomfields}).
 In our case, it is convenient to interpret the fund vintage year $v_i$ as second dimension in our pricing error random field, i.e., $\bar{\epsilon}_{i} \equiv \bar{\epsilon}_{i, v_i}$.
-`
-Yet, in this section, we mainly follow the time-series asymptotic framework of \cite{PP97} since our ``spatial" distance measure (between vintage years) is time, and adaption to our case is thus straightforward.
+
+Yet, in this section, we mainly follow the time-series asymptotic framework of \cite{PP97} since our ``spatial" distance measure (between vintage years) is time, and adaptation to our case is thus straightforward.
 If we observe only one fund per vintage year (or, equivalently, form vintage year portfolios), we will easily see that the framework of \cite{PP97} with time-series indexing can be applied without any major modification.
 
 
 \subsubsection{Vintage year asymptotics}
-
-We assume that the ``spatial" (i.e., economic) distance between cross-sectional units, i.e., private equity funds/portfolios, can be measured quantitatively\footnote{Generally, the economic distance measure could include multiple dimensions, e.g., temporal, geographic, and industry sector proximity. This could be an interesting topic for future research.}.
-Our "cross-sectional" asymptotic theory lets the number of funds go to infinity $n \to \infty$.
-% However, empirical identification of model parameters requires a sufficient number of funds from different vintage years in the fund-level data set used for model estimation, as emphasized by \cite{DLP12} and \cite{KN16}.
-To expose our SDF to many distinct covariate realizations (economic conditions), we also want the number of vintages to increase asymptotically.
-\begin{assume}
-	\label{as:vya}
-	Vintage year asymptotics:
-	\begin{enumerate}
-		\item The number of vintage years $V \to \infty$ as $n \to \infty$.
-		\item The number of funds per vintage year is bounded by some positive constant.
-		\item The maximal fund lifetime is also bounded by a positive constant.
-		\item The economic distance between fund $i$ and $j$ is measured by the vintage year difference $d_{i,j} = | v_i - v_j | +  \rho_0 1_{i \neq j}$ with minimum distance $\rho_0 > 0$.
-	\end{enumerate}
-\end{assume}
-In terms of the spatial estimation literature, this assumption postulates increasing domain asymptotics and rules out so-called infill asymptotics (cf.\ Figure \ref{fig:randomfields}).
-The minimum distance term $\rho_0$ is a means to ensure these increasing domain asymptotics \cite[Assumption 1]{JP12}.
-Infill asymptotics corresponds to the assumption of \cite{DLP12} that the number of funds per vintage tends to infinity.
 
 \begin{figure}[ht]
 	\centering
@@ -604,7 +595,7 @@ Infill asymptotics corresponds to the assumption of \cite{DLP12} that the number
 	\caption{
 		Visualization of generic random field types.
 		Each black dot marks a different observation $i$ of the cash flow data.
-		Importantly, the time axis does \textbf{not} correspond to the index $t$ in $CF_{t,i}$ (rather to vintage years $v_i$).
+		Importantly, the time axis does \textbf{not} correspond to the index $t$ in $CF_{i,t}$ (rather to vintage years $v_i$).
 		Comparing the four choices, we want to avoid an infill random field but prefer our data to constitute an increasing domain random field.
 		The infill random field is even asymptotically ``too clustered" or better ``too unrepresentative" to allow for meaningful estimation and inference.
 		The time-series and cross-sectional random fields correspond to the standard cases in the literature but could turn out too restrictive for a general approach.
@@ -613,16 +604,37 @@ Infill asymptotics corresponds to the assumption of \cite{DLP12} that the number
 	\label{fig:randomfields}
 \end{figure}
 
-GMM estimators typically have a fixed number of moment conditions.
-Thus, GMM estimators, where the number of moment conditions is allowed to grow with sample size, require special attention \citep{HP06,NW09}.
-In many cases, it is probably most convenient to limit the maximum to a finite number of moment conditions (i.e., not each vintage year should form a moment condition).
-In this paper, we employ nonlinear least squares estimators since they do not suffer from this ``number of moment condition" issue.
+We assume that the ``spatial" (i.e., economic) distance between cross-sectional units, i.e., private equity funds/portfolios, can be measured quantitatively\footnote{Generally, the economic distance measure could include multiple dimensions, e.g., temporal, geographic, and industry sector proximity. This could be an interesting topic for future research.}.
+Our ``cross-sectional" asymptotic theory lets the number of funds go to infinity $n \to \infty$.
+% However, empirical identification of model parameters requires a sufficient number of funds from different vintage years in the fund-level data set used for model estimation, as emphasized by \cite{DLP12} and \cite{KN16}.
+To expose our SDF to many distinct covariate realizations (economic conditions), we also want the number of vintages to increase asymptotically.
+\begin{assume}
+	\label{as:vya}
+	Vintage year asymptotics:
+	\begin{enumerate}
+		\item The number of vintage years $V \to \infty$ as $n \to \infty$.
+		\item The number of funds per vintage year is bounded by some positive constant.\footnote{This assumption is naturally satisfied when forming vintage-year portfolios (case (ii) of Assumption \ref{as:portfolio}, with $n_v = 1$).
+			For the individual fund case (i), it ensures that the SHAC estimator remains consistent and that standard errors scale with the number of vintage years rather than the total fund count. 
+			Relaxing this assumption would require cluster-robust inference at the vintage-year level.
+		}
+		\item The maximum fund lifetime is also bounded by a positive constant.
+		\item The economic distance between fund $i$ and $j$ is measured by the vintage year difference $d_{i,j} = | v_i - v_j | +  \rho_0 \mathbf{1}_{i \neq j}$ with minimum distance $\rho_0 > 0$.
+	\end{enumerate}
+\end{assume}
+In terms of the spatial estimation literature, this assumption postulates increasing domain asymptotics and rules out so-called infill asymptotics (cf.\ Figure \ref{fig:randomfields}).
+The minimum distance term $\rho_0$ is a means to ensure these increasing domain asymptotics \cite[Assumption 1]{JP12}.
+Infill asymptotics corresponds to the approach of \cite{DLP12}, who fix the number of portfolios $N$ and let the number of underlying funds per portfolio $n_i \to \infty$.
+While this yields consistency for a given set of portfolios, it fundamentally conditions on the observed macro environment: with fixed $N$, no new vintage years—and hence no new factor realizations—enter the estimation. 
+In contrast, our increasing domain framework ($V \to \infty$) permits inference that accounts for cross-vintage variation in economic conditions, which is necessary for the unconditional identification of SDF parameters (see Section \ref{sec:asset_pricing_pooled}).
+Finally, a further advantage of the \emph{nonlinear least squares} formulation in Equation \ref{eq:estimator} is that it avoids the well-known complications arising when the number of GMM moment conditions grows with sample size \citep{HP06,NW09}.
 
 
 \subsubsection{Law of large numbers}
 
-The global moment condition underlying our estimation approach is that the expected value of $\bar{\epsilon}$ shall be as close as possible to zero if we use the optimal SDF parameter $\theta_0$ (it is nonzero due to Proposition \ref{theo:pooled_bias}). 
-To approach this expected value, we rely on a spatial (cross-sectional) law of large numbers instead of applying a time-series law of large numbers.
+Under Assumption \ref{ass:unconditional_unbiased} (NPV-only discounting), Proposition \ref{theo:inception_value} guarantees $\mathbb{E}[\bar{\epsilon}_i(\theta_0)] = 0$. 
+For the general case where $\mathcal{T}_i$ includes future value dates, a residual bias may persist (see Section \ref{sec:asset_pricing_pooled}). 
+In both cases, the LLN ensures that the sample objective $Q_n(\theta)$ converges uniformly to its population counterpart.
+To approach this expected value in $\mathbb{E}[\bar{\epsilon}_i(\theta_0)]$, we rely on a spatial law of large numbers instead of applying a time-series law of large numbers.
 Here, we want to explicitly acknowledge the statistical dependence of pricing errors from adjacent vintage years.
 
 \begin{assume}
@@ -636,72 +648,98 @@ Here, we want to explicitly acknowledge the statistical dependence of pricing er
 	\]
 	where $Q_n(\theta)$ is given by Equation \ref{eq:estimator}.
 \end{assume}
-Specifically, we could assume (as a so-called primitive condition) the random field $\bar{\epsilon}$ to be spatial near-epoch dependent with respect to fund vintage years \citep{JP09,JP12}, i.e., two funds with distance $d_{i,j}>D$ are assumed to be independent.
-	
-To satisfy the time trend part (i) of this law of large number assumption, the weighting factor $w$, introduced in Equation \ref{eq:average_pricing_error}, can be used to make $\bar{\epsilon}$ stationary.
-Spatial near-epoch dependence with respect to fund vintage years formalizes the simple idea that two fund pricing errors $\bar{\epsilon}$ with a small absolute vintage year difference are supposed to be dependent since they are exposed to the same macroeconomic conditions.
-In contrast, two funds with a large absolute vintage year difference can be assumed independent.
+
+A sufficient primitive condition for this ULLN is that $\bar{\epsilon}$ be spatial near-epoch dependent on an $\alpha$-mixing random field indexed by vintage years \citep{JP09,JP12}, meaning the dependence between funds decays sufficiently fast with vintage year distance. 
+In practice, we treat funds with distance $d_{i,j} > D$ as approximately independent for the purpose of covariance estimation (cf.\ the bandwidth parameter $b_n = D$ in Section \ref{sec:asymptotic_inference}).
+Since nominal fund sizes tend to grow over time, unweighted pricing errors $\bar{\epsilon}_i$ are non-stationary, which could violate the time trend part (i).
+The weighting factor $w_i$ from Equation \ref{eq:average_pricing_error} (e.g., scaled by invested capital) can be used to normalize the pricing errors to achieve approximate stationarity, a prerequisite for the ULLN.
 
 
 \subsubsection{Consistency}
 
-The estimator $\hat{\theta}$ shall converge in probability to the true parameter value $\theta_0$ as the number of distinct vintage years in our data set goes to infinity.
-Multiple funds for a specific vintage year are not necessarily required but provide additional information that we want to exploit if available.
+The estimator $\hat{\theta}$ shall converge in probability to the true 
+parameter value $\theta_0$ as the number of distinct vintage years goes 
+to infinity.
 
-\begin{lemma}
-	\label{lem:consistency}
-	A modified version of \citep[Theorem 2.1]{NM94} holds, i.e.,
-	if there is a function $Q_0(\theta)$ such that 
-	\begin{enumerate}
-		\item Identification: $Q_0(\theta)$ is uniquely minimized at $\theta_0$,
-		\item Boundedness: $\Theta$ is compact,
-		\item Continuity: $Q_0(\theta)$ is continuous,
-		\item Uniform convergence: $\hat{Q}_n(\theta)$ converges uniformly in probability to $Q_0(\theta)$,
-	\end{enumerate}
-	then $\hat{\theta} \xrightarrow{p} \theta_0$ as $n \rightarrow \infty$.
-\end{lemma}
+\begin{proposition}[Consistency]
+	\label{prop:consistency}
+	Under Assumptions \ref{as:portfolio}--\ref{as:lln}, 
+	$\hat{\theta} \xrightarrow{p} \theta_0$ as $n \to \infty$.
+\end{proposition}
 
 \begin{proof}
-	The general proof is given in \cite[Chapter 2]{NM94} for a $\max$ instead of $\min$ extremum estimator.
-	Thus, we only recapitulate the four conditions required by the lemma in our specific context.
+	We verify the four conditions of \cite[Theorem~2.1]{NM94} for the 
+	extremum estimator $\hat{\theta} = \arg\max_{\theta \in \Theta} 
+	Q_n(\theta)$ with population objective 
+	$Q_0(\theta) := \mathbb{E}[Q_n(\theta)] 
+	= -\mathbb{E}\bigl[L\bigl(\bar{\epsilon}_i(\theta)\bigr)\bigr]$.
+	
 	\begin{enumerate}
-		\item 
-		Obviously, we have to replace ``maximized at $\theta_0$" by ``minimized at $\theta_0$" compared to the exposition of \cite[Chapter 2]{NM94}.
-		Then, we need to first show that $\mathbb{E} \left[ \bar{\epsilon} (\theta_0) \right] = x$, where $x$ is the minimum bias achievable, see Proposition \ref{theo:pooled_bias}.
-		Secondly, we know $Q_0(\theta_0) = \mathbb{E} \left[ L \left( \bar{\epsilon} (\theta_0) \right) \right] \geq 0$, e.g., for $L(x)=x^2$ we have $Q_0(\theta) = \mathbb{E} \left[ \left( \bar{\epsilon} (\theta) \right)^2 \right] = \mathrm{Var} \left[ \bar{\epsilon} (\theta) \right] +  \left( \mathbb{E} \left[ \bar{\epsilon} (\theta) \right] \right)^2 $ where the second summand can be perceived as bias term that is zero for $\theta_0$.
-		The variance term $\mathrm{Var} \left[ \bar{\epsilon} (\theta) \right]$ for a simplified DGP is analyzed by Corollary \ref{coro:epsilon_variance_bounds}.
-		\item 
-		Compactness of $\Theta$ can be assured by lower and upper bounds for all parameters that can be justified by economic reasoning. 
-		In our case, e.g., a market beta factor of ten seems implausible for PE funds because of the implied risk and return expectations.
-		\item 
-		Continuity of the limit is a quiet weak and thus a standard regularity condition.
-		\item 
-		The second standard regularity condition is given by Assumption \ref{as:lln} which satisfies the definition of uniform convergence in probability \cite[Section 2.1]{NM94} . 
-		To make this obvious, we can write $\hat{Q}_n(\theta) = Q_n(\theta) = n^{-1} \sum_{i=1}^n L \left( \bar{\epsilon}_i \right)$ and $Q_0(\theta) = \mathbb{E} \left[ Q_n(\theta) \right]$ and compare it to Assumption \ref{as:lln}.
+		\item \textit{Identification.}
+		Since $L \geq 0$, we have $Q_0(\theta) \leq 0$ for all 
+		$\theta$. For the case $L(x) = x^2$,
+		\[
+		Q_0(\theta) 
+		= -\mathrm{Var}\bigl[\bar{\epsilon}(\theta)\bigr] 
+		- \bigl(\mathbb{E}[\bar{\epsilon}(\theta)]\bigr)^2.
+		\]
+		Under Assumption~\ref{ass:unconditional_unbiased}, 
+		Proposition~\ref{theo:inception_value} yields 
+		$\mathbb{E}[\bar{\epsilon}(\theta_0)] = 0$, so the bias 
+		term vanishes at $\theta_0$. For any $\theta \neq \theta_0$, 
+		at least one of (a) the bias term 
+		$(\mathbb{E}[\bar{\epsilon}(\theta)])^2 > 0$ or (b) the 
+		variance term $\mathrm{Var}[\bar{\epsilon}(\theta)] > 
+		\mathrm{Var}[\bar{\epsilon}(\theta_0)]$ must hold, ensuring 
+		$Q_0(\theta) < Q_0(\theta_0)$. This is the standard 
+		identification condition requiring that the true parameter 
+		is the unique minimizer of the expected loss.
+		
+		\item \textit{Compactness.}
+		The parameter space $\Theta$ is compact by economic 
+		reasoning: factor loadings and intercepts are bounded 
+		by plausible ranges implied by the risk--return tradeoff.
+		
+		\item \textit{Continuity.}
+		Continuity of $Q_0(\theta)$ follows from the continuous 
+		dependence of $\Psi_{\tau,t}(\theta)$ on $\theta$ and the 
+		dominated convergence theorem, which is a standard 
+		regularity condition.
+		
+		\item \textit{Uniform convergence.}
+		By Assumption~\ref{as:lln}, 
+		$\sup_{\theta \in \Theta} |Q_n(\theta) - Q_0(\theta)| 
+		\xrightarrow{p} 0$, which directly satisfies the ULLN 
+		requirement of \cite[Section~2.1]{NM94}.
 	\end{enumerate}
-	$\square$
 \end{proof}
+
+
 
 
 \subsubsection{Central limit theorem}
 
-To assess the large-sample significance of our parameter estimates (as done in the following Subsection \ref{sec:asymptotic_inference}), we want to describe the asymptotic distribution of the parameter vector as a normal distribution.
+To assess the large-sample significance of our parameter estimates in Subsection \ref{sec:asymptotic_inference}, we establish the asymptotic distribution of $\hat{\theta}$.
 
-\begin{proposition}
+\begin{proposition}[Asymptotic Normality]
 	\label{prop:clt}
-	With estimator consistency established in Lemma \ref{lem:consistency}, and the five (technical) conditions from \cite[Theorem 3.1]{NM94} satisfied, it holds
-	\begin{enumerate}
-		\item $\sqrt{n}(\hat{\theta} - \theta_0) \overset{d}{\to} \mathcal{N}(0,{\Sigma})$ as $V,n \to \infty$ with covariance matrix ${\Sigma}$, and
-		\item The covariance matrix ${\Sigma}$ can be characterized by \citet[Theorem 11.2.b, Theorem H.1]{PP97} (as outlined in the next Section \ref{sec:asymptotic_inference}).
-	\end{enumerate}
+	Under the conditions of Proposition~\ref{prop:consistency}, suppose additionally that (i) $\theta_0$ is interior to $\Theta$, (ii) $Q_0(\theta)$ is twice continuously differentiable at $\theta_0$ with nonsingular Hessian $H := \nabla_{\theta\theta} Q_0(\theta_0)$, and (iii) a spatial CLT holds for the score. 
+	Then
+	\[
+	\sqrt{n}(\hat{\theta} - \theta_0) 
+	\overset{d}{\to} \mathcal{N}(0, \Sigma)
+	\quad \text{as } n \to \infty,
+	\]
+	with sandwich covariance matrix 
+	$\Sigma = H^{-1} \Lambda\, H^{-1}$, where $\Lambda := \lim_{n \to \infty} 
+	n \cdot \mathrm{Var}\bigl[\nabla_\theta Q_n(\theta_0)\bigr]$ 
+	is the long-run covariance matrix of the score.
 \end{proposition}
 
 \begin{proof}
-	The extended proof of Proposition \ref{prop:clt} may be derived in analogy to the GMM case in \cite[Theorem 4]{JP12} that shows that the general structure of the \cite{PP97} framework also applies to the spatial near-epoch dependent case.
-	Alternatively (and easier), the estimator from Equation \ref{eq:estimator} can be clearly formulated as extremum estimator in alignment with our Definition \ref{def:extremum_estimator}.
-	In consequence, \cite[Theorem 3.1]{NM94}, which generally describes the asymptotic normality of extremum estimators, is directly applicable to obtain the stated result.
-	Thus, all details of the proof can be found in the original reference \cite[Chapter 3]{NM94}.
-	$\square$
+	The result follows from the general asymptotic normality theorem for extremum estimators \cite[Theorem~3.1]{NM94}. 
+	The key non-standard ingredient is condition~(iii): a CLT for the spatially dependent score $\nabla_\theta Q_n(\theta_0)$. Under the spatial near-epoch dependence structure posited in Assumption~\ref{as:lln} and the vintage year asymptotics of Assumption \ref{as:vya}, this follows from \cite[Theorem~4]{JP12}, which extends the \cite{PP97} framework to spatial random fields. 
+	The remaining conditions of \cite[Theorem 3.1]{NM94}, i.e., interior $\theta_0$, smooth $Q_0$, and stochastic equicontinuity of the score, are standard regularity conditions satisfied by the continuous dependence of $\Psi_{\tau,t}(\theta)$ on~$\theta$.
 \end{proof}
 
 
@@ -709,31 +747,9 @@ To assess the large-sample significance of our parameter estimates (as done in t
 \subsection{Large sample inference}
 \label{sec:asymptotic_inference}
 
-In this subsection, we demonstrate how to empirically apply Proposition \ref{prop:clt} to obtain the asymptotic standard errors for our estimator from Equation \ref{eq:estimator}.
-In the time-series, near-epoch-dependent LMD literature, the covariance matrix ${\Sigma}$ can be characterized according to \citet[Theorem 11.2.b, Theorem H.1]{PP97}:
-\[
-{\Sigma} = H^{-1} \Lambda (H^{-1})^\top
-\]
-with expected Hessian matrix converging to $H$ as $n \to \infty$
-\[
-\mathbb{E}
-\left[
-\nabla_{\theta \theta} Q_n
-\right]
-\overset{p}{\to}
-H
-\]
-and the expected covariance matrix of gradients converging to $\Lambda$ as $n \to \infty$
-\[
-n \cdot \mathbb{E}
-\left[
-\nabla_{\theta} Q_n
-(\nabla_{\theta} Q_n)^\top
-\right]
-\overset{p}{\to}
-\Lambda
-\]
-Here, the gradient vector $\nabla_{\theta} Q_n$ is denoted as column vector.
+From Proposition \ref{prop:clt}, the asymptotic covariance matrix takes the sandwich form $\Sigma = H^{-1}\Lambda(H^{-1})^\top$ with $H$ and $\Lambda$ as defined therein. 
+We now describe how to construct consistent estimators $\hat{H}$ and $\hat{\Lambda}$.
+
 We define the corresponding finite sample estimators analogously to \citet[Chapters 12, 13.1]{PP97}, and numerically approximate the first and second partial derivatives by finite differences\footnote{As an alternative to finite differences the widespread Broyden-Fletcher-Goldfarb-Shanno (BFGS) algorithm can be applied to approximate the Hessian \cite[Section 6.1]{NW06}.}.
 Specifically, we use the following central difference approximations (with "small" $\delta$) \cite[Algorithm 2]{E17}:
 % https://espace.curtin.edu.au/bitstream/handle/20.500.11937/70491/Eu%20C%202017.pdf?sequence=1&isAllowed=y
@@ -748,7 +764,7 @@ f_{xy}(x,y) \approx \frac{f(x+\delta,y+\delta) + f(x-\delta,y-\delta) -  f(x+\de
 \]
 The Hessian term $\hat{H}$ is relatively straightforward
 \[
-\hat{H} = \frac{1}{n} \sum_{i=1}^n \nabla_{\theta \theta} L \left( \epsilon_i \right)
+\hat{H} = - \frac{1}{n} \sum_{i=1}^n \nabla_{\theta \theta} L \left( \bar{\epsilon}_i \right)
 \]
 Due to the spatial near-epoch dependence, the involved and computationally expensive part is to consistently estimate $\hat{\Lambda}$ by a Spatial Heteroskedasticity and Autocorrelation Consistent (SHAC) covariance matrix estimator \cite[Equation 2]{KS11}
 \begin{equation}
@@ -756,12 +772,14 @@ Due to the spatial near-epoch dependence, the involved and computationally expen
 \hat{\Lambda} = \frac{1}{n} \sum_{i=1}^n \sum_{j=1}^n
 k_{i,j}
 \left[
-\nabla_{\theta} L \left( \epsilon_i \right)
+\nabla_{\theta} L \left( \bar{\epsilon}_i \right)
 \left(
-\nabla_{\theta} L \left( \epsilon_j \right)
+\nabla_{\theta} L \left( \bar{\epsilon}_j \right)
 \right)^\top
 \right]
 \end{equation}
+Since $\nabla_\theta Q_n(\theta) = -\frac{1}{n}\sum_i \nabla_\theta L(\bar{\epsilon}_i)$, the score contributions are $s_i(\theta) := \nabla_\theta L(\bar{\epsilon}_i)$, and $\hat{\Lambda}$ equivalently estimates $n \cdot \mathrm{Var}[\nabla_\theta Q_n]$.
+
 We define the kernel weight $k$ as
 \[
 k_{i,j} \equiv K \left( \frac{d_{i,j}}{b_n} \right)
@@ -789,7 +807,7 @@ In large samples, the vector of parameter standard errors can thus be estimated 
 		\cdot \frac{1}{n}
 	}
 \end{equation}
-The Wald test statistic for linear hypotheses $H_0: R \theta = r$ and $H_1: R \theta \neq r$ is constructed as (where $H_0$ and $H_1$ are hypotheses and not Hessian terms $H$)
+The Wald test statistic for linear hypotheses $\mathcal{H}_0: R \theta = r$ and $\mathcal{H}_1: R \theta \neq r$ is constructed as (where $\mathcal{H}_0$ and $\mathcal{H}_1$ are hypotheses and not Hessian terms $H$)
 \[
 W = 
 (R \hat{\theta} - r)^\top
@@ -830,24 +848,27 @@ One important difference is that we select a simpler and more flexible LMD estim
 In our view, the choice of the more complex cross-sectional GMM just causes some conceptional issues, whereas the underlying formulas are basically the same as for our LMD estimator\footnote{The formulas are this similar because \cite{DLP12} use the identity matrix as GMM weighting matrix and skip the second GMM step.}.
 As a first limitation, they have to regard vintage-year portfolios as their cross-sectional units; we can also use individual funds.
 In this context, we also question their statement that ``to identify $\beta$, it is essential that the different FoFs are exposed to different market returns" since it is perfectly fine to perceive their estimator as cross-sectional approach\footnote{In a classic cross-sectional regression, we only have one market return realization.}.
-Second, the \cite{DLP12} asymptotic theory assumes the number of funds (or deals) per vintage year portfolio to go to infinity.
-To comply with standard GMM assumptions, the number of vintage years, which corresponds to the number of moment conditions in their approach, \emph{must be considered fixed} and thus cannot grow asymptotically \citep{HP06,NW09}.
-For a typical LMD estimator (e.g., nonlinear least squares), this constraint does not exist.
-Our asymptotic theory lets both (i) the number of vintage years and (ii) the number of funds go to infinity but bounds the number of funds per vintage year.
+Second, the \cite{DLP12} asymptotic theory is based on infill asymptotics: 
+they fix the number of vintage year portfolios $N$ and let the number of underlying funds per portfolio $n_i \to \infty$. 
+As discussed in Section~\ref{sec:asymptotic_framework}, this conditions inference on the observed macro environment since no new vintage years enter the estimation. Moreover, since each portfolio constitutes a moment condition from the GMM perspective, standard GMM theory requires $N$ to remain fixed \citep{HP06,NW09}. 
+In contrast, our increasing domain framework lets the number of vintage years $V \to \infty$ while bounding the number of funds per vintage, enabling inference that reflects cross-vintage variation in economic conditions.
 
-Further, \cite{DLP12} discount all fund cash flows just to the first cash flow date (like in a classical net present value calculation).
-In contrast, we additionally average over all dates within $\mathcal{T}_{i}$ to tackle the problem arising from pricing pooled cash flows, which we thoroughly analyzed in subsection \ref{sec:asset_pricing_pooled}.
-Although \cite{DLP12} describe their estimator as a one-step GMM approach, we consider it a special case of our LMD estimator.
+Further, \cite{DLP12} discount all fund cash flows exclusively to the fund inception date, corresponding to $\mathcal{T}_i = \{\min_j t_{i,j}^{\mathrm{Inv}}\}$ in our notation.
+Under Assumption \ref{ass:unconditional_unbiased}, this is also the only choice that yields unconditionally unbiased estimates. 
+Our framework generalizes this by allowing $\mathcal{T}_i$ to contain additional discounting dates, which we use to empirically study the bias--variance tradeoff analyzed in Section \ref{sec:asset_pricing_pooled}.
+Although \cite{DLP12} describe their estimator as a one-step GMM approach, it can be viewed as a special case of our LMD estimator.
 Specifically, Equation \ref{eq:estimator} from our methodology is a generalization of equation 3 from their paper.
 Consequently, if someone accepts the assumptions from Subsection \ref{sec:asymptotic_framework}, our large sample inference framework from Subsection \ref{sec:asymptotic_inference} applies to their case without any significant modification.
 Finally, \cite{DLP12} apply simple cross-sectional bootstrapping to obtain standard errors; in contrast, in Subsection \ref{sec:model_selection}, we use a cross-validation technique that is adapted to the near-epoch dependence of the PE fund data.
 
 \subsubsection{Comparison to \cite{KN16}}
 
-\cite{KN16}, first of all, realized the usefulness of employing an auxiliary spatial framework to establish asymptotic inference results for a fund-level panel dataset of private equity funds.
-To account for the cross-sectional dependence between funds, they measure the economic distance between two private equity funds (by the degree of cash flow overlap).
-Concretely, their asymptotic inference framework draws on the spatial HAC estimator of \cite{C99}; our spatial HAC framework uses \cite{PP97,KS11,JP12}.
-However, they ultimately utilize a classical GMM estimator, thus a time-series law of large numbers.
+\cite{KN16} were the first to employ a spatial framework for asymptotic inference on private equity fund data. 
+They measure the economic distance between funds by the degree of cash flow overlap 
+and use the spatial HAC estimator of \cite{C99} to construct robust standard errors. 
+Our spatial HAC framework similarly accounts for cross-vintage dependence but draws on the near-epoch dependent theory of \cite{PP97,KS11,JP12}. 
+A key methodological difference is that \cite{KN16} estimate the SDF from public market 
+data using a time-series GMM estimator and then apply the resulting model to evaluate PE cash flows, whereas we estimate the SDF directly from PE fund cash flows.
 Specifically, we obtain the estimator of \cite[Equation 18]{KN16} in our framework if we replace $Q_n(\theta)$ in Equation \ref{eq:estimator} by Equation \ref{eq:kn16_estimator}.
 \begin{equation}
 \label{eq:kn16_estimator}
@@ -863,6 +884,7 @@ L \left(
 L(x) = x^{\top} W x = x^{\top} I x
 \end{equation}
 with identity matrix $I$ as weighting matrix $W$.
+Note that since $L(x) = x^\top W x \geq 0$, maximizing $-L(\cdot)$ is equivalent to minimizing $L(\cdot)$; we omit the negative sign in Equation \ref{eq:kn16_estimator} for notational simplicity.
 In accordance with classical GMM, the function $\frac{1}{n} \sum_{i=1}^n \bar{\epsilon}_{i}: \mathbb{R}^{n \times T} \times \Theta \to \mathbb{R}^m$ should be perceived as multidimensional where the dimensionality of the function output corresponds to the number of moment conditions.
 
 Time-series GMM estimators inherently bear the risk of under-identification if the corresponding time-series is constructed by pooling all fund cash flows from a given fund type.
@@ -870,43 +892,58 @@ Exactly this happens in Equation \ref{eq:kn16_estimator} with $m=1$ where we con
 To counter under-identification, additional characteristic-based fund portfolios could be formed to increase the number of moment conditions per fund type; also, random portfolios combined with bootstrapping could make sense.
 Yet, \cite{KN16} take another approach and introduce the concept of Generalized Public Market Equivalent (GPME), which elegantly avoids the under-identification issue.
 Firstly, a public market SDF model is estimated by pricing public trading strategies that shall replicate PE funds instead of directly pricing the observed PE fund cash flows.
-Only in a second step these public market SDF models are applied to evaluate private equity fund cash flows.
+Only in a second step are these models applied to evaluate private equity fund cash flows.
 
-Given these differences, our approach may not be perceived as a straightforward generalization of the \cite{KN16} framework.
-In contrast, our LMD estimator generalizes the \cite{DLP12} method. 
+In summary, our LMD estimator generalizes \cite{DLP12} by (a) permitting flexible discounting dates via $\mathcal{T}_i$, (b) employing increasing domain rather than infill asymptotics, and (c) providing SHAC-based inference. 
+Relative to \cite{KN16}, we directly price PE cash flows rather than pricing public replicating strategies, which avoids potential misspecification of the public SDF but requires stronger identification assumptions from the PE data alone.
 Table \ref{tab:comparison} summarizes the most prominent distinctions between the three approaches.
 
 \begin{table}[ht]
 	\centering
-	\resizebox{0.9\textwidth}{!}{%
-		\begin{tabular}{llll}
-			& \cite{DLP12} & \cite{KN16} & Our approach \\ 
-			\hline
-			\hline
-			M-estimator & Cross-sectional Generalized & Time-series Generalized  & Least-Mean-  \\
-			& Method of Moments & Method of Moments & Distance \\
-			\hline
-			Pricing error averaging & No & No & Yes \\
-			\hline
-			Cash flows priced & PE cash flows & public cash flows & PE cash flows \\
-			\hline
-			Asymptotics & cross-sectional & time-series & spatial \\
-			& \#funds $\to \infty$ & \#vintages $\to \infty$ & \# of both $\to \infty$ \\
-			\hline
-			Inference & bootstrap & spatial HAC & cross-validation \\
-			& & & \& spatial HAC \\
-			\hline
-			Cross-sectional unit & vintage year portfolio & single fund & testing both \\
-			\hline
-			SDF & simple linear & exponentially affine & testing both \\
-			\hline
-			\hline
-		\end{tabular}
-	}
-	\caption{Comparison to similar estimation frameworks.} 
+	\small
+	\begin{tabular}{@{}l p{3.2cm} p{3.2cm} p{3.5cm}@{}}
+		\toprule
+		& \cite{DLP12} & \cite{KN16} & Our approach \\
+		\midrule
+		Estimator type 
+		& Cross-sectional NLS (one-step GMM) 
+		& Time-series GMM (public SDF) 
+		& Nonlinear Least-Mean-Distance \\
+		\addlinespace
+		Cash flows priced 
+		& PE fund cash flows 
+		& Public replicating strategies 
+		& PE fund cash flows \\
+		\addlinespace
+		Discounting dates 
+		& Fund inception only 
+		& Fund inception only 
+		& Flexible via $\mathcal{T}_i$ \\
+		\addlinespace
+		Asymptotics 
+		& Infill ($n_i \to \infty$, $N$ fixed) 
+		& $V \to \infty$ 
+		& Increasing domain ($V \to \infty$, $n_v$ bounded) \\
+		\addlinespace
+		Inference 
+		& Bootstrap 
+		& Spatial HAC 
+		& Spatial HAC \\
+		\addlinespace
+		Cross-sectional unit 
+		& Vintage year portfolio 
+		& Single fund 
+		& Both (tested empirically) \\
+		\addlinespace
+		SDF specification 
+		& Linear factor model 
+		& Exponentially affine 
+		& Both (tested empirically) \\
+		\bottomrule
+	\end{tabular}
+	\caption{Comparison of SDF estimation frameworks for private equity.}
 	\label{tab:comparison}
 \end{table}
-
 
 
 \section{Empirical application}

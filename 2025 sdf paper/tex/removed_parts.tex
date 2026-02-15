@@ -317,3 +317,195 @@ This means we introduce a non-zero expected pricing error term on purpose, which
 
 
 
+\subsection{Future and present value dates: the set $\mathcal{T}$}
+\label{subsec:npv_vs_fv}
+
+This subsection helps to explain the importance of the set $\mathcal{T}$ from Equation \ref{eq:average_pricing_error}.
+Initially, we introduced averaging over $\mathcal{T}$ to counter the ``exploding alpha" issue, first described by \cite{DLP12}, for cash flow streams with a very small initial cash flow.
+The exploding alpha problem depicts the mathematical fact that in a net present value formula, a discount factor with a very large alpha term discounts all cash flows (after the first one) close to zero.
+Thus, in this degenerate situation, the beta factors become irrelevant -- an infinite alpha almost perfectly prices the cash flow stream.
+Even more importantly, our simulation study in Section \ref{sec:simulation_study} indicates that averaging over $\mathcal{T}$ seems to decrease the asymptotic bias of the estimator empirically.
+
+A discounting date $\tau \in \mathcal{T}_{i}$ is a discretionary point in time where all fund cash flows are discounted to.
+The cardinality $\mathrm{card}(\mathcal{T}_{i}) = \left| \mathcal{T}_{i} \right|$ gives the number of discounting dates used for the $i$th fund.
+The smallest possible set $\mathcal{T}_i$ contains just the fund's starting date; in this case, $\mathrm{card}(\mathcal{T}_{i})$ consequently is one.
+This corresponds to a typical NPV calculation in finance and is also used by \cite{DLP12} and \cite{KN16}.
+In contrast, the largest candidate set for $\mathcal{T}$ contains all time periods bigger than the fund's starting date until now.
+In Subsection \ref{sec:simulation_study}, we study the optimal set size of $\mathcal{T}$ by Monte Carlo simulations.
+There we show in our example that controlling for the optimal size of $\mathcal{T}$ can control the asymptotic bias and variance of the original \cite{DLP12} estimator that just discounts all cash flows to the fund inception date.
+As we average over $\mathcal{T}_i$ in Equation \ref{eq:average_pricing_error} we call $\bar{\epsilon}_{i}$ the $\mathcal{T}_i$-averaged pricing error, as visualized in Figure \ref{fig:npvs}.
+
+
+\subsection{Cross-sectional unit: individual fund vs.\ portfolio of funds}
+\label{sec:cross_sectional_unit}
+
+According to the classical value-additivity assumption in \cite{HR87}, SDF models invariably shall hold for all pooled or unpooled assets.
+As discussed in Subsection \ref{sec:asset_pricing_pooled}, it is best to use the underlying deals as test assets for SDF estimation to avoid the bias terms caused by pooled fund cash flows.
+For the second best alternative, it is theoretically not important if the test assets for our SDF are portfolio or individual fund cash flows when the investment dates are the same.
+Empirically it makes a difference, and there are arguments both for and against portfolio formation.
+
+In the risk premium literature, portfolio formation mainly helps to attenuate the errors-in-variables bias connected to two-pass asset pricing methods \citep{JNPR19,PRS19}.
+As this is no issue in our case, we could use individual funds.
+\cite{C11} argues that portfolio sorting (seen as an auxiliary nonparametric regression that imposes linearity on the relationship between returns and characteristics) shall be replaced by multivariate panel models due to the curse of dimensionality.
+Following the same nonparametric regression viewpoint, \cite{CCF19} derive a nonparametric framework where the optimal number of portfolio sorts acts as a data-dependent tuning parameter that grows with sample size.
+Generally, the larger the portfolios, the easier any given SDF can price their cash flows since fewer test assets remain.
+
+In the case of private equity funds, the pooling of fund cash flows helps to counter GP financial engineering\footnote{GPs may use bridge credit facilities below the hurdle rate to boost the fund's internal rate of return. This increases the probability of observing funds with only positive or only negative cash flows. However, we want to avoid (the possibility of) cross-sectional units that exhibit just cash flows with the same algebraic sign. Realistic SDFs never can price these cash flow streams.}, which might both change and mask the true risk profile of observed LP cash flows.
+Especially for private equity funds, portfolio formation based on vintage years is compelling due to its time-series-like indexing as done by \cite{DLP12}.
+This procedure also offers substantial computational benefits as it drastically decreases the number of cross-sectional units.
+Further, as stated in \cite{ALS20}, portfolio formation allows more precise factor loading estimates due to decreasing idiosyncratic risk, but at the expense of sacrificing cross-sectional information.
+Finally, small (or fixed) $T$ and large $N$ set-ups may face finite sample problems \citep{RRZ20}.
+\begin{assume}
+	\label{as:portfolio}
+	For each vintage year, we pool fund cash flows to form $n_v$ portfolios that serve as cross-sectional units.
+	Thus, $n = \sum_{v=1}^V n_v$.
+	The two boundary cases are (i) single fund portfolios and (ii) just one portfolio per vintage year. 
+\end{assume}
+Without loss of generality, we refer to our cross-sectional units as funds, although this corresponds to a special case of our portfolio concept.
+In the simulation study in Subsection \ref{sec:simulation_study}, we compare both boundary cases (i) individual funds and (ii) vintage year portfolios.
+
+Thinking more broadly, we could even imagine more extreme boundary cases: 
+(iii) on the one hand, we could pool \emph{all} fund cash flows to form only \emph{one} global moment condition for private equity similar to \cite{KN16} and accept potential under-identification; 
+(iv) on the other hand, we could operate on underlying deal level like \cite{B14,B16a,B16b} and use gross-of-fee cash flows.
+
+
+
+
+
+GMM estimators typically have a fixed number of moment conditions.
+Thus, GMM estimators, where the number of moment conditions is allowed to grow with sample size, require special attention \citep{HP06,NW09}.
+In many cases, it is probably most convenient to limit the maximum to a finite number of moment conditions (i.e., not each vintage year should form a moment condition).
+In this paper, we employ nonlinear least squares estimators since they do not suffer from this ``number of moment condition" issue.
+
+
+
+
+\subsubsection{Consistency}
+
+The estimator $\hat{\theta}$ shall converge in probability to the true parameter value $\theta_0$ as the number of distinct vintage years in our data set goes to infinity.
+Multiple funds for a specific vintage year are not necessarily required but provide additional information that we want to exploit if available.
+
+\begin{lemma}
+	\label{lem:consistency}
+	A modified version of \citep[Theorem 2.1]{NM94} holds, i.e.,
+	if there is a function $Q_0(\theta)$ such that 
+	\begin{enumerate}
+		\item Identification: $Q_0(\theta)$ is uniquely maximized at $\theta_0$,
+		\item Boundedness: $\Theta$ is compact,
+		\item Continuity: $Q_0(\theta)$ is continuous,
+		\item Uniform convergence: $\hat{Q}_n(\theta)$ converges uniformly in probability to $Q_0(\theta)$,
+	\end{enumerate}
+	then $\hat{\theta} \xrightarrow{p} \theta_0$ as $n \rightarrow \infty$.
+\end{lemma}
+
+\begin{proof}
+	The general proof is given in \cite[Chapter 2]{NM94} for a $\max$ instead of $\min$ extremum estimator.
+	Thus, we only recapitulate the four conditions required by the lemma in our specific context.
+	\begin{enumerate}
+		\item 
+		Then, we need to first show that $\mathbb{E} \left[ \bar{\epsilon} (\theta_0) \right] = x$, where $x$ is the minimum bias achievable, see Proposition \ref{theo:pooled_bias}.
+		Secondly, we know $Q_0(\theta_0) = \mathbb{E} \left[ L \left( \bar{\epsilon} (\theta_0) \right) \right] \geq 0$, e.g., for $L(x)=x^2$ we have $Q_0(\theta) = \mathbb{E} \left[ \left( \bar{\epsilon} (\theta) \right)^2 \right] = \mathrm{Var} \left[ \bar{\epsilon} (\theta) \right] +  \left( \mathbb{E} \left[ \bar{\epsilon} (\theta) \right] \right)^2 $ where the second summand can be perceived as bias term that is zero for $\theta_0$.
+		The variance term $\mathrm{Var} \left[ \bar{\epsilon} (\theta) \right]$ for a simplified DGP is analyzed by Corollary \ref{coro:epsilon_variance_bounds}.
+		\item 
+		Compactness of $\Theta$ can be assured by lower and upper bounds for all parameters that can be justified by economic reasoning. 
+		In our case, e.g., a market beta factor of ten seems implausible for PE funds because of the implied risk and return expectations.
+		\item 
+		Continuity of the limit is a quiet weak and thus a standard regularity condition.
+		\item 
+		The second standard regularity condition is given by Assumption \ref{as:lln} which satisfies the definition of uniform convergence in probability \cite[Section 2.1]{NM94} . 
+		To make this obvious, we can write $\hat{Q}_n(\theta) = Q_n(\theta) = n^{-1} \sum_{i=1}^n L \left( \bar{\epsilon}_i \right)$ and $Q_0(\theta) = \mathbb{E} \left[ Q_n(\theta) \right]$ and compare it to Assumption \ref{as:lln}.
+	\end{enumerate}
+	$\square$
+\end{proof}
+
+
+\subsubsection{Central limit theorem}
+
+To assess the large-sample significance of our parameter estimates (as done in the following Subsection \ref{sec:asymptotic_inference}), we want to describe the asymptotic distribution of the parameter vector as a normal distribution.
+
+\begin{proposition}
+	\label{prop:clt}
+	With estimator consistency established in Lemma \ref{lem:consistency}, and the five (technical) conditions from \cite[Theorem 3.1]{NM94} satisfied, it holds
+	\begin{enumerate}
+		\item $\sqrt{n}(\hat{\theta} - \theta_0) \overset{d}{\to} \mathcal{N}(0,{\Sigma})$ as $V,n \to \infty$ with covariance matrix ${\Sigma}$, and
+		\item The covariance matrix ${\Sigma}$ can be characterized by \citet[Theorem 11.2.b, Theorem H.1]{PP97} (as outlined in the next Section \ref{sec:asymptotic_inference}).
+	\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+	The extended proof of Proposition \ref{prop:clt} may be derived in analogy to the GMM case in \cite[Theorem 4]{JP12} that shows that the general structure of the \cite{PP97} framework also applies to the spatial near-epoch dependent case.
+	Alternatively (and easier), the estimator from Equation \ref{eq:estimator} can be clearly formulated as extremum estimator in alignment with our Definition \ref{def:extremum_estimator}.
+	In consequence, \cite[Theorem 3.1]{NM94}, which generally describes the asymptotic normality of extremum estimators, is directly applicable to obtain the stated result.
+	Thus, all details of the proof can be found in the original reference \cite[Chapter 3]{NM94}.
+	$\square$
+\end{proof}
+
+
+\subsection{Large sample inference}
+\label{sec:asymptotic_inference}
+
+
+In this subsection, we demonstrate how to empirically apply Proposition \ref{prop:clt} to obtain the asymptotic standard errors for our estimator from Equation \ref{eq:estimator}.
+
+
+In the time-series, near-epoch-dependent LMD literature, the covariance matrix ${\Sigma}$ can be characterized according to \citet[Theorem 11.2.b, Theorem H.1]{PP97}:
+\[
+{\Sigma} = H^{-1} \Lambda (H^{-1})^\top
+\]
+with expected Hessian matrix converging to $H$ as $n \to \infty$
+\[
+\mathbb{E}
+\left[
+\nabla_{\theta \theta} Q_n
+\right]
+\overset{p}{\to}
+H
+\]
+and the expected covariance matrix of gradients converging to $\Lambda$ as $n \to \infty$
+\[
+n \cdot \mathbb{E}
+\left[
+\nabla_{\theta} Q_n
+(\nabla_{\theta} Q_n)^\top
+\right]
+\overset{p}{\to}
+\Lambda
+\]
+Here, the gradient vector $\nabla_{\theta} Q_n$ is denoted as column vector.
+
+
+
+\subsection{Comparison to similar estimators}
+
+
+
+\begin{table}[ht]
+	\centering
+	\resizebox{0.9\textwidth}{!}{%
+		\begin{tabular}{llll}
+			& \cite{DLP12} & \cite{KN16} & Our approach \\ 
+			\hline
+			\hline
+			M-estimator & Cross-sectional Generalized & Time-series Generalized  & Least-Mean-  \\
+			& Method of Moments & Method of Moments & Distance \\
+			\hline
+			Pricing error averaging & No & No & Yes \\
+			\hline
+			Cash flows priced & PE cash flows & public cash flows & PE cash flows \\
+			\hline
+			Asymptotics & cross-sectional & time-series & spatial \\
+			& \#funds $\to \infty$ & \#vintages $\to \infty$ & \# of both $\to \infty$ \\
+			\hline
+			Inference & bootstrap & spatial HAC & cross-validation \\
+			& & & \& spatial HAC \\
+			\hline
+			Cross-sectional unit & vintage year portfolio & single fund & testing both \\
+			\hline
+			SDF & simple linear & exponentially affine & testing both \\
+			\hline
+			\hline
+		\end{tabular}
+	}
+	\caption{Comparison to similar estimation frameworks.} 
+	\label{tab:comparison}
+\end{table}
