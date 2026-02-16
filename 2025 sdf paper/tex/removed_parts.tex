@@ -315,6 +315,76 @@ This means we introduce a non-zero expected pricing error term on purpose, which
 \fi
 
 
+{
+	\color{blue}
+	\paragraph{SDF as Macro-Conditioning Kernel}
+	
+	Current research often views the SDF solely as an unconditional pricing mechanism, searching for factors that set the average pricing error to zero across all possible states. 
+	Our decomposition in Equation \ref{eq:alpha_decomp} suggests a shift in perspective. 
+	When conditioned on a specific realized path of history (e.g., the stock market trajectory from 1990--2010), the SDF acts as a \emph{Macro-Conditioning Kernel}. 
+	In this ex-post view, the SDF does not just price risk; it filters out the ``macro luck", i.e., the systematic timing risk premium that any passive investor would have earned from that specific economic sequence.
+	Consequently, evaluating funds against this \emph{realized benchmarking kernel} allows us to distill the manager's \emph{True Alpha} conditional on the realized macro environment. 
+	Unlike a standard unconditional alpha, which conflates skill with the random realization of favorable economic regimes, this \emph{conditional alpha} specifically measures value add beyond the realized opportunity set of the economy.
+	
+	Mathematically, we can derive this kernel by projecting the true SDF onto the space spanned by the realized public market factors \citep{HJ91}. 
+	Let $\Psi_t^{\mathrm{true}}$ be the true, unobservable pricing kernel that satisfies $\mathbb{E}_t[\Psi_{t+1}^{\mathrm{true}} R_{i,t+1}] = 1$ for all assets. 
+	We approximate this kernel using a parametric function $\Psi_t(\theta)$ of public factors $F_t$ (e.g., a linear factor model). 
+	Estimating the parameters $\hat{\theta}$ on the full sample of public returns is equivalent to finding the element of the parametric family $\{\Psi_t(\theta) : \theta \in \Theta\}$ closest to $\Psi_t^{\mathrm{true}}$ in the $L^2$ sense, i.e., the orthogonal projection onto the linear span of functions of the public factor history $F_0, \ldots, F_T$:
+	\begin{equation}
+		\Psi_t^*(\hat{\theta}) = \arg\min_{\theta \in \Theta} \left\| \Psi_t(\theta) - \Psi_t^{\mathrm{true}} \right\|_{L^2}.
+	\end{equation}
+	This projection $\Psi_t^*$ constitutes our \emph{Macro-Conditioning Kernel}. 
+	It represents the price of risk conditional on the \emph{ex-post} realization of the economy's path. 
+	When we price private equity cash flows using this kernel:
+	\begin{equation}
+		a_{i} = \sum_{t=0}^T \frac{\Psi_t}{\Psi_{0}} CF_{i,t}
+	\end{equation}
+	we are explicitly asking: ``What is the value of this fund's cash flows given the specific sequence of market shocks $F_0, \dots, F_T$ attempting to replicate them?'' 
+	Consequently, a non-zero $a_i$ captures the component of performance that is orthogonal to the realized public opportunity set (True Skill), effectively filtering out the systematic timing gains (Macro Luck) that are spanned by $\Psi_t / \Psi_{0}$.
+	
+	
+	
+	
+	\paragraph{Connection to \cite{KN16}}
+	This interpretation of the SDF as a \emph{Macro-Conditioning Kernel} aligns conceptually with the Generalized Public Market Equivalent (GPME) framework introduced by \cite{KN16,KN22}. 
+	While Korteweg and Nagel do not explicitly use the term `kernel projection', their methodology fundamentally relies on the same principle: they construct a valuation benchmark by projecting private cash flows onto a \emph{realized} public market SDF. 
+	Specifically, their GPME metric evaluates the ``cost of replicating the fund's cash flows using public securities'' \citep{KN16}, effectively identifying the component of performance that could have been achieved by a passive investor facing the same sequence of market shocks. 
+	Our derivation clarifies the theoretical mechanism behind their approach: by defining the SDF $\Psi_t^*$ as the projection of the true kernel onto the realized filtration $\mathcal{F}_T^F$, we demonstrate \emph{why} their method correctly filters out systematic timing gains. 
+	Furthermore, while \cite{KN16} focus on valuing the entire fund stream at inception ($\tau = 0$), our Case C analysis extends this logic to future compounding dates, confirming that the same kernel properly risk-adjusts for realized timing premiums in ex-post performance attribution (cf.\ Equation~\ref{eq:future_value_bias_derivation}).
+	Thus, our Macro-Conditioning Kernel provides the rigorous asset pricing micro-foundation for the GPME's effectiveness as an ex-post benchmark.
+	
+	
+	
+	\paragraph{``Explaining away" the Timing Risk Premium}
+	
+	Finally, we can rigorously evaluate whether the ``Net Future Value" formulation in Equation \ref{eq:future_value_bias_derivation} can aid in empirically deriving the Macro-Conditioning Kernel ($\hat{\theta}$). 
+	Let us define the \emph{NFV Error} moment condition for estimation as:
+	\begin{equation}
+		m^{\mathrm{NFV}}_{i,j}(\theta) = \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}(\theta)}{\Psi_{\tau}(\theta)} \delta_{i,j}(\theta)
+	\end{equation}
+	A valid Generalized Method of Moments (GMM) estimator seeks parameters $\hat{\theta}$ that minimize the sample average of moment conditions which are theoretically zero in expectation.
+	However, taking the expectation conditional on the information set $\mathcal{F}_\tau$ at the reference date $\tau (< t_{i,j}^{\mathrm{Inv}} < t_{i,j}^{\mathrm{Future}})$ yields:
+	\begin{equation}
+		\mathbb{E} \left[ m^{\mathrm{NFV}}_{i,j}(\theta) \mid \mathcal{F}_{\tau} \right] = a_{i,j}^{\mathrm{True}}(\theta) + \text{Timing Risk Premium}_{i,j}(\theta)
+	\end{equation}
+	Assuming the true model holds ($a^{\mathrm{True}}=0$), the moment condition does not equal zero but rather the \emph{systematic} Timing Risk Premium. 
+	Crucially, this premium does not vanish in aggregation; it remains positive for any asset with systematic risk exposure.
+	Consequently, an estimator minimizing the objective function $\mathcal{Q}^{\mathrm{NFV}}(\theta) = \left( \frac{1}{n} \sum m^{\mathrm{NFV}}_{i,j}(\theta) \right)^2$ will maintain the equality:
+	\begin{equation}
+		\hat{a}_{\mathrm{est}} + \widehat{\text{Premium}} \approx 0 \implies \hat{a}_{\mathrm{est}} \approx - \widehat{\text{Premium}}
+	\end{equation}
+	To satisfy the minimization condition, the estimator is forced to ``explain away'' the non-zero systematic risk premium by biasing the alpha estimate downwards. 
+	Thus, the NFV formulation generates \textbf{unrelated bias terms} that inevitably confound the identification of the true pricing kernel, rendering it unsuitable for ex-ante estimation.
+	
+	
+	
+	% This box can be igonred and will be deleted in the final version!
+	\begin{tcolorbox}[colback=gray!10, colframe=gray!50, title=Outlook: Simulation results using realized factor returns]
+		Our simulation results in Section \ref{sec:simulation_study} show a relatively large alpha term when we discount to the fund inception date (as the NPV theory suggests). Adding more ``biased" NFV dates (to the optimal NPV date) in the target function, we want to minimize, reduces this alpha term more and more.
+		This could indicate (as a currently unverified conjecture) that the NFV approach could be beneficial under certain circumstances when we want to condition on realized factor returns (e.g., for benchmarking purposes).
+		\textcolor{orange}{This will be further investigated in the simulation section!}
+	\end{tcolorbox}
+}
 
 
 \subsection{Future and present value dates: the set $\mathcal{T}$}
