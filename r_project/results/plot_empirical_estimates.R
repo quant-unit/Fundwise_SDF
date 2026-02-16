@@ -178,19 +178,19 @@ plot_empirical_estimates <- function(
                 size = 10, hjust = 0.5, color = "grey30",
                 margin = margin(b = 15)
             ),
-            plot.margin = margin(15, 15, 10, 15)
+            plot.margin = margin(5, 5, 5, 5)
         )
 
     # -------------------------------------------------------------------------
     # Color and linetype palette
     # -------------------------------------------------------------------------
-    # EW = blue tones, FW = orange tones
+    # EW = green tones, FW = purple tones
     # Asymptotic = solid, Cross-Validation = dashed
     colors_source <- c(
-        "EW Asymptotic"        = "#0072B2",
-        "EW Cross-Validation"  = "#56B4E9",
-        "FW Asymptotic"        = "#D55E00",
-        "FW Cross-Validation"  = "#E69F00"
+        "EW Asymptotic"        = "#048072",
+        "EW Cross-Validation"  = "#65E6D7",
+        "FW Asymptotic"        = "#AB23CC",
+        "FW Cross-Validation"  = "#E3A7F2"
     )
 
     linetypes_source <- c(
@@ -245,9 +245,9 @@ plot_empirical_estimates <- function(
         )) +
             geom_line(linewidth = 0.8, alpha = 0.9) +
             geom_point(size = 2.5, fill = "white", stroke = 0.8) +
-            scale_color_manual(values = colors_source, name = "Source") +
-            scale_linetype_manual(values = linetypes_source, name = "Source") +
-            scale_shape_manual(values = shapes_source, name = "Source") +
+            scale_color_manual(values = colors_source, name = "Estimation Method") +
+            scale_linetype_manual(values = linetypes_source, name = "Estimation Method") +
+            scale_shape_manual(values = shapes_source, name = "Estimation Method") +
             scale_x_continuous(
                 breaks = seq(0, max(mkt_df$horizon_years, na.rm = TRUE), by = 5),
                 expand = c(0.02, 0)
@@ -291,7 +291,7 @@ plot_empirical_estimates <- function(
                 # MKT column => blank spacer in row 2
                 blank_plot <- ggplot() +
                     theme_void() +
-                    theme(plot.margin = margin(15, 15, 10, 15))
+                    theme(plot.margin = margin(5, 5, 5, 5))
                 second_plots[[i]] <- blank_plot
             } else {
                 coef_df <- plot_data %>%
@@ -304,9 +304,9 @@ plot_empirical_estimates <- function(
                 )) +
                     geom_line(linewidth = 0.8, alpha = 0.9) +
                     geom_point(size = 2.5, fill = "white", stroke = 0.8) +
-                    scale_color_manual(values = colors_source, name = "Source") +
-                    scale_linetype_manual(values = linetypes_source, name = "Source") +
-                    scale_shape_manual(values = shapes_source, name = "Source") +
+                    scale_color_manual(values = colors_source, name = "Estimation Method") +
+                    scale_linetype_manual(values = linetypes_source, name = "Estimation Method") +
+                    scale_shape_manual(values = shapes_source, name = "Estimation Method") +
                     scale_x_continuous(
                         breaks = seq(0, max(coef_df$horizon_years, na.rm = TRUE), by = 5),
                         expand = c(0.02, 0)
@@ -400,10 +400,7 @@ plot_empirical_estimates <- function(
     # Collect legends and unify at bottom via patchwork
     combined_plot <- combined_plot +
         plot_layout(guides = "collect") &
-        theme(legend.position = "bottom") &
-        scale_color_manual(values = colors_source, name = "Estimation Method") &
-        scale_linetype_manual(values = linetypes_source, name = "Estimation Method") &
-        scale_shape_manual(values = shapes_source, name = "Estimation Method")
+        theme(legend.position = "bottom")
 
     # -------------------------------------------------------------------------
     # Export or display

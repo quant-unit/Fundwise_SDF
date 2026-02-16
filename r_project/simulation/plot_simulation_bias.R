@@ -25,6 +25,7 @@ library(patchwork)
 #' @param y.max.second Optional numeric, maximum y-axis value for second factor panel (default: NULL, auto-scale)
 #' @param y.min.mkt Optional numeric, minimum y-axis value for MKT panel (default: NULL, auto-scale)
 #' @param y.min.second Optional numeric, minimum y-axis value for second factor panel (default: NULL, auto-scale)
+#' @param add_sd_band Logical, whether to add +/- 1 Standard Deviation bands around estimated mean values (default: TRUE)
 #'
 #' @return A ggplot object (invisibly if exported)
 #'
@@ -51,7 +52,8 @@ plot_simulation_bias <- function(
     y.max.mkt = NULL,
     y.max.second = NULL,
     y.min.mkt = NULL,
-    y.min.second = NULL) {
+    y.min.second = NULL,
+    add_sd_band = TRUE) {
     # -------------------------------------------------------------------------
     # Read and prepare data
     # -------------------------------------------------------------------------
@@ -104,11 +106,13 @@ plot_simulation_bias <- function(
 
             # Legend
             legend.position = "bottom",
+            legend.box = "horizontal",
             legend.title = element_text(face = "bold", size = 10),
             legend.text = element_text(size = 9),
             legend.key.size = unit(0.8, "cm"),
             legend.background = element_rect(fill = "white", color = NA),
             legend.margin = margin(t = 5),
+            legend.spacing.x = unit(0.3, "cm"),
 
             # Overall plot
             plot.title = element_text(
@@ -134,7 +138,7 @@ plot_simulation_bias <- function(
     # -------------------------------------------------------------------------
 
     mkt_data <- plot_data %>%
-        select(scenario_id, max_month, est_beta_MKT, true_beta_MKT, first_factor_name) %>%
+        select(scenario_id, max_month, est_beta_MKT, true_beta_MKT, first_factor_name, sd_MKT) %>%
         pivot_longer(
             cols = c(est_beta_MKT, true_beta_MKT),
             names_to = "type",
@@ -147,10 +151,31 @@ plot_simulation_bias <- function(
     # Convert horizon to years for better readability
     mkt_data$horizon_years <- mkt_data$max_month / 12
 
+    # Prepare SD band data for MKT (only for "Estimated" type)
+    if (add_sd_band) {
+        mkt_sd_data <- mkt_data %>%
+            filter(type == "Estimated" & !is.na(sd_MKT)) %>%
+            mutate(
+                sd_upper = beta_MKT + sd_MKT,
+                sd_lower = beta_MKT - sd_MKT
+            )
+    }
+
     p_mkt <- ggplot(mkt_data, aes(
         x = horizon_years, y = beta_MKT,
         color = type, shape = type
     )) +
+        {
+            if (add_sd_band && nrow(mkt_sd_data) > 0) {
+                geom_ribbon(
+                    data = mkt_sd_data,
+                    mapping = aes(x = horizon_years, ymin = sd_lower, ymax = sd_upper, fill = "+/- 1 Standard Deviation"),
+                    inherit.aes = FALSE,
+                    alpha = 0.15,
+                    color = NA
+                )
+            }
+        } +
         geom_line(linewidth = 0.8, alpha = 0.9) +
         geom_point(size = 2.5, fill = "white", stroke = 0.8) +
         facet_wrap(~scenario_id,
@@ -159,15 +184,24 @@ plot_simulation_bias <- function(
         ) +
         scale_color_manual(
             values = c("Estimated" = colors_est, "True (DGP)" = colors_true),
-            name = "Value Type"
+            name = NULL
         ) +
         scale_shape_manual(
             values = c("Estimated" = 16, "True (DGP)" = 17),
-            name = "Value Type"
+            name = NULL
         ) +
         scale_x_continuous(
             breaks = seq(0, max(mkt_data$horizon_years, na.rm = TRUE), by = 5),
             expand = c(0.02, 0)
+        ) +
+        scale_fill_manual(
+            values = c("+/- 1 Standard Deviation" = colors_est),
+            name = NULL
+        ) +
+        guides(
+            color = guide_legend(order = 1),
+            shape = guide_legend(order = 1),
+            fill = guide_legend(order = 2, override.aes = list(alpha = 0.3))
         ) +
         labs(
             title = expression(bold("Panel A: Market Factor (" * beta[MKT] * ")")),
@@ -201,7 +235,7 @@ plot_simulation_bias <- function(
         # Keep ALL scenarios but with NA values for those without second factor
         # This ensures proper alignment with the top row
         second_data <- plot_data %>%
-            select(scenario_id, max_month, est_second, true_second, second_factor_name) %>%
+            select(scenario_id, max_month, est_second, true_second, second_factor_name, sd_second) %>%
             pivot_longer(
                 cols = c(est_second, true_second),
                 names_to = "type",
@@ -221,10 +255,31 @@ plot_simulation_bias <- function(
             y_label <- expression(beta["Second Factor"])
         }
 
+        # Prepare SD band data for second factor (only for "Estimated" type)
+        if (add_sd_band) {
+            second_sd_data <- second_data %>%
+                filter(type == "Estimated" & !is.na(sd_second) & !is.na(beta_second)) %>%
+                mutate(
+                    sd_upper = beta_second + sd_second,
+                    sd_lower = beta_second - sd_second
+                )
+        }
+
         p_second <- ggplot(second_data, aes(
             x = horizon_years, y = beta_second,
             color = type, shape = type
         )) +
+            {
+                if (add_sd_band && nrow(second_sd_data) > 0) {
+                    geom_ribbon(
+                        data = second_sd_data,
+                        mapping = aes(x = horizon_years, ymin = sd_lower, ymax = sd_upper, fill = "+/- 1 Standard Deviation"),
+                        inherit.aes = FALSE,
+                        alpha = 0.15,
+                        color = NA
+                    )
+                }
+            } +
             geom_line(linewidth = 0.8, alpha = 0.9, na.rm = TRUE) +
             geom_point(size = 2.5, fill = "white", stroke = 0.8, na.rm = TRUE) +
             facet_wrap(~scenario_id,
@@ -234,15 +289,24 @@ plot_simulation_bias <- function(
             ) +
             scale_color_manual(
                 values = c("Estimated" = colors_est, "True (DGP)" = colors_true),
-                name = "Value Type"
+                name = NULL
             ) +
             scale_shape_manual(
                 values = c("Estimated" = 16, "True (DGP)" = 17),
-                name = "Value Type"
+                name = NULL
             ) +
             scale_x_continuous(
                 breaks = seq(0, max(second_data$horizon_years, na.rm = TRUE), by = 5),
                 expand = c(0.02, 0)
+            ) +
+            scale_fill_manual(
+                values = c("+/- 1 Standard Deviation" = colors_est),
+                name = NULL
+            ) +
+            guides(
+                color = guide_legend(order = 1),
+                shape = guide_legend(order = 1),
+                fill = guide_legend(order = 2, override.aes = list(alpha = 0.3))
             ) +
             labs(
                 title = "Panel B: Second Factor",
@@ -365,6 +429,12 @@ plot_simulation_bias <- function(
             message(paste("PDF exported to:", pdf_file))
         }
 
+        # Export data as CSV
+        csv_file <- paste0(base_file, "_data.csv")
+        csv_data <- plot_data %>% select(-starts_with("bias_"))
+        write.csv(csv_data, file = csv_file, row.names = FALSE)
+        message(paste("Data exported to:", csv_file))
+
         invisible(combined_plot)
     } else {
         # Display in RStudio
@@ -456,14 +526,14 @@ plot_single_scenario_bias <- function(bias_file, scenario_id) {
 }
 
 # ============================================================================
-# Example Usage (uncomment to run)
+# Example Usage (DO NOT comment out, please!)
 # ============================================================================
 #
 
 file <- "simulation/data_out_2026_new/bias_analysis/2026-02-11_211903_bias_by_scenario_horizon.csv"
-max.mkt <- 1.25
+max.mkt <- 1.5 #  1.25
 max.second <- 0.005
-min.mkt <- 0.6
+min.mkt <- 0.5 # 0.6
 min.second <- -0.005
 # # Basic usage with default scenarios
 plot_simulation_bias(
@@ -475,7 +545,7 @@ plot_simulation_bias(
     y.max.mkt = max.mkt,
     y.max.second = max.second,
     y.min.mkt = min.mkt,
-    y.min.second = min.second
+    y.min.second = min.second,
 )
 plot_simulation_bias(
     scenarios = c("big_n_v_40funds", "big_v_10funds_1967", "big_v_20funds_1967", "small_v_1986_1995", "small_v_1996_2005"),
@@ -489,15 +559,15 @@ plot_simulation_bias(
     y.min.second = min.second
 )
 plot_simulation_bias(
-  scenarios = c("big_n_v_40funds_alpha", "big_v_10funds_1967_alpha", "big_v_20funds_1967_alpha", "small_v_1986_1995_alpha", "small_v_1996_2005_alpha"),
-  bias_file = file,
-  export_pdf = TRUE,
-  height = 7,
-  output_file = "simulation/figures/bias_comparison3",
-  y.max.mkt = max.mkt,
-  y.max.second = max.second,
-  y.min.mkt = min.mkt,
-  y.min.second = min.second
+    scenarios = c("big_n_v_40funds_alpha", "big_v_10funds_1967_alpha", "big_v_20funds_1967_alpha", "small_v_1986_1995_alpha", "small_v_1996_2005_alpha"),
+    bias_file = file,
+    export_pdf = TRUE,
+    height = 7,
+    output_file = "simulation/figures/bias_comparison3",
+    y.max.mkt = max.mkt,
+    y.max.second = max.second,
+    y.min.mkt = min.mkt,
+    y.min.second = min.second
 )
 plot_simulation_bias(
     scenarios = c("base_case_ME", "base_case_IA", "base_case_ROE", "base_case_EG"),
@@ -506,5 +576,18 @@ plot_simulation_bias(
     height = 7,
     output_file = "simulation/figures/bias_comparison4",
     y.max.mkt = max.mkt,
-    y.min.mkt = min.mkt
+    y.min.mkt = min.mkt,
+    y.max.second = max.mkt,
+    y.min.second = min.mkt
+)
+plot_simulation_bias(
+    scenarios = c("exp_aff_base", "exp_aff_alpha", "base_case_vyp", "base_case_zero_alpha"),
+    bias_file = "simulation/data_out_2026_new/bias_analysis/2026-02-14_204756_bias_by_scenario_horizon.csv",
+    export_pdf = TRUE,
+    height = 7,
+    output_file = "simulation/figures/bias_comparison5",
+    y.max.mkt = max.mkt,
+    y.max.second = max.second,
+    y.min.mkt = min.mkt,
+    y.min.second = min.second,
 )

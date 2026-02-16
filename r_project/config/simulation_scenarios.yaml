@@ -433,9 +433,21 @@ scenarios:
     estimation:
       sdf_model: "exp.aff"
       factors_to_use: "MKT"
+      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: true
     data_folder: auto
-  
+
+  exp_aff_alpha:
+    description: "Exp-affine SDF: β_MKT=1, α=0"
+    dgp:
+      exp_aff_sdf: true
+    estimation:
+      sdf_model: "exp.aff"
+      factors_to_use: "Alpha"
+      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
+    active: true
+    data_folder: auto
+    
   exp_aff_high_beta_alpha:
     description: "Exp-affine SDF: β_MKT=2.5, α=-0.0025"
     dgp:
