@@ -109,8 +109,11 @@ if (length(cv.res) > 0) {
   df.cv <- df.cv[, c("Type", "max.month", "MKT", "SE.MKT", "Factor", "Coef", "SE.Coef", "validation.error")]
   df.cv <- df.cv[order(df.cv$Type, df.cv$Factor, as.numeric(df.cv$max.month)), ]
 
-  max.months.to.keep <- c("1", "30", "60", "120", "180")
-  df.cv <- df.cv[df.cv$max.month %in% max.months.to.keep, ]
+  # Filter horizons: use caller-defined max.months.to.keep if available, otherwise keep all
+  if (!exists("max.months.to.keep", envir = .GlobalEnv)) {
+    max.months.to.keep <- unique(df.cv$max.month)
+  }
+  df.cv <- df.cv[df.cv$max.month %in% as.character(max.months.to.keep), ]
 } else {
   df.cv <- data.frame(
     Type = character(), max.month = character(), MKT = numeric(), SE.MKT = numeric(),
@@ -305,8 +308,8 @@ write.csv(df.cv, paste0(dir.cache, "/0_cross_validation_summary.csv"))
 # Write asymptotic inference
 df.all$t.MKT <- df.all$MKT / df.all$SE.MKT
 df.all$t.MKT.indep <- df.all$MKT / df.all$SE.MKT.indep
-df.all$t.Coef <- df.all$MKT / df.all$SE.Coef
-df.all$t.Coef.indep <- df.all$MKT / df.all$SE.Coef.indep
+df.all$t.Coef <- df.all$Coef / df.all$SE.Coef
+df.all$t.Coef.indep <- df.all$Coef / df.all$SE.Coef.indep
 df.all$sig <- ((abs(df.all$t.MKT) > 1.96) & (abs(df.all$t.Coef) > 1.96))
 sum(df.all$sig)
 nrow(df.all)

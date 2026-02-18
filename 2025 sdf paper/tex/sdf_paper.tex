@@ -366,7 +366,7 @@ For the pooled, fund-level cash flow stream, we assume that the true fund valuat
 	\quad \forall \ \tau \geq \ \min_j t_{i,j}^{\mathrm{Inv}}
 \end{equation}
 For active funds with $\tau > \min_j t_{i,j}^{\mathrm{Inv}}$, we merely can observe reported fund NAVs as proxies for the true fund value, which are known to suffer from stale pricing and appraisal-smoothing problems \citep{BGK19,K19,JLRS20}\footnote{In the empirical section, we will treat the most recent NAV as the final distribution cash flow for non-liquidated funds to increase the sample data.}.
-Additionally, we can define the vintage year for each fund in a mathematically convenient way as $v_{i} := \mathrm{YEAR} \left( \min_j t_{i,j}^{\mathrm{Inv}} \right)$.
+Additionally, we define the vintage year for each fund in a mathematically convenient way as its ``starting year" $v_{i} := \mathrm{YEAR} \left( \min_j t_{i,j}^{\mathrm{Inv}} \right)$.
 
 For any discounting date $\tau \leq \min_j t_{i,j}^{\mathrm{Inv}}$, the expected fund pricing error is equal to zero.
 
@@ -1013,6 +1013,11 @@ Funds from the remaining vintage years enter the training set and are thus used 
 We apply ten-fold cross validation using the ten validation sets described in Table \ref{tab:hv_block_cv}.
 This means we replace the bootstrap standard error calculation of \cite{DLP12} by $hv$-block cross-validation since the new method (i) accounts for near-epoch-dependence, (ii) focuses directly on the out-of-sample performance of the SDF models, and (iii) is computationally cheaper.
 
+\textcolor{orange}{
+	Important: "Horizon" in the charts and tables refers to the "max month" compounding date; for all simulations and empirical results.
+	It is really the same thing, only difference is that "max month" is one a monthly basis and "Horizon" on yearly basis. We need to align these two in the whole Empirical results section and only keep Horizon, but explain what horizon means in detail; maybe as an official definition.
+	}
+
 \textcolor{orange}{\textbf{TODO: Introduce bounds for $\alpha$!}}
 
 
@@ -1065,7 +1070,7 @@ In the exponential affine case, we adjust the lognormally distributed error mean
 If a negative return exceeds -100\%, the company defaults with a zero exit cash flow.
 In contrast, the error term in the simulations of \cite{DLP12} is more well-behaved as it follows a shifted lognormal distribution that, even with arbitrarily high error term variance, just allows for returns below say -99\%, if the market return is close to its lower bound (see equation 9 in their online appendix).
 In our base case, the set of discounting dates $\mathcal{T}$ contains all months from the first cash flow to the maximum month 180.
-To assess our estimator's bias and variance, we simulate 1000 test scenarios for vintage year portfolios and only 200 test cases when using individual funds due to the higher computational costs of simulating the individual fund cash flows.
+To assess our estimator's bias and variance, we simulate 1000 test scenarios for both vintage-year and single-fund portfolios.
 
 
 \paragraph{Cross-sectional unit $i$:}
@@ -1082,9 +1087,83 @@ These considerations may explain the choice of \cite{KN16} to use individual fun
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.9\textwidth]{Figures/bias_comparison1}
-	\caption{\textbf{Simulation ($\beta_{\textrm{MKT}}$, $\alpha$):} Base cases.}
-	\label{fig:sim1}
+	\includegraphics[width=0.9\textwidth]{simulation/bias_comparison1}
+	\caption{\textbf{Simulation ($\beta_{\textrm{MKT}}$, $\alpha$):} Single-fund vs.\ vintage-year portfolios.}
+	\label{fig:simulation_funds_vs_vyps}
+\end{figure}
+
+
+
+
+\paragraph{Varying vintages $V$ and portfolio sizes $n/V$:}
+
+To test the effect of varying data sizes available for MKT factor estimation, we in/decrease the (i) number of vintage years and (ii) the number of funds per vintage year.
+Here we use vintage year portfolios and the simple linear SDF.
+We test five different scenarios (from left to right in Figures \ref{fig:sim_vary_vin_sizes} and \ref{fig:sim_vary_vin_sizes_alpha}): 
+(1) Years 1986-2005 with 40 funds per vintage (i.e., the base case with 40 instead of 20 funds per vintage).
+(2) Years 1967-2005 with 10 funds per vintage.
+(3) Years 1967-2005 with 20 funds per vintage.
+(4) Years 1986-1995 with 20 funds per vintage.
+(5) Years 1996-2005 with 20 funds per vintage.
+
+Interpretation:
+For our simple data generating process, increasing the number of deals/funds per vintage year portfolio appears to decrease the estimator's variance more effectively than adding more vintage years.
+
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{simulation/bias_comparison3}
+	\caption{\textbf{Simulation ($\beta_{\textrm{MKT}}$, $\alpha$):} Varying vintages $V$ and portfolio sizes $n/V$.}
+	\label{fig:sim_vary_vin_sizes_alpha}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{simulation/bias_comparison2}
+	\caption{\textbf{Simulation ($\beta_{\textrm{MKT}}$):} Varying vintages $V$ and portfolio sizes $n/V$.}
+	\label{fig:sim_vary_vin_sizes}
+\end{figure}
+
+
+
+\paragraph{Two-factor models ($q^5$ factors):}
+
+Figure~\ref{fig:sim_q_factors} reports simulation results for two-factor models that pair MKT with each of the four non-market $q^5$ factors (ME, IA, ROE, EG), with true loadings $\beta_{\mathrm{MKT}}=1$ and $\beta_{\mathrm{2nd}}=0.5$.
+A common pattern emerges across all four specifications: the second-factor loading is substantially overestimated at short horizons and attenuated toward --- or beyond --- the true value at long horizons, while the market factor absorbs a compensating bias in the opposite direction.
+Estimation variance is markedly larger than in the single-factor case, reflecting the collinearity between correlated factors in a limited cross-section of vintage year portfolios.
+Table~\ref{tab:sim_q5_summary} summarizes the key estimates at the shortest horizon and at 15 years, which is approximately the bias-minimizing horizon for most models; we highlight the most notable factor-specific features below.
+
+The ME model is the only specification in which $\hat{\beta}_{\mathrm{2nd}}$ undergoes a sign change (at roughly 17.5~years), declining from $0.86$ to $-0.02$ over the full horizon range --- a severe attenuation that would qualitatively alter economic conclusions.
+For the IA model, the second-factor bias is large at short horizons ($\hat{\beta}_{\mathrm{IA}} \approx 1.06$ vs.\ truth $0.5$) but both loadings converge close to their true values near the 17.5-year horizon ($\hat{\beta}_{\mathrm{MKT}}=0.97$, $\hat{\beta}_{\mathrm{IA}}=0.52$).
+The EG model exhibits the largest overall estimation variance ($\sigma(\hat{\beta}_{\mathrm{EG}}) \approx 2.0$ at the shortest horizon) but achieves a reasonably accurate joint estimate around 15--17.5~years ($\hat{\beta}_{\mathrm{MKT}}=0.91$--$1.02$, $\hat{\beta}_{\mathrm{EG}}=0.47$--$0.56$).
+The ROE model is the exception: both loadings remain persistently biased at all horizons, with $\hat{\beta}_{\mathrm{MKT}}$ never exceeding $0.91$ and $\hat{\beta}_{\mathrm{ROE}}$ never falling below $0.62$.
+These results suggest that empirical researchers should exercise caution when interpreting two-factor SDF estimates for private equity, and that the bias-minimizing horizon is model-dependent, typically falling in the 12.5--17.5-year range.
+
+\begin{table}[H]
+	\centering
+	\small
+	\begin{tabular}{l cc cc cc cc}
+		\toprule
+		& \multicolumn{2}{c}{$\hat{\beta}_{\mathrm{MKT}}$} & \multicolumn{2}{c}{$\hat{\beta}_{\mathrm{2nd}}$} & \multicolumn{2}{c}{$\sigma(\hat{\beta}_{\mathrm{MKT}})$} & \multicolumn{2}{c}{$\sigma(\hat{\beta}_{\mathrm{2nd}})$} \\
+		\cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7} \cmidrule(lr){8-9}
+		Model & 0\,yr & 15\,yr & 0\,yr & 15\,yr & 0\,yr & 15\,yr & 0\,yr & 15\,yr \\
+		\midrule
+		ME\,+\,MKT  & 1.15 & 0.97 & 0.86 & 0.59 & 0.28 & 0.21 & 0.46 & 0.40 \\
+		IA\,+\,MKT  & 0.97 & 0.92 & 1.06 & 0.64 & 0.34 & 0.30 & 0.80 & 0.53 \\
+		ROE\,+\,MKT & 0.84 & 0.83 & 1.04 & 0.69 & 0.43 & 0.49 & 0.72 & 0.49 \\
+		EG\,+\,MKT  & 0.87 & 0.91 & 1.04 & 0.56 & 0.65 & 0.45 & 2.00 & 0.31 \\
+		\bottomrule
+		\multicolumn{9}{l}{\footnotesize True values: $\beta_{\mathrm{MKT}}=1$, $\beta_{\mathrm{2nd}}=0.5$.}
+	\end{tabular}
+	\caption{Two-factor simulation summary: mean estimates and standard deviations at the shortest (0\,yr) and the 15-year horizon.}
+	\label{tab:sim_q5_summary}
+\end{table}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{simulation/bias_comparison4}
+	\caption{\textbf{Simulation ($q^5$ factors):} Two-factor models using VYP.}
+	\label{fig:sim_q_factors}
 \end{figure}
 
 
@@ -1099,65 +1178,11 @@ Moreover, the perceived superiority of exponential affine SDFs is probably rathe
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.9\textwidth]{Figures/bias_comparison5}
+	\includegraphics[width=0.9\textwidth]{simulation/bias_comparison5}
 	\caption{\textbf{Simulation ($\beta_{\textrm{MKT}}$, $\alpha$):} Exponential affine vs.\ linear models.}
 	\label{fig:sim_exp_aff}
 \end{figure}
 
-% TODO: delete
-%\begin{figure}
-%	\centering
-%	\includegraphics[width=0.9\textwidth]{Figures/spatial/Simulationexpaffvssimlin}
-%	\caption{Simulation results comparing exponentially affine and simple linear SDF with true $\beta=1$ and vintage year portfolios (1000 simulation iterations).}
-%	\label{fig:simulation_expaff_vs_simlin}
-%\end{figure}
-
-
-\paragraph{Varying vintages $V$ and portfolio sizes $n/V$:}
-
-To test the effect of varying data sizes available for MKT factor estimation, we in/decrease the (i) number of vintage years and (ii) the number of funds per vintage year (cf. Figures \ref{fig:sim_vary_vin_sizes} and \ref{fig:sim_vary_vin_sizes_alpha}).
-Here we use vintage year portfolios and the simple linear SDF.
-For our simple data generating process, increasing the number of deals/funds per vintage year portfolio appears to decrease the estimator's variance more effectively than adding more vintage years.
-However, the bias is almost the same for all tested specifications.
-Generally, we seem to need many new data points to ensure a reasonable variance of our estimator.
-
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.9\textwidth]{Figures/bias_comparison3}
-	\caption{\textbf{Simulation ($\beta_{\textrm{MKT}}$, $\alpha$):} Varying vintages $V$ and portfolio sizes $n/V$.}
-	\label{fig:sim_vary_vin_sizes_alpha}
-\end{figure}
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.9\textwidth]{Figures/bias_comparison2}
-	\caption{\textbf{Simulation ($\beta_{\textrm{MKT}}$):} Varying vintages $V$ and portfolio sizes $n/V$.}
-	\label{fig:sim_vary_vin_sizes}
-\end{figure}
-
-
-
-\paragraph{Two-factor models ($q^5$ factors):}
-
-For the $q^5$-factor models from Figure \ref{fig:sim_q_factors}, we most notably see that the standard deviation of the $\beta_{\mathrm{MKT}}$-factor estimates in the two-factors models appear high for all horizons, especially for the $ROE$ and $EG$ models.
-
-For the $ME+MKT$ factor model, the mean $MKT$ factor estimate drops from $1.15$ for the 0-year horizon to $0.83$ for the 30-year horizon crossing the true $\beta_{\mathrm{MKT}}=1$ line at around the 15-year horizon.
-The $ME$ factor varies from $0.86$ for the 0-year horizon to $-0.02$ for the 30-year horizon crossing the true parameter line $\beta_{\mathrm{ME}}=0.5$ at around the 17.5-year horizon.
-The notable thing here is ...
-
-For the $IA+MKT$ factor model, ...
-
-For the $ROE+MKT$ factor model, ...
-
-For the $EG+MKT$ factor model, ...
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.9\textwidth]{Figures/bias_comparison4}
-	\caption{\textbf{Simulation ($q^5$ factors):} Two-factor models using VYP.}
-	\label{fig:sim_q_factors}
-\end{figure}
 
 
 \paragraph{Size of set $\mathcal{T}$:}
@@ -1166,22 +1191,15 @@ This is the big question of the simulations study!
 Which max compounding horizon is the optimal one?
 From our diverse simulation results, we can deduce that we cannot determine the optimal horizon from these simulation results.
 
-{\color{red}
-The results in Table \ref{tab:simulation_study} indicate that we can control the asymptotic bias by an appropriate choice of the set $\mathcal{T}$.
-For the one-factor model, the bias almost vanishes when we average over all discounting dates in the maximal fund lifetime of 180 months. 
-For smaller or larger sets for $\mathcal{T}$, we find increasing bias terms.
+The results in indicate that we can control the asymptotic bias by an appropriate choice of the set $\mathcal{T}$.
+Horizon 15 year seems optimal, even if the NPV-only horizon of 0 year is the optimal one in theory (cf.\ Section \ref{sec:asset_pricing_pooled}).
 Recall that using the minimal set for $\mathcal{T}$, i.e., discounting all cash flows just to the fund inception date, corresponds exactly to the \cite{DLP12} approach. 
-Thus, the original \cite{DLP12} methodology might achieve a suboptimal asymptotic bias since it does not average pricing errors over multiple discounting dates.
+The Appendix \ref{sec:appendix_bias_variance} tries to explain this puzzling result.
+However, the probability bands (one standard deviation) in the simulation do not indicate decreasing parameter variance with increasing horizon "max compounding month".
+Thus, how and why does our "variance reduction technique" reduce/affect/control bias rather than variance?
+To be optimistic, the variance seems slightly smaller near the "optimal" horizon of around 15 years in the simulation and slightly increases for smaller and higher horizons (the effect looks not very large, we need to investigate this thoroughly).
+We need to solve this puzzle why only the bias term is affected by the additional future compounding dates (= additional Timing Risk Premium terms).
 
-The same finding also holds when we limit the maximal fund lifetime to ten years by reducing the maximum deal holding period from ten to five years. 
-Here, under correct model specification with $\beta_{\mathrm{MKT}}=1$ , the smallest bias is obtained for maximum month 120, for max. month 60 we get 1.028 (0.116), for max. month 120, we get 1.005 (0.116), and for max. month 180 we get 0.969 (0.13).
-However, this simulation results only hold for the one-factor model (MKT) reported here. 
-For multi-factor models, smaller max. month values can yield the lowest bias term.
-Thus, our simulation study could not reveal a formula how to determine the optimal set of $\mathcal{T}$; it seems to be data and SDF model dependent. 
-
-In Table \ref{tab:simulation_study} for both true and false model specifications, the $\alpha$ standard deviation is very high compared to its mean value.
-This may indicate it is rather delicate to empirically determine private equity's historical outperformance by our semiparametric estimator. \newline
-}
 
 \paragraph{Simulation conclusion:}
 To conclude, our simulations study rationalizes two key practices from the \cite{DLP12} paper: (i) vintage year portfolio formation helps to improve estimator precision, and (ii) increasing the number of funds per vintage seems to be more effective in controlling estimator variance than increasing the number of vintages\footnote{Finding (ii) may explain the choice of \cite{DLP12} to employ an asymptotic law that lets the number of deals/funds per vintage tend to infinity.}.
@@ -1192,6 +1210,9 @@ Actually, choosing the set $\mathcal{T}$ according to the fund lifetime seems to
 
 \subsection{Empirical results}
 
+
+
+
 Following the conclusions from the previous subsection, we use vintage-year portfolios to estimate simple linear SDF models with maximum month 180.
 Asymptotic inference results for the full dataset are exhibited in Table \ref{tab:ai_180_FW_VYP_SL} for fund-size weighting and in Table \ref{tab:ai_180_EW_VYP_SL} for equal weighting.
 The results for $hv$-block cross-validation are displayed in Table \ref{tab:cv_180_FW_VYP_SL} for fund-size weighting and in Table \ref{tab:cv_180_EW_VYP_SL} for equal weighting.
@@ -1199,13 +1220,7 @@ We generally analyze the results in a two-step procedure: For a given model spec
 Therefore, for each fund type the SDF models in the asymptotic inference Tables \ref{tab:ai_180_FW_VYP_SL} and \ref{tab:ai_180_EW_VYP_SL} are sorted by the corresponding cross-validation error.
 Throughout this subsection, we define the statistical significance of coefficient estimates in terms of a $t$-ratio $\hat{\theta}[SE(\hat{\theta})]^{-1}$ greater than 1.96.
 
-\begin{figure}
-	\centering
-	\includegraphics[width=0.9\textwidth]{Figures/empirical_PE_all_factors}
-	\caption{\textbf{Empirical ($q^5$ factors):} Two-factor models for PE using VYP.}
-	\label{fig:empirical}
-\end{figure}
-
+\subsubsection{Single market-factor models}
 
 Table \ref{tab:ai_sum_abs} helps to get a rough overview of Table \ref{tab:ai_180_FW_VYP_SL} to \ref{tab:cv_180_EW_VYP_SL} as it summarizes their absolute column means.
 Conspicuously, asymptotic standard errors (SEs) seem enormously high and, moreover, contain colossal outliers.
@@ -1222,28 +1237,56 @@ Thus, we recommend focusing on single MKT factor models even when their asymptot
 At least the $hv$-block cross-validation standard deviations imply significant one-factor MKT models for fund types PE, VC, PD, INF.
 In contrast, RE is just significant for equal weighting, and NR is insignificant for both weighting schemes.
 
-\paragraph{Treating NAVs as true value proxies}
 
-Does this work?
+\begin{figure}
+	\centering
+	\includegraphics[width=0.9\textwidth]{empirical/empirical_PE_MKT}
+	\caption{\textbf{Empirical ($MKT$ factor):} Single-factor model for PE using VYP.}
+	\label{fig:empirical_MKT}
+\end{figure}
 
-\textcolor{orange}{\textbf{TODO: adapt estimator to neglect realized cash flows and use NAVs instead}}
+% Auto-generated by plot_empirical_estimates.R
+
+\begin{table}[htbp]
+	\centering
+	\footnotesize
+	\caption{Empirical Estimates: PE --- Single-Factor (MKT) Model}
+	\label{tab:empirical_pe_mkt}
+	\begin{tabular}{l *{5}{r} *{5}{r}}
+		\toprule
+		& \multicolumn{5}{c}{Equal-Weighted (EW)} & \multicolumn{5}{c}{Value-Weighted (FW)} \\
+		\cmidrule(lr){2-6} \cmidrule(lr){7-11}
+		Horizon & $\hat{\beta}$ & SE$_A$ & SE$_{CV}$ & $t_A$ & $t_{CV}$ & $\hat{\beta}$ & SE$_A$ & SE$_{CV}$ & $t_A$ & $t_{CV}$ \\
+		\midrule
+		0.1 yr & 1.630 & 0.897 & 0.159 & 1.82 & 10.33 & 1.776 & 1.002 & 0.041 & 1.77 & 44.53 \\
+		2.5 yr & 1.639 & 0.899 & 0.185 & 1.82 & 8.89 & 1.922 & 1.064 & 0.149 & 1.81 & 13.89 \\
+		5 yr & 1.685 & 0.892 & 0.188 & 1.89 & 8.96 & 2.061 & 1.124 & 0.095 & 1.83 & 23.30 \\
+		10 yr & 1.373 & 0.864 & 0.172 & 1.59 & 7.97 & 1.515 & 0.959 & 0.172 & 1.58 & 10.01 \\
+		12.5 yr & 1.164 & 0.846 & 0.187 & 1.38 & 6.19 & 1.246 & 0.925 & 0.220 & 1.35 & 6.68 \\
+		15 yr & 1.053 & 1.716 & 0.186 & 0.61 & 5.60 & 1.121 & 0.908 & 0.220 & 1.23 & 5.99 \\
+		17.5 yr & 0.970 & 1.588 & 0.179 & 0.61 & 5.31 & 1.054 & 1.033 & 0.197 & 1.02 & 6.89 \\
+		20 yr & 0.920 & 1.856 & 0.172 & 0.50 & 5.22 & 1.002 & 1.744 & 0.176 & 0.57 & 7.33 \\
+		22.5 yr & 0.907 & 1.826 & 0.162 & 0.50 & 5.42 & 0.980 & 1.708 & 0.153 & 0.57 & 8.09 \\
+		25 yr & 0.909 & 1.830 & 0.158 & 0.50 & 5.54 & 0.974 & 1.702 & 0.146 & 0.57 & 8.40 \\
+		27.5 yr & 0.909 & 1.832 & 0.158 & 0.50 & 5.53 & 0.974 & 1.702 & 0.146 & 0.57 & 8.39 \\
+		30 yr & 0.909 & 1.832 & 0.158 & 0.50 & 5.53 & 0.974 & 1.702 & 0.146 & 0.57 & 8.39 \\
+		\bottomrule
+	\end{tabular}
+	\par\vspace{2pt}
+	{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SE$_{CV}$ = cross-validation standard error; $t_A$/$t_{CV}$ = corresponding $t$-ratios. Significance: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+\end{table}
 
 
 
-\paragraph{Single market-factor models}
 
-\paragraph{Two-factor models}
 
-\paragraph{Focus on varying vintage cutoffs}
 
-Our standard vintage year cutoff in our empirical Preqin dataset is 2019.
-In this section, we  analyze how altering the maximum vintage cutoff from 2019 to older vintages influences the parameter estimates.
-Concretely, we compare yearly cutoff-vintages from 2019 to 2011 making it 9 distinct cutoff dates.
-We only consider asymptotic estimates in this section, i.e., we did not perform cross-validation results for the different vintage cutoffs.
 
-Figure XXX shows ...
+\subsubsection{Two-factor models}
 
-\paragraph{Focus on PE and VC estimates}
+\paragraph{Focus on PE estimates}
+
+% TODO: do not analyze VC estimates here, focus on PE, to make it not too loong
 
 Here, we briefly summarize the one-factor MKT and the two-factor Alpha model estimates for fund types PE (i.e., mainly Buyout and Growth) and VC.
 For PE, all one-factor MKT model $\beta_{\mathrm{MKT}}$ estimates fall in the range from 1.13 to 1.28. 
@@ -1258,246 +1301,260 @@ As a robustness check, we reestimate all SDF models on a dataset that just conta
 Interestingly, the PE and VC results regarding $\beta_{\mathrm{MKT}}$ and $\alpha$ can be qualitatively and also quantitatively confirmed on this 'mostly-liquidated' dataset\footnote{All R code and data is available in an online repository. \url{https://github.com/quant-unit/Fundwise_SDF/tree/master/r_project}
 }.
 
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Mon Jun  8 17:19:54 2020
-\begin{table}[H]
+\begin{figure}
 	\centering
-	\begin{tabularx}{0.9\textwidth}{l|XXX|lXXX}
-			& \multicolumn{3}{l}{MKT Factor} & \multicolumn{4}{l}{Second Factor} \\ 
-			Type & Estim. & SE & SE.indep & Factor & Estim. & SE & SE.indep \\ 
-			\hline
-			\hline
-			PE & 0.709 & 2.470 & 1.153 & EG & 0.807 & 4.693 & 1.960 \\ 
-			PE & 0.770 & 7.976 & 3.348 & ROE & 1.540 & 5.140 & 3.499 \\ 
-			PE & 1.126 & 1.003 & 0.868 & MKT & 1.126 & 1.003 & 0.868 \\ 
-			PE & 0.644 & 1.234 & 0.585 & Alpha & 0.003 & 0.036 & 0.013 \\ 
-			PE & 1.121 & 1.023 & 0.897 & ME & 0.074 & 2.021 & 0.915 \\ 
-			PE & 1.158 & 1.125 & 1.068 & IA & -0.338 & 2.499 & 1.259 \\
-			\hline 
-			VC & 1.053 & 4.150 & 2.733 & IA & -1.959 & 2.100 & 1.767 \\ 
-			VC & 1.114 & 3.861 & 2.894 & ME & -1.383 & 5.102 & 2.211 \\ 
-			VC & 1.806 & 11.391 & 4.279 & Alpha & -0.006 & 0.124 & 0.046 \\ 
-			VC & 0.801 & 704.455 & 561.598 & MKT & 0.801 & 704.455 & 561.598 \\ 
-			VC & 1.429 & 8.073 & 3.219 & ROE & -1.306 & 18.055 & 6.919 \\ 
-			VC & 1.507 & 17.322 & 6.966 & EG & -0.904 & 15.344 & 5.737 \\ 
-			%\hline
-			%PD & 0.885 & 1.040 & 1.242 & MKT & 0.885 & 1.040 & 1.242 \\ 
-			%PD & 0.660 & 0.095 & 0.039 & Alpha & 0.002 & 0.001 & 0.000 \\ 
-			%PD & 0.826 & 1.707 & 1.443 & EG & 0.143 & 20.341 & 7.506 \\ 
-			%PD & 0.849 & 2.921 & 2.146 & ME & 0.301 & 2.739 & 1.518 \\ 
-			%PD & 0.887 & 1.378 & 1.244 & ROE & -0.023 & 6.925 & 2.553 \\ 
-			%PD & 0.863 & 2.942 & 2.224 & IA & 0.247 & 5.306 & 3.607 \\ 
-			%\hline
-			%RE & 0.578 & 1.827 & 1.196 & MKT & 0.578 & 1.827 & 1.196 \\ 
-			%RE & 1.303 & 5.463 & 2.259 & Alpha & -0.006 & 0.088 & 0.034 \\ 
-			%RE & 0.200 & 2.598 & 1.356 & ROE & 3.118 & 2.579 & 6.629 \\ 
-			%RE & 0.202 & 3.297 & 1.965 & EG & 0.844 & 2.478 & 1.828 \\ 
-			%RE & 0.756 & 3.043 & 2.192 & IA & -1.938 & 1.879 & 0.783 \\ 
-			%RE & 0.887 & 1.167 & 0.858 & ME & -2.059 & 1.300 & 0.563 \\ 
-			%\hline
-			%NR & -0.215 & 2.367 & 1.976 & EG & 0.909 & 14.505 & 7.475 \\ 
-			%NR & 0.191 & 3.136 & 4.242 & MKT & 0.191 & 3.136 & 4.242 \\ 
-			%NR & -0.674 & 58.003 & 24.234 & Alpha & 0.008 & 0.230 & 0.098 \\ 
-			%NR & -0.020 & 0.954 & 2.210 & ROE & 1.128 & 4.830 & 5.066 \\ 
-			%NR & 0.143 & 3.236 & 4.116 & IA & -0.768 & 1.808 & 2.154 \\ 
-			%NR & 0.212 & 4.209 & 5.450 & ME & -0.575 & 1.603 & 1.252 \\ 
-			%\hline
-			%INF & 0.824 & 3.201 & 2.815 & MKT & 0.824 & 3.201 & 2.815 \\ 
-			%INF & 0.190 & 7.133 & 3.288 & Alpha & 0.005 & 0.030 & 0.025 \\ 
-			%INF & 0.317 & 23.904 & 10.658 & EG & 0.848 & 45.836 & 20.176 \\ 
-			%INF & 0.470 & 9.316 & 4.237 & ROE & 1.245 & 5.531 & 6.134 \\ 
-			%INF & 0.778 & 5.951 & 5.424 & ME & -0.811 & 3.712 & 4.349 \\ 
-			%INF & 0.661 & 61.329 & 33.819 & IA & -1.108 & 150.713 & 85.733 \\ 
-			\hline
-			\hline
-	\end{tabularx}
-	\caption{
-			Asymptotic inference using vintage-year portfolios with fund-size weighting, max month 180, and kernel bandwidth $D=12$.
-			Standard Errors (SE) are calculated by Equation \ref{eq:asy_se}.
-			} 
-	\label{tab:ai_180_FW_VYP_SL}
+	\includegraphics[width=0.9\textwidth]{empirical/empirical_PE_all_factors}
+	\caption{\textbf{Empirical ($q^5$ factors):} Two-factor models for PE using VYP.}
+	\label{fig:empirical}
+\end{figure}
+
+
+
+
+% Auto-generated by plot_empirical_estimates.R
+
+\begin{table}[htbp]
+	\centering
+	\footnotesize
+	\caption{Empirical Estimates: PE --- MKT + Alpha Model}
+	\label{tab:empirical_pe_alpha}
+	\begin{tabular}{l *{5}{r} *{5}{r}}
+		\toprule
+		& \multicolumn{5}{c}{Equal-Weighted (EW)} & \multicolumn{5}{c}{Value-Weighted (FW)} \\
+		\cmidrule(lr){2-6} \cmidrule(lr){7-11}
+		Horizon & $\hat{\beta}$ & SE$_A$ & SE$_{CV}$ & $t_A$ & $t_{CV}$ & $\hat{\beta}$ & SE$_A$ & SE$_{CV}$ & $t_A$ & $t_{CV}$ \\
+		\midrule
+		\multicolumn{11}{l}{\textit{Panel A: Market Factor ($\beta_{MKT}$)}} \\
+		\addlinespace[2pt]
+		0.1 yr & 1.237 & 1.491 & 0.323 & 0.83 & 4.02 & 1.423 & 0.758 & 0.118 & 1.88 & 12.19 \\
+		2.5 yr & 1.350 & 0.844 & 0.375 & 1.60 & 3.80 & 1.807 & 1.744 & 0.113 & 1.04 & 17.50 \\
+		5 yr & 1.442$^{***}$ & 0.134 & 0.376 & 10.80 & 3.95 & 1.929 & 1.072 & 0.134 & 1.80 & 15.66 \\
+		10 yr & 1.334 & 2.091 & 0.373 & 0.64 & 3.68 & 1.599 & 24.091 & 0.189 & 0.07 & 9.37 \\
+		12.5 yr & 1.249 & 10.646 & 0.390 & 0.12 & 3.26 & 1.536 & 26.945 & 0.207 & 0.06 & 8.19 \\
+		15 yr & 1.287$^{***}$ & 0.189 & 0.388 & 6.82 & 3.27 & 1.579 & 8.828 & 0.256 & 0.18 & 6.44 \\
+		17.5 yr & 1.268$^{***}$ & 0.278 & 0.372 & 4.56 & 3.31 & 1.549 & 8.244 & 0.268 & 0.19 & 5.15 \\
+		20 yr & 1.289 & 3.589 & 0.387 & 0.36 & 3.29 & 1.468 & 6.849 & 0.326 & 0.21 & 3.67 \\
+		22.5 yr & 1.303 & 1.523 & 0.396 & 0.86 & 3.29 & 1.382 & 5.413 & 0.322 & 0.26 & 3.28 \\
+		25 yr & 1.304 & 1.586 & 0.395 & 0.82 & 3.30 & 1.359 & 5.457 & 0.312 & 0.25 & 3.27 \\
+		27.5 yr & 1.306 & 1.571 & 0.394 & 0.83 & 3.32 & 1.360 & 5.450 & 0.311 & 0.25 & 3.28 \\
+		30 yr & 1.306 & 1.571 & 0.394 & 0.83 & 3.32 & 1.360 & 5.450 & 0.311 & 0.25 & 3.28 \\
+		\addlinespace[4pt]
+		\multicolumn{11}{l}{\textit{Panel B: Alpha ($\beta_{Alpha}$)}} \\
+		\addlinespace[2pt]
+		0.1 yr & 0.005 & 0.009 & 0.002 & 0.61 & 2.23 & 0.008 & 0.005 & 0.001 & 1.76 & 12.48 \\
+		2.5 yr & 0.004$^{*}$ & 0.002 & 0.002 & 2.12 & 1.36 & 0.005 & 0.010 & 0.002 & 0.55 & 2.16 \\
+		5 yr & 0.003$^{***}$ & 0.001 & 0.002 & 3.49 & 1.00 & 0.003$^{*}$ & 0.002 & 0.002 & 1.97 & 1.47 \\
+		10 yr & 0.000 & 0.004 & 0.003 & 0.08 & 0.01 & -0.001 & 0.156 & 0.003 & -0.00 & -0.08 \\
+		12.5 yr & -0.001 & 0.184 & 0.003 & -0.00 & -0.26 & -0.002 & 0.183 & 0.003 & -0.01 & -0.48 \\
+		15 yr & -0.002$^{*}$ & 0.001 & 0.003 & -2.51 & -0.50 & -0.003 & 0.070 & 0.004 & -0.05 & -0.65 \\
+		17.5 yr & -0.002$^{*}$ & 0.001 & 0.003 & -2.29 & -0.59 & -0.004 & 0.067 & 0.004 & -0.05 & 0.02 \\
+		20 yr & -0.003 & 1.841 & 0.003 & -0.00 & -0.79 & -0.004 & 0.064 & 0.005 & -0.06 & 0.26 \\
+		22.5 yr & -0.003 & 0.397 & 0.003 & -0.01 & -0.92 & -0.003 & 0.059 & 0.005 & -0.05 & 0.44 \\
+		25 yr & -0.003 & 0.324 & 0.004 & -0.01 & -0.92 & -0.003 & 0.060 & 0.005 & -0.05 & 0.50 \\
+		27.5 yr & -0.003 & 0.315 & 0.004 & -0.01 & -0.93 & -0.003 & 0.060 & 0.005 & -0.05 & 0.50 \\
+		30 yr & -0.003 & 0.315 & 0.004 & -0.01 & -0.93 & -0.003 & 0.060 & 0.005 & -0.05 & 0.50 \\
+		\bottomrule
+	\end{tabular}
+	\par\vspace{2pt}
+	{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SE$_{CV}$ = cross-validation standard error; $t_A$/$t_{CV}$ = corresponding $t$-ratios. Significance: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+\end{table}
+
+\begin{table}[htbp]
+	\centering
+	\footnotesize
+	\caption{Empirical Estimates: PE --- MKT + EG Model}
+	\label{tab:empirical_pe_eg}
+	\begin{tabular}{l *{5}{r} *{5}{r}}
+		\toprule
+		& \multicolumn{5}{c}{Equal-Weighted (EW)} & \multicolumn{5}{c}{Value-Weighted (FW)} \\
+		\cmidrule(lr){2-6} \cmidrule(lr){7-11}
+		Horizon & $\hat{\beta}$ & SE$_A$ & SE$_{CV}$ & $t_A$ & $t_{CV}$ & $\hat{\beta}$ & SE$_A$ & SE$_{CV}$ & $t_A$ & $t_{CV}$ \\
+		\midrule
+		\multicolumn{11}{l}{\textit{Panel A: Market Factor ($\beta_{MKT}$)}} \\
+		\addlinespace[2pt]
+		0.1 yr & 1.524 & 1.791 & 0.246 & 0.85 & 6.36 & 1.802$^{**}$ & 0.698 & 0.093 & 2.58 & 19.95 \\
+		2.5 yr & 1.576 & 3.504 & 0.287 & 0.45 & 5.69 & 2.095 & 1.725 & 0.067 & 1.21 & 33.91 \\
+		5 yr & 1.621 & 17.286 & 0.282 & 0.09 & 5.87 & 2.101 & 4.304 & 0.049 & 0.49 & 46.93 \\
+		10 yr & 1.474 & 2.814 & 0.241 & 0.52 & 6.14 & 1.749 & 6.056 & 0.188 & 0.29 & 9.97 \\
+		12.5 yr & 1.399 & 1.379 & 0.229 & 1.01 & 6.06 & 1.678 & 4.452 & 0.184 & 0.38 & 9.44 \\
+		15 yr & 1.400 & 1.279 & 0.216 & 1.09 & 6.34 & 1.637 & 2.492 & 0.191 & 0.66 & 8.55 \\
+		17.5 yr & 1.366 & 1.876 & 0.225 & 0.73 & 5.91 & 1.580 & 2.357 & 0.171 & 0.67 & 8.59 \\
+		20 yr & 1.338 & 1.361 & 0.244 & 0.98 & 5.41 & 1.487 & 2.312 & 0.161 & 0.64 & 8.52 \\
+		22.5 yr & 1.287 & 1.347 & 0.267 & 0.96 & 4.84 & 1.398 & 2.280 & 0.151 & 0.61 & 8.45 \\
+		25 yr & 1.259 & 1.426 & 0.276 & 0.88 & 4.60 & 1.369 & 1.832 & 0.140 & 0.75 & 8.95 \\
+		27.5 yr & 1.257 & 1.439 & 0.277 & 0.87 & 4.59 & 1.368 & 1.832 & 0.140 & 0.75 & 8.99 \\
+		30 yr & 1.257 & 1.439 & 0.277 & 0.87 & 4.59 & 1.368 & 1.832 & 0.140 & 0.75 & 8.99 \\
+		\addlinespace[4pt]
+		\multicolumn{11}{l}{\textit{Panel B: EG ($\beta_{EG}$)}} \\
+		\addlinespace[2pt]
+		0.1 yr & 0.489 & 1.081 & 0.286 & 0.45 & 1.44 & 1.023$^{*}$ & 0.444 & 0.087 & 2.30 & 12.68 \\
+		2.5 yr & 0.312 & 2.137 & 0.292 & 0.15 & 0.78 & 0.626 & 1.011 & 0.493 & 0.62 & 1.22 \\
+		5 yr & 0.148 & 11.338 & 0.243 & 0.01 & 0.47 & 0.294 & 2.526 & 0.525 & 0.12 & 0.67 \\
+		10 yr & -0.120 & 2.641 & 0.271 & -0.05 & -0.39 & -0.348 & 4.373 & 0.576 & -0.08 & -0.23 \\
+		12.5 yr & -0.256 & 5.720 & 0.289 & -0.04 & -0.73 & -0.506 & 3.542 & 0.548 & -0.14 & -0.46 \\
+		15 yr & -0.345 & 4.565 & 0.318 & -0.08 & -0.89 & -0.547 & 2.205 & 0.523 & -0.25 & -0.54 \\
+		17.5 yr & -0.394 & 10.642 & 0.380 & -0.04 & -0.83 & -0.542 & 2.083 & 0.561 & -0.26 & -0.05 \\
+		20 yr & -0.431 & 7.164 & 0.383 & -0.06 & -0.97 & -0.520 & 2.175 & 0.584 & -0.24 & 0.04 \\
+		22.5 yr & -0.415 & 7.434 & 0.262 & -0.06 & -1.60 & -0.480 & 2.272 & 0.646 & -0.21 & 0.18 \\
+		25 yr & -0.395 & 8.352 & 0.288 & -0.05 & -1.38 & -0.465 & 2.056 & 0.649 & -0.23 & 0.22 \\
+		27.5 yr & -0.392 & 8.473 & 0.289 & -0.05 & -1.36 & -0.465 & 2.057 & 0.643 & -0.23 & 0.21 \\
+		30 yr & -0.392 & 8.473 & 0.289 & -0.05 & -1.36 & -0.465 & 2.057 & 0.643 & -0.23 & 0.21 \\
+		\bottomrule
+	\end{tabular}
+	\par\vspace{2pt}
+	{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SE$_{CV}$ = cross-validation standard error; $t_A$/$t_{CV}$ = corresponding $t$-ratios. Significance: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+\end{table}
+
+\begin{table}[htbp]
+	\centering
+	\footnotesize
+	\caption{Empirical Estimates: PE --- MKT + IA Model}
+	\label{tab:empirical_pe_ia}
+	\begin{tabular}{l *{5}{r} *{5}{r}}
+		\toprule
+		& \multicolumn{5}{c}{Equal-Weighted (EW)} & \multicolumn{5}{c}{Value-Weighted (FW)} \\
+		\cmidrule(lr){2-6} \cmidrule(lr){7-11}
+		Horizon & $\hat{\beta}$ & SE$_A$ & SE$_{CV}$ & $t_A$ & $t_{CV}$ & $\hat{\beta}$ & SE$_A$ & SE$_{CV}$ & $t_A$ & $t_{CV}$ \\
+		\midrule
+		\multicolumn{11}{l}{\textit{Panel A: Market Factor ($\beta_{MKT}$)}} \\
+		\addlinespace[2pt]
+		0.1 yr & 1.760 & 1.228 & 0.274 & 1.43 & 6.40 & 1.989 & 1.846 & 0.096 & 1.08 & 21.16 \\
+		2.5 yr & 1.716 & 1.479 & 0.273 & 1.16 & 6.35 & 2.207 & 1.999 & 0.138 & 1.10 & 17.02 \\
+		5 yr & 1.689 & 3.710 & 0.255 & 0.46 & 6.70 & 2.156 & 5.420 & 0.097 & 0.40 & 24.67 \\
+		10 yr & 1.451 & 1.126 & 0.206 & 1.29 & 7.06 & 1.640 & 5.551 & 0.059 & 0.30 & 31.38 \\
+		12.5 yr & 1.321 & 1.039 & 0.199 & 1.27 & 6.63 & 1.510 & 1.558 & 0.038 & 0.97 & 44.08 \\
+		15 yr & 1.276 & 1.037 & 0.191 & 1.23 & 6.60 & 1.453 & 1.682 & 0.027 & 0.86 & 57.71 \\
+		17.5 yr & 1.200 & 1.032 & 0.216 & 1.16 & 5.47 & 1.384 & 1.691 & 0.047 & 0.82 & 31.31 \\
+		20 yr & 1.132 & 1.001 & 0.240 & 1.13 & 4.74 & 1.255 & 1.776 & 0.108 & 0.71 & 12.83 \\
+		22.5 yr & 1.068 & 2.835 & 0.257 & 0.38 & 4.28 & 1.149 & 1.602 & 0.169 & 0.72 & 7.84 \\
+		25 yr & 1.046 & 2.831 & 0.253 & 0.37 & 4.27 & 1.119 & 1.836 & 0.184 & 0.61 & 7.10 \\
+		27.5 yr & 1.045 & 2.839 & 0.249 & 0.37 & 4.32 & 1.118 & 1.835 & 0.183 & 0.61 & 7.16 \\
+		30 yr & 1.045 & 2.839 & 0.249 & 0.37 & 4.32 & 1.118 & 1.835 & 0.183 & 0.61 & 7.16 \\
+		\addlinespace[4pt]
+		\multicolumn{11}{l}{\textit{Panel B: IA ($\beta_{IA}$)}} \\
+		\addlinespace[2pt]
+		0.1 yr & 0.649 & 2.253 & 0.531 & 0.29 & 1.04 & 0.889 & 3.240 & 0.345 & 0.27 & 2.43 \\
+		2.5 yr & 0.413 & 2.708 & 0.567 & 0.15 & 0.48 & 0.886 & 3.182 & 1.039 & 0.28 & 0.70 \\
+		5 yr & 0.156 & 6.603 & 0.462 & 0.02 & 0.19 & 0.383 & 8.311 & 1.235 & 0.05 & 0.28 \\
+		10 yr & -0.328 & 4.260 & 0.471 & -0.08 & -0.61 & -0.696 & 10.654 & 0.961 & -0.07 & -0.45 \\
+		12.5 yr & -0.538 & 4.211 & 0.496 & -0.13 & -0.89 & -0.943 & 2.463 & 0.863 & -0.38 & -0.70 \\
+		15 yr & -0.646 & 3.722 & 0.553 & -0.17 & -0.91 & -0.999 & 2.453 & 0.825 & -0.41 & -0.76 \\
+		17.5 yr & -0.663 & 3.640 & 0.694 & -0.18 & -0.69 & -0.936 & 2.625 & 0.995 & -0.36 & -0.04 \\
+		20 yr & -0.660 & 3.449 & 0.745 & -0.19 & -0.67 & -0.774 & 2.986 & 1.090 & -0.26 & 0.21 \\
+		22.5 yr & -0.580 & 4.544 & 0.757 & -0.13 & -0.62 & -0.599 & 2.783 & 1.059 & -0.22 & 0.38 \\
+		25 yr & -0.531 & 4.858 & 0.735 & -0.11 & -0.61 & -0.545 & 2.818 & 1.029 & -0.19 & 0.42 \\
+		27.5 yr & -0.525 & 4.910 & 0.727 & -0.11 & -0.62 & -0.543 & 2.820 & 1.023 & -0.19 & 0.42 \\
+		30 yr & -0.525 & 4.910 & 0.727 & -0.11 & -0.62 & -0.543 & 2.820 & 1.023 & -0.19 & 0.42 \\
+		\bottomrule
+	\end{tabular}
+	\par\vspace{2pt}
+	{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SE$_{CV}$ = cross-validation standard error; $t_A$/$t_{CV}$ = corresponding $t$-ratios. Significance: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+\end{table}
+
+\begin{table}[htbp]
+	\centering
+	\footnotesize
+	\caption{Empirical Estimates: PE --- MKT + ME Model}
+	\label{tab:empirical_pe_me}
+	\begin{tabular}{l *{5}{r} *{5}{r}}
+		\toprule
+		& \multicolumn{5}{c}{Equal-Weighted (EW)} & \multicolumn{5}{c}{Value-Weighted (FW)} \\
+		\cmidrule(lr){2-6} \cmidrule(lr){7-11}
+		Horizon & $\hat{\beta}$ & SE$_A$ & SE$_{CV}$ & $t_A$ & $t_{CV}$ & $\hat{\beta}$ & SE$_A$ & SE$_{CV}$ & $t_A$ & $t_{CV}$ \\
+		\midrule
+		\multicolumn{11}{l}{\textit{Panel A: Market Factor ($\beta_{MKT}$)}} \\
+		\addlinespace[2pt]
+		0.1 yr & 1.773 & 1.142 & 0.214 & 1.55 & 8.23 & 1.933$^{*}$ & 0.974 & 0.105 & 1.98 & 19.22 \\
+		2.5 yr & 1.836 & 1.033 & 0.221 & 1.78 & 8.16 & 2.285$^{**}$ & 0.748 & 0.050 & 3.05 & 46.94 \\
+		5 yr & 1.800 & 1.142 & 0.218 & 1.58 & 8.16 & 2.392$^{***}$ & 0.538 & 0.041 & 4.45 & 59.86 \\
+		10 yr & 1.401 & 1.008 & 0.191 & 1.39 & 7.31 & 1.593$^{***}$ & 0.464 & 0.208 & 3.44 & 8.83 \\
+		12.5 yr & 1.240 & 1.426 & 0.187 & 0.87 & 6.61 & 1.396 & 1.229 & 0.149 & 1.14 & 11.07 \\
+		15 yr & 1.118 & 0.939 & 0.187 & 1.19 & 5.90 & 1.267 & 1.579 & 0.111 & 0.80 & 13.92 \\
+		17.5 yr & 0.984 & 1.706 & 0.187 & 0.58 & 5.25 & 1.110 & 3.220 & 0.087 & 0.34 & 17.97 \\
+		20 yr & 0.918 & 1.850 & 0.184 & 0.50 & 5.10 & 1.028 & 3.363 & 0.124 & 0.31 & 12.37 \\
+		22.5 yr & 0.908 & 1.820 & 0.180 & 0.50 & 5.10 & 1.024 & 3.135 & 0.146 & 0.33 & 10.31 \\
+		25 yr & 0.911 & 1.827 & 0.180 & 0.50 & 5.09 & 1.023 & 3.129 & 0.152 & 0.33 & 9.90 \\
+		27.5 yr & 0.912 & 1.830 & 0.180 & 0.50 & 5.09 & 1.024 & 3.133 & 0.153 & 0.33 & 9.86 \\
+		30 yr & 0.912 & 1.830 & 0.180 & 0.50 & 5.09 & 1.024 & 3.133 & 0.153 & 0.33 & 9.86 \\
+		\addlinespace[4pt]
+		\multicolumn{11}{l}{\textit{Panel B: ME ($\beta_{ME}$)}} \\
+		\addlinespace[2pt]
+		0.1 yr & 0.740 & 1.980 & 0.612 & 0.37 & 0.77 & 0.954 & 1.963 & 0.226 & 0.49 & 4.27 \\
+		2.5 yr & 0.898 & 2.056 & 0.391 & 0.44 & 1.81 & 1.379 & 2.973 & 0.201 & 0.46 & 6.38 \\
+		5 yr & 0.888 & 2.234 & 0.296 & 0.40 & 2.55 & 1.587 & 3.536 & 0.097 & 0.45 & 15.17 \\
+		10 yr & 0.814 & 12.157 & 0.417 & 0.07 & 1.58 & 1.373 & 3.431 & 0.180 & 0.40 & 7.71 \\
+		12.5 yr & 1.027 & 3.631 & 0.235 & 0.28 & 4.06 & 1.704 & 5.756 & 0.480 & 0.30 & 3.61 \\
+		15 yr & 0.893 & 2.958 & 0.346 & 0.30 & 2.19 & 1.732 & 6.762 & 0.546 & 0.26 & 3.56 \\
+		17.5 yr & 0.590 & 2.507 & 0.672 & 0.24 & 0.48 & 1.467 & 14.712 & 0.298 & 0.10 & 5.86 \\
+		20 yr & 0.218 & 1.749 & 0.786 & 0.12 & -0.15 & 1.313 & 7.376 & 0.154 & 0.18 & 11.11 \\
+		22.5 yr & 0.075 & 1.734 & 0.737 & 0.04 & -0.37 & 1.286 & 9.366 & 0.085 & 0.14 & 18.87 \\
+		25 yr & 0.080 & 1.736 & 0.743 & 0.05 & -0.37 & 1.265 & 9.487 & 0.071 & 0.13 & 22.28 \\
+		27.5 yr & 0.080 & 1.736 & 0.742 & 0.05 & -0.37 & 1.263 & 9.526 & 0.071 & 0.13 & 22.24 \\
+		30 yr & 0.080 & 1.736 & 0.742 & 0.05 & -0.37 & 1.263 & 9.526 & 0.071 & 0.13 & 22.24 \\
+		\bottomrule
+	\end{tabular}
+	\par\vspace{2pt}
+	{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SE$_{CV}$ = cross-validation standard error; $t_A$/$t_{CV}$ = corresponding $t$-ratios. Significance: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+\end{table}
+
+\begin{table}[htbp]
+	\centering
+	\footnotesize
+	\caption{Empirical Estimates: PE --- MKT + ROE Model}
+	\label{tab:empirical_pe_roe}
+	\begin{tabular}{l *{5}{r} *{5}{r}}
+		\toprule
+		& \multicolumn{5}{c}{Equal-Weighted (EW)} & \multicolumn{5}{c}{Value-Weighted (FW)} \\
+		\cmidrule(lr){2-6} \cmidrule(lr){7-11}
+		Horizon & $\hat{\beta}$ & SE$_A$ & SE$_{CV}$ & $t_A$ & $t_{CV}$ & $\hat{\beta}$ & SE$_A$ & SE$_{CV}$ & $t_A$ & $t_{CV}$ \\
+		\midrule
+		\multicolumn{11}{l}{\textit{Panel A: Market Factor ($\beta_{MKT}$)}} \\
+		\addlinespace[2pt]
+		0.1 yr & 1.585 & 2.675 & 0.244 & 0.59 & 6.66 & 1.856$^{*}$ & 0.912 & 0.122 & 2.04 & 15.89 \\
+		2.5 yr & 1.613 & 5.218 & 0.278 & 0.31 & 5.99 & 2.126 & 1.530 & 0.076 & 1.39 & 30.31 \\
+		5 yr & 1.657 & 18.700 & 0.261 & 0.09 & 6.49 & 2.103 & 12.191 & 0.034 & 0.17 & 67.65 \\
+		10 yr & 1.538 & 1.688 & 0.205 & 0.91 & 7.57 & 1.755 & 4.738 & 0.165 & 0.37 & 11.31 \\
+		12.5 yr & 1.461 & 1.249 & 0.185 & 1.17 & 7.87 & 1.671 & 2.401 & 0.165 & 0.70 & 10.37 \\
+		15 yr & 1.437 & 1.213 & 0.179 & 1.18 & 7.90 & 1.605 & 2.205 & 0.166 & 0.73 & 9.55 \\
+		17.5 yr & 1.402 & 1.079 & 0.196 & 1.30 & 6.99 & 1.544 & 2.096 & 0.147 & 0.74 & 9.83 \\
+		20 yr & 1.361 & 1.135 & 0.208 & 1.20 & 6.53 & 1.445 & 1.992 & 0.125 & 0.73 & 10.87 \\
+		22.5 yr & 1.307 & 1.129 & 0.231 & 1.16 & 5.70 & 1.355 & 1.919 & 0.098 & 0.71 & 13.07 \\
+		25 yr & 1.283 & 1.133 & 0.239 & 1.13 & 5.43 & 1.326 & 1.843 & 0.086 & 0.72 & 14.64 \\
+		27.5 yr & 1.282 & 1.134 & 0.239 & 1.13 & 5.41 & 1.325 & 1.843 & 0.086 & 0.72 & 14.63 \\
+		30 yr & 1.282 & 1.134 & 0.239 & 1.13 & 5.41 & 1.325 & 1.843 & 0.086 & 0.72 & 14.63 \\
+		\addlinespace[4pt]
+		\multicolumn{11}{l}{\textit{Panel B: ROE ($\beta_{ROE}$)}} \\
+		\addlinespace[2pt]
+		0.1 yr & 0.568 & 2.320 & 0.477 & 0.24 & 0.99 & 1.330 & 0.820 & 0.514 & 1.62 & 2.79 \\
+		2.5 yr & 0.393 & 4.496 & 0.454 & 0.09 & 0.67 & 0.977 & 1.259 & 0.769 & 0.78 & 1.34 \\
+		5 yr & 0.117 & 15.801 & 0.365 & 0.01 & 0.25 & 0.325 & 9.526 & 0.786 & 0.03 & 0.73 \\
+		10 yr & -0.276 & 2.999 & 0.395 & -0.09 & -0.58 & -0.489 & 4.149 & 0.834 & -0.12 & -0.13 \\
+		12.5 yr & -0.437 & 2.922 & 0.436 & -0.15 & -0.79 & -0.666 & 2.513 & 0.815 & -0.26 & -0.30 \\
+		15 yr & -0.516 & 2.828 & 0.536 & -0.18 & -0.72 & -0.695 & 2.280 & 0.813 & -0.30 & -0.30 \\
+		17.5 yr & -0.577 & 2.667 & 0.668 & -0.22 & -0.61 & -0.684 & 2.270 & 0.928 & -0.30 & 0.14 \\
+		20 yr & -0.607 & 3.573 & 0.227 & -0.17 & -2.71 & -0.645 & 2.145 & 0.969 & -0.30 & 0.22 \\
+		22.5 yr & -0.583 & 3.639 & 0.223 & -0.16 & -2.75 & -0.586 & 2.155 & 1.052 & -0.27 & 0.33 \\
+		25 yr & -0.561 & 3.730 & 0.240 & -0.15 & -2.47 & -0.564 & 2.136 & 1.041 & -0.26 & 0.34 \\
+		27.5 yr & -0.558 & 3.742 & 0.243 & -0.15 & -2.43 & -0.564 & 2.136 & 1.020 & -0.26 & 0.34 \\
+		30 yr & -0.558 & 3.742 & 0.243 & -0.15 & -2.43 & -0.564 & 2.136 & 1.020 & -0.26 & 0.34 \\
+		\bottomrule
+	\end{tabular}
+	\par\vspace{2pt}
+	{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SE$_{CV}$ = cross-validation standard error; $t_A$/$t_{CV}$ = corresponding $t$-ratios. Significance: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
 \end{table}
 
 
-\begin{table}[H]
-	\centering
-	\begin{tabularx}{0.9\textwidth}{l|XX|XlX|X}
-			& \multicolumn{2}{l}{MKT Factor} & \multicolumn{3}{l}{Second Factor} & \\ 
-			Type & Mean & SD & Factor & Mean & SD & CV error \\ 
-			\hline
-			\hline
-			PE & 0.867 & 0.276 & EG & 0.720 & 0.137 & 112808 \\ 
-			PE & 0.927 & 0.305 & ROE & 1.375 & 0.420 & 126801 \\ 
-			PE & 1.276 & 0.296 & MKT & 1.276 & 0.296 & 151964 \\ 
-			PE & 0.772 & 0.238 & Alpha & 0.004 & 0.002 & 154805 \\ 
-			PE & 1.317 & 0.396 & ME & 0.236 & 0.664 & 209319 \\ 
-			PE & 1.311 & 0.370 & IA & 0.014 & 0.703 & 210650 \\ 
-			\hline
-			VC & 1.045 & 0.126 & IA & -1.890 & 0.238 & 11858 \\ 
-			VC & 1.172 & 0.126 & ME & -1.448 & 0.263 & 13301 \\ 
-			VC & 1.930 & 0.356 & Alpha & -0.005 & 0.001 & 17723 \\ 
-			VC & 0.804 & 0.363 & MKT & 0.804 & 0.363 & 21852 \\ 
-			VC & 1.527 & 0.517 & ROE & -0.972 & 0.679 & 26680 \\ 
-			VC & 1.646 & 0.678 & EG & -0.644 & 0.556 & 32730 \\ 
-			%\hline
-			%PD & 0.887 & 0.039 & MKT & 0.887 & 0.039 & 7368 \\ 
-			%PD & 0.567 & 0.202 & Alpha & 0.003 & 0.001 & 7917 \\ 
-			%PD & 0.763 & 0.113 & EG & 0.229 & 0.141 & 8758 \\ 
-			%PD & 0.862 & 0.103 & ME & 0.342 & 0.256 & 9834 \\ 
-			%PD & 0.812 & 0.153 & ROE & 0.258 & 0.394 & 11522 \\ 
-			%PD & 0.914 & 0.211 & IA & 0.472 & 0.424 & 18096 \\
-			%\hline 
-			%RE & 0.722 & 0.392 & MKT & 0.722 & 0.392 & 50900 \\ 
-			%RE & 1.288 & 0.345 & Alpha & -0.004 & 0.005 & 51437 \\ 
-			%RE & 0.389 & 0.446 & ROE & 2.333 & 1.507 & 54689 \\ 
-			%RE & 0.465 & 0.470 & EG & 0.448 & 0.629 & 59316 \\ 
-			%RE & 0.847 & 0.411 & IA & -1.262 & 1.160 & 65835 \\ 
-			%RE & 0.983 & 0.350 & ME & -1.467 & 1.298 & 66827 \\ 
-			%\hline
-			%NR & -0.047 & 0.421 & EG & 0.657 & 0.557 & 10559 \\ 
-			%NR & 0.318 & 0.321 & MKT & 0.318 & 0.321 & 11480 \\ 
-			%NR & -0.335 & 0.763 & Alpha & 0.006 & 0.005 & 11854 \\ 
-			%NR & 0.136 & 0.466 & ROE & 0.844 & 1.062 & 13296 \\ 
-			%NR & 0.270 & 0.508 & IA & -0.288 & 1.124 & 14479 \\ 
-			%NR & 0.416 & 0.587 & ME & 0.032 & 1.079 & 15789 \\ 
-			%\hline
-			%INF & 0.862 & 0.320 & MKT & 0.862 & 0.320 & 14551 \\ 
-			%INF & 0.639 & 0.753 & Alpha & 0.002 & 0.004 & 15069 \\ 
-			%INF & 0.766 & 0.626 & EG & 0.258 & 0.495 & 16004 \\ 
-			%INF & 0.837 & 0.504 & ROE & 0.090 & 0.939 & 18472 \\ 
-			%INF & 0.868 & 0.412 & ME & 0.078 & 0.643 & 18514 \\ 
-			%INF & 0.892 & 0.561 & IA & 0.081 & 1.073 & 23162 \\ 
-			\hline
-			\hline
-	\end{tabularx}
-	\caption{$hv$-block cross-validation using vintage-year portfolios with fund-size weighting and max month 180.} 
-	\label{tab:cv_180_FW_VYP_SL}
-\end{table}
 
 
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Mon Jun  8 17:44:27 2020
-\begin{table}[H]
-	\centering
-	\begin{tabularx}{0.9\textwidth}{l|XXX|lXXX}
-			& \multicolumn{3}{l}{MKT Factor} & \multicolumn{4}{l}{Second Factor} \\ 
-			Type & Estim. & SE & SE.indep & Factor & Estim. & SE & SE.indep \\ 
-			\hline
-			\hline
-			PE & 0.775 & 0.638 & 0.550 & EG & 0.667 & 5.558 & 2.125 \\ 
-			PE & 0.610 & 1.064 & 0.387 & Alpha & 0.004 & 0.006 & 0.002 \\ 
-			PE & 0.826 & 20.352 & 8.308 & ROE & 1.087 & 33.514 & 12.143 \\ 
-			PE & 1.134 & 1.050 & 0.694 & MKT & 1.134 & 1.050 & 0.694 \\ 
-			PE & 1.146 & 1.001 & 0.638 & IA & -0.386 & 1.909 & 0.813 \\ 
-			PE & 1.134 & 1.048 & 0.702 & ME & -0.014 & 1.797 & 0.736 \\ 
-			\hline
-			VC & 1.181 & 24.418 & 16.693 & ME & -1.277 & 4.928 & 4.352 \\ 
-			VC & 1.137 & 7.259 & 6.057 & IA & -1.553 & 3.716 & 2.139 \\ 
-			VC & 1.956 & 4.189 & 1.520 & Alpha & -0.006 & 0.335 & 0.117 \\ 
-			VC & 1.034 & 2.205 & 1.758 & MKT & 1.034 & 2.205 & 1.758 \\ 
-			VC & 1.488 & 1.801 & 0.941 & ROE & -1.148 & 4.060 & 1.424 \\ 
-			VC & 1.535 & 2.821 & 1.336 & EG & -0.754 & 3.626 & 1.260 \\ 
-			%\hline
-			%PD & 0.844 & 1.245 & 0.856 & MKT & 0.844 & 1.245 & 0.856 \\ 
-			%PD & 0.502 & 0.044 & 0.015 & Alpha & 0.003 & 0.000 & 0.000 \\ 
-			%PD & 0.791 & 2.478 & 1.557 & ROE & 0.222 & 5.024 & 1.966 \\ 
-			%PD & 0.736 & 2.230 & 1.303 & EG & 0.213 & 6.296 & 2.374 \\ 
-			%PD & 0.844 & 1.150 & 0.837 & IA & 0.076 & 2.543 & 1.416 \\ 
-			%PD & 0.833 & 1.978 & 1.362 & ME & 0.323 & 1.845 & 0.986 \\ 
-			%\hline
-			%RE & 0.743 & 3.471 & 2.075 & MKT & 0.743 & 3.471 & 2.075 \\ 
-			%RE & 1.265 & 7.581 & 3.331 & Alpha & -0.004 & 0.046 & 0.017 \\ 
-			%RE & 0.145 & 3.486 & 1.614 & ROE & 3.202 & 17.447 & 7.413 \\ 
-			%RE & 0.400 & 50.493 & 31.818 & EG & 0.700 & 48.813 & 29.195 \\ 
-			%RE & 0.884 & 4.928 & 2.813 & ME & -1.782 & 1.474 & 0.605 \\ 
-			%RE & 0.795 & 18.146 & 10.282 & IA & -1.712 & 13.199 & 7.657 \\ 
-			%\hline
-			%NR & -0.056 & 3.693 & 1.897 & ROE & 1.934 & 3.154 & 2.287 \\ 
-			%NR & 0.000 & 4.771 & 2.368 & EG & 0.814 & 1.368 & 1.753 \\ 
-			%NR & 0.425 & 3.370 & 5.178 & MKT & 0.425 & 3.370 & 5.178 \\ 
-			%NR & -0.272 & 39.463 & 16.698 & Alpha & 0.006 & 0.202 & 0.081 \\ 
-			%NR & 0.394 & 0.871 & 1.401 & IA & -0.319 & 1.734 & 1.169 \\ 
-			%NR & 0.453 & 15.719 & 24.377 & ME & 0.432 & 5.574 & 8.016 \\ 
-			%\hline
-			%INF & 0.098 & 0.055 & 0.025 & Alpha & 0.006 & 0.001 & 0.000 \\ 
-			%INF & 0.280 & 20.158 & 8.983 & EG & 0.893 & 21.368 & 9.700 \\ 
-			%INF & 0.775 & 19.273 & 22.509 & MKT & 0.775 & 19.273 & 22.509 \\ 
-			%INF & 0.469 & 26.226 & 12.751 & ROE & 1.030 & 30.728 & 16.129 \\ 
-			%INF & 0.758 & 33.453 & 36.239 & ME & -0.804 & 16.214 & 16.161 \\ 
-			%INF & 0.664 & 630.801 & 351.730 & IA & -0.929 & 137.937 & 75.628 \\ 
-			\hline
-			\hline
-	\end{tabularx}
-	\caption{
-		Asymptotic inference using vintage-year portfolios with fund-equal weighting, max month 180, and kernel bandwidth $D=12$.
-		Standard Errors (SE) are calculated by Equation \ref{eq:asy_se}.
-		} 
-	\label{tab:ai_180_EW_VYP_SL}
-\end{table}
+\subsubsection{Focus on varying vintage cutoffs}
 
-% latex table generated in R 3.4.2 by xtable 1.8-4 package
-% Mon Jun  8 17:44:27 2020
-\begin{table}[H]
-	\centering
-	\begin{tabularx}{0.9\textwidth}{l|XX|XlX|X}
-			& \multicolumn{2}{l}{MKT Factor} & \multicolumn{3}{l}{Second Factor} & \\ 
-			Type & Mean & SD & Factor & Mean & SD & CV error \\ 
-			\hline
-			\hline
-			PE & 0.886 & 0.262 & EG & 0.614 & 0.217 & 101444 \\ 
-			PE & 0.719 & 0.205 & Alpha & 0.004 & 0.001 & 105842 \\ 
-			PE & 0.948 & 0.267 & ROE & 0.975 & 0.407 & 110926 \\ 
-			PE & 1.250 & 0.262 & MKT & 1.250 & 0.262 & 127589 \\ 
-			PE & 1.247 & 0.274 & IA & -0.183 & 0.598 & 157037 \\ 
-			PE & 1.281 & 0.323 & ME & 0.048 & 0.644 & 169552 \\ 
-			\hline
-			VC & 1.250 & 0.153 & ME & -1.292 & 0.234 & 16305 \\ 
-			VC & 1.183 & 0.169 & IA & -1.507 & 0.327 & 16449 \\ 
-			VC & 2.052 & 0.257 & Alpha & -0.006 & 0.001 & 18666 \\ 
-			VC & 1.138 & 0.341 & MKT & 1.138 & 0.341 & 25321 \\ 
-			VC & 1.610 & 0.431 & ROE & -0.946 & 0.426 & 26618 \\ 
-			VC & 1.688 & 0.505 & EG & -0.616 & 0.331 & 30392 \\ 
-			%\hline
-			%PD & 0.838 & 0.029 & MKT & 0.838 & 0.029 & 11290 \\ 
-			%PD & 0.458 & 0.151 & Alpha & 0.003 & 0.001 & 11568 \\ 
-			%PD & 0.770 & 0.058 & ROE & 0.232 & 0.111 & 11572 \\ 
-			%PD & 0.707 & 0.086 & EG & 0.224 & 0.091 & 12194 \\ 
-			%PD & 0.825 & 0.083 & IA & 0.158 & 0.305 & 15071 \\ 
-			%PD & 0.837 & 0.098 & ME & 0.358 & 0.328 & 15441 \\ 
-			%\hline
-			%RE & 0.803 & 0.336 & MKT & 0.803 & 0.336 & 43486 \\ 
-			%RE & 1.191 & 0.363 & Alpha & -0.003 & 0.004 & 45310 \\ 
-			%RE & 0.341 & 0.402 & ROE & 2.275 & 1.558 & 52822 \\ 
-			%RE & 0.559 & 0.379 & EG & 0.397 & 0.503 & 52867 \\ 
-			%RE & 0.929 & 0.339 & ME & -1.287 & 1.174 & 57341 \\ 
-			%RE & 0.852 & 0.372 & IA & -1.129 & 1.025 & 57662 \\ 
-			%\hline
-			%NR & -0.009 & 0.203 & ROE & 1.880 & 0.562 & 15631 \\ 
-			%NR & 0.200 & 0.510 & EG & 0.681 & 0.372 & 18981 \\ 
-			%NR & 0.572 & 0.400 & MKT & 0.572 & 0.400 & 20006 \\ 
-			%NR & -0.065 & 0.729 & Alpha & 0.006 & 0.004 & 20880 \\ 
-			%NR & 0.596 & 0.567 & IA & -0.060 & 0.869 & 24766 \\ 
-			%NR & 0.769 & 0.771 & ME & 0.666 & 1.062 & 27238 \\ 
-			%\hline
-			%INF & 0.124 & 0.608 & Alpha & 0.007 & 0.006 & 14995 \\ 
-			%INF & 0.613 & 0.393 & EG & 0.402 & 0.496 & 15758 \\ 
-			%INF & 0.862 & 0.281 & MKT & 0.862 & 0.281 & 15820 \\ 
-			%INF & 0.627 & 0.360 & ROE & 0.577 & 1.374 & 18297 \\ 
-			%INF & 0.810 & 0.315 & ME & -0.129 & 1.109 & 19641 \\ 
-			%INF & 0.797 & 0.842 & IA & 0.051 & 2.180 & 33661 \\ 
-			\hline
-			\hline
-	\end{tabularx}
-	\caption{$hv$-block cross-validation using vintage-year portfolios with fund-equal weighting and max month 180.} 
-	\label{tab:cv_180_EW_VYP_SL}
-\end{table}
+Our standard vintage year cutoff in our empirical Preqin dataset is 2019.
+In this section, we  analyze how altering the maximum vintage cutoff from 2019 to older vintages influences the parameter estimates.
+Concretely, we compare yearly cutoff-vintages from 2019 to 2011 making it 9 distinct cutoff dates.
+We only consider asymptotic estimates in this section, i.e., we did not perform cross-validation results for the different vintage cutoffs.
 
-
-% NEW NEW NEW
-
-
-\pagebreak
-
+Figure XXX shows ...
+% TODO: create this chart
 
 
 
@@ -1530,7 +1587,11 @@ These can be parametric assumptions for the data generating process \citep{ACGP1
 A first "modern" approach to the same problem is applying machine learning techniques that regularize/shrink all coefficients other than the MKT factor.
 Secondly, given the high estimator variance revealed in the simulation study, statistical learning methods that create a strong learner by combining multiple weak learners seem also worth considering (boosting, bagging, or model averaging).
 
-\marginpar{\scriptsize Incorporate fees and carry model to DGP for SDF estimation for PE gross-fee performance}
+Additional idea for further research is to incorporate fees and carry model to DGP for SDF estimation for PE gross-fee performance or also for better DGP models for fund LPs. 
+With a more realistic DGP we likely become more realistic SDF estimates and more precise terms for the bias and variance terms.
+
+Another idea is to treat NAVs as true value proxies to alleviate the NFV/Timing Risk Premium bias.
+This would would entail adapting the estimator to neglect realized cash flows and use NAVs instead.
 
 Finally, we point to the potentially most interesting topic for future research.
 Our simulation study indicates that the estimator's bias and variance can be controlled by an appropriate choice for the set $\mathcal{T}$.
@@ -1554,7 +1615,8 @@ A parsimonious but general model that allows for misspecification and can explai
 \section{Bias--Variance Tradeoff of $\mathcal{T}$-Averaging}
 \label{sec:appendix_bias_variance}
 
-This appendix provides a formal decomposition of the bias introduced by averaging pricing errors over multiple discounting dates (Equation~\ref{eq:average_pricing_error}) and explains the bias-reduction mechanism observed in the simulation study (Section~\ref{sec:simulation_study}).
+This appendix shows that $\mathcal{T}$-averaging introduces a small asymptotic bias via the Timing Risk Premium but achieves a net bias reduction in finite samples by lowering the variance of the pricing-error moments.
+We formalize this claim and reconcile it with the simulation results from Section~\ref{sec:simulation_study}.
 
 \subsection{Decomposition of $\mathbb{E}[\bar{\epsilon}_i(\theta_0)]$}
 
@@ -1665,15 +1727,20 @@ Therefore the bias decomposes as
 	\right]
 \end{equation}
 
+\noindent\textbf{Remark (misspecification).}
+Under model misspecification, $\mathbb{E}[\delta_{i,j}] \neq 0$ and the second term in Equation~\ref{eq:cov_decomp} no longer vanishes.
+This introduces an additional bias component proportional to $\mathbb{E}[\Psi_{t_{i,j}^{\mathrm{Inv}}}/\Psi_\tau] \cdot \mathbb{E}[\delta_{i,j}]$ that grows with $|\mathcal{T}_i|$.
+
 
 \subsection{Reconciliation with the simulation study}
 
 If this asymptotic bias were the only effect, the NPV-only approach of \cite{DLP12} with $\mathcal{T}_i = \{\min_j t_{i,j}^{\mathrm{Inv}}\}$ would exhibit the smallest bias, and adding NFV terms would always increase it.
-However, the simulation study in Section~\ref{sec:simulation_study} shows the opposite: averaging over larger $\mathcal{T}_i$ \emph{reduces} total bias. The resolution involves two competing effects.
+However, the simulation study in Section~\ref{sec:simulation_study} shows the opposite: averaging over larger $\mathcal{T}_i$ \emph{reduces} total bias. 
+The resolution involves two competing effects.
 
 \paragraph{Effect 1: Finite-sample bias from nonlinear estimation}
 
-For the nonlinear least-squares objective $Q_n(\theta) = -\frac{1}{n}\sum_{i=1}^n \bar{\epsilon}_i(\theta)^2$, the finite-sample bias of $\hat{\theta}$ is approximately (standard Nagar-type expansion for M-estimators):
+For the nonlinear least-squares objective $Q_n(\theta) = -\frac{1}{n}\sum_{i=1}^n \bar{\epsilon}_i(\theta)^2$, the finite-sample bias of $\hat{\theta}$ is approximately (standard \cite{nagar1959bias}-type expansion for M-estimators):
 \begin{equation}
 	\label{eq:finite_sample_bias}
 	\mathbb{E}[\hat{\theta} - \theta_0]
@@ -1682,8 +1749,12 @@ For the nonlinear least-squares objective $Q_n(\theta) = -\frac{1}{n}\sum_{i=1}^
 	\mathrm{Var}[\bar{\epsilon}_i],\, \text{curvature}
 	\right)
 \end{equation}
-where $b$ is a correction term that is proportional to $\mathrm{Var}[\bar{\epsilon}_i(\theta_0)]$.
-When each fund provides only one noisy moment (NPV-only), this variance is high and creates a substantial finite-sample bias through the curvature of the quadratic loss.
+where $H = \nabla^2 Q_n(\theta_0)$ denotes the Hessian of the objective function.
+The term $\text{curvature}$ refers to the second-order derivatives $\nabla^2_\theta \bar{\epsilon}_i(\theta_0)$ of the moment conditions with respect to the parameter vector.
+These derivatives measure how nonlinear the estimating equations are in $\theta$: if the pricing-error moments were perfectly linear in $\theta$, the curvature would vanish and no finite-sample bias would arise.
+The correction term $b(\cdot)$ is the Nagar-type bias correction from \cite{rilstone1996second} and \cite{newey2004higher}; it captures the interaction between the variance of the moment conditions $\mathrm{Var}[\bar{\epsilon}_i(\theta_0)]$ and the curvature of the objective.
+Specifically, $b$ is proportional to $\mathrm{Var}[\bar{\epsilon}_i(\theta_0)]$: the noisier the moments, the more the nonlinear optimizer is ``pulled away'' from the true $\theta_0$ in finite samples, because the concavity/convexity of $Q_n$ causes asymmetric responses to positive and negative moment deviations.
+When each fund provides only one noisy moment (NPV-only), this variance is high, resulting in a substantial finite-sample bias.
 
 \paragraph{Effect 2: Variance reduction through $\mathcal{T}$-averaging}
 
@@ -1699,7 +1770,7 @@ When averaging over $|\mathcal{T}_i|$ discounting dates, the variance of the ave
 	\right)
 \end{equation}
 
-The pricing errors $\epsilon_{\tau,i}$ at different $\tau$ are positively correlated (they share the same deal cash flows and factor realizations), but they are not perfectly correlated because different $\tau$'s weight the SDF path differently.
+The pricing errors $\epsilon_{\tau,i}$ at different $\tau$ are positively correlated (they share the same deal cash flows and factor realizations), but they are not perfectly correlated because different $\tau$'s weight the SDF path differently, so that exploiting these additional conditional moment restrictions improves efficiency \citep{newey1993efficient}.
 Hence
 \[
 \mathrm{Var}[\bar{\epsilon}_i]
@@ -1723,12 +1794,11 @@ The total bias in small samples decomposes approximately as
 
 As $|\mathcal{T}_i|$ increases from one:
 \begin{itemize}
-	\item The finite-sample bias \emph{decreases} because $\mathrm{Var}[\bar{\epsilon}_i]$ drops, i.e., each fund contributes more information to the objective function.
-	\item The TRP bias \emph{increases} (more NFV terms enter), but slowly because:
+	\item The finite-sample bias \emph{decreases} because $\mathrm{Var}[\bar{\epsilon}_i]$ drops (cf.\ Equation~\ref{eq:finite_sample_bias}).
+	\item The TRP bias \emph{increases} as more NFV terms enter, but is tempered by two factors:
 	\begin{itemize}
-		\item only the fraction of $(\tau,j)$ pairs with $\tau > t_{i,j}^{\mathrm{Inv}}$ contributes,
-		\item under correct model specification, the TRP covariance is non-zero as it is driven by the interaction of systematic risk (i.e., beta) with the SDF path, but this bias effectively remains small relative to the variance reduction,
-		\item the $1/|\mathcal{T}_i|$ denominator dilutes the accumulating TRP terms.
+		\item only $(\tau,j)$ pairs with $\tau > t_{i,j}^{\mathrm{Inv}}$ contribute non-zero TRP terms,
+		\item the $1/|\mathcal{T}_i|$ denominator dilutes the accumulating terms.
 	\end{itemize}
 \end{itemize}
 
@@ -1736,11 +1806,32 @@ The simulation study finds the sweet spot where these two effects balance: at $|
 
 \subsection{Interpretation}
 
-The $\mathcal{T}$-averaging mechanism does not make the TRP ``wash out'' in the sense that each individual TRP term goes to zero.
-Rather, it achieves a bias--variance tradeoff where the small TRP bias introduced by NFV terms is more than compensated by the variance reduction that cures the finite-sample bias inherited from the nonlinear estimation.
-The TRP terms are ``diluted'' by the growing denominator $|\mathcal{T}_i|$. Although they do not vanish (as they are driven by systematic risk), they remain small enough relative to the substantial variance reduction that cures the finite-sample bias inherited from the nonlinear estimation.
+The $\mathcal{T}$-averaging mechanism can be understood through three complementary perspectives from the econometrics and asset pricing literature.
 
-The fact that the optimal $|\mathcal{T}_i|$ depends on the SDF model is consistent with this explanation: a more complex or misspecified SDF model would increase the TRP covariance terms, shifting the optimal tradeoff point.
+\paragraph{Variance reduction via moment combination.}
+In the GMM framework of \cite{H82}, efficiency gains arise from combining multiple moment conditions.
+Each discounting date $\tau \in \mathcal{T}_i$ contributes a separate pricing-error moment $\epsilon_{\tau,i}(\theta)$, and averaging over $\mathcal{T}_i$ is formally equivalent to combining $|\mathcal{T}_i|$ such moments into a single summary condition.
+Since these moments share the same underlying deal cash flows and factor paths but weight the SDF trajectory differently, they are positively yet imperfectly correlated.
+The resulting reduction in $\mathrm{Var}[\bar{\epsilon}_i]$ is the classical \cite{H82} effect of exploiting additional moment information, which in turn decreases the finite-sample bias of the nonlinear estimator (cf.\ Equation \ref{eq:finite_sample_bias}).
+
+\paragraph{The TRP as a bounded risk-premium term.}
+The Timing Risk Premium in Equation~\ref{eq:bias_trp} is a covariance between a ratio of stochastic discount factors and a deal-level pricing error.
+Within the \cite{HJ91} framework, the magnitude of such covariances is bounded by the product of the SDF's variability and the payoff's standard deviation.
+Under correct model specification, the TRP terms are therefore non-zero (i.e., they reflect genuine systematic risk) but their size is disciplined by the Hansen--Jagannathan bound.
+Consequently, the TRP bias introduced by NFV terms ($\tau > t_{i,j}^{\mathrm{Inv}}$) grows only moderately with $|\mathcal{T}_i|$ and is further diluted by the $1/|\mathcal{T}_i|$ denominator.
+
+\paragraph{Analogy to model averaging.}
+The structure of $\mathcal{T}$-averaging closely mirrors the jackknife model averaging framework of \cite{hansen2012jackknife}, where combining multiple (possibly misspecified) estimators achieves a bias--variance tradeoff: averaging reduces variance at the expense of a small bias from the inclusion of imperfect components.
+In our setting, the ``models'' being averaged are the pricing-error moments at different discounting dates $\tau$.
+Each individual moment is unbiased for the NPV terms but may carry TRP bias for the NFV terms---analogous to the weak misspecification in the \cite{hansen2012jackknife} setup.
+Their key insight applies directly: the variance reduction from averaging dominates the bias cost as long as the individual components are not too severely biased, which is precisely what the \cite{HJ91} bound guarantees in our context.
+
+\paragraph{Summary.}
+The $\mathcal{T}$-averaging mechanism does not make the TRP ``wash out'' in the sense that each individual TRP term goes to zero.
+Rather, it achieves a bias--variance tradeoff where the TRP bias introduced by NFV terms is more than compensated by the variance reduction that cures the finite-sample bias from the nonlinear estimation.
+The fact that the optimal $|\mathcal{T}_i|$ depends on the SDF model specification is consistent with this explanation: a more complex or misspecified model not only increases the TRP covariance terms but also activates the additional bias channel identified in the Remark above, shifting the optimal tradeoff point.
+Finally, the favorable tradeoff observed in our simulation study may partly reflect the conditioning on a single realized factor path, which attenuates the TRP covariance terms relative to their unconditional magnitude.
+Across different macro regimes, the TRP cost could be larger and the optimal $|\mathcal{T}_i|$ smaller.
 
 
 %\input{literature.tex}
