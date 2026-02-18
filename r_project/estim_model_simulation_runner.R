@@ -1,6 +1,6 @@
 ### estimate model runner: Simulation
 # 0. Prologue ----
-if(sys.nframe() == 0L) rm(list = ls())
+if (sys.nframe() == 0L) rm(list = ls())
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
@@ -31,7 +31,9 @@ max.months <- c(1, 60, 120, 150, 180, 210, 240, 300, 360) # c(10, 20) * 12 # c(1
 include.alpha.term <- FALSE
 lambdas <- 0
 kernel.bandwidth <- 12
-if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
+alpha.lower <- -0.01
+alpha.upper <- 0.01
+if (use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
 
 cache.folder.tag <- "20250808_222540_simulated_cashflows_EW_VYP"
 simulation.filename <- paste0("20250808_222540/", cache.folder.tag, ".csv")
@@ -69,8 +71,10 @@ no.partitions <- 1
 cache.folder.tag <- "20250808_222540_simulated_cashflows_EW_VYP"
 simulation.filename <- paste0("20250808_222540/", cache.folder.tag, ".csv")
 
-max.months <- c(1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110,
-                120, 150, 180, 210, 240, 300, 360)
+max.months <- c(
+  1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110,
+  120, 150, 180, 210, 240, 300, 360
+)
 
 sdf.model <- "linear.single.date"
 
@@ -258,7 +262,7 @@ no.partitions <- 1
 
 # 12) No investment period (investing=0) -----
 
-### 12.a) No investment period  (investing=0 + max.holding=1) 
+### 12.a) No investment period  (investing=0 + max.holding=1)
 
 ## set parameters
 cache.folder.tag <- "20250825_143009_simulated_cashflows_EW_VYP"
@@ -270,7 +274,7 @@ no.partitions <- 1
 ## trigger run
 # source("estim_model_optimized.R")
 
-### 12.b) No investment period  (investing=0 + max.holding=3) 
+### 12.b) No investment period  (investing=0 + max.holding=3)
 
 ## set parameters
 cache.folder.tag <- "20250825_143734_simulated_cashflows_EW_VYP"
@@ -282,7 +286,7 @@ no.partitions <- 1
 ## trigger run
 # source("estim_model_optimized.R")
 
-### 12.c) No investment period  (investing=0 + max.holding=5) 
+### 12.c) No investment period  (investing=0 + max.holding=5)
 
 ## set parameters
 cache.folder.tag <- "20250825_144508_simulated_cashflows_EW_VYP"
@@ -294,7 +298,7 @@ no.partitions <- 1
 ## trigger run
 # source("estim_model_optimized.R")
 
-### 12.d) No investment period  (investing=0 + max.holding=7) 
+### 12.d) No investment period  (investing=0 + max.holding=7)
 
 ## set parameters
 cache.folder.tag <- "20250825_145244_simulated_cashflows_EW_VYP"
@@ -306,7 +310,7 @@ no.partitions <- 1
 ## trigger run
 # source("estim_model_optimized.R")
 
-### 12.e) No investment period  (investing=0 + max.holding=10) 
+### 12.e) No investment period  (investing=0 + max.holding=10)
 
 ## set parameters
 cache.folder.tag <- "20250825_150023_simulated_cashflows_EW_VYP"
@@ -320,7 +324,7 @@ no.partitions <- 1
 
 # 13) No investment period (investing=0) - alpha & beta -----
 
-### 13.a) No investment period  (investing=0 + max.holding=1) 
+### 13.a) No investment period  (investing=0 + max.holding=1)
 
 ## set parameters
 cache.folder.tag <- "20250825_143009_simulated_cashflows_EW_VYP"
@@ -334,7 +338,7 @@ no.partitions <- 1
 ## trigger run
 source("estim_model_optimized.R")
 
-### 13.b) No investment period  (investing=0 + max.holding=3) 
+### 13.b) No investment period  (investing=0 + max.holding=3)
 
 ## set parameters
 cache.folder.tag <- "20250825_143734_simulated_cashflows_EW_VYP"
@@ -346,7 +350,7 @@ no.partitions <- 1
 ## trigger run
 source("estim_model_optimized.R")
 
-### 13.c) No investment period  (investing=0 + max.holding=5) 
+### 13.c) No investment period  (investing=0 + max.holding=5)
 
 ## set parameters
 cache.folder.tag <- "20250825_144508_simulated_cashflows_EW_VYP"
@@ -358,7 +362,7 @@ no.partitions <- 1
 ## trigger run
 source("estim_model_optimized.R")
 
-### 13.d) No investment period  (investing=0 + max.holding=7) 
+### 13.d) No investment period  (investing=0 + max.holding=7)
 
 ## set parameters
 cache.folder.tag <- "20250825_145244_simulated_cashflows_EW_VYP"
@@ -370,7 +374,7 @@ no.partitions <- 1
 ## trigger run
 source("estim_model_optimized.R")
 
-### 13.e) No investment period  (investing=0 + max.holding=10) 
+### 13.e) No investment period  (investing=0 + max.holding=10)
 
 ## set parameters
 cache.folder.tag <- "20250825_150023_simulated_cashflows_EW_VYP"

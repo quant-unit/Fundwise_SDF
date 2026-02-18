@@ -274,7 +274,9 @@ scenario_to_estimation_params <- function(scenario, base_path = "simulation") {
         no_partitions = est$no_partitions,
         scenario_id = scenario$id,
         max_vintage = est$max_vintage,
-        cache_folder_tag = cache_folder_tag # Pass the correctly constructed cache folder tag
+        cache_folder_tag = cache_folder_tag, # Pass the correctly constructed cache folder tag
+        alpha_lower = if (!is.null(est$alpha_lower)) est$alpha_lower else -Inf,
+        alpha_upper = if (!is.null(est$alpha_upper)) est$alpha_upper else Inf
     )
 
     return(params)
@@ -308,7 +310,9 @@ empirical_scenario_to_params <- function(scenario) {
         no_partitions = scenario$no_partitions,
         data_out_folder = scenario$data_out_folder,
         factors_to_use = if (!is.null(scenario$factors_to_use)) scenario$factors_to_use else "",
-        scenario_id = scenario$id
+        scenario_id = scenario$id,
+        alpha_lower = if (!is.null(scenario$alpha_lower)) scenario$alpha_lower else -Inf,
+        alpha_upper = if (!is.null(scenario$alpha_upper)) scenario$alpha_upper else Inf
     )
 
     return(params)

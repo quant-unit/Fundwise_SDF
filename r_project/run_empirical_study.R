@@ -211,4 +211,11 @@ if (sys.nframe() == 0L) {
 
     cat("Available scenarios:\n\n")
     list_empirical_scenarios(active_only = TRUE)
+    
+    data.out.folder <- "results/data_out_2026_02_18"
 }
+
+results <- run_empirical_study(
+  scenario_ids = c("fw_no_cv", "fw_cv", "ew_no_cv", "ew_cv"),
+  data_out_folder = data.out.folder
+)

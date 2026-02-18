@@ -27,6 +27,8 @@ library(grid)
 #' @param export_svg Logical, whether to export as SVG file
 #' @param export_png Logical, whether to export as PNG file
 #' @param export_pdf Logical, whether to export as PDF file
+#' @param export_csv Logical, whether to export combined plot data as CSV
+#' @param export_latex Logical, whether to export a LaTeX summary table
 #' @param output_file Path for output (extension added automatically)
 #' @param width Plot width in inches (default: 14)
 #' @param height Plot height in inches (default: 6)
@@ -56,6 +58,8 @@ plot_empirical_estimates <- function(
     export_svg = FALSE,
     export_png = FALSE,
     export_pdf = FALSE,
+    export_csv = FALSE,
+    export_latex = FALSE,
     output_file = "empirical_estimates_plot",
     width = 14,
     height = 6,
@@ -98,13 +102,26 @@ plot_empirical_estimates <- function(
     # -------------------------------------------------------------------------
     # Read and combine data from all 4 sources
     # -------------------------------------------------------------------------
-    all_data <- lapply(csv_sources, function(src) {
+    all_data_full <- lapply(csv_sources, function(src) {
         if (!file.exists(src$path)) {
             warning(paste("File not found:", src$path))
             return(NULL)
         }
         df <- read.csv(src$path, stringsAsFactors = FALSE)
-        # Select only the columns needed for plotting (CSVs have different extras)
+        df$source <- src$label
+        df$weighting <- src$weighting
+        df$method <- src$method
+        df
+    })
+
+    all_data_full <- bind_rows(Filter(Negate(is.null), all_data_full))
+
+    # Subset for plotting (only the columns needed)
+    all_data <- lapply(csv_sources, function(src) {
+        if (!file.exists(src$path)) {
+            return(NULL)
+        }
+        df <- read.csv(src$path, stringsAsFactors = FALSE)
         keep_cols <- c("Type", "max.month", "MKT", "Factor", "Coef")
         df <- df[, intersect(keep_cols, names(df)), drop = FALSE]
         df$source <- src$label
@@ -359,16 +376,16 @@ plot_empirical_estimates <- function(
         row1 <- Reduce(`|`, mkt_plots)
     }
 
-    # Create Panel A label as a dedicated text element
-    panel_a_label <- wrap_elements(
-        panel = textGrob(
-            expression(bold("Panel A: Market Factor (" * beta[MKT] * ")")),
-            x = 0, y = 0, hjust = 0, vjust = 0,
-            gp = gpar(fontsize = 12, fontfamily = "serif", fontface = "bold")
-        )
-    )
-
     if (length(second_plots) > 0) {
+        # Create Panel A label as a dedicated text element
+        panel_a_label <- wrap_elements(
+            panel = textGrob(
+                expression(bold("Panel A: Market Factor (" * beta[MKT] * ")")),
+                x = 0, y = 0, hjust = 0, vjust = 0,
+                gp = gpar(fontsize = 12, fontfamily = "serif", fontface = "bold")
+            )
+        )
+
         # Create row 2 (second factor)
         if (length(second_plots) == 1) {
             row2 <- second_plots[[1]]
@@ -389,9 +406,8 @@ plot_empirical_estimates <- function(
         combined_plot <- panel_a_label / row1 / panel_b_label / row2 +
             plot_layout(heights = c(0.1, 1, 0.1, 1))
     } else {
-        # Single-factor only
-        combined_plot <- panel_a_label / row1 +
-            plot_layout(heights = c(0.1, 1))
+        # Single-factor only — no panel labels needed
+        combined_plot <- row1
     }
 
     # -------------------------------------------------------------------------
@@ -405,7 +421,9 @@ plot_empirical_estimates <- function(
     # -------------------------------------------------------------------------
     # Export or display
     # -------------------------------------------------------------------------
-    if (export_svg || export_png || export_pdf) {
+    any_export <- export_svg || export_png || export_pdf || export_csv || export_latex
+
+    if (any_export) {
         base_file <- sub("\\.(svg|png|pdf)$", "", output_file, ignore.case = TRUE)
 
         output_dir_path <- dirname(base_file)
@@ -467,6 +485,28 @@ plot_empirical_estimates <- function(
             message(paste("PDF exported to:", pdf_file))
         }
 
+        # ---------------------------------------------------------------------
+        # CSV Export: full data with all columns
+        # ---------------------------------------------------------------------
+        if (export_csv) {
+            csv_export <- all_data_full %>% filter(Type == fund_type)
+            csv_file <- paste0(base_file, "_data.csv")
+            write.csv(csv_export, file = csv_file, row.names = FALSE)
+            message(paste("Data CSV exported to:", csv_file))
+        }
+
+        # ---------------------------------------------------------------------
+        # LaTeX Table Export: compact booktabs table per factor
+        # ---------------------------------------------------------------------
+        if (export_latex) {
+            .export_latex_tables(
+                all_data_full = all_data_full,
+                fund_type = fund_type,
+                factors = factors,
+                base_file = base_file
+            )
+        }
+
         invisible(combined_plot)
     } else {
         print(combined_plot)
@@ -475,17 +515,239 @@ plot_empirical_estimates <- function(
 }
 
 
+# =============================================================================
+# Helper: LaTeX table export
+# =============================================================================
+
+.export_latex_tables <- function(all_data_full, fund_type, factors, base_file) {
+    # Filter to fund type
+    ft_data <- all_data_full %>% filter(Type == fund_type)
+
+    if (nrow(ft_data) == 0) {
+        warning(paste("No data for fund type", fund_type, "- skipping LaTeX export."))
+        return(invisible(NULL))
+    }
+
+    # Available horizons (sorted)
+    horizons <- sort(unique(as.numeric(ft_data$max.month)))
+
+    # Significance stars based on |t|
+    sig_stars <- function(t_val) {
+        t_val <- abs(t_val)
+        ifelse(is.na(t_val), "",
+            ifelse(t_val >= 3.29, "$^{***}$",
+                ifelse(t_val >= 2.58, "$^{**}$",
+                    ifelse(t_val >= 1.96, "$^{*}$", "")
+                )
+            )
+        )
+    }
+
+    # Format numeric with rounding; return "--" for NA
+    fmt <- function(x, digits = 3) {
+        ifelse(is.na(x), "--", formatC(round(x, digits), format = "f", digits = digits))
+    }
+    fmt2 <- function(x) fmt(x, 2)
+    fmt3 <- function(x) fmt(x, 3)
+
+    # For each factor, build a table
+    for (fct in factors) {
+        # Determine if this is single-factor (MKT) or two-factor
+        is_single <- (fct == "MKT")
+
+        # -- Gather data for each weighting x method combination --
+        get_row_data <- function(w, m, factor_name) {
+            sub <- ft_data %>%
+                filter(
+                    .data$weighting == w,
+                    .data$method == m,
+                    .data$Factor == factor_name
+                ) %>%
+                mutate(max.month = as.numeric(max.month))
+            sub
+        }
+
+        ew_asym <- get_row_data("EW", "Asymptotic", if (is_single) "MKT" else fct)
+        ew_cv <- get_row_data("EW", "Cross-Validation", if (is_single) "MKT" else fct)
+        fw_asym <- get_row_data("FW", "Asymptotic", if (is_single) "MKT" else fct)
+        fw_cv <- get_row_data("FW", "Cross-Validation", if (is_single) "MKT" else fct)
+
+        # Build table lines
+        lines <- character()
+
+        # LaTeX preamble
+        if (is_single) {
+            caption_text <- paste0("Empirical Estimates: ", fund_type, " --- Single-Factor (MKT) Model")
+        } else {
+            caption_text <- paste0("Empirical Estimates: ", fund_type, " --- MKT + ", fct, " Model")
+        }
+
+        lines <- c(
+            lines,
+            "% Auto-generated by plot_empirical_estimates.R",
+            "\\begin{table}[htbp]",
+            "\\centering",
+            "\\footnotesize",
+            paste0("\\caption{", caption_text, "}"),
+            paste0("\\label{tab:empirical_", tolower(fund_type), "_", tolower(fct), "}"),
+            "\\begin{tabular}{l *{5}{r} *{5}{r}}",
+            "\\toprule",
+            " & \\multicolumn{5}{c}{Equal-Weighted (EW)} & \\multicolumn{5}{c}{Value-Weighted (FW)} \\\\",
+            "\\cmidrule(lr){2-6} \\cmidrule(lr){7-11}",
+            paste0(
+                "Horizon & $\\hat{\\beta}$ & SE$_A$ & SE$_{CV}$ & $t_A$ & $t_{CV}$",
+                " & $\\hat{\\beta}$ & SE$_A$ & SE$_{CV}$ & $t_A$ & $t_{CV}$ \\\\"
+            ),
+            "\\midrule"
+        )
+
+        # ----- Panel A: MKT -----
+        if (!is_single) {
+            lines <- c(
+                lines,
+                "\\multicolumn{11}{l}{\\textit{Panel A: Market Factor ($\\beta_{MKT}$)}} \\\\",
+                "\\addlinespace[2pt]"
+            )
+        }
+
+        for (h in horizons) {
+            horizon_label <- paste0(round(h / 12, 1), " yr")
+
+            # EW
+            ew_a <- ew_asym %>% filter(max.month == h)
+            ew_c <- ew_cv %>% filter(max.month == h)
+            # FW
+            fw_a <- fw_asym %>% filter(max.month == h)
+            fw_c <- fw_cv %>% filter(max.month == h)
+
+            # MKT values
+            ew_beta <- if (nrow(ew_a) > 0) ew_a$MKT[1] else NA
+            ew_se_a <- if (nrow(ew_a) > 0 && "SE.MKT" %in% names(ew_a)) ew_a$SE.MKT[1] else NA
+            ew_se_cv <- if (nrow(ew_c) > 0 && "SE.MKT" %in% names(ew_c)) ew_c$SE.MKT[1] else NA
+            ew_t_a <- if (nrow(ew_a) > 0 && "t.MKT" %in% names(ew_a)) ew_a$t.MKT[1] else NA
+            ew_t_cv <- if (nrow(ew_c) > 0 && "t.MKT" %in% names(ew_c)) ew_c$t.MKT[1] else NA
+
+            fw_beta <- if (nrow(fw_a) > 0) fw_a$MKT[1] else NA
+            fw_se_a <- if (nrow(fw_a) > 0 && "SE.MKT" %in% names(fw_a)) fw_a$SE.MKT[1] else NA
+            fw_se_cv <- if (nrow(fw_c) > 0 && "SE.MKT" %in% names(fw_c)) fw_c$SE.MKT[1] else NA
+            fw_t_a <- if (nrow(fw_a) > 0 && "t.MKT" %in% names(fw_a)) fw_a$t.MKT[1] else NA
+            fw_t_cv <- if (nrow(fw_c) > 0 && "t.MKT" %in% names(fw_c)) fw_c$t.MKT[1] else NA
+
+            row <- paste0(
+                horizon_label,
+                " & ", fmt3(ew_beta), sig_stars(ew_t_a),
+                " & ", fmt3(ew_se_a),
+                " & ", fmt3(ew_se_cv),
+                " & ", fmt2(ew_t_a),
+                " & ", fmt2(ew_t_cv),
+                " & ", fmt3(fw_beta), sig_stars(fw_t_a),
+                " & ", fmt3(fw_se_a),
+                " & ", fmt3(fw_se_cv),
+                " & ", fmt2(fw_t_a),
+                " & ", fmt2(fw_t_cv),
+                " \\\\"
+            )
+            lines <- c(lines, row)
+        }
+
+        # ----- Panel B: Second Factor (if two-factor) -----
+        if (!is_single) {
+            lines <- c(
+                lines,
+                "\\addlinespace[4pt]",
+                paste0("\\multicolumn{11}{l}{\\textit{Panel B: ", fct, " ($\\beta_{", fct, "}$)}} \\\\"),
+                "\\addlinespace[2pt]"
+            )
+
+            for (h in horizons) {
+                horizon_label <- paste0(round(h / 12, 1), " yr")
+
+                ew_a <- ew_asym %>% filter(max.month == h)
+                ew_c <- ew_cv %>% filter(max.month == h)
+                fw_a <- fw_asym %>% filter(max.month == h)
+                fw_c <- fw_cv %>% filter(max.month == h)
+
+                # Second factor (Coef) values
+                ew_beta <- if (nrow(ew_a) > 0) ew_a$Coef[1] else NA
+                ew_se_a <- if (nrow(ew_a) > 0 && "SE.Coef" %in% names(ew_a)) ew_a$SE.Coef[1] else NA
+                ew_se_cv <- if (nrow(ew_c) > 0 && "SE.Coef" %in% names(ew_c)) ew_c$SE.Coef[1] else NA
+                ew_t_a <- if (nrow(ew_a) > 0 && "t.Coef" %in% names(ew_a)) ew_a$t.Coef[1] else NA
+                ew_t_cv <- if (nrow(ew_c) > 0 && "t.Coef" %in% names(ew_c)) ew_c$t.Coef[1] else NA
+
+                fw_beta <- if (nrow(fw_a) > 0) fw_a$Coef[1] else NA
+                fw_se_a <- if (nrow(fw_a) > 0 && "SE.Coef" %in% names(fw_a)) fw_a$SE.Coef[1] else NA
+                fw_se_cv <- if (nrow(fw_c) > 0 && "SE.Coef" %in% names(fw_c)) fw_c$SE.Coef[1] else NA
+                fw_t_a <- if (nrow(fw_a) > 0 && "t.Coef" %in% names(fw_a)) fw_a$t.Coef[1] else NA
+                fw_t_cv <- if (nrow(fw_c) > 0 && "t.Coef" %in% names(fw_c)) fw_c$t.Coef[1] else NA
+
+                row <- paste0(
+                    horizon_label,
+                    " & ", fmt3(ew_beta), sig_stars(ew_t_a),
+                    " & ", fmt3(ew_se_a),
+                    " & ", fmt3(ew_se_cv),
+                    " & ", fmt2(ew_t_a),
+                    " & ", fmt2(ew_t_cv),
+                    " & ", fmt3(fw_beta), sig_stars(fw_t_a),
+                    " & ", fmt3(fw_se_a),
+                    " & ", fmt3(fw_se_cv),
+                    " & ", fmt2(fw_t_a),
+                    " & ", fmt2(fw_t_cv),
+                    " \\\\"
+                )
+                lines <- c(lines, row)
+            }
+        }
+
+        # Table footer
+        lines <- c(
+            lines,
+            "\\bottomrule",
+            "\\end{tabular}",
+            "\\par\\vspace{2pt}",
+            "{\\scriptsize\\textit{Notes:} $\\hat{\\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SE$_{CV}$ = cross-validation standard error; $t_A$/$t_{CV}$ = corresponding $t$-ratios. Significance: $^{*}$\\,$p<0.05$, $^{**}$\\,$p<0.01$, $^{***}$\\,$p<0.005$.}",
+            "\\end{table}"
+        )
+
+        # Write to file
+        tex_file <- paste0(base_file, "_table_", tolower(fct), ".tex")
+        writeLines(lines, con = tex_file)
+        message(paste("LaTeX table exported to:", tex_file))
+    }
+
+    invisible(NULL)
+}
+
+
 # ============================================================================
 # Example Usage (uncomment to run)
 # ============================================================================
 
+file.folder <- "results/data_out_2026-emp-max-vin-2019"
+file.folder <- "results/data_out_2026_02_18"
+
 # # Two-factor model with all factors
 plot_empirical_estimates(
-    data_dir = "results/data_out_2026-emp-max-vin-2019",
+    data_dir = file.folder,
     fund_type = "PE",
     factors = c("Alpha", "EG", "IA", "ME", "ROE"),
     export_pdf = TRUE,
-    y.max.mkt = 2.5, y.min.mkt = 1,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    y.max.mkt = 2.5, y.min.mkt = 0.7,
     y.lim.second = list(Alpha = c(-0.01, 0.01)),
     output_file = "results/figures/empirical_PE_all_factors"
+)
+
+# Single-factor model with MKT only
+plot_empirical_estimates(
+    data_dir = file.folder,
+    fund_type = "PE",
+    factors = c("MKT"),
+    export_pdf = TRUE,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    height = 4,
+    y.max.mkt = 2.5, y.min.mkt = 0.7,
+    y.lim.second = list(Alpha = c(-0.01, 0.01)),
+    output_file = "results/figures/empirical_PE_MKT"
 )

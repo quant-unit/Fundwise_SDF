@@ -24,7 +24,7 @@
 #'
 #' @param cache_folder_path Full path to the cache folder
 #' @return data.frame with columns max.month and lambda (empty if none found)
-get_completed_horizons <- function(cache_folder_path) {
+get_completed_horizons <- function(cache_folder_path, do_cross_validation = FALSE) {
     if (!dir.exists(cache_folder_path)) {
         return(data.frame(max.month = integer(0), lambda = numeric(0)))
     }
@@ -41,7 +41,11 @@ get_completed_horizons <- function(cache_folder_path) {
             {
                 df <- read.csv(f, stringsAsFactors = FALSE)
                 if ("max.month" %in% colnames(df) && "lambda" %in% colnames(df)) {
-                    unique(df[, c("max.month", "lambda")])
+                    # When CV is requested, only count horizons that have CV fold results
+                    if (do_cross_validation && "CV.key" %in% colnames(df)) {
+                        df <- df[df$CV.key != "ALL", , drop = FALSE]
+                    }
+                    if (nrow(df) > 0) unique(df[, c("max.month", "lambda")]) else NULL
                 } else {
                     NULL
                 }
@@ -167,7 +171,10 @@ run_estimation <- function(
     do_parallel = TRUE,
     verbose = TRUE,
     # Tracking
-    scenario_id = NULL) {
+    scenario_id = NULL,
+    # Alpha bounds (for optimx)
+    alpha_lower = -Inf,
+    alpha_upper = Inf) {
     # -------------------------------------------------------------------------
     # Store current working directory to restore later
     # -------------------------------------------------------------------------
@@ -243,7 +250,7 @@ run_estimation <- function(
     # -------------------------------------------------------------------------
     cache_folder_path <- file.path(data_out_folder, paste0("cache_", public_filename, "_", cache_folder_tag))
 
-    completed <- get_completed_horizons(cache_folder_path)
+    completed <- get_completed_horizons(cache_folder_path, do_cross_validation)
     filtered <- filter_remaining_horizons(max_months, lambdas, completed)
 
     if (verbose && nrow(completed) > 0) {
@@ -317,7 +324,11 @@ run_estimation <- function(
     assign("lambdas", lambdas, envir = .GlobalEnv)
     assign("kernel.bandwidth", kernel_bandwidth, envir = .GlobalEnv)
     assign("max.vintage", max_vintage, envir = .GlobalEnv)
-    
+
+    # Alpha bounds
+    assign("alpha.lower", alpha_lower, envir = .GlobalEnv)
+    assign("alpha.upper", alpha_upper, envir = .GlobalEnv)
+
     # Partitioning
     assign("part.to.keep", part_to_keep, envir = .GlobalEnv)
     assign("no.partitions", no_partitions, envir = .GlobalEnv)

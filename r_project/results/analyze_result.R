@@ -13,6 +13,7 @@ if (source.internally) {
   prefix <- "q_factors_preqin_"
   suffix <- "FW_VYP"
   data.out.folder <- "results/data_out_2026-emp-F-max-vin-2019"
+  data.out.folder <- "results/data_out_2026_02_18"
 }
 
 list.cache <- list()
@@ -57,10 +58,17 @@ q.factors <- levels(as.factor(df.f$Factor))
 
 cv.res <- list()
 for (Factor in q.factors) {
+  # Select columns without duplicating MKT when Factor == "MKT"
+  if (Factor == "MKT") {
+    select_cols <- c("MKT", "Type", "max.month", "validation.error")
+  } else {
+    select_cols <- c("MKT", Factor, "Type", "max.month", "validation.error")
+  }
   df <- df.f[
     (df.f$CV.key != "ALL") & (df.f$Factor == Factor),
-    c("MKT", Factor, "Type", "max.month", "validation.error")
+    select_cols
   ]
+  if (nrow(df) == 0) next
   ddf <- df[, !is.na(df[1, ])]
   df$id <- paste0(df$Type, "_", df$max.month)
   df$Type <- NULL
@@ -74,29 +82,41 @@ for (Factor in q.factors) {
   n <- ncol(s)
   a <- 2
   b <- 3
-  if (n == b) {
+  if (Factor == "MKT") {
+    # One-factor model: Coef = MKT, SE.Coef = SE.MKT
+    m$Coef <- m$MKT
+    s$Coef <- s$MKT
+    names(s)[a:ncol(s)] <- paste0("SE.", names(s)[a:ncol(s)])
+  } else if (n == b) {
     names(m)[b] <- "Coef"
     names(s)[b] <- "Coef"
+    names(m)[a:n] <- paste0(names(m)[a:n])
+    names(s)[a:n] <- paste0("SE.", names(s)[a:n])
   }
-
-  names(m)[a:n] <- paste0(names(m)[a:n])
-  names(s)[a:n] <- paste0("SE.", names(s)[a:n])
 
   df <- merge(m, s, by = "id")
   df$Factor <- Factor
   cv.res[[Factor]] <- df
 }
 
-df.cv <- data.frame(Reduce(rbind.all.columns, cv.res))
-for (i in 1:nrow(df.cv)) {
-  df.cv[i, "Type"] <- strsplit(df.cv$id, "_")[[i]][1]
-  df.cv[i, "max.month"] <- strsplit(df.cv$id, "_")[[i]][2]
-}
-df.cv <- df.cv[, c("Type", "max.month", "MKT", "SE.MKT", "Factor", "Coef", "SE.Coef", "validation.error")]
-df.cv <- df.cv[order(df.cv$Type, df.cv$Factor, as.numeric(df.cv$max.month)), ]
+if (length(cv.res) > 0) {
+  df.cv <- data.frame(Reduce(rbind.all.columns, cv.res))
+  df.cv$id <- as.character(df.cv$id)
+  for (i in seq_len(nrow(df.cv))) {
+    df.cv[i, "Type"] <- strsplit(df.cv$id, "_")[[i]][1]
+    df.cv[i, "max.month"] <- strsplit(df.cv$id, "_")[[i]][2]
+  }
+  df.cv <- df.cv[, c("Type", "max.month", "MKT", "SE.MKT", "Factor", "Coef", "SE.Coef", "validation.error")]
+  df.cv <- df.cv[order(df.cv$Type, df.cv$Factor, as.numeric(df.cv$max.month)), ]
 
-max.months.to.keep <- c("1", "30", "60", "120", "180")
-df.cv <- df.cv[df.cv$max.month %in% max.months.to.keep, ]
+  max.months.to.keep <- c("1", "30", "60", "120", "180")
+  df.cv <- df.cv[df.cv$max.month %in% max.months.to.keep, ]
+} else {
+  df.cv <- data.frame(
+    Type = character(), max.month = character(), MKT = numeric(), SE.MKT = numeric(),
+    Factor = character(), Coef = numeric(), SE.Coef = numeric(), validation.error = numeric()
+  )
+}
 
 df.cv.rank <- df.cv
 df.cv.rank$key <- paste(df.cv.rank$Type, df.cv.rank$Factor, as.numeric(df.cv.rank$max.month))
@@ -112,7 +132,7 @@ if (nrow(df.all) > 0 && "datetime" %in% colnames(df.all)) {
   df.all <- df.all[order(df.all$Type, df.all$max.month, df.all$Factor, df.all$datetime, decreasing = TRUE), ]
   df.all <- df.all[!duplicated(paste(df.all$Type, df.all$max.month, df.all$Factor)), ]
 }
-for (i in 1:nrow(df.all)) {
+for (i in seq_len(nrow(df.all))) {
   factor <- as.character(df.all$Factor[i])
   df.all[i, "Coef"] <- df.all[i, factor]
   df.all[i, "SE.Coef"] <- df.all[i, paste0("SE.", factor)]

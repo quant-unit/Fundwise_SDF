@@ -18,15 +18,17 @@ max.months <- c(1, 30, 60, 120, 150, 180, 210, 240, 300, 360) # c(10, 20) * 12 #
 max.months <- c(1, 30, 60, 120, 150, 180)
 lambdas <- 0
 kernel.bandwidth <- 12
+alpha.lower <- -0.01
+alpha.upper <- 0.01
 part.to.keep <- 1
 no.partitions <- 1 # 10
 max.vintage <- 2021
 
 # set output folder
-if(!exists("data.out.folder", envir = .GlobalEnv)) {
+if (!exists("data.out.folder", envir = .GlobalEnv)) {
   data.out.folder <- "results/data_out_2029"
 }
-if(!dir.exists(data.out.folder)) dir.create(data.out.folder)
+if (!dir.exists(data.out.folder)) dir.create(data.out.folder)
 
 factors.to.use <- ""
 cutoff <- ""
@@ -44,7 +46,7 @@ do.cross.validation <- FALSE
 weighting <- "FW"
 
 # SET cache.folder.tag
-if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
+if (use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
 cache.folder.tag <- paste0(private.source, ifelse(include.alpha.term, "_alpha_", "_"))
 cache.folder.tag <- paste0(cache.folder.tag, weighting)
 cache.folder.tag
@@ -59,7 +61,7 @@ do.cross.validation <- TRUE
 weighting <- "FW"
 
 # SET cache.folder.tag
-if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
+if (use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
 cache.folder.tag <- paste0(private.source, ifelse(include.alpha.term, "_alpha_", "_"))
 cache.folder.tag <- paste0(cache.folder.tag, weighting)
 cache.folder.tag
@@ -74,7 +76,7 @@ do.cross.validation <- FALSE
 weighting <- "EW"
 
 # SET cache.folder.tag
-if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
+if (use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
 cache.folder.tag <- paste0(private.source, ifelse(include.alpha.term, "_alpha_", "_"))
 cache.folder.tag <- paste0(cache.folder.tag, weighting)
 cache.folder.tag
@@ -89,7 +91,7 @@ do.cross.validation <- TRUE
 weighting <- "EW"
 
 # SET cache.folder.tag
-if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
+if (use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
 cache.folder.tag <- paste0(private.source, ifelse(include.alpha.term, "_alpha_", "_"))
 cache.folder.tag <- paste0(cache.folder.tag, weighting)
 cache.folder.tag
@@ -103,7 +105,7 @@ source("estim_model_optimized.R")
 # CHOICES
 do.cross.validation <- FALSE
 weighting <- "FW"
-if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
+if (use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
 max.vintages <- 2011:2021
 
 for (max.vintage in max.vintages) {
@@ -111,7 +113,7 @@ for (max.vintage in max.vintages) {
   cache.folder.tag <- paste0(private.source, ifelse(include.alpha.term, "_alpha_", "_"))
   cache.folder.tag <- paste0(cache.folder.tag, weighting, "_max_vin_", max.vintage)
   cache.folder.tag
-  
+
   # RUN
   source("estim_model_optimized.R")
 }
@@ -123,7 +125,7 @@ for (max.vintage in max.vintages) {
 # CHOICES
 do.cross.validation <- FALSE
 weighting <- "EW"
-if(use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
+if (use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
 max.vintages <- 2011:2021
 
 for (max.vintage in max.vintages) {
@@ -131,9 +133,7 @@ for (max.vintage in max.vintages) {
   cache.folder.tag <- paste0(private.source, ifelse(include.alpha.term, "_alpha_", "_"))
   cache.folder.tag <- paste0(cache.folder.tag, weighting, "_max_vin_", max.vintage)
   cache.folder.tag
-  
+
   # RUN
   source("estim_model_optimized.R")
 }
-
-

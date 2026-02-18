@@ -61,6 +61,8 @@ if (source.internally) {
   include.alpha.term <- FALSE
   lambdas <- 0
   kernel.bandwidth <- 12
+  alpha.lower <- -0.01
+  alpha.upper <- 0.01
   if (use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
   cache.folder.tag <- paste0(private.source, "_")
   # cache.folder.tag <- paste0(private.source, ifelse(do.cross.validation, "_cv_", "_"))
@@ -329,14 +331,24 @@ system.time(
 
 # 2.3) Asymptotic gradient hessian -----
 if (TRUE) {
+  # Build bounds & choose method for Alpha at max.month == 1
+  use.bounded <- ("Alpha" %in% names(par)) && (max.month == 1)
+  if (use.bounded) {
+    lower_bounds <- ifelse(names(par) == "Alpha", alpha.lower, -Inf)
+    upper_bounds <- ifelse(names(par) == "Alpha", alpha.upper, Inf)
+    optim_method <- "L-BFGS-B"
+  } else {
+    lower_bounds <- -Inf
+    upper_bounds <- Inf
+    optim_method <- "Nelder-Mead"
+  }
   res <- optimx::optimx(par, err.sqr.calc,
     lambda = lambda,
     max.month = max.month,
     df = df.in,
-    # method = "nlminb"
-    method = "Nelder-Mead"
-    # method = c("Nelder-Mead", "L-BFGS-B", "nlminb", "nlm", "ucminf")
-    # control = list(all.methods=TRUE)
+    lower = lower_bounds,
+    upper = upper_bounds,
+    method = optim_method
   )
   res # 2.156218 2.826169 135.062
   names.par <- names(par)
@@ -618,11 +630,26 @@ iter.run <- function(input.list) {
           # print(par)
 
           if (TRUE) {
+            # Build bounds & choose method: use L-BFGS-B only when Alpha
+            # is a factor AND max.month == 1 (the explosion case)
+            use.bounded <- ("Alpha" %in% names(par)) && (max.month == 1)
+            if (use.bounded) {
+              lower_bounds <- ifelse(names(par) == "Alpha", alpha.lower, -Inf)
+              upper_bounds <- ifelse(names(par) == "Alpha", alpha.upper, Inf)
+              optim_method <- "L-BFGS-B"
+            } else {
+              lower_bounds <- -Inf
+              upper_bounds <- Inf
+              optim_method <- "Nelder-Mead"
+            }
+
             res <- optimx::optimx(par, err.sqr.calc,
               lambda = lambda,
               max.month = max.month,
               df = df.optim.in,
-              method = "Nelder-Mead" # "nlminb"
+              lower = lower_bounds,
+              upper = upper_bounds,
+              method = optim_method
             )
 
             # if optimx does not terminate
@@ -632,7 +659,9 @@ iter.run <- function(input.list) {
                 max.month = max.month,
                 df = df.optim.in,
                 itnmax = 1000,
-                method = "Nelder-Mead"
+                lower = lower_bounds,
+                upper = upper_bounds,
+                method = optim_method
               )
             }
           } else {

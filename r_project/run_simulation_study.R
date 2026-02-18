@@ -486,9 +486,9 @@ if (sys.nframe() == 0L) {
         "base_case_ME", "base_case_IA", "base_case_ROE", "base_case_EG"
     )
 
-    scenarios <- c(
-      "base_case_cross_sectional", "base_case_cross_sectional_zero_alpha"
-    )
+    scenarios <- c("base_case_zero_alpha", "base_case_positive_alpha", "base_case_negative_alpha",
+                   "exp_aff_alpha", "big_n_v_40funds_alpha",
+                   "base_case_cross_sectional", "base_case_cross_sectional_zero_alpha")
     results <- run_simulation_study(
       scenario_ids = scenarios,
       generate_data = FALSE, estimate = TRUE, analyze = FALSE

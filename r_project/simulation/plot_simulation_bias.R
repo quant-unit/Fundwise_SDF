@@ -549,8 +549,9 @@ plot_simulation_bias(
 )
 plot_simulation_bias(
     scenarios = c("big_n_v_40funds", "big_v_10funds_1967", "big_v_20funds_1967", "small_v_1986_1995", "small_v_1996_2005"),
-    bias_file = file,
+    bias_file = "simulation/data_out_2026_new/bias_analysis/2026-02-18_152638_bias_by_scenario_horizon.csv",
     export_pdf = TRUE,
+    export_svg = TRUE,
     height = 3.5,
     output_file = "simulation/figures/bias_comparison2",
     y.max.mkt = max.mkt,
@@ -560,8 +561,9 @@ plot_simulation_bias(
 )
 plot_simulation_bias(
     scenarios = c("big_n_v_40funds_alpha", "big_v_10funds_1967_alpha", "big_v_20funds_1967_alpha", "small_v_1986_1995_alpha", "small_v_1996_2005_alpha"),
-    bias_file = file,
+    bias_file = "simulation/data_out_2026_new/bias_analysis/2026-02-18_152638_bias_by_scenario_horizon.csv",
     export_pdf = TRUE,
+    export_svg = TRUE,
     height = 7,
     output_file = "simulation/figures/bias_comparison3",
     y.max.mkt = max.mkt,
@@ -573,12 +575,11 @@ plot_simulation_bias(
     scenarios = c("base_case_ME", "base_case_IA", "base_case_ROE", "base_case_EG"),
     bias_file = file,
     export_pdf = TRUE,
+    export_svg = TRUE,
     height = 7,
     output_file = "simulation/figures/bias_comparison4",
     y.max.mkt = max.mkt,
-    y.min.mkt = min.mkt,
-    y.max.second = max.mkt,
-    y.min.second = min.mkt
+    y.min.mkt = min.mkt
 )
 plot_simulation_bias(
     scenarios = c("exp_aff_base", "exp_aff_alpha", "base_case_vyp", "base_case_zero_alpha"),

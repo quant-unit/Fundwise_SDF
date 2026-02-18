@@ -33,6 +33,8 @@ defaults:
     max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240]
     lambdas: 0
     kernel_bandwidth: 12
+    alpha_lower: -0.01
+    alpha_upper: 0.01
     do_cross_validation: false
     part_to_keep: 1
     no_partitions: 1
@@ -55,7 +57,7 @@ scenarios:
     data_folder: auto
   
   base_case_cross_sectional:
-    description: "Base case: β_MKT=1, cross-sectional units (1 partition[s])"
+    description: "Base case: β_MKT=1, cross-sectional units (10 partition[s])"
     estimation:
       weighting: "EW"
       factors_to_use: ""
@@ -65,7 +67,7 @@ scenarios:
     data_folder: auto
   
   base_case_cross_sectional_zero_alpha:
-    description: "Base case: β_MKT=1, α=0, cross-sectional units (1 partition[s])"
+    description: "Base case: β_MKT=1, α=0, cross-sectional units (10 partition[s])"
     estimation:
       weighting: "EW"
       factors_to_use: "Alpha"
@@ -383,6 +385,9 @@ scenarios:
       no_funds: 40
     estimation:
       factors_to_use: "Alpha"
+      alpha_lower: -0.01
+      alpha_upper: 0.01
+      max_months: [2, 30, 60, 90, 120, 150, 180, 210, 240]
     active: true
     data_folder: auto
   

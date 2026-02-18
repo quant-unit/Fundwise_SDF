@@ -17,9 +17,11 @@ defaults:
   error_function: "L2_Lasso"
   include_alpha_term: false
   use_vintage_year_pfs: true
-  max_months: [1, 30, 60, 120, 150, 180]
+  max_months: [1, 30, 60, 120, 150, 180, 210, 240, 270, 300, 330, 360]
   lambdas: 0
   kernel_bandwidth: 12
+  alpha_lower: -0.01
+  alpha_upper: 0.01
   part_to_keep: 1
   no_partitions: 1
   data_out_folder: "results/data_out_2026-emp"

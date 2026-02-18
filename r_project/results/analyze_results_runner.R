@@ -11,7 +11,7 @@ source.internally <- FALSE
 if(!exists("data.out.folder", envir = .GlobalEnv)) {
   data.out.folder <- "results/data_out_2026-XXX"
   data.out.folder <- "results/data_out_2026-emp-max-vin-2019"
-  data.out.folder <- ""
+  data.out.folder <- "results/data_out_2026_02_18"
 }
 
 # 1. analyze all results ----
