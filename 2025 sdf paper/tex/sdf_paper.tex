@@ -93,14 +93,15 @@ The authors alone are responsible for the content and writing of the paper.
 	This paper analyzes stochastic discount factor estimation methodologies suited for pooled, non-traded cash flow streams such as the fund-level cash flows of private equity funds.
 	The asymptotic inference framework for our semiparametric nonlinear least squares estimator draws on a spatial notion, i.e., the idea that the economic distance between distinct private equity funds can be measured.
 	The empirical and Monte Carlo simulation results indicate (i) that our method can improve the popular Generalized Method of Moments approach of \cite{DLP12}, but (ii) that estimator variance for typical data sizes is still high.
-	Thus, we conjecture that traditional semiparametric extremum estimators like the one described by us shall be exclusively used for single-factor models until considerably more vintage year information for private equity funds is available.
+	Our analysis further highlights the key trade-off between the time-series (number of vintage years) and cross-sectional (funds per vintage portfolio) dimensions, revealing that actively increasing the latter is highly effective in reducing this variance.
+	Thus, we conjecture that traditional semiparametric extremum estimators like the one described by us shall be exclusively used for single-factor models until considerably more data for private equity funds becomes available.
 }
 
 
 %% main text
 \section{Introduction}
 
-Private equity has outgrown its niche, sitting today on more than \$9 trillion in assets under management, yet rigorous asset-pricing tools have not kept pace with this ascent.
+Private equity has outgrown its niche, sitting today on more than \$13 trillion in assets under management \citep{McKinsey2024}, yet rigorous asset-pricing tools have not kept pace with this ascent.
 The empirical analysis and risk assessment of private equity and other non-traded cash flows remain fundamentally challenging due to the absence of market-based valuations and the inherent frictions of private markets (i.e., under incomplete information). 
 Unlike public assets with trusted and tradeable valuations (in liquid secondary markets), private equity investments generate irregular, infrequently observed cash flows for which standard return-based asset pricing techniques are unsuitable.
 
@@ -110,22 +111,24 @@ Our LMD estimator arguably both simplifies and generalizes the GMM methodology o
 The asymptotic inference formulations rely on the concept of spatial (near-epoch) dependence between funds as proposed by \cite{KN16}.
 In this context, it is paramount to quantify the economic distance between funds by a measure like absolute vintage year difference or cash flow overlap\footnote{However, this economic inter-fund \emph{distance} refers \textbf{not} to the term Least-Mean-\emph{Distance} estimator.}.
 
-For fund-level cash flow data of private equity funds, we document an asymptotic bias term for cash-flow-based SDF estimators like \cite{DLP12} and \cite{KN16} that persists also in large samples.
-The bias term arises due to the pooled nature of fund-level cash flows and more specifically because of the different starting dates of the underlying deals (in the fund investment period).
-Our estimator offers simple averaging over multiple discounting dates as one option to control (but not eliminate) the bias term.
+For fund-level cash flow data of private equity funds, we document a small-sample bias term for cash-flow-based SDF estimators like \cite{DLP12} and \cite{KN16} that can be effectively decreased by increasing the cross-sectional sample size.
+The bias term arises due to a bias--variance tradeoff in finite samples.
+Using non-optimal discounting dates introduces an expected pricing error due to timing risk, but can substantially lower the estimator's variance.
+Our estimator offers simple averaging over multiple discounting dates as one option to control (but not eliminate) the small-sample bias term.
 
 In the empirical application of our new estimator, we test simple linear and exponentially affine SDF models that can draw on the five return factors associated with the $q^5$ investment factor model recently proposed by \cite{HXZ20}.
 Based on a Spatial Heteroskedasticity and Autocorrelation Consistent (SHAC) covariance matrix estimator, we calculate asymptotic standard errors for the model coefficients.
 Moreover, we assess the small-sample variance of coefficient estimates and the out-of-sample performance of the different SDF models by $hv$-block cross-validation, which accounts for the inter-vintage-year dependence of private equity funds \citep{R00}.
 We test one- and two-factor models for the most prominent private capital fund types Private Equity (PE) and Venture Capital (VC).
-The empirical two-factor model results are rather disappointing; not more than the single-market-factor model results seem reasonable given the high estimator variance.
+The empirical two-factor model results are rather disappointing; evaluating more than the single-market-factor model seems unreasonable given the high estimator variance.
+However, we document that this limitation can be partially overcome by forming portfolios with a larger number of cross-sectional units (funds) per vintage year.
 
 The paper is structured as follows. 
 % Section \ref{sec:literature} reviews the related literature.
 Section \ref{sec:spatial_sdf_methodology} introduces our semiparametric LMD estimator and its corresponding asymptotic inference framework.
 Section \ref{sec:empirical_application} applies the method to estimate $q^5$-investment-factor SDFs for various private equity fund types using simulated and real-world cash flows.
-Section \ref{sec:spatial_sdf_conclusion} concludes.
-
+Section \ref{sec:conclusion} concludes.
+Appendix \ref{sec:appendix_bias_variance} analyzes the bias--variance tradeoff in the context of our SDF estimation problem.
 
 
 \section{Methodology}
@@ -155,7 +158,7 @@ Here, the \cite{DLP12} approach relies on the identifying assumption that the mo
 
 In this Methodology section, we will show:
 \begin{enumerate}
-	\item Why this estimator is unconditionally unbiased for pooled cash flows when we use this Net Present Value approach and analyze the bias term introduced by the Net Future Value approach (Section \ref{sec:asset_pricing_pooled}).
+	\item Why this estimator yields conditionally expected pricing errors of zero under a Net Present Value framework, and we analytically characterize the bias term (timing risk premium) introduced by a Net Future Value approach (Section \ref{sec:asset_pricing_pooled}).
 	\item How to modify the estimator to be able to control the bias term (Section \ref{sec:fundwise_lmd_estimator}).
 	\item How we can estimate asymptotic standard errors for the parameters alpha and beta (Sections \ref{sec:asymptotic_framework} and \ref{sec:asymptotic_inference}).
 	\item How our estimator compares to similar approaches (Section \ref{sec:comparison_to_similar_estimators}.)
@@ -499,7 +502,7 @@ study (Section~\ref{sec:simulation_study}).
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.9\textwidth]{Figures/spatial/npvs3.eps}
+	\includegraphics[width=0.9\textwidth]{figure/npvs3}
 	\caption{
 		How to calculate and interpret the average pricing error introduced by Equation \ref{eq:average_pricing_error}:
 		The time index $t$ is relevant for the net cash flows (black dots).
@@ -587,7 +590,7 @@ If we observe only one fund per vintage year (or, equivalently, form vintage yea
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.9\textwidth]{Figures/spatial/randomfields.pdf}
+	\includegraphics[width=0.9\textwidth]{figure/randomfields.pdf}
 	\caption{
 		Visualization of generic random field types.
 		Each black dot marks a different observation $i$ of the cash flow data.
@@ -1599,39 +1602,40 @@ In contrast, the Alpha coefficient in the MKT+Alpha model exhibits a downward dr
 
 
 \section{Conclusion}
-\label{sec:spatial_sdf_conclusion}
+\label{sec:conclusion}
 
 Theoretically, our Least-Mean-Distance estimator can be easily generalized to estimate SDF models for all kinds of non-traded cash flows.
 Practically, semiparametric estimators commonly exhibit problematic small sample behavior.
 Given the amount of currently available private equity fund data, our estimator's variance seems quite large, even for simple SDF model specifications.
 Specifically, our Monte Carlo simulation results prompt us to conclude that the closely related \cite{DLP12} estimator may exhibit more bias and variance than originally assumed in their paper.
 Especially, the variance of $\alpha$ estimates seems to be too high to allow reliable abnormal performance conclusions.
-Fortunately, we show that at least the bias can be easily reduced by averaging pricing errors over all dates within the fund lifetime.
+Fortunately, we show that the estimator's variance can be substantially lowered by averaging pricing errors over multiple dates within the fund lifetime, and that the small-sample bias is most effectively mitigated by increasing the cross-sectional sample size ($n$).
 
 In the data-sparse private equity domain with only 20-40 cross-sectional units (i.e., vintage year portfolios) currently available for estimation, asymptotic inference seems not to be overly useful.
 Thus, we strongly advise always challenging asymptotic inference results by resampling or cross-validation techniques adapted to the dependence structure of overlapping fund cash flows.
 However, even these conclusions should be double-checked to avoid unreasonable instances, e.g., when $hv$-block cross-validation chooses dubious models with negative MKT factor estimates.
-Unfortunately, using individual funds instead of vintage year portfolios, which yields smaller asymptotic standard errors, constitutes no viable resolution as individual funds show considerably larger small-sample bias and variance in our Monte Carlo example.
+Unfortunately, using individual funds instead of vintage year portfolios, which yields smaller asymptotic standard errors, constitutes no viable resolution as individual funds show considerably larger small-sample bias and variance in our Monte Carlo example (and substantially increased computational cost).
 Since, in our empirical analyses, basically all two-factor models' asymptotic standard errors appear statistically insignificant, we conjecture that naive versions of our SDF estimator shall be exclusively used for a single-MKT-factor model until considerably more vintage year information for private equity funds is available.
 
 If someone wants to estimate more complex SDF models that incorporate additional factors, more structure is needed.
 These can be parametric assumptions for the data generating process \citep{ACGP18} or to extract additional information from intermediate net asset values \citep{GSW19,BGG20}.
-A first "modern" approach to the same problem is applying machine learning techniques that regularize/shrink all coefficients other than the MKT factor.
+A first ``modern" approach to the same problem is applying machine learning techniques that regularize/shrink all coefficients other than the MKT factor.
 Secondly, given the high estimator variance revealed in the simulation study, statistical learning methods that create a strong learner by combining multiple weak learners seem also worth considering (boosting, bagging, or model averaging).
 
-Additional idea for further research is to incorporate fees and carry model to DGP for SDF estimation for PE gross-fee performance or also for better DGP models for fund LPs. 
-With a more realistic DGP we likely become more realistic SDF estimates and more precise terms for the bias and variance terms.
+Another promising avenue for future research is extending the data generating process (DGP) to explicitly incorporate fee structures and carried interest. 
+This would enable the estimation of SDFs that reflect gross-vs-net-of-fee performance and provide more precise evaluation models from both the General-Partner (GP) and Limited-Partner (LP) perspective. 
+A more realistic DGP should naturally yield more accurate SDF parameter estimates and permit a sharper analytical characterization of the estimator's bias and variance terms.
 
-Another idea is to treat NAVs as true value proxies to alleviate the NFV/Timing Risk Premium bias.
-This would would entail adapting the estimator to neglect realized cash flows and use NAVs instead.
+Additionally, treating intermediate net asset values (NAVs) as proxies for the unobservable true fund valuation could be explored to alleviate the timing risk premium bias associated with net future values. 
+As a downside, such an approach would entail fundamentally adapting the estimator's objective to place less emphasis on sparsely realized cash flows and rely more heavily on reported NAVs instead.
 
 Finally, we point to the potentially most interesting topic for future research.
 Our simulation study indicates that the estimator's bias and variance can be controlled by an appropriate choice for the set $\mathcal{T}$.
 This set averages the pricing error over multiple discounting dates.
 In simpler terms, an identification method that utilizes a future value concept instead of net present values obtains more favorable results in our case.
-The bias in our simulation study is minimal when the set of discounting dates corresponds to the fund lifetime.
-A parsimonious but general model that allows for misspecification and can explain this $\mathcal{T}$-averaging effect from a mathematical perspective would be highly appreciated.
-% Appendix
+The bias in our simulation study is minimal when the set of discounting dates corresponds approximately to the fund lifetime.
+A model that can determine the optimal value of $\mathcal{T}$ for a given fund sample and macroeconomic environment would be highly appreciated.
+
 
 
 
