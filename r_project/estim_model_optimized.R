@@ -330,9 +330,9 @@ system.time(
 
 
 # 2.3) Asymptotic gradient hessian -----
-if (TRUE) {
+if (FALSE) {
   # Build bounds & choose method for Alpha at max.month == 1
-  use.bounded <- ("Alpha" %in% names(par)) && (max.month == 1)
+  use.bounded <- ("Alpha" %in% names(par))
   if (use.bounded) {
     lower_bounds <- ifelse(names(par) == "Alpha", alpha.lower, -Inf)
     upper_bounds <- ifelse(names(par) == "Alpha", alpha.upper, Inf)
@@ -350,7 +350,11 @@ if (TRUE) {
     upper = upper_bounds,
     method = optim_method
   )
-  res # 2.156218 2.826169 135.062
+  print("--- Block 1 Optimx Result ---")
+  print(Class = class(res))
+  print(paste("Dim:", dim(res)))
+  print(res)
+  if (nrow(res) == 0) stop("Optimx returned 0 rows in Block 1")
   names.par <- names(par)
   par <- as.numeric(res[1, names.par])
   names(par) <- names.par
@@ -631,8 +635,8 @@ iter.run <- function(input.list) {
 
           if (TRUE) {
             # Build bounds & choose method: use L-BFGS-B only when Alpha
-            # is a factor AND max.month == 1 (the explosion case)
-            use.bounded <- ("Alpha" %in% names(par)) && (max.month == 1)
+            # is a factor (the explosion case)
+            use.bounded <- ("Alpha" %in% names(par))
             if (use.bounded) {
               lower_bounds <- ifelse(names(par) == "Alpha", alpha.lower, -Inf)
               upper_bounds <- ifelse(names(par) == "Alpha", alpha.upper, Inf)

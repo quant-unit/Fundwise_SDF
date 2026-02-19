@@ -530,26 +530,27 @@ plot_single_scenario_bias <- function(bias_file, scenario_id) {
 # ============================================================================
 #
 
-file <- "simulation/data_out_2026_new/bias_analysis/2026-02-11_211903_bias_by_scenario_horizon.csv"
+file <- "simulation/data_out_2026_new/bias_analysis/2026-02-19_190341_bias_by_scenario_horizon.csv"
 max.mkt <- 1.5 #  1.25
 max.second <- 0.005
 min.mkt <- 0.5 # 0.6
 min.second <- -0.005
 # # Basic usage with default scenarios
 plot_simulation_bias(
-    scenarios = c("base_case_vyp", "base_case_cross_sectional", "base_case_zero_alpha", "base_case_positive_alpha", "base_case_negative_alpha"),
+    scenarios = c("base_case_vyp", "base_case_cross_sectional", "base_case_zero_alpha", "base_case_cross_sectional_zero_alpha"),
     bias_file = file,
     export_pdf = TRUE,
     height = 7,
     output_file = "simulation/figures/bias_comparison1",
-    y.max.mkt = max.mkt,
+    y.max.mkt = 2,
     y.max.second = max.second,
-    y.min.mkt = min.mkt,
+    y.min.mkt = 0,
     y.min.second = min.second,
 )
 plot_simulation_bias(
     scenarios = c("big_n_v_40funds", "big_v_10funds_1967", "big_v_20funds_1967", "small_v_1986_1995", "small_v_1996_2005"),
-    bias_file = "simulation/data_out_2026_new/bias_analysis/2026-02-18_152638_bias_by_scenario_horizon.csv",
+    bias_file = file,
+    #bias_file = "simulation/data_out_2026_new/bias_analysis/2026-02-18_152638_bias_by_scenario_horizon.csv",
     export_pdf = TRUE,
     export_svg = TRUE,
     height = 3.5,
@@ -561,7 +562,8 @@ plot_simulation_bias(
 )
 plot_simulation_bias(
     scenarios = c("big_n_v_40funds_alpha", "big_v_10funds_1967_alpha", "big_v_20funds_1967_alpha", "small_v_1986_1995_alpha", "small_v_1996_2005_alpha"),
-    bias_file = "simulation/data_out_2026_new/bias_analysis/2026-02-18_152638_bias_by_scenario_horizon.csv",
+    bias_file = file,
+    #bias_file = "simulation/data_out_2026_new/bias_analysis/2026-02-18_152638_bias_by_scenario_horizon.csv",
     export_pdf = TRUE,
     export_svg = TRUE,
     height = 7,
@@ -583,7 +585,8 @@ plot_simulation_bias(
 )
 plot_simulation_bias(
     scenarios = c("exp_aff_base", "exp_aff_alpha", "base_case_vyp", "base_case_zero_alpha"),
-    bias_file = "simulation/data_out_2026_new/bias_analysis/2026-02-14_204756_bias_by_scenario_horizon.csv",
+    bias_file = file,
+    # bias_file = "simulation/data_out_2026_new/bias_analysis/2026-02-14_204756_bias_by_scenario_horizon.csv",
     export_pdf = TRUE,
     height = 7,
     output_file = "simulation/figures/bias_comparison5",

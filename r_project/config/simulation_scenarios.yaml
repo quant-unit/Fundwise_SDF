@@ -33,7 +33,6 @@ defaults:
     max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240]
     lambdas: 0
     kernel_bandwidth: 12
-    alpha_lower: -0.01
     alpha_upper: 0.01
     do_cross_validation: false
     part_to_keep: 1
@@ -105,7 +104,7 @@ scenarios:
       beta_MKT: 1
     estimation:
       factors_to_use: "Alpha"
-      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
+      max_months: [2, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: true
     data_folder: auto
     
@@ -385,7 +384,7 @@ scenarios:
       no_funds: 40
     estimation:
       factors_to_use: "Alpha"
-      alpha_lower: -0.01
+      alpha_lower: -Inf
       alpha_upper: 0.01
       max_months: [2, 30, 60, 90, 120, 150, 180, 210, 240]
     active: true
@@ -425,6 +424,7 @@ scenarios:
       min_vin: 1996
     estimation:
       factors_to_use: "Alpha"
+      max_months: [2, 30, 60, 90, 120, 150, 180, 210, 240]
     active: true
     data_folder: auto
     

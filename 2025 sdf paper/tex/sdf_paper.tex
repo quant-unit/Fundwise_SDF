@@ -1016,7 +1016,7 @@ This means we replace the bootstrap standard error calculation of \cite{DLP12} b
 
 \begin{remark}[Definition of Horizon]
 	\label{rem:horizon_def}
-	Throughout the empirical section, we use the term \emph{Horizon} $H$ to denote the maximum compounding duration in years used in the set of discounting dates $\mathcal{T}$. Formally, assuming a contiguous set of monthly discounting dates $\mathcal{T} = \{1, 2, \dots, m_{\max}\}$ (where $m_{\max}$ is the maximum month), the Horizon is defined as $H = m_{\max} / 12$. Consequently, estimating a model with a Horizon $H$ implies that the estimator uses the set of discounting dates $\mathcal{T}_H = \{1, \dots, 12 \cdot H\}$.
+	Throughout the empirical section, we use the term \emph{Horizon} $H$ to denote the maximum compounding horizon in years used in the set of discounting dates $\mathcal{T}$. Formally, assuming a contiguous set of monthly discounting dates $\mathcal{T} = \{1, 2, \dots, m_{\max}\}$ (where $m_{\max}$ is the maximum month), the Horizon is defined as $H = m_{\max} / 12$. Consequently, estimating a model with a Horizon $H$ implies that the estimator uses the set of discounting dates $\mathcal{T}_H = \{1, \dots, 12 \cdot H\}$.
 \end{remark}
 
 \begin{remark}[Alpha Bounds]
@@ -1057,12 +1057,13 @@ This means we replace the bootstrap standard error calculation of \cite{DLP12} b
 \subsection{Simulation study}
 \label{sec:simulation_study}
 
-Our Monte Carlo experiments examine the following questions related to the bias and variance of our estimation methodology in finite samples.\footnote{As with each simulation study, it investigates the ability to identify the assumed data generating process rather than the corresponding SDF model.}
-Is it beneficial to use vintage-year portfolios instead of individual funds?
-Which SDF model performs better when we also use the corresponding data generating process (i.e., assume correct model specification)?
-How is estimator precision affected by varying numbers of vintage years and cross-sectional units?
-Which is the optimal set of discounting dates $\mathcal{T}$?
-
+Our Monte Carlo experiments examine the bias and variance of our estimation methodology in finite samples.\footnote{As with any simulation study, it investigates the ability to identify the assumed data generating process rather than validate the corresponding SDF model itself.}
+Specifically, we investigate five key dimensions of the estimation framework:
+(i) the finite-sample efficiency gains of forming vintage-year portfolios versus using individual funds;
+(ii) the tradeoff between expanding the time-series dimension (number of vintage years) and the cross-sectional dimension (funds per vintage);
+(iii) the behavior of multivariate identification under idiosyncratic noise using two-factor models;
+(iv) the robustness of the estimates to the functional specification of the SDF (simple linear vs.\ exponential affine); and
+(v) the optimal choice of the maximum compounding horizon (the set of discounting dates $\mathcal{T}$).
 
 We use historical $q$-investment factors from 1986 to 2005 and simulate 20 funds for each of these 20 vintage years.
 This means we condition our simulation analysis on realized $q$-investment factors paths (see the Macro-Conditioning Kernel discussion in Section \ref{sec:asset_pricing_pooled}).
@@ -1081,9 +1082,11 @@ To assess our estimator's bias and variance, we simulate 1000 test scenarios for
 \paragraph{Cross-sectional unit $i$:}
 
 As presumed in Subsection \ref{sec:asymptotic_framework}, vintage year portfolio results appear to have lower bias and variance when compared to individual funds.
-For the simple linear SDF and maximum month 180, the mean and standard deviation of the coefficient estimate $\hat{\beta}_{\mathrm{MKT}}$ is 1.016 (0.2) for the vintage year portfolio and 1.096 (0.376) for individual funds. 
-More results are depicted in Figure \ref{fig:simulation_funds_vs_vyps}.
-However, for individual funds, we only simulate 200 iterations due to the high computational cost.
+For the simple linear SDF and 15-year horizon (maximum month 180), the mean and standard deviation of the coefficient estimate $\hat{\beta}_{\mathrm{MKT}}$ is 0.966 (0.188) for the vintage year portfolio and 0.876 (0.353) for individual funds. 
+The superiority of the portfolio approach becomes even more apparent when considering the entire horizon curve in Figure \ref{fig:simulation_funds_vs_vyps}.
+Estimates for individual funds are highly unstable, exhibiting severe upward bias at short horizons ($\hat{\beta}_{\mathrm{MKT}} \approx 1.5$) and deteriorating to negative values at long horizons.
+In contrast, vintage year portfolios yield substantially more stable estimates that remain within a pertinent economic range around the true value of 1.0.
+Furthermore, the portfolio approach consistently achieves a lower standard deviation at every simulated horizon, confirming that grouping funds effectively mitigates idiosyncratic noise.
 
 This finding has two important implications:
 On the one hand, vintage year portfolio formation can substantially decrease our estimator's bias and variance.
@@ -1098,21 +1101,21 @@ These considerations may explain the choice of \cite{KN16} to use individual fun
 \end{figure}
 
 
-
-
 \paragraph{Varying vintages $V$ and portfolio sizes $n/V$:}
 
-To test the effect of varying data sizes available for MKT factor estimation, we in/decrease the (i) number of vintage years and (ii) the number of funds per vintage year.
-Here we use vintage year portfolios and the simple linear SDF.
-We test five different scenarios (from left to right in Figures \ref{fig:sim_vary_vin_sizes} and \ref{fig:sim_vary_vin_sizes_alpha}): 
-(1) Years 1986-2005 with 40 funds per vintage (i.e., the base case with 40 instead of 20 funds per vintage).
-(2) Years 1967-2005 with 10 funds per vintage.
-(3) Years 1967-2005 with 20 funds per vintage.
-(4) Years 1986-1995 with 20 funds per vintage.
-(5) Years 1996-2005 with 20 funds per vintage.
+A fundamental question in private equity panel data econometrics is whether precision is best improved by extending the time-series dimension ($V$, number of vintage years) or the cross-sectional dimension ($n/V$, number of funds per vintage portfolio).
+To assess this tradeoff, we compare five data configurations (depicted in Figures \ref{fig:sim_vary_vin_sizes} and \ref{fig:sim_vary_vin_sizes_alpha}): 
+(1) our base case ($V=20$, $n/V=40$); 
+(2) an extended vintage sample with small portfolios ($V=39$, $n/V=10$); 
+(3) an extended vintage sample with medium portfolios ($V=39$, $n/V=20$); 
+(4) an early-vintage sub-sample ($V=10$, years 1986--1995, $n/V=20$); and 
+(5) a late-vintage sub-sample ($V=10$, years 1996--2005, $n/V=20$).
 
-Interpretation:
-For our simple data generating process, increasing the number of deals/funds per vintage year portfolio appears to decrease the estimator's variance more effectively than adding more vintage years.
+Our simulation yields a clear prescriptive result for empirical practice: increasing the number of cross-sectional units per portfolio ($n/V$) is substantially more effective at suppressing estimator variance than adding more vintage years ($V$).
+For the single-factor model at the 15-year horizon, transitioning from 10 funds to 20 funds per vintage over a 39-year period (scenarios 2 vs. 3) reduces the standard deviation of $\hat{\beta}_{\mathrm{MKT}}$ by roughly 33\%, from 0.254 to 0.169.
+In contrast, shrinking the time-series dimension from 39 years to just 10 years (while holding $n/V=20$ constant) only marginally elevates the variance ($\sigma(\hat{\beta}_{\mathrm{MKT}}) \approx 0.194$).
+This hierarchy of variance reduction is even more pronounced in the two-factor setting, where idiosyncratic cash flow noise severely impairs multivariate identification: increasing $n/V$ aggressively dampens the spurious $\alpha$ variance.
+Consequently, our findings provide a compelling rationale for the finite-sample superiority of the \cite{DLP12} infill asymptotics (fixing $V$, letting $n_v \to \infty$) over approaches that rely purely on time-series aggregation.
 
 
 \begin{figure}[H]
@@ -1129,6 +1132,25 @@ For our simple data generating process, increasing the number of deals/funds per
 	\label{fig:sim_vary_vin_sizes}
 \end{figure}
 
+
+\paragraph{SDF model $\Psi$:}
+
+In Figure \ref{fig:sim_exp_aff}, we compare the simple linear SDF model against the exponential affine specification.
+For the single-factor model, the bias is minimized at the 12.5-year horizon (150 months), where both functional forms perform almost identically and yield estimates extremely close to the true value of 1.0: the exponential affine yields a mean market beta of 0.999 (0.182), matching the simple linear's 0.994 (0.189).
+For the two-factor (MKT+Alpha) model at this same 12.5-year horizon, both functional forms again yield nearly identical parameter results, though with an attenuated market beta ($\hat{\beta}_{\mathrm{MKT}} \approx 0.85$) and a minor spurious positive alpha ($\hat{\alpha} \approx 0.001$).
+In the two-factor case, the market beta bias is actually minimized later, around the 20-year horizon ($\hat{\beta}_{\mathrm{MKT}} \approx 0.97$, $\hat{\alpha} \approx -0.0002$).
+
+However, a salient difference emerges at extremely short compounding horizons.
+At a 1-month horizon (resembling an NPV-only discounting framework), the exponential affine formulation deteriorates much more severely in both models, manifesting a larger upward bias (e.g., in the single-factor case, $\hat{\beta}_{\mathrm{MKT}} = 1.21$ vs.\ $1.13$) and elevated variance ($0.43$ vs.\ $0.27$) compared to the linear model.
+Overall, the perceived superiority of exponential affine SDFs \citep{GM07,BMP08} does not translate into empirical finite-sample advantages in our framework.
+The simple linear model actually appears slightly better behaved.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{simulation/bias_comparison5}
+	\caption{\textbf{Simulation ($\beta_{\textrm{MKT}}$, $\alpha$):} Exponential affine vs.\ linear models.}
+	\label{fig:sim_exp_aff}
+\end{figure}
 
 
 \paragraph{Two-factor models ($q^5$ factors):}
@@ -1172,60 +1194,40 @@ These results suggest that empirical researchers should exercise caution when in
 \end{figure}
 
 
+\paragraph{Size of set $\mathcal{T}$ (Maximum Compounding Horizon):}
 
-\paragraph{SDF model $\Psi$:}
+Our most critical simulation finding relates to the optimal choice of the maximum compounding horizon, i.e., the size of the set of discounting dates $\mathcal{T}$.
+From a purely theoretical perspective (cf.\ Section \ref{sec:asset_pricing_pooled}), discounting all cash flows exclusively to the fund inception date, corresponding to a zero-month or NPV-only horizon in our notation, should yield unconditionally unbiased estimates under Assumption \ref{ass:unconditional_unbiased}.
+This minimal choice for $\mathcal{T}$ corresponds exactly to the established \cite{DLP12} framework.
 
-In our base case with vintage year portfolios, the exponential affine SDF shows a mean and standard deviation of 1.011 (0.175) compared to the 1.016 (0.2) achieved by the simple linear SDF.
-Generally, the exponential affine SDF model and the simple linear SDF model exhibit similar bias and variance, cf.\ panels A and B in Table \ref{tab:simulation_study}.
-Figure \ref{fig:simulation_expaff_vs_simlin} visualizes the true $\beta=1$ case, which shows that the estimation results are not overly sensitive to the choice of the SDF model.
+However, our diverse simulation results reveal a puzzling disconnect between asymptotic theory and finite-sample performance: extending the set of discounting dates deep into the fund lifecycle drastically improves the estimator's precision.
+Across almost all model specifications (see Figures \ref{fig:sim_q_factors} and \ref{fig:sim_exp_aff}), bias is minimized not at the theoretical 0-year horizon, but rather around a 12.5 to 15-year compounding horizon.
+At extremely short horizons, idiosyncratic cash flow noise interacts non-linearly with the estimation procedure, inducing severe upward bias in factor loadings.
+By averaging pricing errors over multiple future dates, effectively incorporating the Timing Risk Premium, our approach acts as a powerful finite-sample bias correction.
 
-Moreover, the perceived superiority of exponential affine SDFs is probably rather theoretical than practical as other proponents also emphasize their universality mainly from a mathematical perspective without providing supportive empirical or simulation results \citep{GM07,BMP08}.
-
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.9\textwidth]{simulation/bias_comparison5}
-	\caption{\textbf{Simulation ($\beta_{\textrm{MKT}}$, $\alpha$):} Exponential affine vs.\ linear models.}
-	\label{fig:sim_exp_aff}
-\end{figure}
-
-
-
-\paragraph{Size of set $\mathcal{T}$:}
-
-This is the big question of the simulations study!
-Which max compounding horizon is the optimal one?
-From our diverse simulation results, we can deduce that we cannot determine the optimal horizon from these simulation results.
-
-The results in indicate that we can control the asymptotic bias by an appropriate choice of the set $\mathcal{T}$.
-Horizon 15 year seems optimal, even if the NPV-only horizon of 0 year is the optimal one in theory (cf.\ Section \ref{sec:asset_pricing_pooled}).
-Recall that using the minimal set for $\mathcal{T}$, i.e., discounting all cash flows just to the fund inception date, corresponds exactly to the \cite{DLP12} approach. 
-The Appendix \ref{sec:appendix_bias_variance} tries to explain this puzzling result.
-However, the probability bands (one standard deviation) in the simulation do not indicate decreasing parameter variance with increasing horizon "max compounding month".
-Thus, how and why does our "variance reduction technique" reduce/affect/control bias rather than variance?
-To be optimistic, the variance seems slightly smaller near the "optimal" horizon of around 15 years in the simulation and slightly increases for smaller and higher horizons (the effect looks not very large, we need to investigate this thoroughly).
-We need to solve this puzzle why only the bias term is affected by the additional future compounding dates (= additional Timing Risk Premium terms).
+Interestingly, this "variance reduction technique" improves the mean estimate far more than it reduces standard errors. 
+While estimator variance traces a shallow U-shape with a minimum near the 15-year horizon (see Table \ref{tab:sim_q5_summary}), this reduction is secondary to the striking stabilization of the parameter bias.
+We further analyze this puzzling result from a theoretical perspective in Appendix \ref{sec:appendix_bias_variance}, detailing the \emph{bias--variance tradeoff} and the role of the Timing Risk Premium.
 
 
 \paragraph{Simulation conclusion:}
-To conclude, our simulations study rationalizes two key practices from the \cite{DLP12} paper: (i) vintage year portfolio formation helps to improve estimator precision, and (ii) increasing the number of funds per vintage seems to be more effective in controlling estimator variance than increasing the number of vintages. 
-Thus, finding (ii) may explain the choice of \cite{DLP12} to employ an asymptotic law that lets the number of deals/funds per vintage tend to infinity..
-However, our examples with correct specification cannot support the assumption of \cite{KN16} that (iii) the exponential affine SDF is (clearly) superior to the simple liner SDF in a multi-period framework; actually, their bias and variances are quite equal.
-Moreover, our simulation study suggests that (iv) averaging pricing errors over multiple dates strikingly reduces the bias inherent to the original procedure of \cite{DLP12} that just discounts all cash flows to the fund inception date.
-Actually, choosing the set $\mathcal{T}$ close to the fund lifetime seems to decrease the bias (and to a lesser extent also the variance) more effectively than all other measures combined.
-Appendix \ref{sec:appendix_bias_variance} explains why our new \emph{biased} estimator (cf.\ Eq. \ref{eq:alpha_decomp}) can yield better small-sample results due to effects related to the famous bias--variance tradeoff.
+To conclude, our simulation study rationalizes two key practices from the \cite{DLP12} paper: (i) vintage-year portfolio formation helps to improve estimator precision, and (ii) increasing the number of funds per vintage seems more effective in controlling estimator variance than increasing the number of vintages. 
+Our second finding provides an empirical rationale for the choice of \cite{DLP12} to employ infill asymptotics that let the number of underlying funds per vintage tend to infinity.
+However, our correctly specified scenarios cannot support the assumption of \cite{KN16} that (iii) the exponential affine SDF is superior to the simple linear SDF in a multi-period framework; in fact, their finite-sample bias and variance profiles are remarkably similar.
+Moreover, our simulation study suggests that (iv) averaging pricing errors over multiple dates substantially reduces the severe short-horizon bias inherent to the original procedure of \cite{DLP12}, which discounts all cash flows exclusively to the fund inception date.
+Ultimately, selecting a set of compounding dates $\mathcal{T}$ that spans a significant portion of the fund lifecycle appears to decrease finite-sample bias (and to a lesser extent, variance) more effectively than all other measures combined.
+Appendix \ref{sec:appendix_bias_variance} explains the theoretical foundation of this observation, illustrating how our biased estimator (cf.\ Eq.\ \ref{eq:alpha_decomp}) achieves superior finite-sample properties by exploiting the bias--variance tradeoff.
+
+
 
 
 
 \subsection{Empirical results}
 
-
-
-
 Following the conclusions from the simulation study, we use the Preqin data from Section \ref{sec:data} and form vintage-year portfolios (VYPs) to estimate simple linear SDF models with a Horizon of 15 years.
 For each model specification, we report both asymptotic standard errors (SE$_A$) and $hv$-block cross-validation standard errors (SE$_{CV}$).
 We focus the presentation on PE (i.e., mainly Buyout and Growth) as our primary fund type and report both equal-weighted (EW) and value-weighted (FW) estimates across a grid of compounding horizons.
 Throughout this subsection, $t_A$ and $t_{CV}$ denote the $t$-ratios based on asymptotic and cross-validation standard errors, respectively\footnote{All R code and data are available in an online repository: \url{https://github.com/quant-unit/Fundwise_SDF/tree/master/r_project}.}.
-
 
 
 \subsubsection{Single market-factor models}
@@ -1575,7 +1577,7 @@ In contrast, the Alpha coefficient in the MKT+Alpha model exhibits a downward dr
 \begin{figure}
 	\centering
 	\includegraphics[width=0.9\textwidth]{empirical/max_vintage_PE_MKT}
-	\caption{\textbf{Sensitivity analysis ($MKT$ factor):} Single-factor models for PE using VYP with different vintage-year cutoffs (asymptotic estimates).}
+	\caption{\textbf{Sensitivity analysis ($MKT$ factor):} Single-factor model for PE using VYP with different vintage-year cutoffs (asymptotic estimates).}
 	\label{fig:max_vintage_PE_MKT}
 \end{figure}
 

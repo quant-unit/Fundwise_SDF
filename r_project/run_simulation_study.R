@@ -235,11 +235,53 @@ run_simulation_study <- function(
             }
         }
     }
+    # -------------------------------------------------------------------------
+    # Construct results for analysis if estimation was skipped
+    # -------------------------------------------------------------------------
+    if (analyze && !estimate) {
+        if (verbose) cat("\n--- LOCATING EXISTING RESULTS ---\n\n")
+
+        for (id in names(scenarios)) {
+            scenario <- scenarios[[id]]
+
+            # Convert to params to get cache tag and paths
+            # (suppress warnings about missing files since we just want paths)
+            params <- scenario_to_estimation_params(scenario)
+
+            # Override data_out_folder if provided
+            if (!is.null(data_out_folder)) {
+                params$data_out_folder <- data_out_folder
+            } else {
+                params$data_out_folder <- "simulation/data_out_2026_new"
+            }
+
+            # Determine partition count
+            n_partitions <- if (!is.null(scenario$estimation$no_partitions)) {
+                scenario$estimation$no_partitions
+            } else {
+                1
+            }
+
+            # Construct a result object that mimics a successful estimation result
+            # but only contains what analyze_simulation_bias() needs
+            results[[id]] <- list(
+                scenario_id = id,
+                dgp = scenario$dgp,
+                cache_folder_tag = params$cache_folder_tag,
+                data_out_folder = params$data_out_folder,
+                public_filename = "q_factors", # Assumed default since we don't have the original call
+                no_partitions = n_partitions,
+                success = TRUE # Assume success to allow analysis of whatever files exist
+            )
+        }
+
+        if (verbose) cat("Ready for analysis.\n")
+    }
 
     # -------------------------------------------------------------------------
     # Analyze bias
     # -------------------------------------------------------------------------
-    if (analyze && estimate) {
+    if (analyze) {
         if (verbose) cat("\n--- BIAS ANALYSIS PHASE ---\n\n")
 
         # Source bias analysis script
@@ -477,7 +519,8 @@ if (sys.nframe() == 0L) {
     cat("Available scenarios:\n\n")
     list_simulation_scenarios(active_only = FALSE)
     scenarios <- c(
-        "base_case_vyp", "base_case_cross_sectional", "base_case_cross_sectional_zero_alpha",
+        "base_case_vyp", 
+        #"base_case_cross_sectional", "base_case_cross_sectional_zero_alpha",
         "base_case_zero_alpha", "base_case_positive_alpha", "base_case_negative_alpha",
         "big_n_v_60funds", "small_n_10funds", "exp_aff_alpha",
         "big_n_v_40funds", "big_v_10funds_1967", "big_v_20funds_1967", "small_v_1986_1995", "small_v_1996_2005",
@@ -486,11 +529,9 @@ if (sys.nframe() == 0L) {
         "base_case_ME", "base_case_IA", "base_case_ROE", "base_case_EG"
     )
 
-    scenarios <- c("base_case_zero_alpha", "base_case_positive_alpha", "base_case_negative_alpha",
-                   "exp_aff_alpha", "big_n_v_40funds_alpha",
-                   "base_case_cross_sectional_zero_alpha", "base_case_cross_sectional")
+    #scenarios <- c( "base_case_cross_sectional_zero_alpha", "base_case_cross_sectional" )
     results <- run_simulation_study(
-      scenario_ids = scenarios,
-      generate_data = FALSE, estimate = TRUE, analyze = FALSE
+        scenario_ids = scenarios,
+        generate_data = FALSE, estimate = TRUE, analyze = FALSE
     )
 }
