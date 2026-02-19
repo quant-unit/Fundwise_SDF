@@ -24,6 +24,7 @@ defaults:
   alpha_upper: 0.01
   part_to_keep: 1
   no_partitions: 1
+  max_vintage: 2021
   data_out_folder: "results/data_out_2026-emp"
 
 # ============================================================================
@@ -143,6 +144,26 @@ scenarios:
     weighting: "EW"
     do_cross_validation: false
     factors_to_use: "EG"
+    active: false
+
+# ============================================================================
+# MAX VINTAGE SWEEP (Robustness: estimate for each max vintage year)
+# ============================================================================
+
+  fw_vintage_sweep:
+    description: "FW VYP, no CV, max vintage 2011–2021"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: ""
+    max_vintages: [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+    active: false
+
+  ew_vintage_sweep:
+    description: "EW VYP, no CV, max vintage 2011–2021"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: ""
+    max_vintages: [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
     active: false
 
 # ============================================================================

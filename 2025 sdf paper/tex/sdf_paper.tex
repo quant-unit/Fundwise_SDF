@@ -956,6 +956,7 @@ Table \ref{tab:comparison} summarizes the most prominent distinctions between th
 \label{sec:empirical_application}
 
 \subsection{Data}
+\label{sec:data}
 
 We use the Preqin cash flow data set as of 14th April 2022 that is well known in the academic private equity literature \citep{HJK14,KN16,ACGP18}.
 To keep the empirical analysis clear and concise, we filter the dataset for Private Equity (PE) funds.
@@ -1013,12 +1014,16 @@ Funds from the remaining vintage years enter the training set and are thus used 
 We apply ten-fold cross validation using the ten validation sets described in Table \ref{tab:hv_block_cv}.
 This means we replace the bootstrap standard error calculation of \cite{DLP12} by $hv$-block cross-validation since the new method (i) accounts for near-epoch-dependence, (ii) focuses directly on the out-of-sample performance of the SDF models, and (iii) is computationally cheaper.
 
-\textcolor{orange}{
-	Important: "Horizon" in the charts and tables refers to the "max month" compounding date; for all simulations and empirical results.
-	It is really the same thing, only difference is that "max month" is one a monthly basis and "Horizon" on yearly basis. We need to align these two in the whole Empirical results section and only keep Horizon, but explain what horizon means in detail; maybe as an official definition.
-	}
+\begin{remark}[Definition of Horizon]
+	\label{rem:horizon_def}
+	Throughout the empirical section, we use the term \emph{Horizon} $H$ to denote the maximum compounding duration in years used in the set of discounting dates $\mathcal{T}$. Formally, assuming a contiguous set of monthly discounting dates $\mathcal{T} = \{1, 2, \dots, m_{\max}\}$ (where $m_{\max}$ is the maximum month), the Horizon is defined as $H = m_{\max} / 12$. Consequently, estimating a model with a Horizon $H$ implies that the estimator uses the set of discounting dates $\mathcal{T}_H = \{1, \dots, 12 \cdot H\}$.
+\end{remark}
 
-\textcolor{orange}{\textbf{TODO: Introduce bounds for $\alpha$!}}
+\begin{remark}[Alpha Bounds]
+	\label{rem:restricted_alpha}
+	In our optimization procedure, we limit the Alpha factor $\alpha$ to the range of $[-1\%, +1\%]$ per month to avoid the ``exploding alpha" issue documented in \cite[Footnote 8]{DLP12}: "Note that one needs to put an upper bound on $\alpha$ when performing the optimization in equation (3). This is to exclude the possibility that $\alpha$ tends to infinity."
+	In this degenerate scenario, an infinite alpha can almost perfectly price any cash flow stream, rendering the beta risk factors irrelevant. 
+\end{remark}
 
 
 \begin{table}[ht]
@@ -1202,10 +1207,13 @@ We need to solve this puzzle why only the bias term is affected by the additiona
 
 
 \paragraph{Simulation conclusion:}
-To conclude, our simulations study rationalizes two key practices from the \cite{DLP12} paper: (i) vintage year portfolio formation helps to improve estimator precision, and (ii) increasing the number of funds per vintage seems to be more effective in controlling estimator variance than increasing the number of vintages\footnote{Finding (ii) may explain the choice of \cite{DLP12} to employ an asymptotic law that lets the number of deals/funds per vintage tend to infinity.}.
+To conclude, our simulations study rationalizes two key practices from the \cite{DLP12} paper: (i) vintage year portfolio formation helps to improve estimator precision, and (ii) increasing the number of funds per vintage seems to be more effective in controlling estimator variance than increasing the number of vintages. 
+Thus, finding (ii) may explain the choice of \cite{DLP12} to employ an asymptotic law that lets the number of deals/funds per vintage tend to infinity..
 However, our examples with correct specification cannot support the assumption of \cite{KN16} that (iii) the exponential affine SDF is (clearly) superior to the simple liner SDF in a multi-period framework; actually, their bias and variances are quite equal.
 Moreover, our simulation study suggests that (iv) averaging pricing errors over multiple dates strikingly reduces the bias inherent to the original procedure of \cite{DLP12} that just discounts all cash flows to the fund inception date.
-Actually, choosing the set $\mathcal{T}$ according to the fund lifetime seems to decrease the bias (and to a lesser extent also the variance) more effectively than all other measures combined.
+Actually, choosing the set $\mathcal{T}$ close to the fund lifetime seems to decrease the bias (and to a lesser extent also the variance) more effectively than all other measures combined.
+Appendix \ref{sec:appendix_bias_variance} explains why our new \emph{biased} estimator (cf.\ Eq. \ref{eq:alpha_decomp}) can yield better small-sample results due to effects related to the famous bias--variance tradeoff.
+
 
 
 \subsection{Empirical results}
@@ -1213,29 +1221,25 @@ Actually, choosing the set $\mathcal{T}$ according to the fund lifetime seems to
 
 
 
-Following the conclusions from the previous subsection, we use vintage-year portfolios to estimate simple linear SDF models with maximum month 180.
-Asymptotic inference results for the full dataset are exhibited in Table \ref{tab:ai_180_FW_VYP_SL} for fund-size weighting and in Table \ref{tab:ai_180_EW_VYP_SL} for equal weighting.
-The results for $hv$-block cross-validation are displayed in Table \ref{tab:cv_180_FW_VYP_SL} for fund-size weighting and in Table \ref{tab:cv_180_EW_VYP_SL} for equal weighting.
-We generally analyze the results in a two-step procedure: For a given model specification, we use the cross-validation error (i.e., the average out-of-sample error) to select the best model for each fund type but analyze the corresponding coefficient estimates from the asymptotic inference tables (estimated on the entire data set).
-Therefore, for each fund type the SDF models in the asymptotic inference Tables \ref{tab:ai_180_FW_VYP_SL} and \ref{tab:ai_180_EW_VYP_SL} are sorted by the corresponding cross-validation error.
-Throughout this subsection, we define the statistical significance of coefficient estimates in terms of a $t$-ratio $\hat{\theta}[SE(\hat{\theta})]^{-1}$ greater than 1.96.
+Following the conclusions from the simulation study, we use the Preqin data from Section \ref{sec:data} and form vintage-year portfolios (VYPs) to estimate simple linear SDF models with a Horizon of 15 years.
+For each model specification, we report both asymptotic standard errors (SE$_A$) and $hv$-block cross-validation standard errors (SE$_{CV}$).
+We focus the presentation on PE (i.e., mainly Buyout and Growth) as our primary fund type and report both equal-weighted (EW) and value-weighted (FW) estimates across a grid of compounding horizons.
+Throughout this subsection, $t_A$ and $t_{CV}$ denote the $t$-ratios based on asymptotic and cross-validation standard errors, respectively\footnote{All R code and data are available in an online repository: \url{https://github.com/quant-unit/Fundwise_SDF/tree/master/r_project}.}.
+
+
 
 \subsubsection{Single market-factor models}
 
-Table \ref{tab:ai_sum_abs} helps to get a rough overview of Table \ref{tab:ai_180_FW_VYP_SL} to \ref{tab:cv_180_EW_VYP_SL} as it summarizes their absolute column means.
-Conspicuously, asymptotic standard errors (SEs) seem enormously high and, moreover, contain colossal outliers.
-The standard errors implied by $hv-$block cross-validation are considerably smaller than the asymptotic SEs and seem to lie within a plausible range.
-When just looking at asymptotic standard errors of the second factors, fund-size weighting exhibits substantially larger SEs than fund equal-weighting.
-Assuming independence between funds from different vintages decreases asymptotic SEs by approximately 30-40\% compared to a realistic kernel bandwidth of $D=12$.
-But even these independent SEs rarely imply statistical significance coefficient estimates with $t$-ratios bigger than 1.96.
-In Table \ref{tab:ai_180_FW_VYP_SL} with fund-size weighting, just one out of 36 models exhibit asymptotically significant MKT and second-factor estimates.
-In the case of equal-weighting, Table \ref{tab:ai_180_EW_VYP_SL} also shows just one asymptotically significant model out of 36.
+Table~\ref{tab:empirical_pe_mkt} and Figure~\ref{fig:empirical_MKT} report the single-factor MKT model for PE across horizons from 0.1 to 30 years.
+The market beta estimate monotonically declines with the compounding horizon: under equal weighting (EW), $\hat{\beta}_{\mathrm{MKT}}$ decreases from $1.63$ at 0.1~years to approximately $0.91$ at 25--30~years; under value weighting (FW), the corresponding range is $1.78$ to $0.97$.
+This hump-shaped pattern at short horizons likely reflects the finite-sample bias documented in the simulation study, whereby the estimator overestimates market exposure when few discounting dates are used.
+Estimates stabilize beyond approximately 20~years, consistent with the bias-minimizing horizons identified in Section~\ref{sec:simulation_study}.
 
-In summary, the results reveal weak two-factor models with MKT plus a second $q$-investment factor. 
-Likewise, the simulation results from the previous subsection indicate a rather high variance associated with our semiparametric estimator (given the amount of data typically available).
-Thus, we recommend focusing on single MKT factor models even when their asymptotic t-ratios are below 1.96.
-At least the $hv$-block cross-validation standard deviations imply significant one-factor MKT models for fund types PE, VC, PD, INF.
-In contrast, RE is just significant for equal weighting, and NR is insignificant for both weighting schemes.
+A striking feature of the results is the divergence between asymptotic and cross-validation inference.
+Asymptotic $t$-ratios ($t_A$) are borderline at short horizons ($\approx 1.8$) and drop well below 1.96 at longer horizons; partly driven by extremely large and erratic asymptotic standard errors (e.g., SE$_A > 1.7$ for horizons $\geq 15$ years).
+In contrast, cross-validation $t$-ratios ($t_{CV}$) are uniformly large, ranging from 5.2 to 10.3 under EW and from 5.99 to 44.5 under FW, clearly indicating significance of the single-factor MKT model.
+Given the small number of cross-sectional units (vintage-year portfolios) available for estimation, the asymptotic approximation appears unreliable, and we regard the $hv$-block cross-validation results as more trustworthy.
+Therefore, drawing on both the simulation evidence and the cross-validation results, we focus on single MKT factor models for the remainder of the empirical analysis, even when their asymptotic $t$-ratios fall below conventional thresholds.
 
 
 \begin{figure}
@@ -1284,22 +1288,22 @@ In contrast, RE is just significant for equal weighting, and NR is insignificant
 
 \subsubsection{Two-factor models}
 
-\paragraph{Focus on PE estimates}
+We now examine two-factor models for PE that pair the MKT factor with either an Alpha intercept or one of the four non-market $q^5$ factors (Tables~\ref{tab:empirical_pe_alpha}--\ref{tab:empirical_pe_roe} and Figure~\ref{fig:empirical}).
 
-% TODO: do not analyze VC estimates here, focus on PE, to make it not too loong
+\textit{MKT + Alpha} (Table~\ref{tab:empirical_pe_alpha}):
+Adding an $\alpha$ term increases the MKT loading relative to the single-factor model at most horizons: under EW, $\hat{\beta}_{\mathrm{MKT}}$ ranges from $1.24$ to $1.44$; under FW, from $1.36$ to $1.93$.
+The Alpha coefficient is positive at short horizons ($\hat{\beta}_{\alpha} \approx 0.003$--$0.005$ per month, corresponding to roughly 3.6--6\% annualized) but turns negative at horizons beyond 10~years ($\hat{\beta}_{\alpha} \approx -0.002$ to $-0.004$ per month).
+This sign-reversal across horizons is consistent with the horizon-dependent bias pattern documented in the simulation study.
+While a few isolated asymptotic $t$-ratios are significant (e.g., EW at 5~years: $t_A = 10.8$ for MKT, $t_A = 3.49$ for Alpha), the asymptotic standard errors are highly erratic across horizons (SE$_A$ ranging from 0.13 to over 26), precluding a reliable asymptotic inference for the two-factor model.
 
-Here, we briefly summarize the one-factor MKT and the two-factor Alpha model estimates for fund types PE (i.e., mainly Buyout and Growth) and VC.
-For PE, all one-factor MKT model $\beta_{\mathrm{MKT}}$ estimates fall in the range from 1.13 to 1.28. 
-If we add an $\alpha$ term, all $\beta_{\mathrm{MKT}}$ estimates decrease to the range 0.61 to 0.77 with annualized $\alpha$ coefficients of approximately positive 4-5\% per year.
-For VC, the one-factor MKT model $\beta_{\mathrm{MKT}}$ estimates are in the range from 0.80 to 1.14.
-If we add an $\alpha$ term, all $\beta_{\mathrm{MKT}}$ estimates strongly increase to the range 1.81 to 2.06 with annualized $\alpha$ coefficients of approximately negative 6-7\% per year.
-These results at least weakly indicate - given their insignificant asymptotic standard errors - that PE funds outperform public markets with a market beta coefficient of less than one, which suggests low market risk.
-On the other hand, VC underperforms public markets with market beta coefficients of roughly two, which implies high market risk.
-So, even \cite{DLP12} use the problematic Thomson Venture Economics (TVE) dataset for their empirical analysis\footnote{\cite{HJK14} discuss the potential downward bias of the TVE dataset.}, we obtain similar quantitative and qualitative results using Preqin data: (i) the market beta of VC seems to be higher than that of PE, and (ii) VC, in contrast to PE, appears to exhibit a negative abnormal performance $\alpha$\footnote{Similarly, \cite[Exhibit 4.6]{MY10} find high beta coefficients (1.63 and 2.04) and small to negative alphas (-2.11\% and 0.13\%) for VC funds in their lag-return regression.}.
+\textit{Non-market $q^5$ factors} (Tables~\ref{tab:empirical_pe_eg}--\ref{tab:empirical_pe_roe}): 
+A common pattern emerges across all four specifications (EG, IA, ME, ROE): the second-factor loading is positive at short horizons and declines (often changing sign) as the horizon increases, while the MKT loading absorbs a compensating adjustment.
+None of the second-factor coefficients are asymptotically significant at any horizon, and the asymptotic standard errors are again extremely large and unstable.
+Among the $q^5$ factors, ME stands out with particularly large positive loading estimates under FW at short horizons ($\hat{\beta}_{\mathrm{ME}} \approx 1.0$--$1.6$) that remain positive and CV-significant even at long horizons.
+In contrast, the EG, IA, and ROE loadings uniformly become negative beyond 10~years and remain insignificant under both weighting schemes.
 
-As a robustness check, we reestimate all SDF models on a dataset that just contains funds from vintages older or equal than 2011.
-Interestingly, the PE and VC results regarding $\beta_{\mathrm{MKT}}$ and $\alpha$ can be qualitatively and also quantitatively confirmed on this 'mostly-liquidated' dataset\footnote{All R code and data is available in an online repository. \url{https://github.com/quant-unit/Fundwise_SDF/tree/master/r_project}
-}.
+Overall, the two-factor models for PE are fragile: estimates are highly horizon-dependent, asymptotic inference is unreliable, and no second factor consistently adds explanatory power beyond MKT.
+These findings corroborate the simulation-based recommendation to focus on single-factor MKT models given the limited cross-section of vintage-year portfolios currently available.
 
 \begin{figure}
 	\centering
@@ -1550,12 +1554,38 @@ Interestingly, the PE and VC results regarding $\beta_{\mathrm{MKT}}$ and $\alph
 
 Our standard vintage year cutoff in our empirical Preqin dataset is 2019.
 In this section, we  analyze how altering the maximum vintage cutoff from 2019 to older vintages influences the parameter estimates.
-Concretely, we compare yearly cutoff-vintages from 2019 to 2011 making it 9 distinct cutoff dates.
+Concretely, we compare yearly cutoff-vintages from 2021 to 2011 making it 11 distinct cutoff dates.
 We only consider asymptotic estimates in this section, i.e., we did not perform cross-validation results for the different vintage cutoffs.
 
-Figure XXX shows ...
-% TODO: create this chart
+Figure \ref{fig:max_vintage_PE_MKT} shows the market beta estimates for the single-factor model across different vintage cutoffs.
+We observe a clear upward trend in the market beta as we include more recent vintages.
+For equal-weighted (EW) portfolios, $\hat{\beta}_{\mathrm{MKT}}$ rises from approximately 0.87 with a 2011 cutoff to 1.05 with the full sample (2019/2021).
+Similarly, value-weighted (FW) estimates increase from 0.79 to 1.12.
+This could suggest that recent vintage years display higher market co-movements or that treating unrealized NAVs as distribution cash flows mechanically increases the $\beta$ exposures.
+Interestingly, asymptotic standard errors tend to increase when including the most recent vintages (e.g., jumping from $\approx 0.5$ to $>1.0$ for FW after 2016), likely because these younger funds contribute fewer informative cash flows given the 15-year horizon.
 
+Figure \ref{fig:max_vintage_PE_all_factors} displays the coefficients for the two-factor models.
+The second-factor estimates are largely robust to the vintage cutoff, maintaining their general sign and magnitude.
+For instance, the ME factor loading remains consistently positive (around 0.9 for EW and 1.7 for FW).
+In contrast, the Alpha coefficient in the MKT+Alpha model exhibits a downward drift, turning from insignificant positive values in the earlier cutoffs to significantly negative values (e.g., -0.18\% per month) when including post-2016 vintages.
+
+
+
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.9\textwidth]{empirical/max_vintage_PE_MKT}
+	\caption{\textbf{Sensitivity analysis ($MKT$ factor):} Single-factor models for PE using VYP with different vintage-year cutoffs (asymptotic estimates).}
+	\label{fig:max_vintage_PE_MKT}
+\end{figure}
+
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.9\textwidth]{empirical/max_vintage_PE_all_factors}
+	\caption{\textbf{Sensitivity analysis ($q^5$ factors):} Two-factor models for PE using VYP with different vintage-year cutoffs (asymptotic estimates).}
+	\label{fig:max_vintage_PE_all_factors}
+\end{figure}
 
 
 
@@ -1823,13 +1853,13 @@ Consequently, the TRP bias introduced by NFV terms ($\tau > t_{i,j}^{\mathrm{Inv
 \paragraph{Analogy to model averaging.}
 The structure of $\mathcal{T}$-averaging closely mirrors the jackknife model averaging framework of \cite{hansen2012jackknife}, where combining multiple (possibly misspecified) estimators achieves a bias--variance tradeoff: averaging reduces variance at the expense of a small bias from the inclusion of imperfect components.
 In our setting, the ``models'' being averaged are the pricing-error moments at different discounting dates $\tau$.
-Each individual moment is unbiased for the NPV terms but may carry TRP bias for the NFV terms---analogous to the weak misspecification in the \cite{hansen2012jackknife} setup.
+Each individual moment is unbiased for the NPV terms but may carry TRP bias for the NFV terms; analogous to the weak misspecification in the \cite{hansen2012jackknife} setup.
 Their key insight applies directly: the variance reduction from averaging dominates the bias cost as long as the individual components are not too severely biased, which is precisely what the \cite{HJ91} bound guarantees in our context.
 
 \paragraph{Summary.}
-The $\mathcal{T}$-averaging mechanism does not make the TRP ``wash out'' in the sense that each individual TRP term goes to zero.
+The $\mathcal{T}$-averaging mechanism does not make the TRP wash out in the sense that each individual TRP term goes to zero.
 Rather, it achieves a bias--variance tradeoff where the TRP bias introduced by NFV terms is more than compensated by the variance reduction that cures the finite-sample bias from the nonlinear estimation.
-The fact that the optimal $|\mathcal{T}_i|$ depends on the SDF model specification is consistent with this explanation: a more complex or misspecified model not only increases the TRP covariance terms but also activates the additional bias channel identified in the Remark above, shifting the optimal tradeoff point.
+The fact that the optimal $|\mathcal{T}_i|$ depends on the SDF model specification is consistent with this explanation: a more complex or misspecified model not only increases the TRP covariance terms but also activates the additional bias channel identified in the Remark on misspecification above, shifting the optimal tradeoff point.
 Finally, the favorable tradeoff observed in our simulation study may partly reflect the conditioning on a single realized factor path, which attenuates the TRP covariance terms relative to their unconditional magnitude.
 Across different macro regimes, the TRP cost could be larger and the optimal $|\mathcal{T}_i|$ smaller.
 

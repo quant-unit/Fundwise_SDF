@@ -724,12 +724,650 @@ plot_empirical_estimates <- function(
 }
 
 
+# =============================================================================
+# Plot Max Vintage–Year Cutoff Analysis
+# =============================================================================
+
+#' Plot Empirical Estimates Across Max Vintage–Year Cutoffs
+#'
+#' Creates a multi-panel chart comparing estimated coefficients across different
+#' maximum vintage-year cutoffs (e.g., 2011–2021). For each factor column, two
+#' side-by-side panels (EW and FW) show 11 lines—one per cutoff—over horizons.
+#' Uses only asymptotic inference results.
+#'
+#' @param data_dir  Path to the data_out folder containing the max-vintage
+#'   subdirectories (e.g., cache_q_factors_preqin_EW_VYP_max_vin_2011, …).
+#' @param fund_type Character, fund type to plot (default "PE").
+#' @param factors   Character vector of factor names for the columns. "MKT"
+#'   produces a single-factor column (one row); other factors produce two-factor
+#'   columns (MKT row + second factor row).
+#' @param vintages  Integer vector of vintage cutoff years (default 2011:2021).
+#' @param export_svg, export_png, export_pdf  Logical, whether to export.
+#' @param output_file Base path for output (extension added automatically).
+#' @param width, height Plot dimensions in inches.
+#' @param png_dpi   PNG resolution (default 300).
+#' @param y.max.mkt, y.min.mkt Optional y-axis limits for the MKT row.
+#' @param y.lim.second Optional named list of y-axis limits for the second
+#'   factor row. Keyed by factor name; use "default" as fallback.
+#' @param x.max, x.min Optional x-axis limits (in months).
+#'
+#' @return A ggplot object (invisibly if exported).
+plot_max_vintage_cutoff <- function(
+    data_dir,
+    fund_type = "PE",
+    factors = c("MKT", "Alpha", "EG", "IA", "ME", "ROE"),
+    vintages = 2011:2021,
+    export_svg = FALSE,
+    export_png = FALSE,
+    export_pdf = FALSE,
+    export_csv = FALSE,
+    export_latex = FALSE,
+    output_file = "max_vintage_cutoff_plot",
+    width = 14,
+    height = 6,
+    png_dpi = 300,
+    y.max.mkt = NULL,
+    y.min.mkt = NULL,
+    y.lim.second = NULL,
+    x.max = NULL,
+    x.min = NULL) {
+    # -------------------------------------------------------------------------
+    # 1. Load data from all vintage × weighting combinations
+    # -------------------------------------------------------------------------
+    all_rows <- list()
+
+    for (v in vintages) {
+        for (w in c("EW", "FW")) {
+            folder <- file.path(
+                data_dir,
+                paste0("cache_q_factors_preqin_", w, "_VYP_max_vin_", v)
+            )
+            csv_path <- file.path(folder, "0_asymptotic_inference_summary.csv")
+
+            if (!file.exists(csv_path)) {
+                warning(paste("File not found (skipped):", csv_path))
+                next
+            }
+
+            df <- read.csv(csv_path, stringsAsFactors = FALSE)
+            df$vintage <- v
+            df$weighting <- w
+            all_rows[[length(all_rows) + 1L]] <- df
+        }
+    }
+
+    all_data <- bind_rows(all_rows)
+
+    if (nrow(all_data) == 0) {
+        stop("No data could be loaded from the specified directory.")
+    }
+
+    # -------------------------------------------------------------------------
+    # 2. Filter and prepare plot data
+    # -------------------------------------------------------------------------
+    plot_data <- all_data %>%
+        filter(Type == fund_type)
+
+    if (nrow(plot_data) == 0) {
+        stop(paste(
+            "No data found for fund type:", fund_type,
+            "\nAvailable types:", paste(unique(all_data$Type), collapse = ", ")
+        ))
+    }
+
+    plot_data$max.month <- as.numeric(plot_data$max.month)
+    plot_data$horizon_years <- plot_data$max.month / 12
+    plot_data$vintage <- factor(plot_data$vintage)
+
+    # Apply x-axis limits
+    if (!is.null(x.min)) plot_data <- plot_data %>% filter(max.month >= x.min)
+    if (!is.null(x.max)) plot_data <- plot_data %>% filter(max.month <= x.max)
+
+    # -------------------------------------------------------------------------
+    # 3. Publication-quality theme
+    # -------------------------------------------------------------------------
+    theme_publication <- theme_minimal(base_size = 11, base_family = "serif") +
+        theme(
+            panel.grid.major = element_line(color = "grey85", linewidth = 0.3),
+            panel.grid.minor = element_blank(),
+            panel.border = element_rect(color = "grey40", fill = NA, linewidth = 0.5),
+            panel.background = element_rect(fill = "white"),
+            strip.text = element_text(
+                face = "bold", size = 10,
+                margin = margin(b = 5, t = 5)
+            ),
+            strip.background = element_rect(
+                fill = "grey95", color = "grey40",
+                linewidth = 0.5
+            ),
+            axis.title = element_text(face = "bold", size = 10),
+            axis.text = element_text(size = 9, color = "grey20"),
+            axis.ticks = element_line(color = "grey40", linewidth = 0.3),
+            axis.line = element_blank(),
+            legend.position = "bottom",
+            legend.title = element_text(face = "bold", size = 10),
+            legend.text = element_text(size = 9),
+            legend.key.size = unit(0.8, "cm"),
+            legend.background = element_rect(fill = "white", color = NA),
+            legend.margin = margin(t = 5),
+            plot.title = element_text(
+                face = "bold", size = 10,
+                hjust = 0.5, margin = margin(b = 5)
+            ),
+            plot.margin = margin(5, 5, 5, 5)
+        )
+
+    # -------------------------------------------------------------------------
+    # 4. Color palette for vintage lines (viridis turbo, 11 levels)
+    # -------------------------------------------------------------------------
+    n_vintages <- length(levels(plot_data$vintage))
+
+    # -------------------------------------------------------------------------
+    # 5. Helper: build a single panel (one factor-coefficient × one weighting)
+    # -------------------------------------------------------------------------
+    .build_panel <- function(df, y_col, title, show_x, show_y_label,
+                             y_label, ylim_vec = NULL) {
+        p <- ggplot(df, aes(
+            x     = horizon_years,
+            y     = .data[[y_col]],
+            color = vintage,
+            group = vintage
+        )) +
+            geom_line(linewidth = 0.7, alpha = 0.85) +
+            geom_point(size = 1.5, alpha = 0.85) +
+            scale_color_viridis_d(
+                option = "turbo",
+                name   = "Max Vintage Year",
+                guide  = guide_legend(nrow = 1)
+            ) +
+            scale_x_continuous(
+                breaks = seq(0, max(df$horizon_years, na.rm = TRUE), by = 5),
+                expand = c(0.02, 0)
+            ) +
+            labs(
+                title = title,
+                x     = if (show_x) "Horizon (Years)" else NULL,
+                y     = if (show_y_label) y_label else NULL
+            ) +
+            theme_publication +
+            theme(
+                legend.position = "none",
+                axis.title.y = if (!show_y_label) {
+                    element_blank()
+                } else {
+                    element_text(face = "bold", size = 10)
+                }
+            )
+
+        if (!is.null(ylim_vec)) {
+            p <- p + coord_cartesian(ylim = ylim_vec)
+        }
+        p
+    }
+
+    # -------------------------------------------------------------------------
+    # 6. Determine layout
+    # -------------------------------------------------------------------------
+    has_second_factor <- any(factors != "MKT")
+    single_factor_only <- all(factors == "MKT")
+    column_factors <- factors
+
+    # -------------------------------------------------------------------------
+    # 7. Build MKT row: 2 panels per factor column (EW + FW side-by-side)
+    # -------------------------------------------------------------------------
+    mkt_plots <- list()
+
+    for (i in seq_along(column_factors)) {
+        cf <- column_factors[i]
+
+        for (w in c("EW", "FW")) {
+            if (cf == "MKT") {
+                mkt_df <- plot_data %>%
+                    filter(Factor == "MKT", weighting == w)
+            } else {
+                mkt_df <- plot_data %>%
+                    filter(Factor == cf, weighting == w)
+            }
+
+            title_text <- paste0(w, ": MKT")
+
+            ylim_mkt <- NULL
+            if (!is.null(y.max.mkt) || !is.null(y.min.mkt)) {
+                ylim_mkt <- c(
+                    if (is.null(y.min.mkt)) NA else y.min.mkt,
+                    if (is.null(y.max.mkt)) NA else y.max.mkt
+                )
+            }
+
+            show_x <- !has_second_factor || single_factor_only
+            # y-label only for the first panel (EW of first column)
+            show_y <- (i == 1 && w == "EW")
+
+            p <- .build_panel(
+                df            = mkt_df,
+                y_col         = "MKT",
+                title         = title_text,
+                show_x        = show_x,
+                show_y_label  = show_y,
+                y_label       = expression(beta[MKT]),
+                ylim_vec      = ylim_mkt
+            )
+
+            mkt_plots[[length(mkt_plots) + 1L]] <- p
+        }
+    }
+
+    # -------------------------------------------------------------------------
+    # 8. Build Second Factor row (only for non-MKT columns)
+    # -------------------------------------------------------------------------
+    second_plots <- list()
+    first_coef_plot <- TRUE
+
+    if (has_second_factor && !single_factor_only) {
+        for (i in seq_along(column_factors)) {
+            cf <- column_factors[i]
+
+            if (cf == "MKT") {
+                # Blank spacer for each of the 2 sub-panels (EW + FW)
+                for (w in c("EW", "FW")) {
+                    second_plots[[length(second_plots) + 1L]] <-
+                        ggplot() +
+                        theme_void() +
+                        theme(plot.margin = margin(5, 5, 5, 5))
+                }
+            } else {
+                for (w in c("EW", "FW")) {
+                    coef_df <- plot_data %>%
+                        filter(Factor == cf, weighting == w)
+
+                    title_text <- paste0(w, ": ", cf)
+
+                    # Per-factor y-limits
+                    ylim_vec <- NULL
+                    if (!is.null(y.lim.second)) {
+                        ylim_vec <- if (!is.null(y.lim.second[[cf]])) {
+                            y.lim.second[[cf]]
+                        } else if (!is.null(y.lim.second[["default"]])) {
+                            y.lim.second[["default"]]
+                        }
+                    }
+
+                    show_y <- (first_coef_plot && w == "EW")
+
+                    p <- .build_panel(
+                        df            = coef_df,
+                        y_col         = "Coef",
+                        title         = title_text,
+                        show_x        = TRUE,
+                        show_y_label  = show_y,
+                        y_label       = expression(beta["Second"]),
+                        ylim_vec      = ylim_vec
+                    )
+
+                    second_plots[[length(second_plots) + 1L]] <- p
+                }
+                first_coef_plot <- FALSE
+            }
+        }
+    }
+
+    # -------------------------------------------------------------------------
+    # 9. Assemble with patchwork
+    # -------------------------------------------------------------------------
+    n_cols <- length(column_factors) * 2 # 2 panels (EW + FW) per factor column
+
+    # Row 1: MKT
+    row1 <- Reduce(`|`, mkt_plots)
+
+    if (length(second_plots) > 0) {
+        # Panel labels
+        panel_a_label <- wrap_elements(
+            panel = textGrob(
+                expression(bold("Panel A: Market Factor (" * beta[MKT] * ")")),
+                x = 0, y = 0, hjust = 0, vjust = 0,
+                gp = gpar(fontsize = 12, fontfamily = "serif", fontface = "bold")
+            )
+        )
+        panel_b_label <- wrap_elements(
+            panel = textGrob(
+                "Panel B: Second Factor",
+                x = 0, y = 0, hjust = 0, vjust = 0,
+                gp = gpar(fontsize = 12, fontfamily = "serif", fontface = "bold")
+            )
+        )
+
+        row2 <- Reduce(`|`, second_plots)
+
+        combined_plot <- panel_a_label / row1 / panel_b_label / row2 +
+            plot_layout(heights = c(0.1, 1, 0.1, 1))
+    } else {
+        combined_plot <- row1
+    }
+
+    # Shared legend at bottom
+    combined_plot <- combined_plot +
+        plot_layout(guides = "collect") &
+        theme(legend.position = "bottom")
+
+    # -------------------------------------------------------------------------
+    # 10. Export or display
+    # -------------------------------------------------------------------------
+    any_export <- export_svg || export_png || export_pdf || export_csv || export_latex
+
+    if (any_export) {
+        base_file <- sub("\\.(svg|png|pdf)$", "", output_file, ignore.case = TRUE)
+
+        output_dir_path <- dirname(base_file)
+        if (!dir.exists(output_dir_path) &&
+            output_dir_path != "." && output_dir_path != "") {
+            dir.create(output_dir_path, recursive = TRUE)
+        }
+
+        if (export_svg) {
+            svg_file <- paste0(base_file, ".svg")
+            tryCatch(
+                {
+                    ggsave(
+                        filename = svg_file, plot = combined_plot,
+                        width = width, height = height, device = "svg"
+                    )
+                    message(paste("SVG exported to:", svg_file))
+                },
+                error = function(e) {
+                    warning("SVG export failed. Falling back to PDF.")
+                    pdf_file <- paste0(base_file, ".pdf")
+                    ggsave(
+                        filename = pdf_file, plot = combined_plot,
+                        width = width, height = height, device = "pdf"
+                    )
+                    message(paste("PDF exported to:", pdf_file))
+                }
+            )
+        }
+
+        if (export_png) {
+            png_file <- paste0(base_file, ".png")
+            ggsave(
+                filename = png_file, plot = combined_plot,
+                width = width, height = height, device = "png",
+                dpi = png_dpi, bg = "white"
+            )
+            message(paste("PNG exported to:", png_file))
+        }
+
+        if (export_pdf) {
+            pdf_file <- paste0(base_file, ".pdf")
+            ggsave(
+                filename = pdf_file, plot = combined_plot,
+                width = width, height = height, device = "pdf"
+            )
+            message(paste("PDF exported to:", pdf_file))
+        }
+
+        # CSV Export: full data with all columns
+        if (export_csv) {
+            csv_export <- all_data %>% filter(Type == fund_type)
+            csv_file <- paste0(base_file, "_data.csv")
+            write.csv(csv_export, file = csv_file, row.names = FALSE)
+            message(paste("Data CSV exported to:", csv_file))
+        }
+
+        # LaTeX Export: compact vintage-cutoff tables
+        if (export_latex) {
+            .export_vintage_latex_tables(
+                all_data  = all_data,
+                fund_type = fund_type,
+                factors   = factors,
+                vintages  = vintages,
+                base_file = base_file
+            )
+        }
+
+        invisible(combined_plot)
+    } else {
+        print(combined_plot)
+        invisible(combined_plot)
+    }
+}
+
+
+# =============================================================================
+# Helper: LaTeX table export for vintage-cutoff analysis
+# =============================================================================
+
+.export_vintage_latex_tables <- function(all_data, fund_type, factors, vintages,
+                                         base_file) {
+    ft_data <- all_data %>%
+        filter(Type == fund_type) %>%
+        mutate(max.month = as.numeric(max.month))
+
+    if (nrow(ft_data) == 0) {
+        warning(paste(
+            "No data for fund type", fund_type,
+            "- skipping LaTeX export."
+        ))
+        return(invisible(NULL))
+    }
+
+    horizons <- sort(unique(ft_data$max.month))
+    vintages <- sort(vintages)
+    n_vin <- length(vintages)
+
+    # Format helpers
+    fmt <- function(x, digits = 3) {
+        ifelse(is.na(x), "--",
+            formatC(round(x, digits), format = "f", digits = digits)
+        )
+    }
+
+    all_lines <- c("% Auto-generated by plot_max_vintage_cutoff()")
+
+    for (fct in factors) {
+        is_single <- (fct == "MKT")
+
+        # Caption
+        if (is_single) {
+            cap <- paste0(
+                "Vintage-Year Cutoff Sensitivity: ", fund_type,
+                " --- Single-Factor (MKT) Model"
+            )
+        } else {
+            cap <- paste0(
+                "Vintage-Year Cutoff Sensitivity: ", fund_type,
+                " --- MKT + ", fct, " Model"
+            )
+        }
+
+        lines <- c(
+            "",
+            "\\begin{table}[htbp]",
+            "\\centering",
+            "\\scriptsize",
+            paste0("\\caption{", cap, "}"),
+            paste0(
+                "\\label{tab:vin_", tolower(fund_type), "_",
+                tolower(fct), "}"
+            ),
+            paste0(
+                "\\begin{tabular}{l", paste(rep("r", n_vin), collapse = ""),
+                "}"
+            ),
+            "\\toprule"
+        )
+
+        # Column headers: vintage years
+        header <- paste0(
+            "Horizon & ",
+            paste(vintages, collapse = " & "), " \\\\"
+        )
+        lines <- c(lines, header, "\\midrule")
+
+        # ---- EW panel ----
+        lines <- c(
+            lines,
+            "\\multicolumn{1}{l}{\\textit{Equal-Weighted (EW)}} \\\\"
+        )
+
+        # Panel A: MKT (β_MKT)
+        if (!is_single) {
+            lines <- c(
+                lines,
+                "\\addlinespace[2pt]",
+                paste0(
+                    "\\multicolumn{", n_vin + 1,
+                    "}{l}{\\textit{Panel A: $\\beta_{MKT}$}} \\\\"
+                )
+            )
+        }
+
+        for (h in horizons) {
+            h_label <- paste0(round(h / 12, 1), " yr")
+            vals <- sapply(vintages, function(v) {
+                row <- ft_data %>%
+                    filter(
+                        max.month == h, weighting == "EW",
+                        vintage == v,
+                        Factor == if (is_single) "MKT" else fct
+                    )
+                if (nrow(row) > 0) fmt(row$MKT[1]) else "--"
+            })
+            lines <- c(lines, paste0(
+                h_label, " & ",
+                paste(vals, collapse = " & "),
+                " \\\\"
+            ))
+        }
+
+        # Panel B: Second factor (β_Coef) — EW
+        if (!is_single) {
+            lines <- c(
+                lines,
+                "\\addlinespace[4pt]",
+                paste0(
+                    "\\multicolumn{", n_vin + 1,
+                    "}{l}{\\textit{Panel B: $\\beta_{", fct, "}$}} \\\\"
+                ),
+                "\\addlinespace[2pt]"
+            )
+
+            for (h in horizons) {
+                h_label <- paste0(round(h / 12, 1), " yr")
+                vals <- sapply(vintages, function(v) {
+                    row <- ft_data %>%
+                        filter(
+                            max.month == h, weighting == "EW",
+                            vintage == v, Factor == fct
+                        )
+                    if (nrow(row) > 0) fmt(row$Coef[1]) else "--"
+                })
+                lines <- c(lines, paste0(
+                    h_label, " & ",
+                    paste(vals, collapse = " & "),
+                    " \\\\"
+                ))
+            }
+        }
+
+        # ---- FW panel ----
+        lines <- c(
+            lines,
+            "\\addlinespace[6pt]",
+            "\\midrule",
+            "\\multicolumn{1}{l}{\\textit{Value-Weighted (FW)}} \\\\"
+        )
+
+        if (!is_single) {
+            lines <- c(
+                lines,
+                "\\addlinespace[2pt]",
+                paste0(
+                    "\\multicolumn{", n_vin + 1,
+                    "}{l}{\\textit{Panel A: $\\beta_{MKT}$}} \\\\"
+                )
+            )
+        }
+
+        for (h in horizons) {
+            h_label <- paste0(round(h / 12, 1), " yr")
+            vals <- sapply(vintages, function(v) {
+                row <- ft_data %>%
+                    filter(
+                        max.month == h, weighting == "FW",
+                        vintage == v,
+                        Factor == if (is_single) "MKT" else fct
+                    )
+                if (nrow(row) > 0) fmt(row$MKT[1]) else "--"
+            })
+            lines <- c(lines, paste0(
+                h_label, " & ",
+                paste(vals, collapse = " & "),
+                " \\\\"
+            ))
+        }
+
+        if (!is_single) {
+            lines <- c(
+                lines,
+                "\\addlinespace[4pt]",
+                paste0(
+                    "\\multicolumn{", n_vin + 1,
+                    "}{l}{\\textit{Panel B: $\\beta_{", fct, "}$}} \\\\"
+                ),
+                "\\addlinespace[2pt]"
+            )
+
+            for (h in horizons) {
+                h_label <- paste0(round(h / 12, 1), " yr")
+                vals <- sapply(vintages, function(v) {
+                    row <- ft_data %>%
+                        filter(
+                            max.month == h, weighting == "FW",
+                            vintage == v, Factor == fct
+                        )
+                    if (nrow(row) > 0) fmt(row$Coef[1]) else "--"
+                })
+                lines <- c(lines, paste0(
+                    h_label, " & ",
+                    paste(vals, collapse = " & "),
+                    " \\\\"
+                ))
+            }
+        }
+
+        # Footer
+        lines <- c(
+            lines,
+            "\\bottomrule",
+            "\\end{tabular}",
+            "\\par\\vspace{2pt}",
+            paste0(
+                "{\\scriptsize\\textit{Notes:} Each cell shows the ",
+                "estimated $\\hat{\\beta}$ (asymptotic) for the respective ",
+                "maximum vintage-year cutoff. Horizons are in years.}"
+            ),
+            "\\end{table}"
+        )
+
+        all_lines <- c(all_lines, lines)
+    }
+
+    tex_file <- paste0(base_file, "_tables.tex")
+    writeLines(all_lines, con = tex_file)
+    message(paste("LaTeX vintage-cutoff tables exported to:", tex_file))
+
+    invisible(NULL)
+}
+
+
 # ============================================================================
 # Example Usage (uncomment to run)
 # ============================================================================
 
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+getwd()
+
 file.folder <- "results/data_out_2026-emp-max-vin-2019"
-file.folder <- "results/data_out_2026_02_18"
+file.folder <- "data_out_2026_02_18"
 
 # # Two-factor model with all factors
 plot_empirical_estimates(
@@ -741,7 +1379,7 @@ plot_empirical_estimates(
     export_latex = TRUE,
     y.max.mkt = 2.5, y.min.mkt = 0.7,
     y.lim.second = list(Alpha = c(-0.01, 0.01)),
-    output_file = "results/figures/empirical_PE_all_factors"
+    output_file = "figures/empirical_PE_all_factors"
 )
 
 # Single-factor model with MKT only
@@ -755,5 +1393,35 @@ plot_empirical_estimates(
     height = 4,
     y.max.mkt = 2.5, y.min.mkt = 0.7,
     y.lim.second = list(Alpha = c(-0.01, 0.01)),
-    output_file = "results/figures/empirical_PE_MKT"
+    output_file = "figures/empirical_PE_MKT"
+)
+
+# Max vintage-year cutoff analysis (all factors)
+plot_max_vintage_cutoff(
+    data_dir = file.folder,
+    fund_type = "PE",
+    factors = c("Alpha", "EG", "IA", "ME", "ROE"),
+    vintages = 2011:2021,
+    export_pdf = TRUE,
+    export_svg = TRUE,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    y.max.mkt = 2.5, y.min.mkt = 0.5,
+    y.lim.second = list(Alpha = c(-0.01, 0.01)),
+    output_file = "figures/max_vintage_PE_all_factors"
+)
+
+# Max vintage-year cutoff analysis (MKT only)
+plot_max_vintage_cutoff(
+    data_dir = file.folder,
+    fund_type = "PE",
+    factors = c("MKT"),
+    vintages = 2011:2021,
+    export_pdf = TRUE,
+    export_svg = TRUE,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    height = 4,
+    y.max.mkt = 2.5, y.min.mkt = 0.5,
+    output_file = "figures/max_vintage_PE_MKT"
 )

@@ -114,14 +114,62 @@ run_empirical_study <- function(
             params$data_out_folder <- data_out_folder
         }
 
-        # Run estimation
-        result <- do.call(run_estimation, params)
-        results[[id]] <- result
+        # ---------------------------------------------------------------------
+        # Check for vintage sweep (max_vintages list)
+        # ---------------------------------------------------------------------
+        if (!is.null(params$max_vintages) && length(params$max_vintages) > 1) {
+            max_vintages <- unlist(params$max_vintages)
+            params$max_vintages <- NULL # Remove from params (not a run_estimation arg)
 
-        if (verbose && result$success) {
-            cat("  -> Completed in", round(as.numeric(result$elapsed_time), 1), "sec\n\n")
-        } else if (verbose) {
-            cat("  -> FAILED:", result$error, "\n\n")
+            if (verbose) {
+                cat("  -> Vintage sweep:", paste(max_vintages, collapse = ", "), "\n")
+            }
+
+            for (mv in max_vintages) {
+                if (verbose) {
+                    cat("  [max_vintage = ", mv, "] ", sep = "")
+                }
+
+                # Set max_vintage for this iteration
+                params$max_vintage <- mv
+
+                # Build cache_folder_tag with _max_vin_{year} suffix
+                # (matches legacy estim_model_empirical_runner.R convention)
+                weighting <- params$weighting
+                alpha_str <- if (isTRUE(params$include_alpha_term)) "_alpha_" else "_"
+                params$cache_folder_tag <- paste0(
+                    params$private_source, alpha_str, weighting,
+                    "_max_vin_", mv
+                )
+
+                sub_result <- do.call(run_estimation, params)
+
+                if (verbose && isTRUE(sub_result$success)) {
+                    cat("completed in", round(as.numeric(sub_result$elapsed_time), 1), "sec\n")
+                } else if (verbose) {
+                    cat("FAILED:", sub_result$error, "\n")
+                }
+
+                # Store result keyed by scenario_id + vintage
+                results[[paste0(id, "_vin_", mv)]] <- sub_result
+            }
+
+            if (verbose) cat("\n")
+        } else {
+            # -----------------------------------------------------------------
+            # Standard single-vintage run
+            # -----------------------------------------------------------------
+            params$max_vintages <- NULL # Remove from params (not a run_estimation arg)
+
+            # Run estimation
+            result <- do.call(run_estimation, params)
+            results[[id]] <- result
+
+            if (verbose && result$success) {
+                cat("  -> Completed in", round(as.numeric(result$elapsed_time), 1), "sec\n\n")
+            } else if (verbose) {
+                cat("  -> FAILED:", result$error, "\n\n")
+            }
         }
     }
 
@@ -211,11 +259,11 @@ if (sys.nframe() == 0L) {
 
     cat("Available scenarios:\n\n")
     list_empirical_scenarios(active_only = TRUE)
-    
+
     data.out.folder <- "results/data_out_2026_02_18"
 }
 
 results <- run_empirical_study(
-  scenario_ids = c("fw_no_cv", "fw_cv", "ew_no_cv", "ew_cv"),
-  data_out_folder = data.out.folder
+    scenario_ids = c("fw_no_cv", "fw_cv", "ew_no_cv", "ew_cv", "fw_vintage_sweep", "ew_vintage_sweep"),
+    data_out_folder = data.out.folder
 )

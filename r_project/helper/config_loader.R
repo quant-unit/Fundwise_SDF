@@ -311,6 +311,8 @@ empirical_scenario_to_params <- function(scenario) {
         data_out_folder = scenario$data_out_folder,
         factors_to_use = if (!is.null(scenario$factors_to_use)) scenario$factors_to_use else "",
         scenario_id = scenario$id,
+        max_vintage = if (!is.null(scenario$max_vintage)) scenario$max_vintage else 2021,
+        max_vintages = scenario$max_vintages,
         alpha_lower = if (!is.null(scenario$alpha_lower)) scenario$alpha_lower else -Inf,
         alpha_upper = if (!is.null(scenario$alpha_upper)) scenario$alpha_upper else Inf
     )

@@ -25,3 +25,55 @@ prefix <- "q_factors_preqin_"
 suffix <- "FW_VYP"
 
 source(here("results/analyze_result.R"))
+
+
+# Vintage Year Cutoffs
+
+suffix <- paste0("EW_VYP_max_vin_", 2011)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_max_vin_", 2012)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_max_vin_", 2013)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_max_vin_", 2014)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_max_vin_", 2015)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_max_vin_", 2016)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_max_vin_", 2017)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_max_vin_", 2018)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_max_vin_", 2019)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_max_vin_", 2020)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_max_vin_", 2021)
+source(here("results/analyze_result.R"))
+
+
+suffix <- paste0("FW_VYP_max_vin_", 2011)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_max_vin_", 2012)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_max_vin_", 2013)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_max_vin_", 2014)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_max_vin_", 2015)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_max_vin_", 2016)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_max_vin_", 2017)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_max_vin_", 2018)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_max_vin_", 2019)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_max_vin_", 2020)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_max_vin_", 2021)
+source(here("results/analyze_result.R"))
+
+
