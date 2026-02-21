@@ -51,7 +51,7 @@ scenarios:
     description: "Base case: β_MKT=1, α=0, Vintage-Year Portfolios"
     estimation:
       factors_to_use: ""  # one-factor (MKT only)
-      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
+      max_months: [0, 1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: true
     data_folder: auto
   
@@ -82,7 +82,7 @@ scenarios:
       beta_MKT: 1
     estimation:
       factors_to_use: "Alpha"
-      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
+      max_months: [0, 1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: true
     data_folder: auto
     
@@ -387,6 +387,31 @@ scenarios:
       alpha_lower: -Inf
       alpha_upper: 0.01
       max_months: [1, 2, 30, 60, 90, 120, 150, 180, 210, 240]
+    active: true
+    data_folder: auto
+  
+  big_n_v_50funds_alpha:
+    description: "Larger sample: 50 funds, vintages 1986-2005 plus Alpha"
+    dgp:
+      no_funds: 50
+    estimation:
+      factors_to_use: "Alpha"
+      alpha_lower: -Inf
+      alpha_upper: 0.01
+      max_months: [0]
+    active: true
+    data_folder: auto
+  
+  big_n_v_50funds_alpha_stdv:
+    description: "Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized stdv 108%"
+    dgp:
+      no_funds: 50
+      stdvs: 0.3117691
+    estimation:
+      factors_to_use: "Alpha"
+      alpha_lower: -Inf
+      alpha_upper: 0.01
+      max_months: [0]
     active: true
     data_folder: auto
   

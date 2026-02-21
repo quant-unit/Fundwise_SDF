@@ -256,11 +256,22 @@ source("helper/getNPVs.R")
 
 if (sdf.model == "linear") {
   f1 <- function(df.ss, max.month, par0) {
+    
+    if (max.month == 0) {
+      return(
+        sum(
+          df.ss$CF / exp(cumsum(log(1 + (as.matrix(df.ss[, names(par0)]) %*% par0))))
+        )
+      )
+    }
+    # else
     return(getNPVs(
       df.ss$CF,
       exp(cumsum(log(1 + (as.matrix(df.ss[, names(par0)]) %*% par0)))),
       max.month
     ))
+    
+    
   }
 }
 
@@ -287,6 +298,15 @@ if (sdf.model == "linear.single.date") {
 if (sdf.model == "exp.aff") {
   f1 <- function(df.ss, max.month, par0) {
     df.ss$Alpha <- exp(1) - 1
+    
+    if (max.month == 0) {
+      return(
+        sum(
+          df.ss$CF / exp(cumsum(as.matrix(log(1 + df.ss[, names(par0)])) %*% par0))
+        )
+      )
+    }
+    # else
     return(getNPVs(
       df.ss$CF,
       exp(cumsum(as.matrix(log(1 + df.ss[, names(par0)])) %*% par0)),

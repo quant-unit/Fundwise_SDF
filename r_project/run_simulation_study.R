@@ -526,12 +526,13 @@ if (sys.nframe() == 0L) {
         "big_n_v_40funds_alpha", "big_v_10funds_1967_alpha", "big_v_20funds_1967_alpha", "small_v_1986_1995_alpha", "small_v_1996_2005_alpha",
         "exp_aff_base", "exp_aff_high_beta_alpha", "high_beta_alpha_two_factor",
         "base_case_ME", "base_case_IA", "base_case_ROE", "base_case_EG",
+        "big_n_v_50funds_alpha", "big_n_v_50funds_alpha_stdv",
         "base_case_cross_sectional", "base_case_cross_sectional_zero_alpha"
     )
     
     #scenarios <- c( "base_case_cross_sectional_zero_alpha", "base_case_cross_sectional" )
     results <- run_simulation_study(
         scenario_ids = scenarios,
-        generate_data = FALSE, estimate = TRUE, analyze = FALSE
+        generate_data = FALSE, estimate = FALSE, analyze = TRUE
     )
 }

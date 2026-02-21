@@ -73,14 +73,14 @@ create.simulation <- function(
     df$Fund.ID <- paste(vintage, no, sep = "_")
 
     # shifted lognormal (mu, sigma)
-    min.mkt <- 0.25
-    foo <- function(sigma) {
-      mu <- log((1 - min.mkt) / exp(0.5 * sigma^2))
-      y <- exp(mu + 0.5 * sigma^2) * sqrt(exp(sigma^2) - 1)
-      return((stdv - y)^2)
-    }
-    sigma <- optimize(foo, c(0, 10))$minimum
-    mu <- log((1 - min.mkt) / exp(0.5 * sigma^2))
+    #min.mkt <- 0.25
+    #foo <- function(sigma) {
+    #  mu <- log((1 - min.mkt) / exp(0.5 * sigma^2))
+    #  y <- exp(mu + 0.5 * sigma^2) * sqrt(exp(sigma^2) - 1)
+    #  return((stdv - y)^2)
+    #}
+    #sigma <- optimize(foo, c(0, 10))$minimum
+    #mu <- log((1 - min.mkt) / exp(0.5 * sigma^2))
 
     # simulate N deals
     for (i in 1:no.deals) {
@@ -98,9 +98,16 @@ create.simulation <- function(
         # simple linear
         df$deal <- alpha + df$RF + beta * df$MKT + rnorm(nrow(df), 0, stdv)
         # df$deal <- alpha + df$RF + beta * df$MKT + exp(rnorm(nrow(df), 0, stdv) - stdv^2/2) - 1
-
-        # shifted lognormal
-        # df$deal <- alpha + df$RF + beta * df$MKT + exp(rnorm(nrow(df), mu, sigma)) - (1-min.mkt)
+        
+        use.shifted.lognormal <- FALSE
+        if (use.shifted.lognormal) {
+          # shifted lognormal (goal: same mean and standard deviation for normal & shifted.lognormal)
+          # OLD: df$deal <- alpha + df$RF + beta * df$MKT + exp(rnorm(nrow(df), mu, sigma)) - (1-min.mkt)
+          lower.bound <- -1 # set to a total return of -100%
+          sigma <- sqrt(log(1 + stdv^2 / lower.bound^2))
+          mu <- log(-lower.bound) - sigma^2 / 2
+          df$deal <- alpha + df$RF + beta * df$MKT + exp(rnorm(nrow(df), mu, sigma)) + lower.bound
+        }
 
         path <- cumprod(1 + df$deal[start:end])
         if (any(path < 0)) { # default
