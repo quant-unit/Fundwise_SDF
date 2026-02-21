@@ -105,7 +105,7 @@ Private equity has outgrown its niche, sitting today on more than \$13 trillion 
 The empirical analysis and risk assessment of private equity and other non-traded cash flows remain fundamentally challenging due to the absence of market-based valuations and the inherent frictions of private markets (i.e., under incomplete information). 
 Unlike public assets with trusted and tradeable valuations (in liquid secondary markets), private equity investments generate irregular, infrequently observed cash flows for which standard return-based asset pricing techniques are unsuitable.
 
-We address this gap by proposing a semiparametric stochastic discount factor (SDF) estimator tailored to fund-level cash flows that refines the SDF estimators of \cite{DLP12} and \cite{KN16}.
+We address this gap by proposing a semiparametric stochastic discount factor (SDF) estimator tailored to fund-level cash flows that generalizes the SDF estimators of \cite{DLP12} and \cite{KN16}.
 Our nonlinear least squares estimator stems from the class of Least-Mean-Distance (LMD) estimators, which are easier to handle than traditional Generalized Method of Moments (GMM) approaches \citep{PP97}.
 Our LMD estimator arguably both simplifies and generalizes the GMM methodology of \cite{DLP12}, where we provide the asymptotic inference framework that was missing in the original paper.
 The asymptotic inference formulations rely on the concept of spatial (near-epoch) dependence between funds as proposed by \cite{KN16}.
@@ -841,6 +841,11 @@ To gain more flexibility and avoid unneeded complexity, we intentionally opt aga
 A classical GMM approach requires the construction of stationary, ergodic time-series of moment conditions that are used to empirically estimate the expected value of pricing errors in Equation \ref{eq:pricing_error}.
 The stationarity requirement of classical time-series GMM limits (i) more elaborate weighting schemes for $w$, like fund-size weighting, and (ii) the usage of fund cash flows from non-realized vintages.
 
+\textcolor{orange}{
+	Can we show that our estimator generalized DLP12 and KN16?
+	How do we need to adjust our estimator so that it is a true generalization?
+	}
+
 \subsubsection{Comparison to \cite{DLP12}}
 
 The \cite{DLP12} approach is most closely related to our methodology.
@@ -1060,6 +1065,8 @@ This means we replace the bootstrap standard error calculation of \cite{DLP12} b
 \subsection{Simulation study}
 \label{sec:simulation_study}
 
+\textcolor{orange}{Relabel 0.1 horizons.}
+
 Our Monte Carlo experiments examine the bias and variance of our estimation methodology in finite samples.\footnote{As with any simulation study, it investigates the ability to identify the assumed data generating process rather than validate the corresponding SDF model itself.}
 Specifically, we investigate five key dimensions of the estimation framework:
 (i) the finite-sample efficiency gains of forming vintage-year portfolios versus using individual funds;
@@ -1213,6 +1220,13 @@ While estimator variance traces a shallow U-shape with a minimum near the 15-yea
 We further analyze this puzzling result from a theoretical perspective in Appendix \ref{sec:appendix_bias_variance}, detailing the \emph{bias--variance tradeoff} and the role of the Timing Risk Premium.
 
 
+\paragraph{Comparison to \cite{DLP12} simulation}
+
+\cite[Table 1]{DLP12} use 50 funds per vintage-year portfolio.
+We use only 20 funds per vintage year, which is more realistic for older vintages and smaller private capital asset classes (everything else than BO and VC).
+
+
+
 \paragraph{Simulation conclusion:}
 To conclude, our simulation study rationalizes two key practices from the \cite{DLP12} paper: (i) vintage-year portfolio formation helps to improve estimator precision, and (ii) increasing the number of funds per vintage seems more effective in controlling estimator variance than increasing the number of vintages. 
 Our second finding provides an empirical rationale for the choice of \cite{DLP12} to employ infill asymptotics that let the number of underlying funds per vintage tend to infinity.
@@ -1226,6 +1240,8 @@ Appendix \ref{sec:appendix_bias_variance} explains the theoretical foundation of
 
 
 \subsection{Empirical results}
+
+\textcolor{orange}{Relabel 0.1 horizons.}
 
 Following the conclusions from the simulation study, we use the Preqin data from Section \ref{sec:data} and form vintage-year portfolios (VYPs) to estimate simple linear SDF models with a Horizon of 15 years.
 For each model specification, we report both asymptotic standard errors (SE$_A$) and $hv$-block cross-validation standard errors (SE$_{CV}$).
@@ -1286,8 +1302,17 @@ Therefore, drawing on both the simulation evidence and the cross-validation resu
 \end{table}
 
 
+\paragraph{Comparison to \cite{DLP12} results}
 
-
+In this paragraph, we in detail compare our $MKT$ factor model results to the results published by \cite{DLP12}.
+A notable distinction between these two empirical analyses is the private market dataset used.
+We use the Preqin cash flow dataset, also used by \cite{KN16} and \cite{ACGP18}.
+\cite{DLP12} draws on the problematic Thomson Venture Economics (TVE) fund-level dataset that exhibits some now well-known data errors due to ``stale updates" as discussed by \cite{HJK14}.
+\cite[Table 5]{DLP12} shows results for Buyout (BO) and Venture Capital (VC) funds using the S\&P 500 single-factor model and the \cite{FF93} three-factor model.
+For VC, they estimate a one-factor model with a market beta factor of 2.73 and an annualized negative alpha of -12.3\%. 
+For BO, one-factor model coefficients are 1.31 for the market factor, and the annualized alpha is again negative with -4.8\%.
+These highly negative alpha terms can be at least partially attributed to the aforementioned data errors in the TVE dataset.
+However, surprisingly both alpha terms must be considered insignificantly different from zero due to high bootstrap standard errors.
 
 
 

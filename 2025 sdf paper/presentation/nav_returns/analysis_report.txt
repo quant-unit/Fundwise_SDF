@@ -1,0 +1,19 @@
+q5_source_note: Fallback to local cached global-q file (2022 vintage)
+q5_source_path: /Users/christausch/Library/Mobile Documents/com~apple~CloudDocs/Projects/Fundwise_SDF/r_project/empirical/data_prepared_main/q5_factors_monthly_2022.csv
+acf_max_lag_tested: 8
+
+acf_significant_lags_by_series:
+  - Buyout Global: n_sig_lags=3, consec_sig_lags=2, sig_lags=[1, 2, 7]
+  - Growth Global: n_sig_lags=2, consec_sig_lags=2, sig_lags=[1, 2]
+  - PE Europe: n_sig_lags=3, consec_sig_lags=2, sig_lags=[1, 2, 7]
+  - PE Global: n_sig_lags=3, consec_sig_lags=2, sig_lags=[1, 2, 7]
+  - PE North America: n_sig_lags=5, consec_sig_lags=3, sig_lags=[1, 2, 3, 7, 8]
+  - VC Global: n_sig_lags=5, consec_sig_lags=5, sig_lags=[1, 2, 3, 4, 5]
+
+dimson_summary:
+  - Buyout Global: L=2, beta_naive=0.344, beta_dimson=0.631, uplift=0.287
+  - Growth Global: L=2, beta_naive=0.388, beta_dimson=0.637, uplift=0.250
+  - PE Europe: L=2, beta_naive=0.355, beta_dimson=0.641, uplift=0.286
+  - PE Global: L=2, beta_naive=0.329, beta_dimson=0.633, uplift=0.304
+  - PE North America: L=3, beta_naive=0.315, beta_dimson=0.731, uplift=0.416
+  - VC Global: L=5, beta_naive=0.324, beta_dimson=0.955, uplift=0.632
