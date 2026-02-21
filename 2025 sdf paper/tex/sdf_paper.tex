@@ -103,9 +103,14 @@ The authors alone are responsible for the content and writing of the paper.
 
 Private equity has outgrown its niche, sitting today on more than \$13 trillion in assets under management \citep{McKinsey2024}, yet rigorous asset-pricing tools have not kept pace with this ascent.
 The empirical analysis and risk assessment of private equity and other non-traded cash flows remain fundamentally challenging due to the absence of market-based valuations and the inherent frictions of private markets (i.e., under incomplete information). 
-Unlike public assets with trusted and tradeable valuations (in liquid secondary markets), private equity investments generate irregular, infrequently observed cash flows for which standard return-based asset pricing techniques are unsuitable.
+Unlike public assets with trusted and tradeable valuations (in liquid secondary markets), private equity fund investments generate irregular, infrequently observed cash flows for which standard return-based asset pricing techniques are unsuitable.
 
-We address this gap by proposing a semiparametric stochastic discount factor (SDF) estimator tailored to fund-level cash flows that generalizes the SDF estimators of \cite{DLP12} and \cite{KN16}.
+To evaluate such irregular fund cash flows, the pioneering works of \cite{DLP12} and \cite{KN16} introduced highly influential stochastic discount factor (SDF) estimators that have become the gold standard in private market asset pricing.
+The profound impact of their methodologies is evident from widespread adoption.
+The \cite{DLP12} estimator is heavily utilized to price human capital contracts, venture capital, real estate and private equity funds \citep{kroencke2013return,kim2015estimation,farrelly2019risk,lee2019new,zhao2020master,TP24}, while the \cite{KN16} approach has found broad application spanning private equity, infrastructure, real estate investment trusts, collateralized loan obligations, impact funds and private debt \citep{giommetti2021risk,andonov2021institutional,riddiough2022private,boyer2023discount,cordell2023clo,erel2024risk,jeffers2024risk,KN24}.
+Building on these major contributions, we propose a unified semiparametric framework that elegantly nests both estimators.
+The core benefit of our unified framework lies in providing the rigorous spatial asymptotic inference, missing in the original work of \cite{DLP12}, which ultimately allows researchers to identify, comprehend, and control the small-sample bias inherent to cash-flow-based SDF pricing.
+
 Our nonlinear least squares estimator stems from the class of Least-Mean-Distance (LMD) estimators, which are easier to handle than traditional Generalized Method of Moments (GMM) approaches \citep{PP97}.
 Our LMD estimator arguably both simplifies and generalizes the GMM methodology of \cite{DLP12}, where we provide the asymptotic inference framework that was missing in the original paper.
 The asymptotic inference formulations rely on the concept of spatial (near-epoch) dependence between funds as proposed by \cite{KN16}.
@@ -134,8 +139,8 @@ Appendix \ref{sec:appendix_bias_variance} analyzes the bias--variance tradeoff i
 \section{Methodology}
 \label{sec:spatial_sdf_methodology}
 
-Our general SDF estimation framework is similar to that of \cite{DLP12} and \cite{KN16}; 
-the subtle but important differences are discussed in Section \ref{sec:comparison_to_similar_estimators}.
+We now formalize the semiparametric estimator that synthesizes the approaches of \cite{DLP12} and \cite{KN16}. 
+A detailed exposition of how our unified framework departs from and improves upon these base models is provided in Section \ref{sec:comparison_to_similar_estimators}.
 
 In a nutshell, the \cite{DLP12} estimator determines the estimated alpha and beta parameters of a linear factor model by minimizing the squared net present value (NPV) of all $n$ fund cash flows in a least-squares optimization problem.
 \begin{equation}
@@ -309,15 +314,6 @@ Let us analyze the following Net Future Value (NFV) case, where $t_{i,j}^{\mathr
 	\mathbb{E} \left[ 
 	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}}
 	\mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}}  \delta_{i,j} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right] \mid \mathcal{F}_{\tau} \right]
-		\\ \nonumber
-	&=
-	\mathbb{E} \left[ 
-	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}}
-	\left(
-	\mathrm{Cov} \left( \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}}, \delta_{i,j} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right)
-	+ \mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right]
-	\underbrace{\mathbb{E} \left[ \delta_{i,j} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right]}_{= 0 \text{ by Eq.~\ref{eq:deal_pricing}}}
-	\right) \mid \mathcal{F}_{\tau} \right]
 		\\
 	&= 
 	\mathbb{E} \left[ 
@@ -326,6 +322,14 @@ Let us analyze the following Net Future Value (NFV) case, where $t_{i,j}^{\mathr
 \end{align}
 
 The term can generally become non-zero, representing the covariance between the deal's pricing error and the future level of the SDF, effectively a risk premium for the timing mismatch.
+Note that the final line of Equation \ref{eq:future_value_bias_derivation} is leveraging
+\begin{equation}
+	\mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}}  \delta_{i,j} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right]
+	=
+	\mathrm{Cov} \left( \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}}, \delta_{i,j} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right)
+	+ \mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right]
+	\underbrace{\mathbb{E} \left[ \delta_{i,j} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right]}_{= 0 \text{ by Eq.~\ref{eq:deal_pricing}}}
+\end{equation}
 
 This result highlights a fundamental dichotomy. 
 For \emph{ex-ante} asset pricing tests, the Net Future Value approach is misspecified: the non-zero conditional covariance implies that the conditional moment condition $\mathbb{E}[m^{\mathrm{NFV}}_{i,j}(\theta_0) \mid \mathcal{F}_{\tau}]=0$ is violated, leading to biased parameter estimates if not explicitly corrected for this risk premium.
@@ -542,6 +546,12 @@ For consistency with Definition \ref{def:extremum_estimator}, we will technicall
 \begin{equation}
 \label{eq:estimator}
 \hat{\theta} = 
+\arg \min_{\theta \in \Theta}
+\enspace
+\frac{1}{n}
+\sum_{i=1}^n
+L \left( \bar{\epsilon}_{i} \right) 
+\equiv
 \arg \max_{\theta \in \Theta}
 \enspace
 Q_n(\theta)
@@ -841,16 +851,38 @@ To gain more flexibility and avoid unneeded complexity, we intentionally opt aga
 A classical GMM approach requires the construction of stationary, ergodic time-series of moment conditions that are used to empirically estimate the expected value of pricing errors in Equation \ref{eq:pricing_error}.
 The stationarity requirement of classical time-series GMM limits (i) more elaborate weighting schemes for $w$, like fund-size weighting, and (ii) the usage of fund cash flows from non-realized vintages.
 
-\textcolor{orange}{
-	Can we show that our estimator generalized DLP12 and KN16?
-	How do we need to adjust our estimator so that it is a true generalization?
-	}
+The flexibility of our framework directly embeds the two most prominent asset pricing approaches in the private equity literature as special cases.
+We formalize this relationship below to demonstrate that our proposed methodology is a true generalization of both the cross-sectional approach of \cite{DLP12} and the time-series approach of \cite{KN16}.
+
+\begin{proposition}[Generalization of existing estimators]
+	\label{prop:generalization}
+	The LMD estimator defined in Equation \ref{eq:estimator} generalizes the following two estimators:
+	\begin{enumerate}
+		\item \textbf{\cite{DLP12}}: By restricting the set of discounting dates to fund inception ($\mathcal{T}_i = \{\min_j t_{i,j}^{\mathrm{Inv}}\}$), applying equal weights ($w_i = 1$), and choosing a quadratic loss function ($L(x) = x^2$), the LMD minimization objective becomes identical to their cross-sectional Generalized Method of Moments (GMM) objective function.
+		\item \textbf{\cite{KN16}}: By interchanging the order of the summation and the loss function evaluation in the LMD minimization objective (i.e., evaluating $L\left( \frac{1}{n} \sum_{i=1}^n \bar{\epsilon}_{i} \right)$ instead of $\frac{1}{n} \sum_{i=1}^n L( \bar{\epsilon}_{i} )$), while defining the loss function as the standard quadratic GMM objective ($L(x) = x^\top W x$) with weighting matrix $W$ and pooling all funds into a single cross-sectional unit ($n=1$), our framework yields their time-series GMM estimator.
+	\end{enumerate}
+\end{proposition}
 
 \subsubsection{Comparison to \cite{DLP12}}
 
 The \cite{DLP12} approach is most closely related to our methodology.
 One important difference is that we select a simpler and more flexible LMD estimator instead of a cross-sectional GMM approach.
 In our view, the choice of the more complex cross-sectional GMM just introduces conceptual complexity without changing the estimating equations since the underlying formulas are basically the same as for our LMD estimator\footnote{The formulas are this similar because \cite{DLP12} use the identity matrix as GMM weighting matrix and skip the second GMM step.}.
+
+\begin{proof}[Proof of Proposition \ref{prop:generalization} (Part 1)]
+	Applying the restrictions $\mathcal{T}_i = \{\min_j t_{i,j}^{\mathrm{Inv}}\}$ and $w_i=1$ to our average pricing error from Equation \ref{eq:average_pricing_error} yields exactly the inception-based net present value:
+	\[
+	\bar{\epsilon}_i = \sum_{t=0}^T \frac{\Psi_t}{\Psi_{\min_j t_{i,j}^{\mathrm{Inv}}}} \cdot CF_{i,t} = PV_i
+	\]
+	Assuming equal weights for all funds leads to the minimization formulation of the LMD estimator in Equation \ref{eq:estimator} with quadratic loss $L(x) = x^2$:
+	\begin{equation}
+	\label{eq:dlp12_proof}
+	\hat{\theta} = \arg \min_{\theta} \frac{1}{n} \sum_{i=1}^n \left( PV_i \right)^2
+	\end{equation}
+	This minimization objective is equivalent to the inner product of the pricing error vector with itself, which precisely recovers Equation 3 in \cite{DLP12}: $\min_{\theta} e'e$, where $e$ is an $n \times 1$ vector containing the pricing errors of the $n$ cross-sectional units.	
+\end{proof}
+
+Consequently, if someone accepts the assumptions from Subsection \ref{sec:asymptotic_framework}, our large sample inference framework from Subsection \ref{sec:asymptotic_inference} applies to their case without any significant modification.
 
 As a first limitation, they have to regard vintage-year portfolios as their cross-sectional units; we can also use individual funds.
 In this context, \cite{DLP12} state that ``to identify $\beta$, it is essential that the different FoFs are exposed to different market returns." 
@@ -866,10 +898,6 @@ In contrast, our increasing domain framework lets the number of vintage years $V
 Further, \cite{DLP12} discount all fund cash flows exclusively to the fund inception date, corresponding to $\mathcal{T}_i = \{\min_j t_{i,j}^{\mathrm{Inv}}\}$ in our notation.
 Under Assumption \ref{ass:unconditional_unbiased}, this is also the only choice that yields unconditionally unbiased estimates. 
 Our framework generalizes this by allowing $\mathcal{T}_i$ to contain additional discounting dates, which we use to empirically study the bias--variance tradeoff analyzed in Section \ref{sec:asset_pricing_pooled}.
-Although \cite{DLP12} describe their estimator as a one-step GMM approach, it can be viewed as a special case of our LMD estimator.
-Specifically, Equation \ref{eq:estimator} from our methodology is a generalization of equation 3 from their paper.
-Formally, setting $\mathcal{T}_i = \{\min_j t_{i,j}^{\mathrm{Inv}}\}$, $w_i = 1$, and $L(x) = x^2$ in Equation~\ref{eq:estimator} recovers their objective (Equation~\ref{eq:dlp12_minimization}).
-Consequently, if someone accepts the assumptions from Subsection \ref{sec:asymptotic_framework}, our large sample inference framework from Subsection \ref{sec:asymptotic_inference} applies to their case without any significant modification.
 Finally, \cite{DLP12} apply simple cross-sectional bootstrapping to obtain standard errors; in contrast, in Subsection \ref{sec:model_selection}, we use a cross-validation technique that is adapted to the near-epoch dependence of the PE fund data.
 
 \subsubsection{Comparison to \cite{KN16}}
@@ -880,27 +908,20 @@ and use the spatial HAC estimator of \cite{C99} to construct robust standard err
 Our spatial HAC framework similarly accounts for cross-vintage dependence but draws on the near-epoch dependent theory of \cite{PP97,KS11,JP12}. 
 A key methodological difference is that \cite{KN16} estimate the SDF on synthetic public market portfolios using a time-series GMM estimator and then apply the resulting model to evaluate PE cash flows, whereas we estimate the SDF directly from PE fund cash flows.
 \cite{KN16} choose this procedure since ``tests that use the ex post equity premium as a performance benchmark should be more powerful than tests that use the ex ante equity premium."
-Specifically, we obtain the estimator of \cite[Equation 18]{KN16} in our framework if we replace $Q_n(\theta)$ in Equation \ref{eq:estimator} by Equation \ref{eq:kn16_estimator}.
-\begin{equation}
-\label{eq:kn16_estimator}
-Q_n(\theta) = 
-L \left(
-\frac{1}{n}
-\sum_{i=1}^n
-\bar{\epsilon}_{i} 
-\right)
-\quad
-\mathrm{with}
-\quad
-L(x) = x^{\top} W x = x^{\top} I x
-\end{equation}
-with identity matrix $I$ as weighting matrix $W$.
-Note that since $L(x) = x^\top W x \geq 0$, maximizing $-L(\cdot)$ is equivalent to minimizing $L(\cdot)$; we omit the negative sign in Equation \ref{eq:kn16_estimator} for notational simplicity; accordingly, Equation~\ref{eq:kn16_estimator} is to be minimized with respect to $\theta$.
-In accordance with classical GMM, the function $\frac{1}{n} \sum_{i=1}^n \bar{\epsilon}_{i}: \mathbb{R}^{n \times T} \times \Theta \to \mathbb{R}^m$ should be perceived as multidimensional where the dimensionality of the function output corresponds to the number of moment conditions.
-In contrast to our scalar LMD setting ($\bar{\epsilon}_i \in \mathbb{R}$), here $\frac{1}{n}\sum_{i} \bar{\epsilon}_i \in \mathbb{R}^m$ may be multidimensional and $L(x) = x^\top W x$ is the standard quadratic GMM objective.
+
+\begin{proof}[Proof of Proposition \ref{prop:generalization} (Part 2)]
+	The time-series GMM objective is formed by pooling the expected values of the moment conditions. If we treat each of the $n$ cross-sectional units equivalently as a moment condition and compute the average pricing error across the panel, we obtain the $m$-dimensional sample moment $\frac{1}{n} \sum_{i=1}^n \bar{\epsilon}_{i} \in \mathbb{R}^m$.
+	The standard GMM estimator minimizes the quadratic form of these moments weighted by a matrix $W$. Formally, defining $L(x) = x^\top W x$, the time-series GMM objective evaluated on the pooled sample moments becomes:
+	\begin{equation}
+	\label{eq:kn16_proof}
+	Q_{GMM}(\theta) = L \left( \frac{1}{n} \sum_{i=1}^n \bar{\epsilon}_{i} \right) = \left( \frac{1}{n} \sum_{i=1}^n \bar{\epsilon}_{i} \right)^\top W \left( \frac{1}{n} \sum_{i=1}^n \bar{\epsilon}_{i} \right)
+	\end{equation}
+	Setting $W=I$ corresponds exactly to Equation 18 in \cite{KN16}. 
+	Therefore, the minimization formulation of our LMD objective in Equation \ref{eq:estimator} (i.e., $\frac{1}{n} \sum_{i=1}^n L( \bar{\epsilon}_{i} )$) differs from \cite{KN16} solely by whether the loss function $L(\cdot)$ is evaluated before or after pooling the cross-sectional errors.
+\end{proof}
 
 Time-series GMM estimators inherently bear the risk of under-identification if the corresponding time-series is constructed by pooling all fund cash flows from a given fund type.
-When PE fund cash flows are pooled into a single moment condition as in Equation~\ref{eq:kn16_estimator} with $m=1$, the resulting estimator has just one moment condition, which is insufficient to identify multi-parameter models\footnote{In contrast, our estimator corresponds to the opposite edge case with asymptotically an infinite number of LMD ''moment conditions" (units to price) as we let $n \to \infty$.}.
+When PE fund cash flows are pooled into a single moment condition as in Equation~\ref{eq:kn16_proof} with $m=1$, the resulting estimator has just one moment condition, which is insufficient to identify multi-parameter models\footnote{In contrast, our estimator corresponds to the opposite edge case with asymptotically an infinite number of LMD ''moment conditions" (units to price) as we let $n \to \infty$.}.
 Note that \cite{KN16} avoid this issue by estimating the SDF from public market data rather than PE cash flows; the under-identification concern arises only if one applies their framework directly to PE data, as we do in our estimator.
 To counter under-identification, additional characteristic-based fund portfolios could be formed to increase the number of moment conditions per fund type; also, random portfolios combined with bootstrapping could make sense.
 Yet, \cite{KN16} take another approach and introduce the concept of Generalized Public Market Equivalent (GPME), which elegantly avoids the under-identification issue.
@@ -966,7 +987,7 @@ Table \ref{tab:comparison} summarizes the most prominent distinctions between th
 \subsection{Data}
 \label{sec:data}
 
-We use the Preqin cash flow data set as of 14th April 2022 that is well known in the academic private equity literature \citep{HJK14,KN16,ACGP18}.
+We use the Preqin cash flow data set as of 14th April 2022 which is well known in the academic private equity literature \citep{HJK14,brown2015different,KN16,ACGP18}.
 To keep the empirical analysis clear and concise, we filter the dataset for Private Equity (PE) funds.
 
 The Private Equity sample contains 2745 distinct funds spreading over 35 vintage years. "The vintage year distribution is as follows: 1983 (1), 1985 (2), 1986 (4), 1987 (5), 1988 (7), 1990 (2), 1991 (4), 1992 (9), 1993 (13), 1994 (20), 1995 (16), 1996 (20), 1997 (24), 1998 (59), 1999 (46), 2000 (72), 2001 (51), 2002 (41), 2003 (45), 2004 (64), 2005 (117), 2006 (154), 2007 (176), 2008 (183), 2009 (83), 2010 (92), 2011 (146), 2012 (136), 2013 (142), 2014 (182), 2015 (152), 2016 (186), 2017 (143), 2018 (157), 2019 (190).
@@ -1080,8 +1101,7 @@ This means we condition our simulation analysis on realized $q$-investment facto
 Each fund contains 15 deals with equal investment amounts and exactly one divestment cash flow.
 Deals are entered within the first five years of the fund lifetime following a discrete uniform distribution and afterward held between one to ten years again uniformly distributed.
 The deal returns are generated by the simple linear or exponential affine SDF models described in Equations \ref{eq:linear_sdf} and \ref{eq:expaff_SDF}.
-In the base case, we just use the MKT factor with $\beta_{\mathrm{MKT}}=1$ and in each month, add a normal i.i.d. error term with standard deviation $\sigma=0.2$ and zero mean.
-Additionally, we test an intercept term $\alpha$ of -0.25\% per month and a high $\beta_{\mathrm{MKT}}$ of 2.5.
+In the base case, we just use the MKT factor with $\beta_{\mathrm{MKT}}=1$ and in each month, add a normal i.i.d. error term with monthly standard deviation $\sigma=0.2$ (annualized $12 \cdot 0.2^2=0.48$) and zero mean.
 In the exponential affine case, we adjust the lognormally distributed error mean to zero by subtracting $0.5 \sigma^2$.
 If a negative return exceeds -100\%, the company defaults with a zero exit cash flow.
 In contrast, the error term in the simulations of \cite{DLP12} is more well-behaved as it follows a shifted lognormal distribution that, even with arbitrarily high error term variance, just allows for returns below say -99\%, if the market return is close to its lower bound (see equation 9 in their online appendix).
@@ -1224,6 +1244,13 @@ We further analyze this puzzling result from a theoretical perspective in Append
 
 \cite[Table 1]{DLP12} use 50 funds per vintage-year portfolio.
 We use only 20 funds per vintage year, which is more realistic for older vintages and smaller private capital asset classes (everything else than BO and VC).
+
+To increase comparability to \cite{DLP12}, we also use 50 funds per vintage-year portfolio and set the monthly standard deviation of the error terms to 0.3 to match their idiosyncratic annualized volatility of 108\% ($=12 \cdot 0.3^2$).
+Differences still prevailing: 
+We condition on the actual macro environment for the $MKT§$ return (they use a shifted lognormal for $R_{\text{MKT}}$), thus they sample more variable $R_{\text{MKT}}$ draws than we can expect in an empirical dataset, which helps them with identification.
+Consequentially, our original simulation design yields more realistic results (conditioned to the actually realized macroeconomic history) while theirs is an idealization suitable to analyze the general small-sample properties of their estimator.
+In other words, they apply a real Monte Carlo simulation while we use a historical simulation for the $MKT$ factor.
+We further assume normally distributed error terms with total returns capped at -100\%, while \cite{DLP12} again utilize a shifted lognormal distribution for the error term which tends to be more well behaved (less non-linear) for strongly negative returns.
 
 
 
