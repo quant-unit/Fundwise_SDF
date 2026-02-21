@@ -342,19 +342,55 @@ if (FALSE) {
     upper_bounds <- Inf
     optim_method <- "Nelder-Mead"
   }
-  res <- optimx::optimx(par, err.sqr.calc,
-    lambda = lambda,
-    max.month = max.month,
-    df = df.in,
-    lower = lower_bounds,
-    upper = upper_bounds,
-    method = optim_method
+  res <- tryCatch(
+    {
+      res_tmp <- optimx::optimx(par, err.sqr.calc,
+        lambda = lambda,
+        max.month = max.month,
+        df = df.in,
+        lower = lower_bounds,
+        upper = upper_bounds,
+        method = optim_method
+      )
+      if (nrow(res_tmp) == 0) stop("Optimx returned 0 rows in Block 1")
+      res_tmp
+    },
+    error = function(e) {
+      warning("optimx failed in Block 1 (", e$message, "). Falling back to native optimizers.")
+      if (use.bounded) {
+        ans <- stats::nlminb(par, err.sqr.calc,
+          lower = lower_bounds, upper = upper_bounds,
+          lambda = lambda, max.month = max.month, df = df.in
+        )
+        res_df <- as.data.frame(as.list(ans$par))
+        res_df$value <- ans$objective
+        res_df$fevals <- ans$evaluations[1]
+        res_df$gevals <- ans$evaluations[2]
+        res_df$niter <- ans$iterations
+      } else {
+        ans <- stats::optim(par, err.sqr.calc,
+          method = "Nelder-Mead",
+          lambda = lambda, max.month = max.month, df = df.in
+        )
+        res_df <- as.data.frame(as.list(ans$par))
+        res_df$value <- ans$value
+        res_df$fevals <- ans$counts[1]
+        res_df$gevals <- ans$counts[2]
+        res_df$niter <- NA
+      }
+      res_df$convcode <- ans$convergence
+      res_df$kkt1 <- NA
+      res_df$kkt2 <- NA
+      res_df$xtime <- NA
+      return(res_df)
+    }
   )
+
   print("--- Block 1 Optimx Result ---")
   print(Class = class(res))
   print(paste("Dim:", dim(res)))
   print(res)
-  if (nrow(res) == 0) stop("Optimx returned 0 rows in Block 1")
+
   names.par <- names(par)
   par <- as.numeric(res[1, names.par])
   names(par) <- names.par
@@ -647,27 +683,63 @@ iter.run <- function(input.list) {
               optim_method <- "Nelder-Mead"
             }
 
-            res <- optimx::optimx(par, err.sqr.calc,
-              lambda = lambda,
-              max.month = max.month,
-              df = df.optim.in,
-              lower = lower_bounds,
-              upper = upper_bounds,
-              method = optim_method
-            )
+            res <- tryCatch(
+              {
+                res_tmp <- optimx::optimx(par, err.sqr.calc,
+                  lambda = lambda,
+                  max.month = max.month,
+                  df = df.optim.in,
+                  lower = lower_bounds,
+                  upper = upper_bounds,
+                  method = optim_method
+                )
+                if (nrow(res_tmp) == 0) stop("optimx returned 0 rows")
 
-            # if optimx does not terminate
-            if (sum(res[1, names(par)] - par) < 0.001) {
-              res <- optimx::optimx(par, err.sqr.calc,
-                lambda = lambda,
-                max.month = max.month,
-                df = df.optim.in,
-                itnmax = 1000,
-                lower = lower_bounds,
-                upper = upper_bounds,
-                method = optim_method
-              )
-            }
+                # if optimx does not terminate
+                if (sum(abs(res_tmp[1, names(par)] - par)) < 0.001) {
+                  res_tmp2 <- optimx::optimx(par, err.sqr.calc,
+                    lambda = lambda,
+                    max.month = max.month,
+                    df = df.optim.in,
+                    itnmax = 1000,
+                    lower = lower_bounds,
+                    upper = upper_bounds,
+                    method = optim_method
+                  )
+                  if (nrow(res_tmp2) > 0) res_tmp <- res_tmp2
+                }
+                res_tmp
+              },
+              error = function(e) {
+                warning("optimx failed (", e$message, "). Falling back to native optimizers.")
+                if (use.bounded) {
+                  ans <- stats::nlminb(par, err.sqr.calc,
+                    lower = lower_bounds, upper = upper_bounds,
+                    lambda = lambda, max.month = max.month, df = df.optim.in
+                  )
+                  res_df <- as.data.frame(as.list(ans$par))
+                  res_df$value <- ans$objective
+                  res_df$fevals <- ans$evaluations[1]
+                  res_df$gevals <- ans$evaluations[2]
+                  res_df$niter <- ans$iterations
+                } else {
+                  ans <- stats::optim(par, err.sqr.calc,
+                    method = "Nelder-Mead",
+                    lambda = lambda, max.month = max.month, df = df.optim.in
+                  )
+                  res_df <- as.data.frame(as.list(ans$par))
+                  res_df$value <- ans$value
+                  res_df$fevals <- ans$counts[1]
+                  res_df$gevals <- ans$counts[2]
+                  res_df$niter <- NA
+                }
+                res_df$convcode <- ans$convergence
+                res_df$kkt1 <- NA
+                res_df$kkt2 <- NA
+                res_df$xtime <- NA
+                return(res_df)
+              }
+            )
           } else {
             res <- data.frame(MKT = 1, HML = 1, SMB = 1, HDY = 1, QLT = 1, MOM = 1, ESG = 1, LOV = 1)
           }
