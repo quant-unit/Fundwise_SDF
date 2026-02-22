@@ -1,0 +1,28 @@
+% Table: Small-Sample Bias and Variance (Horizon 0)
+\begin{table}[htbp]
+\centering
+\caption{Comparison to simulation \cite[Table 1]{DLP12}}
+\label{tab:driessen_comparison}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{l ccccc ccccc}
+\toprule
+& \multicolumn{5}{c}{Market Beta ($\beta$)} & \multicolumn{5}{c}{Alpha ($\alpha$, monthly \%)} \\
+\cmidrule(lr){2-6} \cmidrule(lr){7-11}
+Scenario & True & Mean & SD & 25\% & 75\% & True & Mean & SD & 25\% & 75\% \\
+\midrule
+Base Case ($n=20$, $\sigma_{\text{monthly}}=20\%$) & 1.00 & 0.86 & 0.38 & 0.62 & 1.08 & 0.00 & 0.21 & 0.24 & 0.05 & 0.31 \\
+Large Sample ($n=50$, $\sigma_{\text{monthly}}=20\%$) & 1.00 & 0.90 & 0.28 & 0.75 & 1.05 & 0.00 & 0.12 & 0.15 & 0.03 & 0.18 \\
+High Volatility ($n=50$, $\sigma_{\text{monthly}}=30\%$) & 1.00 & 0.80 & 0.66 & 0.34 & 1.20 & 0.00 & 0.49 & 0.43 & 0.13 & 1.00 \\
+Shifted Lognormal ($n=50$, $\sigma_{\text{monthly}}=30\%$) & 1.00 & 0.85 & 0.66 & 0.35 & 1.26 & 0.00 & 0.42 & 0.42 & 0.08 & 0.90 \\
+\addlinespace
+\multicolumn{11}{l}{\textit{Driessen et al. 2012, Table 1}} \\
+Driessen et al. 2012 Benchmark ($n=50$, $\sigma_{\text{monthly}}=30\%$) & 1.00 & 0.98 & 0.32 & 0.80 & 1.15 & 0.00 & 0.05 & 0.2 & -0.06 & 0.15 \\
+\bottomrule
+\end{tabular}%
+}
+\begin{minipage}{\linewidth}
+\vspace{0.2cm}
+\footnotesize \textit{Notes:} 
+This table reports the small-sample properties of the generalized estimator for Horizon 0 (i.e., treating funds as held to maturity), mimicking the structure of Table 1 in Driessen et al. (2012). We simulate 1,000 sets of cash flows under four specifications, exploring the effect of sample size $n$, idiosyncratic volatility $\sigma_{\text{monthly}}$, and lognormal shifting. The final row presents the Benchmark Estimates obtained directly from Table 1 in Driessen et al. (2012) for comparative purposes. Alpha estimates are monthly and presented in percentages.
+\end{minipage}
+\end{table}

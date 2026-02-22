@@ -26,6 +26,7 @@ defaults:
     max_vin: 2005
     stdvs: 0.2
     exp_aff_sdf: false
+    use_shifted_lognormal: false
   estimation:
     sdf_model: "linear"
     weighting: "EW_VYP"
@@ -402,11 +403,12 @@ scenarios:
     active: true
     data_folder: auto
   
-  big_n_v_50funds_alpha_stdv:
+  big_n_v_50funds_alpha_stdv30:
     description: "Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized stdv 108%"
     dgp:
       no_funds: 50
-      stdvs: 0.3117691
+      stdvs: 0.3
+      use_shifted_lognormal: false
     estimation:
       factors_to_use: "Alpha"
       alpha_lower: -Inf
@@ -415,6 +417,20 @@ scenarios:
     active: true
     data_folder: auto
   
+  big_n_v_50funds_alpha_stdv30_shifted:
+    description: "Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized stdv 108%, shifted lognormal"
+    dgp:
+      no_funds: 50
+      stdvs: 0.3
+      use_shifted_lognormal: true
+    estimation:
+      factors_to_use: "Alpha"
+      alpha_lower: -Inf
+      alpha_upper: 0.01
+      max_months: [0]
+    active: true
+    data_folder: auto
+    
   big_v_10funds_1967_alpha:
     description: "Long time span: 10 funds, vintages 1967-2005 plus Alpha"
     dgp:

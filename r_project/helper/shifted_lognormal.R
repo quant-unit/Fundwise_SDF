@@ -17,5 +17,7 @@ sigma <- sqrt(log(1 + stdv^2 / lower.bound^2))
 mu <- log(-lower.bound) - sigma^2 / 2
 shifted.lognormal <- alpha + RF + beta * MKT + exp(rnorm(n, mu, sigma)) + lower.bound
 
+mean(shifted.lognormal)
+
 mean(normal) - mean(shifted.lognormal) # = 0
 sd(normal) - sd(shifted.lognormal) # = 0

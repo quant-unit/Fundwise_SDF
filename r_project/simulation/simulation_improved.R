@@ -60,10 +60,11 @@ create.simulation <- function(
     max.vin,
     stdvs,
     exp.aff.sdf,
+    use.shifted.lognormal = FALSE,
     scenario_id = NULL) {
   months <- 12 # constant (no parameter to vary)
 
-  make.fund <- function(no = 0, vintage = 1990, stdv = 0.01, exp.aff = exp.aff.sdf, df = df.q5) {
+  make.fund <- function(no = 0, vintage = 1990, stdv = 0.01, exp.aff = exp.aff.sdf, use.shifted = use.shifted.lognormal, df = df.q5) {
     # market
     df <- df[as.integer(format(df$Date, "%Y")) >= vintage, ]
     df$Vintage <- vintage
@@ -73,14 +74,14 @@ create.simulation <- function(
     df$Fund.ID <- paste(vintage, no, sep = "_")
 
     # shifted lognormal (mu, sigma)
-    #min.mkt <- 0.25
-    #foo <- function(sigma) {
+    # min.mkt <- 0.25
+    # foo <- function(sigma) {
     #  mu <- log((1 - min.mkt) / exp(0.5 * sigma^2))
     #  y <- exp(mu + 0.5 * sigma^2) * sqrt(exp(sigma^2) - 1)
     #  return((stdv - y)^2)
-    #}
-    #sigma <- optimize(foo, c(0, 10))$minimum
-    #mu <- log((1 - min.mkt) / exp(0.5 * sigma^2))
+    # }
+    # sigma <- optimize(foo, c(0, 10))$minimum
+    # mu <- log((1 - min.mkt) / exp(0.5 * sigma^2))
 
     # simulate N deals
     for (i in 1:no.deals) {
@@ -96,17 +97,16 @@ create.simulation <- function(
         m <- exp(sum(df$deal[start:end])) # exp affine
       } else {
         # simple linear
-        df$deal <- alpha + df$RF + beta * df$MKT + rnorm(nrow(df), 0, stdv)
-        # df$deal <- alpha + df$RF + beta * df$MKT + exp(rnorm(nrow(df), 0, stdv) - stdv^2/2) - 1
-        
-        use.shifted.lognormal <- FALSE
-        if (use.shifted.lognormal) {
+        base_deal <- alpha + df$RF + beta * df$MKT
+
+        if (use.shifted) {
           # shifted lognormal (goal: same mean and standard deviation for normal & shifted.lognormal)
-          # OLD: df$deal <- alpha + df$RF + beta * df$MKT + exp(rnorm(nrow(df), mu, sigma)) - (1-min.mkt)
           lower.bound <- -1 # set to a total return of -100%
           sigma <- sqrt(log(1 + stdv^2 / lower.bound^2))
           mu <- log(-lower.bound) - sigma^2 / 2
-          df$deal <- alpha + df$RF + beta * df$MKT + exp(rnorm(nrow(df), mu, sigma)) + lower.bound
+          df$deal <- base_deal + exp(rnorm(nrow(df), mu, sigma)) + lower.bound
+        } else {
+          df$deal <- base_deal + rnorm(nrow(df), 0, stdv)
         }
 
         path <- cumprod(1 + df$deal[start:end])
@@ -209,7 +209,8 @@ create.simulation <- function(
     min.vin = min.vin,
     max.vin = max.vin,
     stdvs = stdvs,
-    exp.aff.sdf = exp.aff.sdf
+    exp.aff.sdf = exp.aff.sdf,
+    use.shifted.lognormal = use.shifted.lognormal
   )
   df.meta
 

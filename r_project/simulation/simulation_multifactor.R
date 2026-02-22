@@ -107,6 +107,7 @@ create.simulation.multifactor <- function(
     max.vin,
     stdvs,
     exp.aff.sdf = FALSE,
+    use.shifted.lognormal = FALSE,
     scenario_id = NULL,
     output_folder = "simulation/data_prepared_sim") {
     set.seed(100) # For reproducibility
@@ -146,6 +147,7 @@ create.simulation.multifactor <- function(
     # Inner function: Generate a single fund
     # -------------------------------------------------------------------------
     make.fund <- function(no = 0, vintage = 1990, stdv = 0.01, exp.aff = exp.aff.sdf,
+                          use.shifted = use.shifted.lognormal,
                           df = df.q5) {
         # Filter data to start from vintage year
         df <- df[as.integer(format(df$Date, "%Y")) >= vintage, ]
@@ -193,13 +195,21 @@ create.simulation.multifactor <- function(
                 m <- exp(sum(df$deal[start:end]))
             } else {
                 # Simple linear SDF
-                df$deal <- alpha + df$RF +
+                base_deal <- alpha + df$RF +
                     beta_MKT * df$MKT +
                     beta_ME * df$ME +
                     beta_IA * df$IA +
                     beta_ROE * df$ROE +
-                    beta_EG * df$EG +
-                    rnorm(nrow(df), 0, stdv)
+                    beta_EG * df$EG
+
+                if (use.shifted) {
+                    lower.bound <- -1
+                    sigma <- sqrt(log(1 + stdv^2 / lower.bound^2))
+                    mu <- log(-lower.bound) - sigma^2 / 2
+                    df$deal <- base_deal + exp(rnorm(nrow(df), mu, sigma)) + lower.bound
+                } else {
+                    df$deal <- base_deal + rnorm(nrow(df), 0, stdv)
+                }
 
                 path <- cumprod(1 + df$deal[start:end])
                 if (any(path < 0)) {
@@ -293,7 +303,8 @@ create.simulation.multifactor <- function(
         min.vin = min.vin,
         max.vin = max.vin,
         stdvs = stdvs,
-        exp.aff.sdf = exp.aff.sdf
+        exp.aff.sdf = exp.aff.sdf,
+        use.shifted.lognormal = use.shifted.lognormal
     )
 
     cat("Saving files to:", DATA_PREPARED_SIM_PATH, "\n")
@@ -339,6 +350,7 @@ create.simulation <- function(
     max.vin,
     stdvs,
     exp.aff.sdf,
+    use.shifted.lognormal = FALSE,
     scenario_id = NULL) {
     create.simulation.multifactor(
         no.deals = no.deals,
@@ -356,6 +368,7 @@ create.simulation <- function(
         max.vin = max.vin,
         stdvs = stdvs,
         exp.aff.sdf = exp.aff.sdf,
+        use.shifted.lognormal = use.shifted.lognormal,
         scenario_id = scenario_id
     )
 }
