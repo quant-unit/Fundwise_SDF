@@ -61,6 +61,7 @@ create.simulation <- function(
     stdvs,
     exp.aff.sdf,
     use.shifted.lognormal = FALSE,
+    simulate.mkt = FALSE,
     scenario_id = NULL) {
   months <- 12 # constant (no parameter to vary)
 
@@ -136,11 +137,29 @@ create.simulation <- function(
     output <- foreach(x = 1:no.samples, .verbose = FALSE) %do% {
       print(x)
       set.seed(x)
+
+      df_current <- df.q5
+      if (simulate.mkt) {
+        # Constant risk-free rate: 4% annualized
+        RF_const <- (1.04)^(1 / 12) - 1
+        df_current$RF <- RF_const
+
+        mu_m <- 0.01156253
+        sig_m <- 0.04613695
+        lower.bound <- -0.20
+
+        sigma_ln <- sqrt(log(1 + sig_m^2 / (mu_m - lower.bound)^2))
+        mu_ln <- log(mu_m - lower.bound) - sigma_ln^2 / 2
+
+        r_mkt_sim <- exp(rnorm(nrow(df_current), mu_ln, sigma_ln)) + lower.bound
+        df_current$MKT <- r_mkt_sim - RF_const
+      }
+
       l <- list()
       for (i in 1:no.funds) {
         for (v in min.vin:max.vin) {
           for (s in stdvs) {
-            l[[paste(i, v, s)]] <- make.fund(i, v, s)
+            l[[paste(i, v, s)]] <- make.fund(i, v, s, df = df_current)
           }
         }
       }
@@ -153,14 +172,42 @@ create.simulation <- function(
     parallel::stopCluster(cl)
   } else {
     output <- list()
+    output_factors <- list() # Collect simulated factors per sample
     for (x in 1:no.samples) {
       # print(x)
       set.seed(x)
+
+      df_current <- df.q5
+      if (simulate.mkt) {
+        # Constant risk-free rate: 4% annualized
+        RF_const <- (1.04)^(1 / 12) - 1
+        df_current$RF <- RF_const
+
+        # Shifted lognormal total market return (S&P 500 1980-2003 moments)
+        mu_m <- 0.01156253
+        sig_m <- 0.04613695
+        lower.bound <- -0.20
+
+        sigma_ln <- sqrt(log(1 + sig_m^2 / (mu_m - lower.bound)^2))
+        mu_ln <- log(mu_m - lower.bound) - sigma_ln^2 / 2
+
+        r_mkt_sim <- exp(rnorm(nrow(df_current), mu_ln, sigma_ln)) + lower.bound
+        df_current$MKT <- r_mkt_sim - RF_const
+
+        # Store the simulated factors for the estimator
+        output_factors[[x]] <- data.frame(
+          Date = df_current$Date,
+          sample_id = x,
+          MKT = df_current$MKT,
+          RF = df_current$RF
+        )
+      }
+
       l <- list()
       for (i in 1:no.funds) {
         for (v in min.vin:max.vin) {
           for (s in stdvs) {
-            l[[paste(i, v, s)]] <- make.fund(i, v, s)
+            l[[paste(i, v, s)]] <- make.fund(i, v, s, df = df_current)
           }
         }
       }
@@ -210,13 +257,23 @@ create.simulation <- function(
     max.vin = max.vin,
     stdvs = stdvs,
     exp.aff.sdf = exp.aff.sdf,
-    use.shifted.lognormal = use.shifted.lognormal
+    use.shifted.lognormal = use.shifted.lognormal,
+    simulate.mkt = simulate.mkt
   )
   df.meta
 
   system.time(write.csv(df.vyp, filename.vyp, row.names = FALSE))
   system.time(write.csv(df.out, filename.fund, row.names = FALSE))
   system.time(write.csv(df.meta, filename.meta, row.names = FALSE))
+
+  # Save simulated factors if market was simulated
+  if (simulate.mkt && exists("output_factors") && length(output_factors) > 0) {
+    df.sim.factors <- data.table::rbindlist(output_factors)
+    filename.factors <- paste0(DATA_PREPARED_SIM_PATH, folder_name, "_simulated_factors.csv")
+    write.csv(df.sim.factors, filename.factors, row.names = FALSE)
+    cat("Simulated factors saved:", basename(filename.factors), "\n")
+    rm(df.sim.factors)
+  }
 }
 
 # sim runs ----

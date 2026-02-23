@@ -27,11 +27,13 @@ defaults:
     stdvs: 0.2
     exp_aff_sdf: false
     use_shifted_lognormal: false
+    simulate_mkt: false
+    deterministic_inv_timing: false
   estimation:
     sdf_model: "linear"
     weighting: "EW_VYP"
     error_function: "L2_Lasso"
-    max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240]
+    max_months: [0, 1, 30, 60, 90, 120, 150, 180, 210, 240]
     lambdas: 0
     kernel_bandwidth: 12
     alpha_upper: 0.01
@@ -62,7 +64,7 @@ scenarios:
       weighting: "EW"
       factors_to_use: ""
       no_partitions: 10
-      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
+      max_months: [0, 1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: false  # Run partitions separately
     data_folder: auto
   
@@ -72,7 +74,7 @@ scenarios:
       weighting: "EW"
       factors_to_use: "Alpha"
       no_partitions: 10
-      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
+      max_months: [0, 1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: false  # Run partitions separately
     data_folder: auto
     
@@ -94,7 +96,7 @@ scenarios:
       beta_MKT: 1
     estimation:
       factors_to_use: "Alpha"
-      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
+      max_months: [0, 1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: true
     data_folder: auto
   
@@ -105,7 +107,7 @@ scenarios:
       beta_MKT: 1
     estimation:
       factors_to_use: "Alpha"
-      max_months: [1, 2, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
+      max_months: [0, 1, 2, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: true
     data_folder: auto
     
@@ -131,7 +133,7 @@ scenarios:
       investment_period: 5
       max_holding_period: 5
     estimation:
-      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
+      max_months: [0, 1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
       factors_to_use: ""
     active: true
     data_folder: auto
@@ -387,7 +389,7 @@ scenarios:
       factors_to_use: "Alpha"
       alpha_lower: -Inf
       alpha_upper: 0.01
-      max_months: [1, 2, 30, 60, 90, 120, 150, 180, 210, 240]
+      max_months: [0, 1, 2, 30, 60, 90, 120, 150, 180, 210, 240]
     active: true
     data_folder: auto
   
@@ -430,6 +432,82 @@ scenarios:
       max_months: [0]
     active: true
     data_folder: auto
+  
+  big_n_v_50funds_alpha_stdv30_shifted_mkt:
+    description: "Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized stdv 108%, shifted lognormal"
+    dgp:
+      no_funds: 50
+      stdvs: 0.3
+      use_shifted_lognormal: true
+      simulate_mkt: true
+    estimation:
+      factors_to_use: "Alpha"
+      alpha_lower: -Inf
+      alpha_upper: 0.01
+      max_months: [0]
+    active: true
+    data_folder: auto
+  
+  big_n_v_50funds_alpha_stdv30_shifted_mkt2:
+    description: "Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized stdv 108%, shifted lognormal"
+    dgp:
+      no_funds: 50
+      stdvs: 0.3
+      use_shifted_lognormal: true
+      simulate_mkt: true
+    estimation:
+      factors_to_use: "Alpha"
+      alpha_lower: -Inf
+      alpha_upper: 0.005
+      max_months: [0]
+    active: true
+    data_folder: auto
+  
+  big_n_v_50funds_alpha_stdv30_shifted_mkt3:
+    description: "Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized stdv 108%, shifted lognormal"
+    dgp:
+      no_funds: 50
+      stdvs: 0.2
+      use_shifted_lognormal: true
+      simulate_mkt: true
+    estimation:
+      factors_to_use: "Alpha"
+      alpha_lower: -Inf
+      alpha_upper: 0.01
+      max_months: [0]
+    active: true
+    data_folder: auto
+  
+  big_n_v_50funds_alpha_stdv30_shifted_mkt4:
+    description: "Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized stdv 108%, shifted lognormal"
+    dgp:
+      no_funds: 50
+      stdvs: 0.3
+      use_shifted_lognormal: true
+      simulate_mkt: true
+      deterministic_inv_timing: true
+    estimation:
+      factors_to_use: "Alpha"
+      alpha_lower: -Inf
+      alpha_upper: 0.01
+      max_months: [0]
+    active: true
+    data_folder: auto
+  
+  big_n_v_50funds_alpha_stdv30_shifted_mkt5:
+    description: "Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized stdv 108%, shifted lognormal"
+    dgp:
+      no_funds: 50
+      stdvs: 0.3
+      use_shifted_lognormal: true
+      simulate_mkt: true
+    estimation:
+      factors_to_use: "Alpha"
+      alpha_lower: -Inf
+      alpha_upper: 0.0075
+      max_months: [0]
+    active: true
+    data_folder: auto
     
   big_v_10funds_1967_alpha:
     description: "Long time span: 10 funds, vintages 1967-2005 plus Alpha"
@@ -465,7 +543,7 @@ scenarios:
       min_vin: 1996
     estimation:
       factors_to_use: "Alpha"
-      max_months: [1, 2, 30, 60, 90, 120, 150, 180, 210, 240]
+      max_months: [0, 1, 2, 30, 60, 90, 120, 150, 180, 210, 240]
     active: true
     data_folder: auto
     
@@ -479,7 +557,7 @@ scenarios:
     estimation:
       sdf_model: "exp.aff"
       factors_to_use: "MKT"
-      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
+      max_months: [0, 1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: true
     data_folder: auto
 
@@ -490,7 +568,7 @@ scenarios:
     estimation:
       sdf_model: "exp.aff"
       factors_to_use: "Alpha"
-      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
+      max_months: [0, 1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: true
     data_folder: auto
     
@@ -583,7 +661,7 @@ scenarios:
       beta_ME: 0.5
     estimation:
       factors_to_use: "ME"
-      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
+      max_months: [0, 1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: false  # Set to true after generating data
     data_folder: null  # Will be set after data generation
   
@@ -597,7 +675,7 @@ scenarios:
       beta_IA: 0.5
     estimation:
       factors_to_use: "IA"
-      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
+      max_months: [0, 1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: false
     data_folder: null
   
@@ -611,7 +689,7 @@ scenarios:
       beta_ROE: 0.5
     estimation:
       factors_to_use: "ROE"
-      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
+      max_months: [0, 1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: false
     data_folder: null
   
@@ -625,6 +703,6 @@ scenarios:
       beta_EG: 0.5
     estimation:
       factors_to_use: "EG"
-      max_months: [1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
+      max_months: [0, 1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: false
     data_folder: null

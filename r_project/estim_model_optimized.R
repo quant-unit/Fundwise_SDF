@@ -202,6 +202,50 @@ df0 <- base::merge(df.private.cfs, df.public, by = "Date", all.x = TRUE)
 df0$Fund.ID <- as.factor(df0$Fund.ID)
 rm(df.private.cfs)
 
+# Override MKT (and RF) with simulated factors if available (simulate.mkt = TRUE in DGP)
+if (use.simulation) {
+  sim_factors_path <- sub(
+    "_simulated_cashflows_.*\\.csv$", "_simulated_factors.csv",
+    paste0("simulation/data_prepared_sim/", simulation.filename)
+  )
+  if (file.exists(sim_factors_path)) {
+    cat("Loading simulated factors from:", basename(sim_factors_path), "\n")
+    df.sim.factors <- read.csv(sim_factors_path)
+    df.sim.factors$Date <- as.Date(df.sim.factors$Date)
+
+    # Extract sample_id from type string (number after last ".")
+    df0$sample_id <- as.integer(sub(".*\\.(\\d+)$", "\\1", as.character(df0$type)))
+
+    # Determine which columns to override (MKT always; RF if available)
+    sim_cols <- intersect(c("MKT", "RF"), colnames(df.sim.factors))
+    merge_cols <- c("Date", "sample_id", sim_cols)
+
+    # Merge simulated factors by (Date, sample_id)
+    df0 <- merge(df0, df.sim.factors[, merge_cols],
+      by = c("Date", "sample_id"), all.x = TRUE, suffixes = c(".hist", ".sim")
+    )
+
+    # Override MKT: use simulated where available, fall back to historical
+    if ("MKT.sim" %in% colnames(df0)) {
+      df0$MKT <- ifelse(is.na(df0$MKT.sim), df0$MKT.hist, df0$MKT.sim)
+      df0$MKT.sim <- NULL
+      df0$MKT.hist <- NULL
+    }
+
+    # Override RF: use simulated where available, fall back to historical
+    if ("RF.sim" %in% colnames(df0)) {
+      df0$RF <- ifelse(is.na(df0$RF.sim), df0$RF.hist, df0$RF.sim)
+      df0$RF.sim <- NULL
+      df0$RF.hist <- NULL
+      cat("  -> RF column overridden with constant simulated value\n")
+    }
+
+    df0$sample_id <- NULL
+    rm(df.sim.factors)
+    cat("  -> MKT column overridden with simulated values per sample\n")
+  }
+}
+
 table(df0$Date)
 
 # check if we have enough public data
@@ -256,7 +300,6 @@ source("helper/getNPVs.R")
 
 if (sdf.model == "linear") {
   f1 <- function(df.ss, max.month, par0) {
-    
     if (max.month == 0) {
       return(
         sum(
@@ -270,8 +313,6 @@ if (sdf.model == "linear") {
       exp(cumsum(log(1 + (as.matrix(df.ss[, names(par0)]) %*% par0)))),
       max.month
     ))
-    
-    
   }
 }
 
@@ -298,7 +339,7 @@ if (sdf.model == "linear.single.date") {
 if (sdf.model == "exp.aff") {
   f1 <- function(df.ss, max.month, par0) {
     df.ss$Alpha <- exp(1) - 1
-    
+
     if (max.month == 0) {
       return(
         sum(

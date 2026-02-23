@@ -126,6 +126,8 @@ run_simulation_study <- function(
                         stdvs = dgp$stdvs,
                         exp.aff.sdf = dgp$exp_aff_sdf,
                         use.shifted.lognormal = if (is.null(dgp$use_shifted_lognormal)) FALSE else dgp$use_shifted_lognormal,
+                        simulate.mkt = if (is.null(dgp$simulate_mkt)) FALSE else dgp$simulate_mkt,
+                        deterministic.inv.timing = if (is.null(dgp$deterministic_inv_timing)) FALSE else dgp$deterministic_inv_timing,
                         scenario_id = id
                     )
 
@@ -527,14 +529,17 @@ if (sys.nframe() == 0L) {
         "big_n_v_40funds_alpha", "big_v_10funds_1967_alpha", "big_v_20funds_1967_alpha", "small_v_1986_1995_alpha", "small_v_1996_2005_alpha",
         "exp_aff_base", "exp_aff_high_beta_alpha", "high_beta_alpha_two_factor",
         "base_case_ME", "base_case_IA", "base_case_ROE", "base_case_EG",
-        "big_n_v_50funds_alpha_stdv30_shifted", "big_n_v_50funds_alpha_stdv30", "big_n_v_50funds_alpha", 
+        "big_n_v_50funds_alpha_stdv30_shifted", "big_n_v_50funds_alpha_stdv30", "big_n_v_50funds_alpha", "big_n_v_50funds_alpha_stdv30_shifted_mkt", 
+        "big_n_v_50funds_alpha_stdv30_shifted_mkt2", "big_n_v_50funds_alpha_stdv30_shifted_mkt3",
+        "big_n_v_50funds_alpha_stdv30_shifted_mkt4", "big_n_v_50funds_alpha_stdv30_shifted_mkt5",
         "base_case_cross_sectional_zero_alpha", "base_case_cross_sectional"
     )
-    
+
     # scenarios <- c("big_n_v_50funds_alpha_stdv30_shifted", "big_n_v_50funds_alpha_stdv30", "big_n_v_50funds_alpha")
-    # scenarios <- c( "base_case_cross_sectional_zero_alpha", "base_case_cross_sectional" )
+    # scenarios <- c("big_n_v_50funds_alpha_stdv30_shifted_mkt4", "big_n_v_50funds_alpha_stdv30_shifted_mkt5")
+    # scenarios <- c("base_case_cross_sectional_zero_alpha", "base_case_cross_sectional" )
     results <- run_simulation_study(
         scenario_ids = scenarios,
-        generate_data = FALSE, estimate = FALSE, analyze = TRUE
+        generate_data = FALSE, estimate = TRUE, analyze = TRUE
     )
 }

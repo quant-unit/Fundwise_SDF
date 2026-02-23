@@ -6,6 +6,11 @@
 #
 # Supported factors: MKT + one of (Alpha, ME, IA, ROE, EG)
 #
+# When simulate.mkt = TRUE:
+#   - RF is set to a constant 4% annualized = (1.04)^(1/12) - 1 per month
+#   - MKT (excess) is drawn from a shifted lognormal (S&P 500 1980-2003 moments)
+#   - Both RF and MKT are saved to _simulated_factors.csv for the estimator
+#
 # Usage:
 #   source("simulation/simulation_multifactor.R")
 #   create.simulation.multifactor(
@@ -34,12 +39,12 @@ if (exists("df.q5", envir = .GlobalEnv) && is.data.frame(get("df.q5", envir = .G
     # Load from file
     current_dir <- getwd()
 
-    # Try different paths
+    # Try different paths (prefer data_prepared_2026 for consistency with estimator)
     possible_paths <- c(
-        file.path(current_dir, "empirical", "data_prepared", "q_factors.csv"),
         file.path(current_dir, "empirical", "data_prepared_2026", "q_factors.csv"),
-        file.path(dirname(current_dir), "empirical", "data_prepared", "q_factors.csv"),
-        file.path(dirname(current_dir), "empirical", "data_prepared_2026", "q_factors.csv")
+        file.path(current_dir, "empirical", "data_prepared", "q_factors.csv"),
+        file.path(dirname(current_dir), "empirical", "data_prepared_2026", "q_factors.csv"),
+        file.path(dirname(current_dir), "empirical", "data_prepared", "q_factors.csv")
     )
 
     loaded <- FALSE
@@ -87,6 +92,8 @@ if (!"Alpha" %in% colnames(df.q5)) {
 #' @param max.vin Latest vintage year
 #' @param stdvs Idiosyncratic volatility
 #' @param exp.aff.sdf Use exponential-affine SDF (default: FALSE)
+#' @param deterministic.inv.timing If TRUE, deal investment dates are evenly
+#'   spaced across the investment period instead of randomly sampled (default: FALSE)
 #' @param scenario_id Optional scenario identifier for metadata
 #' @param output_folder Output folder for generated data
 #'
@@ -108,6 +115,8 @@ create.simulation.multifactor <- function(
     stdvs,
     exp.aff.sdf = FALSE,
     use.shifted.lognormal = FALSE,
+    simulate.mkt = FALSE,
+    deterministic.inv.timing = FALSE,
     scenario_id = NULL,
     output_folder = "simulation/data_prepared_sim") {
     set.seed(100) # For reproducibility
@@ -140,8 +149,18 @@ create.simulation.multifactor <- function(
     }
     cat(
         "  Samples:", no.samples, "| Funds:", no.funds, "| Vintages:",
-        min.vin, "-", max.vin, "\n\n"
+        min.vin, "-", max.vin, "\n"
     )
+    if (deterministic.inv.timing) {
+        cat("  Deterministic investment timing: ON\n")
+    }
+    cat("\n")
+
+    # Precompute deterministic start dates (evenly spaced across investment period)
+    if (deterministic.inv.timing) {
+        inv_months <- max(1, investment.period * months)
+        start.dates <- as.integer(seq(1, inv_months, length.out = no.deals))
+    }
 
     # -------------------------------------------------------------------------
     # Inner function: Generate a single fund
@@ -163,19 +182,11 @@ create.simulation.multifactor <- function(
         df$type <- paste0("sdf:", sdf_str, factor_str, " stdv:", stdv, " #d:", no.deals)
         df$Fund.ID <- paste(vintage, no, sep = "_")
 
-        # Shifted lognormal parameters (for noise distribution)
-        min.mkt <- 0.25
-        foo <- function(sigma) {
-            mu <- log((1 - min.mkt) / exp(0.5 * sigma^2))
-            y <- exp(mu + 0.5 * sigma^2) * sqrt(exp(sigma^2) - 1)
-            return((stdv - y)^2)
-        }
-        sigma <- optimize(foo, c(0, 10))$minimum
-        mu <- log((1 - min.mkt) / exp(0.5 * sigma^2))
-
         # Simulate N deals
         for (i in 1:no.deals) {
-            if (investment.period == 0) {
+            if (deterministic.inv.timing) {
+                start <- start.dates[i]
+            } else if (investment.period == 0) {
                 start <- 1
             } else {
                 start <- sample(1:(investment.period * months), 1)
@@ -237,16 +248,45 @@ create.simulation.multifactor <- function(
     pb_interval <- max(1, no.samples %/% 10)
 
     output <- list()
+    output_factors <- list() # Collect simulated factors per sample
     for (x in 1:no.samples) {
         if (x %% pb_interval == 0) {
             cat("  Progress:", x, "/", no.samples, "\n")
         }
         set.seed(x)
+
+        df_current <- df.q5
+        if (simulate.mkt) {
+            # Constant risk-free rate: 4% annualized
+            RF_const <- (1.04)^(1 / 12) - 1
+            df_current$RF <- RF_const
+
+            # Shifted lognormal total market return (S&P 500 1980-2003 moments)
+            mu_m <- 0.01156253
+            sig_m <- 0.04613695
+            lower.bound <- -0.20
+
+            sigma_ln <- sqrt(log(1 + sig_m^2 / (mu_m - lower.bound)^2))
+            mu_ln <- log(mu_m - lower.bound) - sigma_ln^2 / 2
+
+            # Generate shifted lognormal total market return, then excess
+            r_mkt_sim <- exp(rnorm(nrow(df_current), mu_ln, sigma_ln)) + lower.bound
+            df_current$MKT <- r_mkt_sim - RF_const
+
+            # Store the simulated factors for the estimator
+            output_factors[[x]] <- data.frame(
+                Date = df_current$Date,
+                sample_id = x,
+                MKT = df_current$MKT,
+                RF = RF_const
+            )
+        }
+
         l <- list()
         for (i in 1:no.funds) {
             for (v in min.vin:max.vin) {
                 for (s in stdvs) {
-                    l[[paste(i, v, s)]] <- make.fund(i, v, s)
+                    l[[paste(i, v, s)]] <- make.fund(i, v, s, df = df_current)
                 }
             }
         }
@@ -304,7 +344,8 @@ create.simulation.multifactor <- function(
         max.vin = max.vin,
         stdvs = stdvs,
         exp.aff.sdf = exp.aff.sdf,
-        use.shifted.lognormal = use.shifted.lognormal
+        use.shifted.lognormal = use.shifted.lognormal,
+        simulate.mkt = simulate.mkt
     )
 
     cat("Saving files to:", DATA_PREPARED_SIM_PATH, "\n")
@@ -312,15 +353,28 @@ create.simulation.multifactor <- function(
     write.csv(df.out, filename.fund, row.names = FALSE)
     write.csv(df.meta, filename.meta, row.names = FALSE)
 
+    # Save simulated factors if market was simulated
+    filename.factors <- NULL
+    if (simulate.mkt && length(output_factors) > 0) {
+        df.sim.factors <- data.table::rbindlist(output_factors)
+        filename.factors <- paste0(DATA_PREPARED_SIM_PATH, folder_name, "_simulated_factors.csv")
+        write.csv(df.sim.factors, filename.factors, row.names = FALSE)
+        cat("  Simulated factors:", basename(filename.factors), "\n")
+        rm(df.sim.factors)
+    }
+
     cat("Done! Generated files:\n")
     cat("  VYP data:", basename(filename.vyp), "\n")
     cat("  Fund data:", basename(filename.fund), "\n")
-    cat("  Metadata:", basename(filename.meta), "\n\n")
+    cat("  Metadata:", basename(filename.meta), "\n")
+    if (!is.null(filename.factors)) cat("  Sim factors:", basename(filename.factors), "\n")
+    cat("\n")
 
     return(invisible(list(
         vyp_path = filename.vyp,
         fund_path = filename.fund,
         meta_path = filename.meta,
+        factors_path = filename.factors,
         folder = DATA_PREPARED_SIM_PATH,
         timestamp = timestamp,
         metadata = df.meta
@@ -351,6 +405,7 @@ create.simulation <- function(
     stdvs,
     exp.aff.sdf,
     use.shifted.lognormal = FALSE,
+    simulate.mkt = FALSE,
     scenario_id = NULL) {
     create.simulation.multifactor(
         no.deals = no.deals,
@@ -369,6 +424,7 @@ create.simulation <- function(
         stdvs = stdvs,
         exp.aff.sdf = exp.aff.sdf,
         use.shifted.lognormal = use.shifted.lognormal,
+        simulate.mkt = simulate.mkt,
         scenario_id = scenario_id
     )
 }
