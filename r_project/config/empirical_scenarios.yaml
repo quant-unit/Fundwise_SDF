@@ -1,3 +1,4 @@
+# ==================================
 # Empirical Scenarios Configuration
 # ==================================
 # This YAML file defines all empirical estimation scenarios.
@@ -17,7 +18,7 @@ defaults:
   error_function: "L2_Lasso"
   include_alpha_term: false
   use_vintage_year_pfs: true
-  max_months: [1, 30, 60, 120, 150, 180, 210, 240, 270, 300, 330, 360]
+  max_months: [0, 1, 30, 60, 120, 150, 180, 210, 240, 270, 300, 330, 360]
   lambdas: 0
   kernel_bandwidth: 12
   alpha_lower: -0.01

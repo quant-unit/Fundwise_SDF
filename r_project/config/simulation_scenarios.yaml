@@ -508,6 +508,22 @@ scenarios:
       max_months: [0]
     active: true
     data_folder: auto
+
+  big_n_v_50funds_alpha_stdv30_shifted_mkt6:
+    description: "Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized stdv 108%, shifted lognormal"
+    dgp:
+      no_funds: 50
+      stdvs: 0.3
+      use_shifted_lognormal: true
+      simulate_mkt: true
+      max_holding_period: 5
+    estimation:
+      factors_to_use: "Alpha"
+      alpha_lower: -Inf
+      alpha_upper: 0.01
+      max_months: [0]
+    active: true
+    data_folder: auto
     
   big_v_10funds_1967_alpha:
     description: "Long time span: 10 funds, vintages 1967-2005 plus Alpha"

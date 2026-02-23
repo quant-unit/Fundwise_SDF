@@ -1248,8 +1248,7 @@ Scenarios S2--S9 in Table~\ref{tab:driessen_comparison} systematically vary the 
 
 Several structural differences between the two simulation designs should be noted.
 First, \cite{DLP12} use a shifted lognormal distribution for the idiosyncratic error term (cf.\ their online appendix, Equation~9), which ensures that the error addend has a finite lower bound (approximately $-1$) and avoids the non-linear distortions that arise when normally distributed errors occasionally produce extreme negative total returns.
-Second, they simulate the total market return $R_{\text{MKT}}$ from a shifted lognormal distribution calibrated to S\&P~500 moments (1980--2003), rather than conditioning on the historical path.
-This ``full Monte Carlo'' approach generates more variable market return draws across simulations and thus aids identification.
+Second, they employ a ``full Monte Carlo'' approach and simulate the total market return $R_{\text{MKT}}$ from a shifted lognormal distribution calibrated to S\&P~500 moments (1980--2003), rather than conditioning on the historical path.
 Third, their deal investment timing follows a deterministic schedule (three deals per year, evenly spaced across the five-year investment period), rather than random uniform draws.
 
 \textit{Interpretation of results.}\quad
@@ -1257,13 +1256,13 @@ Under our original design with normal errors and $\sigma=30\%$ (S3), the market 
 Switching to the shifted lognormal error distribution (S4) modestly improves the beta estimate to 0.85 and reduces the alpha bias to 0.42\%.
 Adding simulated market returns (S5) yields only marginal further improvement ($\hat{\beta}=0.87$), and deterministic investment timing (S8) raises beta to 0.93 but does not substantially reduce alpha variance.
 
-Two modifications produce the largest improvements.
-First, reducing the idiosyncratic volatility from $\sigma=30\%$ to $\sigma=20\%$ (S7) yields estimates very close to the benchmark ($\hat{\beta}=0.96$, $\alpha=0.10\%$, $\text{SD}(\hat{\beta})=0.31$), suggesting that the interaction between high noise and the non-linear compounding in the DGP is a primary source of bias in the two-factor model.
-Second, tightening the alpha upper bound $\bar{\alpha}$ dramatically affects results: at $\bar{\alpha}=0.5\%$ (S6), 51\% of draws hit the bound, and beta is \textit{over}estimated ($\hat{\beta}=1.10$); at $\bar{\alpha}=0.75\%$ (S9), 41\% hit the bound and beta is 0.97 --- close to the true value, but at the cost of constraining the alpha search space.
-This sensitivity reveals a fundamental tension in the two-factor model: the alpha term absorbs residual nonlinearity that the linear SDF cannot capture, and bounding it forces this residual into the beta estimate.
+Three modifications produce the most substantial improvements by mitigating the interaction between high noise and the non-linear compounding in the DGP.
+First, reducing the idiosyncratic volatility from $\sigma=30\%$ to $\sigma=20\%$ (S7) yields estimates very close to the benchmark ($\hat{\beta}=0.96$, $\alpha=0.10\%$, $\text{SD}(\hat{\beta})=0.31$), suggesting that extreme idiosyncratic shocks drive the bias in the two-factor model.
+Second, shortening the maximum deal holding period from 10 years to 5 years (S10) significantly improves the beta estimate ($\hat{\beta}=0.97$) and reduces the alpha bias ($0.23\%$) without requiring lower idiosyncratic volatility. This holding-period reduction also drastically decreases the alpha bound hit rate from 32\% (in S5) to 9\%. The bound hit rate, which tracks how often the optimization converges at the predefined upper alpha limit ($\bar{\alpha}=1\%$), is a critical diagnostic. A high hit rate indicates that the estimator suffers from the ``exploding alpha'' problem, where an unrealistically high alpha absorbs the compounded idiosyncratic noise, thereby negatively biasing the beta estimate. By limiting the compounding duration, the S10 scenario restricts the geometric growth of these errors, reducing the frequency of degenerate alpha estimates and restoring the accuracy of the market beta.
+Third, tightening the alpha upper bound $\bar{\alpha}$ dramatically affects results: at $\bar{\alpha}=0.5\%$ (S6), 51\% of draws hit the bound, and beta is \textit{over}estimated ($\hat{\beta}=1.10$); at $\bar{\alpha}=0.75\%$ (S9), 41\% hit the bound and beta is 0.97 --- close to the true value, but at the cost of artificially constraining the alpha search space.
+This sensitivity reveals a fundamental tension in the two-factor model: the alpha term absorbs residual nonlinearity that the linear SDF cannot capture, and bounding it arbitrarily distorts the beta estimate.
 
 Notably, even our closest scenario (S7) achieves comparable beta variance ($\text{SD}=0.31$ vs.\ $0.32$ in \cite{DLP12}) but still exhibits a larger alpha bias ($0.10\%$ vs.\ $0.05\%$).
-Future work should (i) investigate whether the number of deals per fund (we use 15 vs.\ \cite{DLP12}) or the specific calibration of the shifted lognormal error distribution drives this remaining gap; and (ii) compare the realized distribution of simulated compound returns across setups, since heavily left-skewed return distributions may interact nonlinearly with the optimization landscape.
 
 % Table: Small-Sample Bias and Variance (Horizon 0)
 \begin{table}[htbp]
@@ -1286,6 +1285,7 @@ Future work should (i) investigate whether the number of deals per fund (we use 
 			(S7) $n=50$, $\sigma=20\%$, Shifted LN, Sim.~MKT & 1.00 & 0.96 & 0.31 & 0.83 & 1.11 & 0.00 & 0.10 & 0.23 & -0.03 & 0.18 & 1\% \\
 			(S8) $n=50$, $\sigma=30\%$, Shifted LN, Sim.~MKT, Det.~Timing & 1.00 & 0.93 & 0.72 & 0.44 & 1.29 & 0.00 & 0.42 & 0.51 & 0.01 & 1.00 & 29\% \\
 			(S9) $n=50$, $\sigma=30\%$, Shifted LN, Sim.~MKT, $\bar{\alpha}=0.75\%$ & 1.00 & 0.97 & 0.67 & 0.53 & 1.30 & 0.00 & 0.38 & 0.41 & 0.06 & 0.75 & 41\% \\
+			(S10) $n=50$, $\sigma=30\%$, Shifted LN, Sim.~MKT, Max.~Hold 5 & 1.00 & 0.97 & 0.49 & 0.69 & 1.22 & 0.00 & 0.23 & 0.39 & -0.03 & 0.46 & 9\% \\
 			\addlinespace
 			\multicolumn{12}{l}{\textit{Driessen et al. 2012, Table 1}} \\
 			Benchmark Estimates ($n=50$, $\sigma_{\text{monthly}}=30\%$) & 1.00 & 0.98 & 0.32 & 0.80 & 1.15 & 0.00 & 0.05 & 0.2 & -0.06 & 0.15 & n/a \\
@@ -1295,7 +1295,7 @@ Future work should (i) investigate whether the number of deals per fund (we use 
 	\begin{minipage}{\linewidth}
 		\vspace{0.2cm}
 		\footnotesize \textit{Notes:} 
-		This table reports the small-sample properties of the generalized estimator for Horizon~0 (i.e., treating funds as held to maturity), mimicking the structure of Table~1 in \cite{DLP12}. We simulate 1,000 Monte Carlo draws. All scenarios use 20 vintage years (1986--2005) with 15 deals per fund; unless stated otherwise, $n=20$ funds per vintage, $\sigma=0.2$ monthly idiosyncratic volatility, and a normal error distribution. The simulation dimensions vary as follows: $n$ = number of funds per vintage-year portfolio; $\sigma$ = monthly idiosyncratic standard deviation; \textit{Normal} = Gaussian error term (default); \textit{Shifted LN} = shifted lognormal error term (cf.\ \cite{DLP12}); \textit{Sim.~MKT} = total market return drawn from a shifted lognormal (S\&P~500 1980--2003 moments) with a constant risk-free rate of 4\% annualized, instead of conditioning on the historical path; \textit{Det.~Timing} = deterministic (evenly spaced) deal investment dates instead of random; $\bar{\alpha}$ = upper bound on the alpha parameter in the optimization (default $\bar{\alpha} = 1\%$/month). The \textit{\%~Bound} column reports the fraction of draws where the alpha estimate reached the upper optimization bound~$\bar{\alpha}$. The final row presents the Benchmark Estimates obtained directly from Table~1 in \cite{DLP12} for comparative purposes. Alpha estimates are monthly and presented in percentages.
+		This table reports the small-sample properties of the generalized estimator for Horizon~0 (i.e., treating funds as held to maturity), mimicking the structure of Table~1 in \cite{DLP12}. We simulate 1,000 Monte Carlo draws. All scenarios use 20 vintage years (1986--2005) with 15 deals per fund; unless stated otherwise, $n=20$ funds per vintage, $\sigma=0.2$ monthly idiosyncratic volatility, and a normal error distribution. The simulation dimensions vary as follows: $n$ = number of funds per vintage-year portfolio; $\sigma$ = monthly idiosyncratic standard deviation; \textit{Normal} = Gaussian error term (default); \textit{Shifted LN} = shifted lognormal error term (cf.\ \cite{DLP12}); \textit{Sim.~MKT} = total market return drawn from a shifted lognormal (S\&P~500 1980--2003 moments) with a constant risk-free rate of 4\% annualized, instead of conditioning on the historical path; \textit{Det.~Timing} = deterministic (evenly spaced) deal investment dates instead of random; \textit{Max.~Hold 5} = maximum holding period of a deal limited to 5 years (default 10 years); $\bar{\alpha}$ = upper bound on the alpha parameter in the optimization (default $\bar{\alpha} = 1\%$/month). The \textit{\%~Bound} column reports the fraction of draws where the alpha estimate reached the upper optimization bound~$\bar{\alpha}$. The final row presents the Benchmark Estimates obtained directly from Table~1 in \cite{DLP12} for comparative purposes. Alpha estimates are monthly and presented in percentages.
 	\end{minipage}
 \end{table}
 
@@ -1386,7 +1386,7 @@ Therefore, drawing on both the simulation evidence and the cross-validation resu
 In this paragraph, we in detail compare our $MKT$ factor model results to the results published by \cite{DLP12}.
 A notable distinction between these two empirical analyses is the private market dataset used.
 We use the Preqin cash flow dataset, also used by \cite{KN16} and \cite{ACGP18}.
-\cite{DLP12} draws on the problematic Thomson Venture Economics (TVE) fund-level dataset that exhibits some now well-known data errors due to ``stale updates" as discussed by \cite{HJK14}.
+\cite{DLP12} draws on the problematic Thomson Venture Economics (TVE) fund-level dataset that exhibits some now well-known data errors due to forward-filling stale KPIs as discussed by \cite{HJK14}.
 \cite[Table 5]{DLP12} shows results for Buyout (BO) and Venture Capital (VC) funds using the S\&P 500 single-factor model and the \cite{FF93} three-factor model.
 For VC, they estimate a one-factor model with a market beta factor of 2.73 and an annualized negative alpha of -12.3\%. 
 For BO, one-factor model coefficients are 1.31 for the market factor, and the annualized alpha is again negative with -4.8\%.
@@ -1722,7 +1722,7 @@ Unfortunately, using individual funds instead of vintage year portfolios, which 
 Since, in our empirical analyses, basically all two-factor models' asymptotic standard errors appear statistically insignificant, we conjecture that naive versions of our SDF estimator shall be exclusively used for a single-MKT-factor model until considerably more vintage year information for private equity funds is available.
 
 If someone wants to estimate more complex SDF models that incorporate additional factors, more structure is needed.
-These can be parametric assumptions for the data generating process \citep{ACGP18} or to extract additional information from intermediate net asset values \citep{GSW19,BGG20}.
+These can be parametric assumptions for the data generating process \citep{ACGP18} or to extract additional information from intermediate net asset values \citep{GSW20,BGG20}.
 A first ``modern" approach to the same problem is applying machine learning techniques that regularize/shrink all coefficients other than the MKT factor.
 Secondly, given the high estimator variance revealed in the simulation study, statistical learning methods that create a strong learner by combining multiple weak learners seem also worth considering (boosting, bagging, or model averaging).
 

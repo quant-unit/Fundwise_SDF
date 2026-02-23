@@ -4,8 +4,8 @@ scenarios <- c(
     "base_case_zero_alpha", "big_n_v_50funds_alpha",
     "big_n_v_50funds_alpha_stdv30", "big_n_v_50funds_alpha_stdv30_shifted",
     "big_n_v_50funds_alpha_stdv30_shifted_mkt", "big_n_v_50funds_alpha_stdv30_shifted_mkt2",
-    "big_n_v_50funds_alpha_stdv30_shifted_mkt3",
-    "big_n_v_50funds_alpha_stdv30_shifted_mkt4", "big_n_v_50funds_alpha_stdv30_shifted_mkt5"
+    "big_n_v_50funds_alpha_stdv30_shifted_mkt3", "big_n_v_50funds_alpha_stdv30_shifted_mkt4",
+    "big_n_v_50funds_alpha_stdv30_shifted_mkt5", "big_n_v_50funds_alpha_stdv30_shifted_mkt6"
 )
 
 #' Generate a professional LaTeX table comparing our small-sample properties
@@ -64,7 +64,8 @@ generate_driessen_latex_table <- function(data_path, output_tex = NULL) {
         "big_n_v_50funds_alpha_stdv30_shifted_mkt2" = "(S6) $n=50$, $\\sigma=30\\%$, Shifted LN, Sim.~MKT, $\\bar{\\alpha}=0.5\\%$",
         "big_n_v_50funds_alpha_stdv30_shifted_mkt3" = "(S7) $n=50$, $\\sigma=20\\%$, Shifted LN, Sim.~MKT",
         "big_n_v_50funds_alpha_stdv30_shifted_mkt4" = "(S8) $n=50$, $\\sigma=30\\%$, Shifted LN, Sim.~MKT, Det.~Timing",
-        "big_n_v_50funds_alpha_stdv30_shifted_mkt5" = "(S9) $n=50$, $\\sigma=30\\%$, Shifted LN, Sim.~MKT, $\\bar{\\alpha}=0.75\\%$"
+        "big_n_v_50funds_alpha_stdv30_shifted_mkt5" = "(S9) $n=50$, $\\sigma=30\\%$, Shifted LN, Sim.~MKT, $\\bar{\\alpha}=0.75\\%$",
+        "big_n_v_50funds_alpha_stdv30_shifted_mkt6" = "(S10) $n=50$, $\\sigma=30\\%$, Shifted LN, Sim.~MKT, Max.~Hold 5"
     )
 
     # Formatting helper
@@ -123,6 +124,7 @@ generate_driessen_latex_table <- function(data_path, output_tex = NULL) {
         "\\textit{Shifted LN} = shifted lognormal error term (cf.\\ \\cite{DLP12}); ",
         "\\textit{Sim.~MKT} = total market return drawn from a shifted lognormal (S\\&P~500 1980--2003 moments) with a constant risk-free rate of 4\\% annualized, instead of conditioning on the historical path; ",
         "\\textit{Det.~Timing} = deterministic (evenly spaced) deal investment dates instead of random; ",
+        "\\textit{Max.~Hold 5} = maximum holding period of a deal limited to 5 years (default 10 years); ",
         "$\\bar{\\alpha}$ = upper bound on the alpha parameter in the optimization (default $\\bar{\\alpha} = 1\\%$/month). ",
         "The \\textit{\\%~Bound} column reports the fraction of draws where the alpha estimate reached the upper optimization bound~$\\bar{\\alpha}$. ",
         "The final row presents the Benchmark Estimates obtained directly from Table~1 in \\cite{DLP12} for comparative purposes. ",
@@ -146,5 +148,5 @@ generate_driessen_latex_table <- function(data_path, output_tex = NULL) {
 }
 
 # Example usage (uncomment to test directly):
-data_file <- "simulation/data_out_2026_new/bias_analysis/2026-02-23_011837_bias_full.csv"
+data_file <- "simulation/data_out_2026_new/bias_analysis/2026-02-23_152411_bias_full.csv"
 cat(generate_driessen_latex_table(data_file, output_tex = "simulation/driessen_simulation.tex"))
