@@ -22,33 +22,59 @@
 \end{frame}
 
 \begin{frame}{Guiding Question}
-\textbf{How can we estimate the true public-market exposure of private equity funds?}
-
-\vspace{0.6em}
-\begin{itemize}
-  \item Target: recover latent market exposure from non-traded PE cash flow/NAV data.
-  \item Challenge: stale NAVs, asynchronous cash flows, and overlapping fund lives.
-  \item Plan: naive benchmark first, then semiparametric SDF estimation.
-\end{itemize}
-
-\vspace{0.6em}
-\textbf{Useful for:}
-
-\begin{itemize}
-	\item Risk-adjusted benchmarks for private equity funds.
-	\item Holistic risk management for public and private portfolios.
-	\item More realistic strategic asset allocation decisions.
-\end{itemize}
-
+	\begin{center}
+		\includegraphics[width=0.95\linewidth]{images/TR1.png}
+	\end{center}
+	\footnotesize Source: \url{https://traderepublic.com/en-de/private-markets}
 \end{frame}
+
+\begin{frame}{Guiding Question}
+	\begin{center}
+		\includegraphics[width=0.88\linewidth]{images/TR2.png}
+	\end{center}
+	\footnotesize Source: \url{https://traderepublic.com/en-de/private-markets}
+\end{frame}
+
+\begin{frame}{Guiding Question}
+	\begin{center}
+		\includegraphics[width=0.88\linewidth]{images/TR3.png}
+	\end{center}
+	\footnotesize Source: \url{https://traderepublic.com/en-de/private-markets}
+\end{frame}
+
+\begin{frame}{Guiding Question}
+	
+	\emph{Are private markets really not connected to public market volatility?}
+	\vspace{1.6em}
+	
+	\textbf{How can we estimate the true public-market exposure of private equity funds?}
+	
+	\vspace{0.6em}
+	\begin{itemize}
+		\item Target: recover latent market exposure from non-traded PE cash flow/NAV data.
+		\item Challenge: stale NAVs, asynchronous cash flows, and overlapping fund lives.
+		\item Plan: naive approach first, then semiparametric SDF estimation.
+	\end{itemize}
+	
+	\vspace{0.6em}
+	\textbf{Useful for:}
+	
+	\begin{itemize}
+		\item Risk-adjusted benchmarks for private equity funds.
+		\item Holistic risk management for public and private portfolios.
+		\item More realistic strategic asset allocation decisions.
+	\end{itemize}
+\end{frame}
+
+
 
 \begin{frame}{Agenda}
 \begin{enumerate}
-  \item Motivation via NAV-return autocorrelation and Dimson beta (6 min)
-  \item Estimator and inference framework (7 min)
-  \item Simulation evidence on bias-variance tradeoff (9 min)
-  \item Empirical PE results and practical implications (6 min)
-  \item Takeaways and comparison to naive benchmark (2 min)
+  \item Motivation: NAV-return autocorrelation
+  \item Estimation framework
+  \item Simulation evidence
+  \item Empirical PE results
+  \item Takeaways
 \end{enumerate}
 \end{frame}
 
@@ -240,16 +266,6 @@ Estimate parameters by nonlinear least-mean-distance:
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Conclusion: Machine-Learning Ensembles}
-
-- Two-factor models are messy.
-
-- Idea: Combine multiple weak learners
-
-- Additionally estimate error term \cite{TP24}
-
-\end{frame}
-
 \begin{frame}{Conclusion: Main Takeaways}
 \begin{enumerate}
   \item A semiparametric LMD framework can price pooled non-traded cash flows directly.
@@ -360,6 +376,16 @@ VC Global & 5 & 5 & 5 \\
 	\textbf{Takeaway:} two-factor estimates are horizon-sensitive and high-variance; multivariate identification is fragile.
 \end{frame}
 
+
+\begin{frame}{Conclusion: Machine-Learning Ensembles}
+	
+	- Two-factor models are messy.
+	
+	- Idea: Combine multiple weak learners
+	
+	- Additionally estimate error term \cite{TP24}
+	
+\end{frame}
 
 
 
