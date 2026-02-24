@@ -21,8 +21,8 @@ defaults:
   max_months: [0, 1, 30, 60, 120, 150, 180, 210, 240, 270, 300, 330, 360]
   lambdas: 0
   kernel_bandwidth: 12
-  alpha_lower: -0.01
-  alpha_upper: 0.01
+  alpha_lower: -0.02
+  alpha_upper: 0.02
   part_to_keep: 1
   no_partitions: 1
   max_vintage: 2021
@@ -167,6 +167,166 @@ scenarios:
     max_vintages: [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
     active: false
 
+# ============================================================================
+# FAMA-FRENCH 3 FACTOR MODELS
+# ============================================================================
+
+  # --------------------------------------------------------------------------
+  # One-Factor (MKT only, using FF3 data source)
+  # --------------------------------------------------------------------------
+  ff3_fw_no_cv:
+    description: "FF3 data, fund-weighted VYP, no CV (MKT-only)"
+    public_filename: "ff3_factors"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+
+  ff3_ew_no_cv:
+    description: "FF3 data, equal-weighted VYP, no CV (MKT-only)"
+    public_filename: "ff3_factors"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+
+  # --------------------------------------------------------------------------
+  # Two-Factor: MKT + SMB
+  # --------------------------------------------------------------------------
+  ff3_fw_no_cv_SMB:
+    description: "FF3 data, fund-weighted VYP, no CV, MKT+SMB"
+    public_filename: "ff3_factors"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: "SMB"
+    active: false
+
+  ff3_ew_no_cv_SMB:
+    description: "FF3 data, equal-weighted VYP, no CV, MKT+SMB"
+    public_filename: "ff3_factors"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: "SMB"
+    active: false
+
+  # --------------------------------------------------------------------------
+  # Two-Factor: MKT + HML
+  # --------------------------------------------------------------------------
+  ff3_fw_no_cv_HML:
+    description: "FF3 data, fund-weighted VYP, no CV, MKT+HML"
+    public_filename: "ff3_factors"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: "HML"
+    active: false
+
+  ff3_ew_no_cv_HML:
+    description: "FF3 data, equal-weighted VYP, no CV, MKT+HML"
+    public_filename: "ff3_factors"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: "HML"
+    active: false
+
+  # --------------------------------------------------------------------------
+  # Two-Factor: Alpha + MKT (FF3 data)
+  # --------------------------------------------------------------------------
+  ff3_fw_no_cv_alpha:
+    description: "FF3 data, fund-weighted VYP, no CV, Alpha+MKT"
+    public_filename: "ff3_factors"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: "Alpha"
+    include_alpha_term: true
+    active: false  # Redundant: Alpha is already handled by include_alpha_term
+
+  ff3_ew_no_cv_alpha:
+    description: "FF3 data, equal-weighted VYP, no CV, Alpha+MKT"
+    public_filename: "ff3_factors"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: "Alpha"
+    include_alpha_term: true
+    active: false  # Redundant: Alpha is already handled by include_alpha_term
+
+  ff3_fw_cv_alpha:
+    description: "FF3 data, fund-weighted VYP, CV, Alpha+MKT"
+    public_filename: "ff3_factors"
+    weighting: "FW"
+    do_cross_validation: true
+    factors_to_use: "Alpha"
+    include_alpha_term: true
+    active: false  # Deactivated: run after verifying no-CV first
+
+  ff3_ew_cv_alpha:
+    description: "FF3 data, equal-weighted VYP, CV, Alpha+MKT"
+    public_filename: "ff3_factors"
+    weighting: "EW"
+    do_cross_validation: true
+    factors_to_use: "Alpha"
+    include_alpha_term: true
+    active: false  # Deactivated: run after verifying no-CV first
+  
+  # --------------------------------------------------------------------------
+  # Three-Factor: MKT + SMB + HML (FF3 data)
+  # --------------------------------------------------------------------------
+  ff3_fw_no_cv_ALL_3f:
+    description: "FF3 data, fund-weighted VYP, no CV, MKT+SMB+HML"
+    public_filename: "ff3_factors"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: ["MKT", "SMB", "HML"]
+    include_alpha_term: false
+    active: true
+
+  ff3_ew_no_cv_ALL_3f:
+    description: "FF3 data, equal-weighted VYP, no CV, MKT+SMB+HML"
+    public_filename: "ff3_factors"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: ["MKT", "SMB", "HML"]
+    include_alpha_term: false
+    active: true
+    
+  # --------------------------------------------------------------------------
+  # Four-Factor: Alpha + MKT + SMB + HML (FF3 data)
+  # --------------------------------------------------------------------------
+  ff3_fw_no_cv_ALL:
+    description: "FF3 data, fund-weighted VYP, no CV, Alpha+MKT+SMB+HML"
+    public_filename: "ff3_factors"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: "ALL"
+    include_alpha_term: true
+    active: true
+
+  ff3_ew_no_cv_ALL:
+    description: "FF3 data, equal-weighted VYP, no CV, Alpha+MKT+SMB+HML"
+    public_filename: "ff3_factors"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: "ALL"
+    include_alpha_term: true
+    active: true
+    
+  ff3_fw_cv_ALL:
+    description: "FF3 data, fund-weighted VYP, CV, Alpha+MKT+SMB+HML"
+    public_filename: "ff3_factors"
+    weighting: "FW"
+    do_cross_validation: true
+    factors_to_use: "ALL"
+    include_alpha_term: true
+    active: true
+
+  ff3_ew_cv_ALL:
+    description: "FF3 data, equal-weighted VYP, CV, Alpha+MKT+SMB+HML"
+    public_filename: "ff3_factors"
+    weighting: "EW"
+    do_cross_validation: true
+    factors_to_use: "ALL"
+    include_alpha_term: true
+    active: true
+    
 # ============================================================================
 # ALTERNATIVE DATA SOURCES
 # ============================================================================

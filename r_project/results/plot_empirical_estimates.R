@@ -1367,7 +1367,7 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
 
 file.folder <- "results/data_out_2026-emp-max-vin-2019"
-file.folder <- "data_out_2026_02_18"
+file.folder <- "data_out_2026_02_24"
 
 # # Two-factor model with all factors
 plot_empirical_estimates(

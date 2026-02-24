@@ -30,15 +30,24 @@ for (file in list.files(dir.cache)) {
 df.f <- data.frame(do.call(rbind, list.cache))
 rownames(df.f) <- NULL
 df.f$X <- NULL
-df.f$RF <- 1
+if (nrow(df.f) > 0) {
+  df.f$RF <- 1
+}
 # df.f[is.na(df.f)] <- 0
 # df.f$validation.error[is.na(df.f$validation.error)] <- Inf
 
-file_path <- here("empirical", "data_prepared", "q_factors.csv")
+# Determine public factor file from prefix
+# prefix is e.g. "q_factors_preqin_" or "ff3_factors_preqin_"
+if (grepl("^ff3_factors", prefix)) {
+  public_factor_file <- "ff3_factors.csv"
+} else {
+  public_factor_file <- "q_factors.csv"
+}
+file_path <- here("empirical", "data_prepared_2026", public_factor_file)
 
 df.q <- read.csv(file_path)
 df.q$Date <- as.Date(df.q$Date)
-df.q$Alpha <- 1
+df.q$Alpha <- 1 # Alpha = 1 is the constant term in the SDF
 
 rbind.all.columns <- function(x, y) {
   x.diff <- setdiff(colnames(x), colnames(y))
@@ -64,9 +73,13 @@ for (Factor in q.factors) {
   } else {
     select_cols <- c("MKT", Factor, "Type", "max.month", "validation.error")
   }
+  # Only select columns that actually exist in df.f (e.g. no validation.error if no CV runs)
+  select_cols <- intersect(select_cols, colnames(df.f))
+
   df <- df.f[
     (df.f$CV.key != "ALL") & (df.f$Factor == Factor),
-    select_cols
+    select_cols,
+    drop = FALSE
   ]
   if (nrow(df) == 0) next
   ddf <- df[, !is.na(df[1, ])]
@@ -137,16 +150,40 @@ if (nrow(df.all) > 0 && "datetime" %in% colnames(df.all)) {
 }
 for (i in seq_len(nrow(df.all))) {
   factor <- as.character(df.all$Factor[i])
-  df.all[i, "Coef"] <- df.all[i, factor]
-  df.all[i, "SE.Coef"] <- df.all[i, paste0("SE.", factor)]
-  df.all[i, "SE.Coef.indep"] <- df.all[i, paste0("SE.", factor, ".indep")]
+  # Only map Coef and SE.Coef if 'factor' is a specific factor name (e.g., "Alpha", "SMB") and not "ALL"
+  # For "ALL" models, we rely on the specific factor columns directly.
+  if (factor != "ALL" && factor %in% colnames(df.all)) {
+    df.all[i, "Coef"] <- df.all[i, factor]
+    df.all[i, "SE.Coef"] <- df.all[i, paste0("SE.", factor)]
+    if (paste0("SE.", factor, ".indep") %in% colnames(df.all)) {
+      df.all[i, "SE.Coef.indep"] <- df.all[i, paste0("SE.", factor, ".indep")]
+    }
+  }
 }
-df.all <- df.all[, c(
-  "Type", "max.month", "MKT", "SE.MKT", "SE.MKT.indep",
-  "Factor", "Coef", "SE.Coef", "SE.Coef.indep"
-)]
 
-df.all <- df.all[order(df.all$Type, df.all$Factor, as.numeric(df.all$max.month)), ]
+# Select columns defensively
+all_select_cols <- c(
+  "Type", "max.month", "MKT", "SE.MKT", "SE.MKT.indep", "Factor"
+)
+
+# For single factor runs we need Coef and SE.Coef. For ALL runs we keep the individual factor columns.
+if (any(df.all$Factor != "ALL")) {
+  all_select_cols <- c(all_select_cols, "Coef", "SE.Coef", "SE.Coef.indep")
+}
+if (any(df.all$Factor == "ALL")) {
+  available_factors <- setdiff(intersect(c("Alpha", "SMB", "HML", "ME", "ROE", "IA", "EG"), colnames(df.all)), c("MKT"))
+  for (f in available_factors) {
+    all_select_cols <- c(all_select_cols, f, paste0("SE.", f), paste0("SE.", f, ".indep"))
+  }
+}
+
+all_select_cols <- intersect(all_select_cols, colnames(df.all))
+if (nrow(df.all) > 0) {
+  df.all <- df.all[, all_select_cols]
+  df.all <- df.all[order(df.all$Type, df.all$Factor, as.numeric(df.all$max.month)), ]
+} else {
+  df.all <- df.all[, all_select_cols, drop = FALSE]
+}
 
 # print 2 LaTeX tables -----
 spec <- paste0(strsplit(suffix, "_")[[1]], collapse = "-")
@@ -168,6 +205,7 @@ prepare_and_print_tables <- function(df, types, table_type, suffix, spec) {
 
   for (type in types) {
     df.sub <- df[df$Type == type, ]
+    if (nrow(df.sub) == 0) next
 
     # Sort by Factor then MCM (numeric)
     # Ensure max.month is treated as numeric for sorting
@@ -178,16 +216,10 @@ prepare_and_print_tables <- function(df, types, table_type, suffix, spec) {
 
     # Rename columns based on table type
     if (table_type == "AI") {
-      # Asymptotic Inference
-      # Desired columns: MCM, Market Loading, Market SE, Market SE Ind., Second Name, Second Loading, Second SE, Second SE Ind.
-
-      # Rename for internal consistency before printing (though headers will be custom)
-      # We need correct column order for the data rows
-
-      # Map original names to temp names to ensure correct ordering
-      # Original cols: MKT, SE.MKT, SE.MKT.indep, Factor, Coef, SE.Coef, SE.Coef.indep, max.month
-
-      df.sub <- df.sub[, c("max.month", "MKT", "SE.MKT", "SE.MKT.indep", "Factor", "Coef", "SE.Coef", "SE.Coef.indep")]
+      # Asymptotic Inference: select available columns
+      ai_cols <- c("max.month", "MKT", "SE.MKT", "SE.MKT.indep", "Factor", "Coef", "SE.Coef", "SE.Coef.indep")
+      ai_cols <- intersect(ai_cols, colnames(df.sub))
+      df.sub <- df.sub[, ai_cols]
 
       cap <- paste0(
         "Asymptotic results for ", type, " Funds. ",
@@ -197,14 +229,22 @@ prepare_and_print_tables <- function(df, types, table_type, suffix, spec) {
       )
       lab <- paste0("tab:ai_", suffix, "_", type)
 
-      # Custom Header for AI
-      # MCM | Market Loading | Market SE | Market SE Ind. | Second Name | Second Loading | Second SE | Second SE Ind.
-      header_row <- paste0(
-        "\\hline\n",
-        " & Market& Market & Market & Second & Second & Second & Second \\\\ \n",
-        "\\textbf{MCM} & \\textbf{Loading} & \\textbf{SE} & \\textbf{SE Ind.} & \\textbf{Name} & \\textbf{Loading} & \\textbf{SE} & \\textbf{SE Ind.} \\\\ \n",
-        "\\hline\n"
-      )
+      # Build header based on available columns
+      if ("SE.MKT.indep" %in% ai_cols) {
+        header_row <- paste0(
+          "\\hline\n",
+          " & Market& Market & Market & Second & Second & Second & Second \\\\ \n",
+          "\\textbf{MCM} & \\textbf{Loading} & \\textbf{SE} & \\textbf{SE Ind.} & \\textbf{Name} & \\textbf{Loading} & \\textbf{SE} & \\textbf{SE Ind.} \\\\ \n",
+          "\\hline\n"
+        )
+      } else {
+        header_row <- paste0(
+          "\\hline\n",
+          " & Market& Market & Second & Second & Second \\\\ \n",
+          "\\textbf{MCM} & \\textbf{Loading} & \\textbf{SE} & \\textbf{Name} & \\textbf{Loading} & \\textbf{SE} \\\\ \n",
+          "\\hline\n"
+        )
+      }
     } else {
       # Cross Validation
       # Desired columns: MCM, Market Loading, Market SE, Second Name, Second Loading, Second SE, CV-Error
@@ -254,6 +294,8 @@ prepare_and_print_tables <- function(df, types, table_type, suffix, spec) {
 }
 
 outfile <- paste0(dir.cache, "/empirical_tables.tex")
+# Create cache directory if it doesn't exist (e.g., FF3 runs analyzed before estimation)
+if (!dir.exists(dir.cache)) dir.create(dir.cache, recursive = TRUE)
 # Clear file if it exists
 cat("", file = outfile)
 
@@ -264,17 +306,30 @@ prepare_and_print_tables(df.cv, types2print, "CV", suffix, spec)
 
 # abs summary ----
 sum.abs <- function(df, inference = "") {
+  if ("SE.MKT.indep" %in% colnames(df)) {
+    cols <- c("MKT", "SE.MKT", "SE.MKT.indep", "Coef", "SE.Coef", "SE.Coef.indep")
+  } else {
+    cols <- c("MKT", "SE.MKT", "Coef", "SE.Coef")
+  }
+
+  if (nrow(df) == 0) {
+    # Return empty row with correct structure
+    df.out <- data.frame(matrix(NA, nrow = 1, ncol = length(cols)))
+    colnames(df.out) <- cols
+    df.out$Weighting <- suffix
+    df.out$Inference <- inference
+    df.out <- df.out[, c("Weighting", "Inference", cols)]
+    return(df.out)
+  }
+
   df.out <- data.frame(apply(df, 2, function(x) {
     sum(abs(as.numeric(x))) / nrow(df)
   }))
   colnames(df.out) <- "sum.abs"
   df.out <- data.frame(t(df.out))
 
-  if ("SE.MKT.indep" %in% colnames(df)) {
-    cols <- c("MKT", "SE.MKT", "SE.MKT.indep", "Coef", "SE.Coef", "SE.Coef.indep")
-  } else {
-    cols <- c("MKT", "SE.MKT", "Coef", "SE.Coef")
-  }
+  # Only select columns that exist in df.out
+  cols <- intersect(cols, colnames(df.out))
   df.out <- df.out[, cols]
   df.out$Weighting <- suffix
   df.out$Inference <- inference
@@ -295,30 +350,41 @@ print(xtable::xtable(df.abs,
 write.csv(df.cv.abs, paste0(dir.cache, "/0_cross_validation_sumabs.csv"))
 write.csv(df.all.abs, paste0(dir.cache, "/0_asymptotic_inference_sumabs.csv"))
 
-# Write Corss-Validation
-df.cv$t.MKT <- df.cv$MKT / df.cv$SE.MKT
-df.cv$t.Coef <- df.cv$Coef / df.cv$SE.Coef
-df.cv$sig <- ((abs(df.cv$t.MKT) > 1.96) & (abs(df.cv$t.Coef) > 1.96))
-sum(df.cv$sig)
-nrow(df.cv)
+# Write Cross-Validation
+if (nrow(df.cv) > 0) {
+  df.cv$t.MKT <- df.cv$MKT / df.cv$SE.MKT
+  df.cv$t.Coef <- df.cv$Coef / df.cv$SE.Coef
+  df.cv$sig <- ((abs(df.cv$t.MKT) > 1.96) & (abs(df.cv$t.Coef) > 1.96))
+  sum(df.cv$sig)
+  nrow(df.cv)
 
-df.cv <- df.cv[order(df.cv$Type, df.cv$max.month, df.cv$Factor), ]
+  df.cv <- df.cv[order(df.cv$Type, df.cv$max.month, df.cv$Factor), ]
+}
 write.csv(df.cv, paste0(dir.cache, "/0_cross_validation_summary.csv"))
 
 # Write asymptotic inference
-df.all$t.MKT <- df.all$MKT / df.all$SE.MKT
-df.all$t.MKT.indep <- df.all$MKT / df.all$SE.MKT.indep
-df.all$t.Coef <- df.all$Coef / df.all$SE.Coef
-df.all$t.Coef.indep <- df.all$Coef / df.all$SE.Coef.indep
-df.all$sig <- ((abs(df.all$t.MKT) > 1.96) & (abs(df.all$t.Coef) > 1.96))
-sum(df.all$sig)
-nrow(df.all)
-df.all$sig.indep <- ((abs(df.all$t.MKT.indep) > 1.96) & (abs(df.all$t.Coef.indep) > 1.96))
-sum(df.all$sig.indep)
-nrow(df.all)
-# View(df.all[df.all$Factor == "MKT", ])
+if (nrow(df.all) > 0) {
+  df.all$t.MKT <- df.all$MKT / df.all$SE.MKT
+  if ("Coef" %in% colnames(df.all)) {
+    df.all$t.Coef <- df.all$Coef / df.all$SE.Coef
+    df.all$sig <- ((abs(df.all$t.MKT) > 1.96) & (abs(df.all$t.Coef) > 1.96))
+    sum(df.all$sig)
+  }
+  nrow(df.all)
+  # Independent SE t-stats (only if .indep columns exist)
+  if ("SE.MKT.indep" %in% colnames(df.all)) {
+    df.all$t.MKT.indep <- df.all$MKT / df.all$SE.MKT.indep
+    if ("Coef" %in% colnames(df.all) && "SE.Coef.indep" %in% colnames(df.all)) {
+      df.all$t.Coef.indep <- df.all$Coef / df.all$SE.Coef.indep
+      df.all$sig.indep <- ((abs(df.all$t.MKT.indep) > 1.96) & (abs(df.all$t.Coef.indep) > 1.96))
+      sum(df.all$sig.indep)
+    }
+  }
+  nrow(df.all)
+  # View(df.all[df.all$Factor == "MKT", ])
 
-df.all <- df.all[order(df.all$Type, df.all$max.month, df.all$Factor), ]
+  df.all <- df.all[order(df.all$Type, df.all$max.month, df.all$Factor), ]
+}
 write.csv(df.all, paste0(dir.cache, "/0_asymptotic_inference_summary.csv"))
 
 
@@ -327,48 +393,72 @@ df.cv.best <- list()
 for (Type in unique(df.cv$Type)) {
   for (max.month in unique(df.cv$max.month)) {
     df.ss <- df.cv[(df.cv$Type == Type) & (df.cv$max.month == max.month), ]
+    df.ss <- df.ss[!is.na(df.ss$validation.error), ] # remove NA validation errors
+    if (nrow(df.ss) == 0) next
     df.ss <- df.ss[df.ss$validation.error == min(df.ss$validation.error), ]
+    if (nrow(df.ss) == 0) next
     # we just want "one best" model
     if (nrow(df.ss) > 1) {
       # df.ss <- df.ss[df.ss$MKT > 0, ] # hope that exactly one model remains
       df.ss <- df.ss[df.ss$t.Coef == max(df.ss$t.Coef), ] # choose most significant model
     }
 
-    if (df.ss$Factor == "Alpha") {
+    if (nrow(df.ss) > 0 && df.ss$Factor[1] == "Alpha") {
       df.ss <- df.cv[(df.cv$Type == Type) & (df.cv$max.month == max.month), ]
-      df.ss <- df.ss[df.ss$validation.error <= sort(df.ss$validation.error)[2], ]
+      df.ss <- df.ss[!is.na(df.ss$validation.error), ]
+      if (nrow(df.ss) >= 2) {
+        df.ss <- df.ss[df.ss$validation.error <= sort(df.ss$validation.error)[2], ]
+      }
     }
     df.ss <- df.ss[, c("Type", "max.month", "Factor")]
     df.cv.best[[paste(Type, max.month)]] <- df.ss
   }
 }
-df.cv.best <- data.frame(do.call(rbind, df.cv.best), row.names = NULL)
-df.cv.best$best.key <- paste(df.cv.best$Type, df.cv.best$max.month, df.cv.best$Factor)
+if (length(df.cv.best) > 0) {
+  df.cv.best <- data.frame(do.call(rbind, df.cv.best), row.names = NULL)
+  df.cv.best$best.key <- paste(df.cv.best$Type, df.cv.best$max.month, df.cv.best$Factor)
 
+  df.best <- df.f[(df.f$CV.key == "ALL"), ]
+  df.best$best.key <- paste(df.best$Type, df.best$max.month, df.best$Factor)
+  df.best <- df.best[df.best$best.key %in% df.cv.best$best.key, ]
+  df.best$Tables <- NA
+  df.best$ID <- paste(df.best$weighting, df.best$max.month, sep = " - ")
 
-df.best <- df.f[(df.f$CV.key == "ALL"), ]
-df.best$best.key <- paste(df.best$Type, df.best$max.month, df.best$Factor)
-df.best <- df.best[df.best$best.key %in% df.cv.best$best.key, ]
-df.best$Tables <- NA
-df.best$ID <- paste(df.best$weighting, df.best$max.month, sep = " - ")
+  # Determine output columns based on available factor columns
+  if ("Alpha" %in% colnames(df.best)) {
+    df.best$Alpha.p.a. <- (1 + df.best$Alpha)^4 - 1
+  }
+  if (grepl("^ff3_factors", prefix)) {
+    # FF3 factors: MKT, SMB, HML (+ Alpha if present)
+    cols <- c("ID", "Type", "MKT")
+    if ("Alpha" %in% colnames(df.best)) cols <- c(cols, "Alpha.p.a.")
+    cols <- c(cols, intersect(c("SMB", "HML"), colnames(df.best)), "Tables")
+  } else if ("ME" %in% colnames(df.best)) {
+    # q-factor model
+    cols <- c("ID", "Type", "MKT", "Alpha.p.a.", "ME", "IA", "ROE", "EG", "Tables")
+  } else {
+    # MSCI factors
+    df.best$Alpha.p.a. <- NA
+    cols <- c("ID", "Type", "MKT", "SMB", "HML", "HDY", "QLT", "MOM", "LOV", "Tables")
+  }
+  # Ensure all cols exist in df.best (add NA for missing columns)
+  for (col in cols) {
+    if (!col %in% colnames(df.best)) df.best[[col]] <- NA
+  }
 
-# Alpha just included in q-factor models, not MSCI models (so far)
-if ("Alpha" %in% colnames(df.best)) {
-  df.best$Alpha.p.a. <- (1 + df.best$Alpha)^4 - 1
-  cols <- c("ID", "Type", "MKT", "Alpha.p.a.", "ME", "IA", "ROE", "EG", "Tables") # q factors
+  if (nrow(df.best) > 0) {
+    print(xtable::xtable(df.best[, cols],
+      caption = "SDF models with best out-of-sample performance as determined by $hv$-block cross-validation. ID consists of cash flow weighting - maximum quarter",
+      label = "tab:result_summary"
+    ), include.rownames = FALSE)
+  }
+
+  write.csv(df.best, paste0(dir.cache, "/0_best_models_summary.csv"))
 } else {
-  # assuming MSCI factors
-  df.best$Alpha.p.a. <- NA
-  cols <- c("ID", "Type", "MKT", "SMB", "HML", "HDY", "QLT", "MOM", "LOV", "Tables") # msci factors
+  # No CV results — create empty df.best for downstream compatibility
+  df.best <- data.frame()
+  message("No cross-validation results available for best model selection.")
 }
-
-print(xtable::xtable(df.best[, cols],
-  caption = "SDF models with best out-of-sample performance as determined by $hv$-block cross-validation. ID consists of cash flow weighting - maximum quarter",
-  label = "tab:result_summary"
-), include.rownames = FALSE)
-
-
-write.csv(df.best, paste0(dir.cache, "/0_best_models_summary.csv"))
 
 
 # plot log returns ----
@@ -377,16 +467,23 @@ plot.log.return <- function(type, df.f) {
   df.f <- df.f[(df.f$CV.key == "ALL"), ]
   # df.f <- df.f[df.f$Factor != "Alpha", ]
 
-  cols <- c("RF", "MKT", "ME", "IA", "ROE", "EG", "Alpha")
-  cols <- cols[cols %in% colnames(df.f)]
+  # Dynamically determine factor columns present in both df.f and df.q
+  all_possible_factors <- c("RF", "MKT", "ME", "IA", "ROE", "EG", "SMB", "HML", "Alpha")
+  cols <- intersect(all_possible_factors, intersect(colnames(df.f), colnames(df.q)))
+
+  if (nrow(df.f) == 0 || length(cols) == 0) {
+    message("No data for plot.log.return: ", type)
+    return(invisible(NULL))
+  }
 
   if ("Alpha" %in% cols) {
     df.f["Alpha"] <- (1 + df.f["Alpha"])^(1 / 3) - 1 # quarterly to monthly
   }
 
   df.f[is.na(df.f)] <- 0
+  # Use drop = FALSE to ensure matrix result even with single row
   df <- data.frame((as.matrix(df.q[, cols])) %*% t(as.matrix(
-    df.f[, cols]
+    df.f[, cols, drop = FALSE]
   )))
   colnames(df) <- paste(df.f$Factor, df.f$max.month, df.f$weighting)
   cols <- colnames(df)
@@ -418,17 +515,18 @@ if (FALSE) {
 }
 
 
-plot.log.return("VC", df.best)
+if (nrow(df.best) > 0) {
+  plot.log.return("VC", df.best)
 
+  # setEPS()
+  # postscript(paste0(dir.cache, "/", "0_SDF_realizations.eps"),
+  #           width = 6, height = 7.5, family = "Helvetica", pointsize = 5)
+  # par(mfrow=c(3,2), cex=1.2, mar = c(4.1, 4.1, 3.1, 1.1))
 
-# setEPS()
-# postscript(paste0(dir.cache, "/", "0_SDF_realizations.eps"),
-#           width = 6, height = 7.5, family = "Helvetica", pointsize = 5)
-# par(mfrow=c(3,2), cex=1.2, mar = c(4.1, 4.1, 3.1, 1.1))
-
-for (type in c("PE", "VC", "PD", "RE", "NATRES", "INF")) {
-  plot.log.return(type, df.best)
-  abline(h = c(0), col = "grey", lty = 3)
+  for (type in c("PE", "VC", "PD", "RE", "NATRES", "INF")) {
+    plot.log.return(type, df.best)
+    abline(h = c(0), col = "grey", lty = 3)
+  }
 }
 
 # par(mfrow=c(1,1), cex=1)

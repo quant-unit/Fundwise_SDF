@@ -89,13 +89,22 @@ if (source.internally) {
 # 1.2) load data -----
 
 # load public data
-if (public.filename == "q_factors") {
+if (public.filename %in% c("q_factors", "ff3_factors")) {
   df.public <- read.csv(paste0("empirical/", data.prepared.folder, "/", public.filename, ".csv"))
 } else {
   df.public <- read.csv2(paste0("empirical/", data.prepared.folder, "/", public.filename, ".csv"))
 }
 colnames(df.public) <- gsub("_World", "", colnames(df.public))
 df.public$Date <- as.Date(df.public$Date)
+
+# Normalize dates to last calendar day of month.
+# FF3 data from Kenneth French uses last-business-day dates (e.g., Apr 29),
+# while private cashflow data uses end-of-calendar-month (e.g., Apr 30).
+# Without this, the merge by Date fails for ~30% of rows.
+df.public$Date <- as.Date(format(df.public$Date, "%Y-%m-01")) # first of month
+df.public$Date <- seq.Date(df.public$Date[1], by = "month", length.out = nrow(df.public))
+# Convert to end-of-month: shift to first of next month, then subtract 1 day
+df.public$Date <- as.Date(format(df.public$Date + 32, "%Y-%m-01")) - 1
 bond.files <- c(
   "DebtFactorsUSD", "DebtFactorsEUR", "DebtFactorsEURUSD",
   "iBoxxFactorsEUR", "iBoxxFactorsUSD", "iBoxxFactorsMIX"
@@ -360,6 +369,11 @@ if (error.function == "L2_Lasso") {
   err.sqr.calc <- function(par, max.month, lambda, df) {
     dfx <- split(df, df$Fund.ID)
     npvs <- sapply(dfx, f1, max.month = max.month, par0 = c("RF" = 1, par))
+    # Guard against NA/NaN/Inf in NPV computation
+    # NA arises from missing factor data after merge; NaN from log(1+x) when x < -1
+    if (any(!is.finite(npvs))) {
+      return(1e10) # Large but finite penalty so optimizer can continue
+    }
     p <- ifelse(length(par) == 1, par, par[-1])
     return(
       sqrt(sum(npvs^2)) / length(npvs) + lambda / length(p) * sum(abs(p))
@@ -371,6 +385,10 @@ if (error.function == "L1_Ridge") {
   err.sqr.calc <- function(par, max.month, lambda, df) {
     dfx <- split(df, df$Fund.ID)
     npvs <- sapply(dfx, f1, max.month = max.month, par0 = c("RF" = 1, par))
+    # Guard against NA/NaN/Inf in NPV computation
+    if (any(!is.finite(npvs))) {
+      return(1e10) # Large but finite penalty so optimizer can continue
+    }
     p <- ifelse(length(par) == 1, par, par[-1])
     return(
       sum(abs(npvs)) / length(npvs) + lambda / length(p) * sum(p^2)
@@ -678,13 +696,27 @@ iter.run <- function(input.list) {
     types <- c("PE", "VC", "PD", "RE", "NATRES", "INF", "BO", "GroBO") # asset classes
     if (use.simulation) types <- levels(df0$type)
   }
+  if (public.filename == "ff3_factors") {
+    factors <- c("SMB", "HML", "Alpha")
+    types <- c("PE", "VC", "PD", "RE", "NATRES", "INF", "BO", "GroBO") # asset classes
+    if (use.simulation) types <- levels(df0$type)
+  }
   if (public.filename %in% bond.files) {
     factors <- c("TERM", "CORP", "HY", "LIQ")
     types <- levels(df0$type)
     # types <- c("PD", "DD", "MEZZ")
   }
 
-  if (factors.to.use != "") {
+  # Save all available factors before override (needed for "ALL" combined model)
+  all_available_factors <- factors
+
+  if (length(factors.to.use) == 1 && factors.to.use == "ALL") {
+    # "ALL" = single combined model with all available factors
+    factors <- "ALL"
+  } else if (length(factors.to.use) > 1) {
+    # Multiple explicit factors means we want one model combining them
+    factors <- paste(factors.to.use, collapse = "+")
+  } else if (!identical(factors.to.use, "")) {
     factors <- factors.to.use
   }
 
@@ -718,8 +750,15 @@ iter.run <- function(input.list) {
           }
 
           if (factor == "ALL") {
-            for (fac in setdiff(factors, "ALL")) {
+            for (fac in setdiff(all_available_factors, "ALL")) {
               par[fac] <- 0
+            }
+          } else if (length(factors.to.use) > 1) {
+            # Add all requested multiple factors to the parameter vector
+            for (fac in factors.to.use) {
+              if (fac != "MKT" && fac != "Alpha" && !(fac %in% names(par))) {
+                par[fac] <- 0
+              }
             }
           } else if (factor == "Alpha") {
             par <- c("MKT" = 1, "Alpha" = 0)

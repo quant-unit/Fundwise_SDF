@@ -208,7 +208,7 @@ run_estimation <- function(
             cat("Running scenario: ", scenario_id, "\n")
         }
         cat("SDF model: ", sdf_model, "\n")
-        cat("Factors: MKT", if (factors_to_use != "") paste0(" + ", factors_to_use) else "", "\n")
+        cat("Factors: ", paste(unique(c("MKT", factors_to_use[factors_to_use != ""])), collapse = " + "), "\n")
         cat("Weighting: ", weighting, "\n")
         cat("Max months: ", paste(max_months, collapse = ", "), "\n")
         if (!is.null(simulation_file)) {
@@ -239,9 +239,13 @@ run_estimation <- function(
             cache_folder_tag <- gsub("/.*", "", simulation_file)
             cache_folder_tag <- paste0(cache_folder_tag, "_simulated_cashflows_", weighting)
         } else {
-            # Build tag from parameters
-            alpha_str <- if (include_alpha_term) "_alpha_" else "_"
-            cache_folder_tag <- paste0(private_source, alpha_str, weighting)
+            # Include factor specification in cache tag to separate different models.
+            # Without this, e.g. Alpha-only and ALL runs would share a folder
+            # and the resume logic would incorrectly skip the second model.
+            factor_tag <- ""
+            if (include_alpha_term) factor_tag <- paste0(factor_tag, "alpha_")
+            if (length(factors_to_use) > 0 && any(factors_to_use != "")) factor_tag <- paste0(factor_tag, paste(factors_to_use, collapse = "_"), "_")
+            cache_folder_tag <- paste0(private_source, "_", factor_tag, weighting)
         }
     }
 

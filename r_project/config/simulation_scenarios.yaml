@@ -36,7 +36,7 @@ defaults:
     max_months: [0, 1, 30, 60, 90, 120, 150, 180, 210, 240]
     lambdas: 0
     kernel_bandwidth: 12
-    alpha_upper: 0.01
+    alpha_upper: 0.02
     do_cross_validation: false
     part_to_keep: 1
     no_partitions: 1
@@ -387,8 +387,6 @@ scenarios:
       no_funds: 40
     estimation:
       factors_to_use: "Alpha"
-      alpha_lower: -Inf
-      alpha_upper: 0.01
       max_months: [0, 1, 2, 30, 60, 90, 120, 150, 180, 210, 240]
     active: true
     data_folder: auto
@@ -399,8 +397,6 @@ scenarios:
       no_funds: 50
     estimation:
       factors_to_use: "Alpha"
-      alpha_lower: -Inf
-      alpha_upper: 0.01
       max_months: [0]
     active: true
     data_folder: auto
@@ -413,8 +409,6 @@ scenarios:
       use_shifted_lognormal: false
     estimation:
       factors_to_use: "Alpha"
-      alpha_lower: -Inf
-      alpha_upper: 0.01
       max_months: [0]
     active: true
     data_folder: auto
@@ -427,8 +421,6 @@ scenarios:
       use_shifted_lognormal: true
     estimation:
       factors_to_use: "Alpha"
-      alpha_lower: -Inf
-      alpha_upper: 0.01
       max_months: [0]
     active: true
     data_folder: auto
@@ -442,14 +434,12 @@ scenarios:
       simulate_mkt: true
     estimation:
       factors_to_use: "Alpha"
-      alpha_lower: -Inf
-      alpha_upper: 0.01
       max_months: [0]
     active: true
     data_folder: auto
   
   big_n_v_50funds_alpha_stdv30_shifted_mkt2:
-    description: "Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized stdv 108%, shifted lognormal"
+    description: "Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized stdv 108%, shifted lognormal, lower alpha bound"
     dgp:
       no_funds: 50
       stdvs: 0.3
@@ -458,12 +448,12 @@ scenarios:
     estimation:
       factors_to_use: "Alpha"
       alpha_lower: -Inf
-      alpha_upper: 0.005
+      alpha_upper: 0.01
       max_months: [0]
     active: true
     data_folder: auto
   
-  big_n_v_50funds_alpha_stdv30_shifted_mkt3:
+  big_n_v_50funds_alpha_stdv20_shifted_mkt3:
     description: "Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized stdv 108%, shifted lognormal"
     dgp:
       no_funds: 50
@@ -472,8 +462,6 @@ scenarios:
       simulate_mkt: true
     estimation:
       factors_to_use: "Alpha"
-      alpha_lower: -Inf
-      alpha_upper: 0.01
       max_months: [0]
     active: true
     data_folder: auto
@@ -488,23 +476,6 @@ scenarios:
       deterministic_inv_timing: true
     estimation:
       factors_to_use: "Alpha"
-      alpha_lower: -Inf
-      alpha_upper: 0.01
-      max_months: [0]
-    active: true
-    data_folder: auto
-  
-  big_n_v_50funds_alpha_stdv30_shifted_mkt5:
-    description: "Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized stdv 108%, shifted lognormal"
-    dgp:
-      no_funds: 50
-      stdvs: 0.3
-      use_shifted_lognormal: true
-      simulate_mkt: true
-    estimation:
-      factors_to_use: "Alpha"
-      alpha_lower: -Inf
-      alpha_upper: 0.0075
       max_months: [0]
     active: true
     data_folder: auto
@@ -519,8 +490,21 @@ scenarios:
       max_holding_period: 5
     estimation:
       factors_to_use: "Alpha"
-      alpha_lower: -Inf
-      alpha_upper: 0.01
+      max_months: [0]
+    active: true
+    data_folder: auto
+  
+  big_n_v_50funds_alpha_stdv30_shifted_mkt7:
+    description: "Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized stdv 108%, shifted lognormal"
+    dgp:
+      no_funds: 50
+      stdvs: 0.3
+      use_shifted_lognormal: true
+      simulate_mkt: true
+      max_holding_period: 5
+      deterministic_inv_timing: true
+    estimation:
+      factors_to_use: "Alpha"
       max_months: [0]
     active: true
     data_folder: auto

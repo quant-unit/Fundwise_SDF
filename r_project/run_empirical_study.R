@@ -260,10 +260,16 @@ if (sys.nframe() == 0L) {
     cat("Available scenarios:\n\n")
     list_empirical_scenarios(active_only = TRUE)
 
-    data.out.folder <- "results/data_out_2026_02_18"
+    data.out.folder <- "results/data_out_2026_02_24"
 }
 
+scenarios <- c(
+  #"fw_no_cv", "fw_cv", "ew_no_cv", "ew_cv",
+  #"fw_vintage_sweep", "ew_vintage_sweep",
+  #"ff3_fw_no_cv_ALL", "ff3_ew_no_cv_ALL", "ff3_fw_cv_ALL", "ff3_ew_cv_ALL",
+  "ff3_fw_no_cv_ALL_3f", "ff3_ew_no_cv_ALL_3f"
+)
 results <- run_empirical_study(
-    scenario_ids = c("fw_no_cv", "fw_cv", "ew_no_cv", "ew_cv", "fw_vintage_sweep", "ew_vintage_sweep"),
+    scenario_ids = scenarios,
     data_out_folder = data.out.folder
 )

@@ -5,6 +5,8 @@ if(sys.nframe() == 0L) rm(list = ls())
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
 
+library(here)
+
 source.internally <- FALSE
 
 # set output folder
@@ -12,9 +14,10 @@ if(!exists("data.out.folder", envir = .GlobalEnv)) {
   data.out.folder <- "results/data_out_2026-XXX"
   data.out.folder <- "results/data_out_2026-emp-max-vin-2019"
   data.out.folder <- "results/data_out_2026_02_18"
+  data.out.folder <- "results/data_out_2026_02_24"
 }
 
-# 1. analyze all results ----
+# 1. analyze base results ----
 
 prefix <- "q_factors_preqin_"
 suffix <- "EW_VYP"
@@ -27,7 +30,7 @@ suffix <- "FW_VYP"
 source(here("results/analyze_result.R"))
 
 
-# Vintage Year Cutoffs
+# 2. Vintage Year Cutoffs ----
 
 suffix <- paste0("EW_VYP_max_vin_", 2011)
 source(here("results/analyze_result.R"))
@@ -77,3 +80,12 @@ suffix <- paste0("FW_VYP_max_vin_", 2021)
 source(here("results/analyze_result.R"))
 
 
+
+# 3. Fama French Factors ----
+
+prefix <- "ff3_factors_preqin_alpha_ALL_"
+suffix <- "EW_VYP"
+source(here("results/analyze_result.R"))
+
+suffix <- "FW_VYP"
+source(here("results/analyze_result.R"))
