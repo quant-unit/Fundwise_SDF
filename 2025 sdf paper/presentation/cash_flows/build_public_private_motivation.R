@@ -92,28 +92,48 @@ ret_comp <- pe_ret %>%
   transmute(
     date,
     `PE NAV return` = pe_ret,
-    `q5 Market total return (R_MKT + R_F)` = mkt_total_q
+    `RF + MKT (q5)` = mkt_total_q
   ) %>%
   pivot_longer(
-    cols = c(`PE NAV return`, `q5 Market total return (R_MKT + R_F)`),
+    cols = c(`PE NAV return`, `RF + MKT (q5)`),
     names_to = "series",
     values_to = "ret"
   ) %>%
   group_by(series) %>%
   arrange(date, .by_group = TRUE) %>%
   mutate(cum_return = cumprod(1 + ret) - 1) %>%
-  ungroup()
+  ungroup() %>%
+  mutate(series = factor(series, levels = c("RF + MKT (q5)", "PE NAV return")))
 
-p_left <- ggplot(ret_comp, aes(x = date, y = cum_return, color = series)) +
+p_left_top <- ggplot(ret_comp, aes(x = date, y = cum_return, color = series)) +
   geom_hline(yintercept = 0, color = "grey70", linewidth = 0.3) +
-  geom_line(linewidth = 1.2, alpha = 0.95) +
-  scale_color_manual(values = c("PE NAV return" = "#1f78b4", "q5 Market total return (R_MKT + R_F)" = "#e31a1c")) +
+  geom_line(linewidth = 1.25, alpha = 0.95) +
+  scale_color_manual(values = c("PE NAV return" = "#1f78b4", "RF + MKT (q5)" = "#e31a1c")) +
+  scale_x_date(date_breaks = "5 years", date_labels = "%Y") +
   scale_y_continuous(labels = percent_format(accuracy = 1), expand = expansion(mult = c(0.02, 0.08))) +
   labs(
     title = "Public Return View",
-    subtitle = "Cumulative returns: PE NAV index vs q5 market total return (includes RF)",
+    subtitle = "Cumulative returns: PE NAV index vs RF + MKT",
     x = NULL,
     y = "Cumulative return"
+  ) +
+  theme_prof +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    legend.position = "none"
+  )
+
+p_left_bottom <- ggplot(ret_comp, aes(x = date, y = ret, color = series)) +
+  geom_hline(yintercept = 0, color = "grey70", linewidth = 0.3) +
+  geom_line(linewidth = 1.15, alpha = 0.95) +
+  scale_color_manual(values = c("PE NAV return" = "#1f78b4", "RF + MKT (q5)" = "#e31a1c")) +
+  scale_x_date(date_breaks = "5 years", date_labels = "%Y") +
+  scale_y_continuous(labels = percent_format(accuracy = 1), expand = expansion(mult = c(0.06, 0.08))) +
+  labs(
+    subtitle = "Quarterly non-cumulative returns",
+    x = "Calendar year",
+    y = "Quarterly return"
   ) +
   theme_prof
 
@@ -185,7 +205,8 @@ p_right <- ggplot(cf_path, aes(x = age_years, y = value, color = series, linetyp
   ) +
   theme_prof
 
-combined <- p_left + p_right + plot_layout(widths = c(1, 1))
+combined <- (p_left_top / p_left_bottom) | p_right
+combined <- combined + plot_layout(widths = c(1.05, 0.95), heights = c(1, 1))
 
-ggsave(out_fig, combined, width = 12, height = 5.8)
+ggsave(out_fig, combined, width = 12, height = 6.3)
 cat(sprintf("Wrote figure: %s\n", out_fig))
