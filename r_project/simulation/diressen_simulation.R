@@ -1,10 +1,13 @@
 # Comparison to Driessen et al. 2012
 
+setwd(dirname(dirname(rstudioapi::getActiveDocumentContext()$path)))
+getwd()
+
 scenarios <- c(
     "base_case_zero_alpha", "big_n_v_50funds_alpha",
     "big_n_v_50funds_alpha_stdv30", "big_n_v_50funds_alpha_stdv30_shifted",
     "big_n_v_50funds_alpha_stdv30_shifted_mkt", "big_n_v_50funds_alpha_stdv30_shifted_mkt2",
-    "big_n_v_50funds_alpha_stdv30_shifted_mkt3", "big_n_v_50funds_alpha_stdv30_shifted_mkt4",
+    "big_n_v_50funds_alpha_stdv30_shifted_mkt4",
     "big_n_v_50funds_alpha_stdv30_shifted_mkt6", "big_n_v_50funds_alpha_stdv30_shifted_mkt7"
 )
 
@@ -62,10 +65,9 @@ generate_driessen_latex_table <- function(data_path, output_tex = NULL) {
         "big_n_v_50funds_alpha_stdv30_shifted" = "(S4) $n=50$, $\\sigma=30\\%$, Shifted LN",
         "big_n_v_50funds_alpha_stdv30_shifted_mkt" = "(S5) $n=50$, $\\sigma=30\\%$, Shifted LN, Sim.~MKT",
         "big_n_v_50funds_alpha_stdv30_shifted_mkt2" = "(S6) $n=50$, $\\sigma=30\\%$, Shifted LN, Sim.~MKT, $\\bar{\\alpha}=0.5\\%$",
-        "big_n_v_50funds_alpha_stdv30_shifted_mkt3" = "(S7) $n=50$, $\\sigma=20\\%$, Shifted LN, Sim.~MKT",
-        "big_n_v_50funds_alpha_stdv30_shifted_mkt4" = "(S8) $n=50$, $\\sigma=30\\%$, Shifted LN, Sim.~MKT, Det.~Timing",
-        "big_n_v_50funds_alpha_stdv30_shifted_mkt6" = "(S9) $n=50$, $\\sigma=30\\%$, Shifted LN, Sim.~MKT, Max.~Hold 5",
-        "big_n_v_50funds_alpha_stdv30_shifted_mkt7" = "(S10) $n=50$, $\\sigma=30\\%$, Shifted LN, Sim.~MKT, Max.~Hold 5, Det.~Timing"
+        "big_n_v_50funds_alpha_stdv30_shifted_mkt4" = "(S7) $n=50$, $\\sigma=30\\%$, Shifted LN, Sim.~MKT, Det.~Timing",
+        "big_n_v_50funds_alpha_stdv30_shifted_mkt6" = "(S8) $n=50$, $\\sigma=30\\%$, Shifted LN, Sim.~MKT, Max.~Hold 5",
+        "big_n_v_50funds_alpha_stdv30_shifted_mkt7" = "(S9) $n=50$, $\\sigma=30\\%$, Shifted LN, Sim.~MKT, Max.~Hold 5, Det.~Timing"
     )
 
     # Formatting helper
@@ -125,7 +127,7 @@ generate_driessen_latex_table <- function(data_path, output_tex = NULL) {
         "\\textit{Sim.~MKT} = total market return drawn from a shifted lognormal (S\\&P~500 1980--2003 moments) with a constant risk-free rate of 4\\% annualized, instead of conditioning on the historical path; ",
         "\\textit{Det.~Timing} = deterministic (evenly spaced) deal investment dates instead of random; ",
         "\\textit{Max.~Hold 5} = maximum holding period of a deal limited to 5 years (default 10 years); ",
-        "$\\bar{\\alpha}$ = upper bound on the alpha parameter in the optimization (default $\\bar{\\alpha} = 1\\%$/month). ",
+        "$\\bar{\\alpha}$ = upper bound on the alpha parameter in the optimization (default $\\bar{\\alpha} = 2\\%$/month). ",
         "The \\textit{\\%~Bound} column reports the fraction of draws where the alpha estimate reached the upper optimization bound~$\\bar{\\alpha}$. ",
         "The final row presents the Benchmark Estimates obtained directly from Table~1 in \\cite{DLP12} for comparative purposes. ",
         "Alpha estimates are monthly and presented in percentages."

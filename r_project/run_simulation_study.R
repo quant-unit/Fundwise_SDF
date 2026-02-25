@@ -537,9 +537,9 @@ if (sys.nframe() == 0L) {
     )
 
     # scenarios <- c("big_n_v_50funds_alpha_stdv30_shifted_mkt7")
-    # scenarios <- c("base_case_cross_sectional_zero_alpha", "base_case_cross_sectional")
+    scenarios <- c("base_case_cross_sectional_zero_alpha", "base_case_cross_sectional")
     results <- run_simulation_study(
         scenario_ids = scenarios,
-        generate_data = FALSE, estimate = FALSE, analyze = TRUE
+        generate_data = FALSE, estimate = TRUE, analyze = FALSE
     )
 }
