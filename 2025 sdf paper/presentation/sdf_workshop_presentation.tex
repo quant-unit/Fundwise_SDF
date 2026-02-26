@@ -198,7 +198,7 @@ Estimate parameters by nonlinear least-mean-distance:
 
 \begin{frame}{Empirical: Preqin PE Data \& $q^5$ Public Factors}
 \begin{itemize}
-  \item Data snapshot: 2745 PE funds, vintages 1983--2019.
+  \item Data snapshot: 3005 PE funds, vintages 1983--2021.
   \item Primary unit for estimation: vintage-year portfolios (equal- and value-weighted).
   \item Factors: $q^5$ family; focus on MKT and simple two-factor extensions.
   \item Horizon selected from simulation guidance: 15-year baseline.
@@ -210,21 +210,25 @@ Estimate parameters by nonlinear least-mean-distance:
 \textbf{Two-factor models:} Apply machine-learning methods to form ``stronger learner."
 \end{frame}
 
-\begin{frame}{Empirical: 1.\ Single-Factor MKT Model}
+\begin{frame}{Empirical: 1.\ Vintage Cutoffs for Single-Factor Model}
+	\begin{center}
+		\includegraphics[width=1\linewidth]{figures/max_vintage_PE_MKT_combined_NC.pdf}
+	\end{center}
+	
+	\textbf{Reading:} including newer vintages tends to increase estimated market exposure, but totally depending on final NAV $\to$ Use vintage 2010 cutoff in subsequent analysis
+	
+\end{frame}
+
+\begin{frame}{Empirical: 2.\ Single-Factor MKT Model}
 \begin{center}
 \includegraphics[width=0.86\linewidth]{figures/empirical_PE_MKT.pdf}
 \end{center}
 
-\textbf{Reading:}
-\begin{itemize}
-  \item Short-horizon MKT betas are high and decline with horizon.
-  \item Betas stabilize near 1 at long horizons.
-  \item CV inference is much more stable than asymptotic $t$-statistics.
-  \item Relative to naive contemporaneous NAV betas, SDF estimates are materially closer to full market exposure.
-\end{itemize}
+\textbf{Horizon 15 as our ``best guess". Dimson beta as lower bound!} 
+	
 \end{frame}
 
-\begin{frame}[t]{Empirical: 2.\ Two-Factor Models}
+\begin{frame}[t]{Empirical: 3.\ Two-Factor Models}
 \begin{center}
 \includegraphics[width=0.84\linewidth]{figures/empirical_PE_all_factors.pdf}
 \end{center}
@@ -234,23 +238,6 @@ Estimate parameters by nonlinear least-mean-distance:
   \item Second-factor loadings vary strongly with horizon and weighting scheme.
   \item Most non-MKT factors do not show robust incremental signal.
 \end{itemize}
-\end{frame}
-
-\begin{frame}{Empirical: 3.\ Vintage Cutoffs for Single-Factor Model}
-\begin{center}
-\includegraphics[width=1\linewidth]{figures/max_vintage_PE_MKT.pdf}
-\end{center}
-
-\textbf{Reading:} including newer vintages tends to increase estimated market exposure, with noisier asymptotic uncertainty.
-
-\textbf{Dimson beta as lower bound!} 
-\end{frame}
-
-\begin{frame}{Empirical: 4.\ Vintage Cutoffs for Two-Factor Models}
-	\begin{center}
-		\includegraphics[width=1\linewidth]{figures/max_vintage_PE_all_factors.pdf}
-	\end{center}
-	
 \end{frame}
 
 \begin{frame}{Conclusion: What This Means for Practice and Research}
