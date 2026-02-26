@@ -113,17 +113,16 @@ To evaluate such irregular fund cash flows, the pioneering works of \cite{DLP12}
 The profound impact of their methodologies is evident from widespread adoption.
 The \cite{DLP12} and \cite{KN16} estimators are heavily utilized to price a wide array of non-traded assets, spanning private equity, venture capital and real estate to infrastructure and collateralized loan obligations. 
 Building on these major contributions, we propose a unified semiparametric framework that elegantly nests both estimators.
-The core benefit of our unified framework lies in providing the rigorous spatial asymptotic inference, missing in the original work of \cite{DLP12}, which ultimately allows researchers to identify, comprehend, and control the small-sample bias inherent to cash-flow-based SDF pricing.
+The core benefit of our unified framework lies in generalizing the set of discounting dates, which ultimately allows researchers to identify, comprehend, and control the small-sample bias inherent to cash-flow-based SDF pricing.
 
 Our nonlinear least squares estimator stems from the class of Least-Mean-Distance (LMD) estimators, which are easier to handle than traditional Generalized Method of Moments (GMM) approaches \citep{PP97}.
 Our LMD estimator arguably both simplifies and generalizes the GMM methodology of \cite{DLP12}, and we provide the spatial asymptotic inference framework that was missing in the original paper.
 The asymptotic inference formulations rely on the concept of spatial (near-epoch) dependence between funds as proposed by \cite{KN16}.
 In this context, it is paramount to quantify the economic distance between funds by a measure like absolute vintage year difference or cash flow overlap\footnote{Note that this economic inter-fund \emph{distance} is conceptually distinct from the statistical ``distance'' minimized by the Least-Mean-Distance estimator.}.
 
-For fund-level cash flow data of private equity funds, we document a small-sample bias term for cash-flow-based SDF estimators like \cite{DLP12} and \cite{KN16} that can be effectively decreased by increasing the cross-sectional sample size.
-The bias term arises due to a bias--variance tradeoff in finite samples.
-Using non-optimal discounting dates introduces an expected pricing error due to timing risk, but can substantially lower the estimator's variance.
-Our estimator offers simple averaging over multiple discounting dates as one option to control (but not eliminate) the small-sample bias term.
+For a typically sized dataset of private equity funds, we document a severe finite-sample bias in cash-flow-based SDF estimators like \cite{DLP12} and \cite{KN16} that inherently arises from the non-linearity of the estimating equations.
+While this bias can be mitigated by increasing the cross-sectional sample size, such data is rarely available.
+Instead, we demonstrate that by generalizing the estimator to average pricing errors over multiple, non-optimal discounting dates, researchers can deliberately introduce a Timing Risk Premium that effectively offsets this finite-sample bias, dramatically improving the estimates in small samples (in our simulation study).
 
 In the empirical application of our new estimator, we evaluate simple linear and exponentially affine SDF models utilizing the well-known Preqin cash flow database across a grid of compounding horizons.
 While evaluating multi-factor models proves unreasonable given high estimator variance, our single-factor market models yield stable and economically meaningful estimates. 
@@ -157,7 +156,7 @@ Crucially, \cite{KN16} were the first to apply a spatial heteroskedasticity and 
 Further complementing this cash flow dimension, a strand of literature models the informational frictions and smoothing inherent in reported Net Asset Values (NAVs) \citep{BGK19, JLRS20, BGG20}. Moreover, \cite{NSS23} leverage a similar generalized framework to evaluate private firms using credit market equivalents.
 
 Our paper's unified LMD framework contributes to this semiparametric literature by formally nesting both the \cite{DLP12} and \cite{KN16} approaches while supplying the rigorous increasing-domain asymptotic inference missing in earlier work (drawing on the spatial theory of \cite{PP97}, \cite{KS11}, and \cite{JP12}). 
-Furthermore, while \cite{GSW20} highlighted that NPV-based measures are biased relative to per-period returns, we explicitly formalize this discrepancy as a ``Timing Risk Premium''---a concept conceptually linked to recent findings on discount-rate risk in secondary markets \citep{boyer2023discount}.
+Furthermore, while \cite{GSW20} highlighted that NPV-based measures are biased relative to per-period returns, we explicitly formalize this discrepancy as a ``Timing Risk Premium'', a concept linked to recent findings on discount-rate risk in secondary markets \citep{boyer2023discount}.
 
 \section{Methodology}
 \label{sec:spatial_sdf_methodology}
@@ -1023,7 +1022,7 @@ For non-liquidated funds, we treat the latest net asset value as final cash flow
 We explicitly refrain from excluding the most recent vintage years.
 Thus, the minimum vintage year is 1983, and the maximum is 2021.
 
-The public market factors that enter our SDF draw on the US data set of the recently popularized $q^5$ investment factor model sourced from \url{http://global-q.org/factors.html} \citep{HXZ15,HXZ20}. 
+The public market factors that enter our SDF draw on the US dataset of the recently popularized $q^5$ investment factor model sourced from \url{http://global-q.org/factors.html} \citep{HXZ15,HXZ20}. 
 Their five-factor model includes the market excess return (MKT), a size factor (ME), an investment factor (IA), a return on equity factor (ROE), and an expected growth factor (EG).
 
 
@@ -1043,14 +1042,12 @@ and an exponential affine SDF model adapted from \cite{KN16}
 \Psi_{\tau,t}^{\mathrm{EA}} (\theta) = 
 \exp
 \left[
-\sum_{h=0}^{\tau} X_h
-\sum_{h=0}^{t} - X_h
+-\sum_{h=t+1}^{\tau} 
+\left(
+\alpha + \log (1 + r_{f,h}) + \sum_{m \in M} \beta_{m} \cdot \log (1 + F_{m,h})
+\right)
 \right]
 \end{equation}
-with
-\[
-X_h = \alpha + \log (1 + r_{f,h}) + \sum_{m \in M} \beta_{m} \cdot \log (1 + F_{m,h})
-\]
 with (arithmetic) risk-free return $r_f=R_{rf}-1$, (arithmetic) zero-net-investment portfolio returns $F_m$, and parameter vector $\theta=(\alpha,\beta)$.
 To avoid overfitting, we restrict our analysis to six simple SDF models that contain \{MKT\} alone or \{MKT\} plus \{ME or IA or ROE or EG or Alpha\}.
 In Equation \ref{eq:estimator}, we use the quadratic loss function $L(x)=x^2$.
@@ -1063,9 +1060,12 @@ To account for the dependency between funds from adjacent vintage years caused b
 Therefore, we form three partitions for several vintage year groups.
 As larger validation sets are preferred for model selection, the validation set ($v$-block) always contains funds of three neighboring vintage years (e.g., 2000, 2001, 2002).
 To reduce the dependency between training and validation set, we remove all funds from three-year-adjacent vintage years, i.e., the $h$-block (e.g., 1997, 1998, 1999, 2003, 2004, 2005).
-Funds from the remaining vintage years enter the training set and are thus used for model estimation (e.g., 1985-1996, 2006-2019).
-We apply ten-fold cross validation using the ten validation sets described in Table \ref{tab:hv_block_cv}.
-This means we replace the bootstrap standard error calculation of \cite{DLP12} with $hv$-block cross-validation. Since the finite sample dimensionality of PE datasets often causes asymptotic standard errors to be unreliably large and volatile, $hv$-block cross validation is necessary because it (i) accounts for near-epoch-dependence without relying on asymptotics, (ii) focuses directly on the out-of-sample performance of the SDF models, and (iii) is computationally cheaper.
+Funds from the remaining vintage years enter the training set and are thus used for model estimation (e.g., 1985-1996, 2006-end).
+The number of validation folds adapts dynamically to the selected maximum vintage year cutoff in any given empirical estimation run. 
+For instance, when estimating the full sample through 2021, we apply ten-fold cross-validation; when estimating a heavily seasoned sample truncated at 2010 to avoid reliance on subjective interim NAVs (see Section \ref{sec:empirical_single}), the framework naturally truncates to seven active folds.
+Table \ref{tab:hv_block_cv} illustrates the full ten partitions used for the unrestricted data set.
+
+To conclude, we replace the bootstrap standard error calculation of \cite{DLP12} with $hv$-block cross-validation. Since the finite sample dimensionality of PE datasets often causes asymptotic standard errors to be unreliably large and volatile, $hv$-block cross validation is necessary because it (i) accounts for near-epoch-dependence without relying on asymptotics and (ii) focuses directly on the out-of-sample performance of the SDF models.
 
 \begin{remark}[Definition of Horizon]
 	\label{rem:horizon_def}
@@ -1102,7 +1102,7 @@ This means we replace the bootstrap standard error calculation of \cite{DLP12} w
 		\hline
 	\end{tabular}
 	}
-	\caption{Partitions used for $hv$-block cross-validation.}
+	\caption{Partitions used for $hv$-block cross-validation. The number of active folds truncates dynamically based on the maximum vintage year cutoff of the specific estimation run.}
 	\label{tab:hv_block_cv}
 \end{table}
 
@@ -1115,9 +1115,9 @@ Our Monte Carlo experiments examine the bias and variance of our estimation meth
 Specifically, we investigate five key dimensions of the estimation framework:
 (i) the finite-sample efficiency gains of forming vintage-year portfolios versus using individual funds;
 (ii) the tradeoff between expanding the time-series dimension (number of vintage years) and the cross-sectional dimension (funds per vintage);
-(iii) the behavior of multivariate identification under idiosyncratic noise using two-factor models;
-(iv) the robustness of the estimates to the functional specification of the SDF (simple linear vs.\ exponential affine); and
-(v) the optimal choice of the maximum compounding Horizon (the set of discounting dates $\mathcal{T}$).
+(iii) the robustness of the estimates to the functional specification of the SDF (simple linear vs.\ exponential affine); and
+(iv) the behavior of multivariate identification under idiosyncratic noise using two-factor models;
+(v) as our main overarching topic, the optimal choice of the maximum compounding Horizon (i.e., the set of discounting dates $\mathcal{T}$).
 
 We use historical $q$-investment factors from 1986 to 2005 and simulate 20 funds for each of these 20 vintage years.
 This means we condition our simulation analysis on realized $q$-investment factors paths (see the Macro-Conditioning Kernel discussion in Section \ref{sec:asset_pricing_pooled}).
@@ -1127,24 +1127,24 @@ The deal returns are generated by the simple linear or exponential affine SDF mo
 In the base case, we just use the MKT factor with $\beta_{\mathrm{MKT}}=1$ and in each month, add a normal i.i.d. error term with monthly standard deviation $\sigma=0.2$ (annualized variance $12 \cdot 0.2^2=0.48$, corresponding to an annualized volatility of $0.2\sqrt{12}\approx 69\%$) and zero mean.
 In the exponential affine case, we adjust the lognormally distributed error mean to zero by subtracting $0.5 \sigma^2$.
 If a negative return exceeds -100\%, the company defaults with a zero exit cash flow.
-In contrast, the error term in the simulations of \cite{DLP12} is more well-behaved as it follows a shifted lognormal distribution that, even with arbitrarily high error term variance, just allows for returns below say -99\%, if the market return is close to its lower bound (see equation 9 in their online appendix; we specifically analyze the remaining divergence from their simulation design in Appendix \ref{sec:appendix_bias_variance}).
-In our base case, the set of discounting dates $\mathcal{T}$ contains all months from the first cash flow to the maximum month 180.
+In contrast, the error term in the simulations of \cite{DLP12} is more well-behaved as it follows a shifted lognormal distribution that, even with arbitrarily high error term variance, just allows for returns below say -99\%, if the market return is close to its lower bound (see equation 9 in their online appendix).
+We specifically analyze the remaining divergence from their simulation design in Appendix \ref{sec:dlp_simulation}.
+In our simulation scenarios, we evaluate the estimator across a full grid of compounding Horizons, where the maximum month in the set of discounting dates $\mathcal{T}$ ranges from 0 up to 30 years (0-360 months).
 To assess our estimator's bias and variance, we simulate 1000 test scenarios for both vintage-year and single-fund portfolios.
 
 
 \paragraph{Cross-sectional unit $i$:}
 
-As presumed in Subsection \ref{sec:asymptotic_framework}, vintage year portfolio results appear to have lower bias and variance when compared to individual funds.
-For the simple linear SDF and 15-year Horizon (maximum month 180), the mean and standard deviation of the coefficient estimate $\hat{\beta}_{\mathrm{MKT}}$ is 0.966 (0.188) for the vintage year portfolio and 0.876 (0.353) for individual funds. 
-The superiority of the portfolio approach becomes even more apparent when considering the entire Horizon curve in Figure \ref{fig:simulation_funds_vs_vyps}.
+As anticipated in Subsection \ref{sec:asymptotic_framework}, vintage year portfolios demonstrate lower bias and variance than individual funds.
+Under the simple linear SDF and a 15-year Horizon (maximum month 180), the mean (standard deviation) of the coefficient estimate $\hat{\beta}_{\mathrm{MKT}}$ is 0.966 (0.188) for vintage year portfolios, compared to 0.876 (0.353) for individual funds. 
+The superiority of the portfolio approach is especially striking when evaluating the entire Horizon curve in Figure \ref{fig:simulation_funds_vs_vyps}.
 Estimates for individual funds are highly unstable, exhibiting severe upward bias at short Horizons ($\hat{\beta}_{\mathrm{MKT}} \approx 1.5$) and deteriorating to negative values at long Horizons.
-In contrast, vintage year portfolios yield substantially more stable estimates that remain within a pertinent economic range around the true value of 1.0.
-Furthermore, the portfolio approach consistently achieves a lower standard deviation at every simulated Horizon, confirming that grouping funds effectively mitigates idiosyncratic noise.
+In contrast, vintage year portfolios yield substantially more stable estimates that remain within a narrow, economically plausible range around the true value of 1.0.
+Furthermore, the portfolio approach consistently achieves a lower standard deviation across all simulated Horizons, confirming that grouping funds effectively mitigates idiosyncratic noise.
 
-This finding has two important implications:
-On the one hand, vintage year portfolio formation can substantially decrease our estimator's bias and variance.
-On the other hand, it also dramatically reduces the number of cross-sectional units and consequentially impairs the importance of asymptotic results.
-These considerations may explain the choice of \cite{KN16} to use individual funds as cross-sectional units in their asymptotic SHAC framework to obtain smaller standard error estimates.
+This trade-off between bias/variance reduction and sample size has important implications.
+While forming vintage year portfolios substantially improves the accuracy of the estimates, it dramatically reduces the number of cross-sectional units, thereby weakening the relevance of asymptotic approximations.
+This constraint likely explains the choice of \cite{KN16} to rely on individual funds as cross-sectional units in their asymptotic SHAC framework, enabling them to exploit a larger sample size for smaller standard errors.
 
 \begin{figure}[H]
 	\centering
@@ -1261,11 +1261,6 @@ By averaging pricing errors over multiple future dates, effectively incorporatin
 Interestingly, this ``variance reduction technique'' improves the mean estimate far more than it reduces standard errors. 
 While estimator variance traces a shallow U-shape with a minimum near the 15-year Horizon (see Table \ref{tab:sim_q5_summary}), this reduction is secondary to the striking stabilization of the parameter bias.
 We further analyze this puzzling result from a theoretical perspective in Appendix \ref{sec:appendix_bias_variance}, detailing the \emph{bias--variance tradeoff} and the role of the Timing Risk Premium.
-
-
-
-
-
 
 \paragraph{Simulation conclusion:}
 To conclude, our simulation study rationalizes two key practices from the \cite{DLP12} paper: (i) vintage-year portfolio formation helps to improve estimator precision, and (ii) increasing the number of funds per vintage seems more effective in controlling estimator variance than increasing the number of vintages (for i.i.d.\ error terms). 
@@ -1680,37 +1675,31 @@ These findings corroborate the simulation-based recommendation to focus on singl
 \section{Conclusion}
 \label{sec:conclusion}
 
-Theoretically, our Least-Mean-Distance estimator can be easily generalized to estimate SDF models for all kinds of non-traded cash flows.
-Practically, semiparametric estimators commonly exhibit problematic small sample behavior.
-Given the amount of currently available private equity fund data, our estimator's variance seems quite large, even for simple SDF model specifications.
-Specifically, our Monte Carlo simulation results prompt us to conclude that the closely related \cite{DLP12} estimator may exhibit more bias and variance than originally assumed in their paper.
-In particular, the variance of $\alpha$ estimates is too high to allow for reliable abnormal performance conclusions.
-Fortunately, we show that the estimator's variance can be substantially lowered by averaging pricing errors over multiple dates within the fund lifetime, and that the small-sample bias is most effectively mitigated by increasing the cross-sectional sample size ($n$).
+Our generalized Least-Mean-Distance framework provides a flexible theoretical foundation for estimating Stochastic Discount Factor (SDF) models using non-traded cash flows.
+However, our Monte Carlo simulations reveal that semiparametric estimators in this setting face severe finite-sample challenges. 
+Specifically, we demonstrate that the foundational \cite{DLP12} estimator exhibits substantially greater bias and variance than previously recognized, particularly concerning the estimation of abnormal performance ($\alpha$). 
+Crucially, our framework shows that this finite-sample bias can be dramatically mitigated by averaging pricing errors across multiple future dates spanning the fund lifecycle, while estimator variance is most effectively controlled by increasing the number of cross-sectional units ($n$).
 
-In the data-sparse private equity domain with only 20-40 cross-sectional units (i.e., vintage year portfolios) currently available for estimation, asymptotic inference seems not to be overly useful.
-Thus, we strongly advise always challenging asymptotic inference results by resampling or cross-validation techniques adapted to the dependence structure of overlapping fund cash flows.
-However, researchers should exercise caution and double-check these conclusions to avoid economically unreasonable outcomes, such as when $hv$-block cross-validation selects models with negative MKT factor estimates.
-Unfortunately, using individual funds instead of vintage year portfolios, which yields smaller asymptotic standard errors, constitutes no viable resolution as individual funds show considerably larger small-sample bias and variance in our Monte Carlo example (and substantially increased computational cost).
-Since, in our empirical analyses, basically all two-factor models' asymptotic standard errors appear statistically insignificant, we conjecture that naive versions of our SDF estimator should be exclusively used for a single-MKT-factor model until considerably more vintage year information for private equity funds is available.
+In the data-sparse private equity domain, where estimation relies on a limited cross-section of vintage-year portfolios, asymptotic approximations prove unreliable. 
+We therefore strongly advocate for the use of robust resampling or cross-validation techniques tailored to overlapping cash flow dependencies. 
+While relying on individual fund data yields smaller asymptotic standard errors, our simulations indicate that this approach exacerbates finite-sample bias and estimation noise, rendering it an unsuitable remedy. 
+Given that virtually all multi-factor models in our empirical analysis fail to yield consistently significant parameter estimates under either asymptotic or cross-validation inference, we conclude that standard SDF estimators should be restricted to single-factor MKT specifications (without $\alpha$ terms) until significantly broader cross-sections of private equity data become available. 
+Researchers must exercise caution even then, ensuring that data-driven model selection (e.g., via $hv$-block cross-validation) does not yield economically implausible outcomes.
 
-If someone wants to estimate more complex SDF models that incorporate additional factors, more structure is needed.
-These can be parametric assumptions for the data generating process \citep{ACGP18} or to extract additional information from intermediate net asset values \citep{GSW20,BGG20}.
-A first ``modern'' approach to this problem involves applying statistical techniques for sparse high-dimensional data (e.g., LASSO, ridge or model averaging) that regularize/shrink all coefficients other than the MKT factor.
-Secondly, given the high estimator variance revealed in the simulation study, statistical learning methods that create a strong learner by combining multiple weak learners seem also worth considering.
+Expanding the SDF framework to robustly accommodate multiple risk factors requires imposing additional economic or statistical structure. 
+Future research could further explore parametric assumptions for the cash flow generating process \citep{ACGP18} or extract intra-period information from reported Net Asset Values \citep{GSW20,BGG20}. 
+Methodologically, addressing the high estimator variance demands statistical techniques suited for sparse, high-dimensional settings. 
+Approaches such as LASSO, ridge regression, or model averaging to regularize non-market coefficients, as well as ensemble learning methods that combine multiple weak learners, present promising paths forward.
 
-Another promising avenue for future research is extending the data generating process (DGP) to explicitly incorporate fee structures and carried interest. 
-This would enable the estimation of SDFs that reflect gross-vs-net-of-fee performance and provide more precise evaluation models from both the General-Partner (GP) and Limited-Partner (LP) perspective. 
-A more realistic DGP should naturally yield more accurate SDF parameter estimates and permit a sharper analytical characterization of the estimator's bias and variance terms.
+Another vital avenue for future work involves explicitly modeling complex fee structures and carried interest within the data generating process. 
+This would enable the estimation of gross-versus-net-of-fee SDFs, providing sharper evaluation models for both General Partners (GPs) and Limited Partners (LPs). 
+Such structural refinements would naturally improve parameter accuracy and allow for a more rigorous analytical characterization of finite-sample bias. 
+Additionally, carefully integrating intermediate NAVs as proxies for unobservable true valuations could help alleviate the timing risk premium bias inherent to terminal value concepts, though this requires downweighting actual cash distributions in favor of subjective accounting metrics.
 
-Additionally, treating intermediate net asset values (NAVs) as proxies for the unobservable true fund valuation could be explored to alleviate the timing risk premium bias associated with net future values. 
-As a downside, such an approach would entail fundamentally adapting the estimator's objective to place less emphasis on sparsely realized cash flows and rely more heavily on reported NAVs instead.
-
-Finally, we point to the potentially most interesting topic for future research.
-Our simulation study indicates that the estimator's bias and variance can be controlled by an appropriate choice for the set $\mathcal{T}$.
-This set averages the pricing error over multiple discounting dates.
-In simpler terms, an identification method that utilizes a future value concept instead of net present values obtains more favorable results in our case.
-The bias in our simulation study is minimal when the set of discounting dates corresponds approximately to the fund lifetime.
-A model that can determine the optimal value of $\mathcal{T}$ for a given fund sample and macroeconomic environment would be highly appreciated.
+Finally, we highlight the critical role of the compounding Horizon in empirical asset pricing for private markets. 
+Our simulation study demonstrates that utilizing a future value framework, i.e., averaging pricing errors over a broad set of discounting dates $\mathcal{T}$, yields vastly superior finite-sample properties compared to traditional net present value approaches. 
+The bias is minimized when the set of discounting dates corresponds approximately to the typical fund lifecycle. 
+Developing a formal theoretical or empirical mechanism to endogenously determine the optimal configuration of $\mathcal{T}$ for a given fund sample and macroeconomic environment remains an important objective for future research.
 
 
 
@@ -1950,6 +1939,7 @@ Across different macro regimes, the TRP cost could be larger and the optimal $|\
 \label{sec:dlp_results_comparison}
 
 \subsection{Comparison to simulation results}
+\label{sec:dlp_simulation}
 
 \cite[Table 1]{DLP12} report Monte Carlo results for $n=50$ funds per vintage-year portfolio with an annualized idiosyncratic volatility of 108\% ($\sigma_{\text{monthly}}=0.3$).
 In our base case (S1), we use only $n=20$ funds per vintage, which is more realistic for older vintages and smaller private capital asset classes beyond Buyout and Venture Capital.
