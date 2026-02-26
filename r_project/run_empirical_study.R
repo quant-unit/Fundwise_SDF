@@ -139,6 +139,11 @@ run_empirical_study <- function(
                 alpha_str <- if (isTRUE(params$include_alpha_term)) "_alpha_" else "_"
                 params$cache_folder_tag <- paste0(
                     params$private_source, alpha_str, weighting,
+                    if (!is.null(params$final_nav_discount) && params$final_nav_discount != 100) {
+                        paste0("_NC", params$final_nav_discount)
+                    } else {
+                        ""
+                    },
                     "_max_vin_", mv
                 )
 
@@ -260,14 +265,16 @@ if (sys.nframe() == 0L) {
     cat("Available scenarios:\n\n")
     list_empirical_scenarios(active_only = TRUE)
 
-    data.out.folder <- "results/data_out_2026_02_24"
+    data.out.folder <- "results/data_out_2026_02_26"
 }
 
 scenarios <- c(
-  #"fw_no_cv", "fw_cv", "ew_no_cv", "ew_cv",
-  #"fw_vintage_sweep", "ew_vintage_sweep",
-  #"ff3_fw_no_cv_ALL", "ff3_ew_no_cv_ALL", "ff3_fw_cv_ALL", "ff3_ew_cv_ALL",
-  "ff3_fw_no_cv_ALL_3f", "ff3_ew_no_cv_ALL_3f"
+    "fw_no_cv", "fw_cv", "ew_no_cv", "ew_cv",
+    "ff3_fw_no_cv_ALL", "ff3_ew_no_cv_ALL",
+    "ff3_fw_cv_ALL", "ff3_ew_cv_ALL",
+    "ff3_fw_no_cv_ALL_3f", "ff3_ew_no_cv_ALL_3f",
+    "fw_vintage_sweep", "ew_vintage_sweep",
+    "fw_vintage_sweep_NC50", "ew_vintage_sweep_NC50"
 )
 results <- run_empirical_study(
     scenario_ids = scenarios,

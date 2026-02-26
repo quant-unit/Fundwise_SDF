@@ -1010,9 +1010,9 @@ Table \ref{tab:comparison} summarizes the most prominent distinctions between th
 We use the Preqin cash flow data set as of 14th April 2022 which is well known in the academic private equity literature \citep{HJK14,brown2015different,KN16,ACGP18}.
 To keep the empirical analysis clear and concise, we filter the dataset for Private Equity (PE) funds.
 
-The Private Equity sample contains 2745 distinct funds spreading over 35 vintage years. "The vintage year distribution is as follows: 1983 (1), 1985 (2), 1986 (4), 1987 (5), 1988 (7), 1990 (2), 1991 (4), 1992 (9), 1993 (13), 1994 (20), 1995 (16), 1996 (20), 1997 (24), 1998 (59), 1999 (46), 2000 (72), 2001 (51), 2002 (41), 2003 (45), 2004 (64), 2005 (117), 2006 (154), 2007 (176), 2008 (183), 2009 (83), 2010 (92), 2011 (146), 2012 (136), 2013 (142), 2014 (182), 2015 (152), 2016 (186), 2017 (143), 2018 (157), 2019 (190).
-The region distribution is as follows: Africa (20), Asia (150), Australasia (39), Europe (681), Latin America \& Caribbean (33), Middle East (14), North America (1807).
-The strategy distribution is as follows: Balanced (69), Buyout (1354), Co-Investment (87), Co-Investment Multi-Manager (59), Direct Secondaries (30), Fund of Funds (643), Growth (331), Secondaries (152), Turnaround (19).
+The Private Equity (PE) sample contains 3005 distinct funds spreading over 37 vintage years.
+The vintage year distribution is as follows: 1983 (1), 1985 (2), 1986 (4), 1987 (5), 1988 (7), 1990 (2), 1991 (4), 1992 (9), 1993 (13), 1994 (20), 1995 (16), 1996 (20), 1997 (24), 1998 (59), 1999 (46), 2000 (72), 2001 (51), 2002 (41), 2003 (45), 2004 (64), 2005 (117), 2006 (154), 2007 (176), 2008 (183), 2009 (83), 2010 (92), 2011 (146), 2012 (136), 2013 (142), 2014 (182), 2015 (152), 2016 (186), 2017 (143), 2018 (157), 2019 (190), 2020 (140), The region distribution is as follows: Africa (21), Asia (173), Australasia (41), Europe (749), Latin America \& Caribbean (34), Middle East (17), North America (1968).
+The strategy distribution is as follows: Balanced (71), Buyout (1449), Co-Investment (108), Co-Investment Multi-Manager (67), Direct Secondaries (34), Fund of Funds (696), Growth (386), Secondaries (174), Turnaround (19).
 
 For this subset of Private Equity funds, we extract all (i) equal-weighted and (ii) fund-size-weighted cash flow series.
 For non-liquidated funds, we treat the latest net asset value as final cash flow.
@@ -1264,7 +1264,7 @@ We further analyze this puzzling result from a theoretical perspective in Append
 
 
 \paragraph{Simulation conclusion:}
-To conclude, our simulation study rationalizes two key practices from the \cite{DLP12} paper: (i) vintage-year portfolio formation helps to improve estimator precision, and (ii) increasing the number of funds per vintage seems more effective in controlling estimator variance than increasing the number of vintages. 
+To conclude, our simulation study rationalizes two key practices from the \cite{DLP12} paper: (i) vintage-year portfolio formation helps to improve estimator precision, and (ii) increasing the number of funds per vintage seems more effective in controlling estimator variance than increasing the number of vintages (for i.i.d.\ error terms). 
 Our second finding provides an empirical rationale for the choice of \cite{DLP12} to employ infill asymptotics that let the number of underlying funds per vintage tend to infinity.
 However, our correctly specified scenarios cannot support the assumption of \cite{KN16} that (iii) the exponential affine SDF is superior to the simple linear SDF in a multi-period framework; in fact, their finite-sample bias and variance profiles are remarkably similar.
 Moreover, our simulation study suggests that (iv) averaging pricing errors over multiple dates substantially reduces the severe short-horizon bias inherent to the original procedure of \cite{DLP12}, which discounts all cash flows exclusively to the fund inception date.
@@ -1278,22 +1278,61 @@ Appendix \ref{sec:appendix_bias_variance} explains the theoretical foundation of
 \subsection{Empirical results}
 
 
-Following the conclusions from the simulation study, we use the Preqin data from Section \ref{sec:data} and form vintage-year portfolios (VYPs) to estimate simple linear SDF models with a Horizon of 15 years.
+Following the conclusions from the simulation study, we use the Preqin data from Section \ref{sec:data} and form vintage-year portfolios (VYPs) to estimate simple linear SDF models.
 For each model specification, we report both asymptotic standard errors (SE$_A$) and $hv$-block cross-validation standard errors (SE$_{CV}$).
 We focus the presentation on PE (i.e., mainly Buyout and Growth) as our primary fund type and report both equal-weighted (EW) and value-weighted (FW) estimates across a grid of compounding horizons.
 Throughout this subsection, $t_A$ and $t_{CV}$ denote the $t$-ratios based on asymptotic and cross-validation standard errors, respectively\footnote{All R code and data are available in an online repository: \url{https://github.com/quant-unit/Fundwise_SDF/tree/master/r_project}.}.
 
 
+\subsubsection{The impact of unseasoned funds and unrealized NAVs}
+\label{sec:empirical_vintage_cutoffs}
+
+A critical design choice in empirical private equity research is the selection of the maximum vintage year to include in the estimation sample.
+In this section, we analyze how altering the maximum vintage year cutoff influences the parameter estimates and demonstrate the profound impact of unseasoned funds on the estimation outcome.
+Concretely, we compare yearly cutoff-vintages from 2011 to 2021; note that cutoffs beyond 2019 include only vintage years already present in our dataset but allow their most recent (and primarily unrealized) cash flows to fully enter the estimation.
+We focus on asymptotic estimates for this analysis.
+
+Figure \ref{fig:max_vintage_PE_MKT} shows the estimating market beta for the single-factor model across different vintage cutoffs, comparing the standard results (NAV at face value, top panel) with a scenario where all final NAVs are artificially discounted by 50\% (NC50, bottom panel).
+Under the standard specification, we observe a severe upward drift in the market beta as we include more recent, unseasoned vintages.
+For equal-weighted (EW) portfolios, $\hat{\beta}_{\mathrm{MKT}}$ rises from approximately 0.87 with a 2011 cutoff climbing to 1.05 with the full sample (2021).
+Similarly, value-weighted (FW) estimates increase steadily from 0.79 to 1.12.
+
+The NC50 scenario effectively proves that this upward drift is an artifact of the unrealized NAVs, not a fundamental change in true private equity risk profiles. 
+When we artificially halve the final NAVs, the market beta drops significantly across all cutoffs (e.g., dropping to 0.71 for the EW 2011 cutoff) and the upward trend for recent vintages flattens out entirely (reaching only 0.76 for EW 2016).
+For recent vintage years, actual cash distributions are extremely sparse, meaning the reported ending Net Asset Value constitutes the vast majority of the ``value'' returned to investors. 
+Because the generalized SDF estimation framework relies on mathematically treating this final, unrealized NAV as a terminal cash distribution, the entire estimation for young funds hinges predominantly on a subjective accounting metric.
+To justify those high terminal NAV ``payoffs'' given the historical realized market path, the SDF optimizer is mathematically forced to assign a higher exposure. 
+In other words, the market beta is mechanically inflating to simply absorb the size of the undiscounted NAVs.
+Indeed, reading the top panel of Figure \ref{fig:max_vintage_PE_MKT} alongside the bottom confirms exactly that: limiting the magnitude of the final unspent NAV removes its distortion of the estimated market co-movement.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.88\textwidth]{empirical/max_vintage_PE_MKT} \\
+	\includegraphics[width=0.88\textwidth]{empirical/max_vintage_PE_NC50_MKT}
+	\caption{\textbf{Sensitivity analysis ($MKT$ factor):} Single-factor model for PE using VYP with different vintage-year cutoffs (asymptotic estimates). The top panel shows the standard baseline, while the bottom panel applies a 50\% discount to all final NAVs, which we treat as final distribution cash flow.}
+	\label{fig:max_vintage_PE_MKT}
+\end{figure}
+
+
+The primary conclusion drawn from this cutoff analysis is a warning regarding data selection in generalized non-traded cash flow estimations:
+to obtain reliable estimates of true economic factor exposures and alpha for private markets, an empirical sample must practically be restricted to mature, heavily seasoned vintage years where the vast majority of original investments have been realized sequentially as actual cash flows. 
+Including recent, unseasoned vintages in the estimation sample injects massive sensitivity into point estimates and artificially distorts the perceived risk profile due to an outsized mechanic reliance on subjectively undiscounted NAVs.
+
+Thus, moving forward into our main empirical evaluations of the single-factor and multi-factor SDF models (cf.\ Sections \ref{sec:empirical_single} and \ref{sec:empirical_multi}), we conservatively restrict our sample to a maximum vintage-year cutoff of 2010 to ensure our estimates reflect real economic cash-flow risk rather than accounting heuristics.
+
+
 \subsubsection{Single market-factor models}
+\label{sec:empirical_single}
 
 Table~\ref{tab:empirical_pe_mkt} and Figure~\ref{fig:empirical_MKT} report the single-factor MKT model for PE across horizons from 0.1 to 30 years.
-The market beta estimate broadly declines with the compounding horizon: under equal weighting (EW), $\hat{\beta}_{\mathrm{MKT}}$ ranges from approximately $1.63$--$1.69$ at short horizons (0--5~years) and decreases to approximately $0.91$ at 25--30~years; under fund-size weighting (FW), the corresponding range is $1.78$--$2.06$ down to $0.97$.
+The market beta estimate broadly declines with the compounding horizon: under equal weighting (EW), $\hat{\beta}_{\mathrm{MKT}}$ ranges from approximately $1.23$--$1.27$ at short horizons (0--5~years) and decreases to approximately $0.67$ at 25--30~years; under fund-size weighting (FW), the corresponding range is $1.08$--$1.12$ down to $0.56$.
 The elevated estimates at short horizons likely reflect the finite-sample bias documented in the simulation study, whereby the estimator overestimates market exposure when few discounting dates are used.
 Estimates stabilize beyond approximately 20~years, consistent with the bias-minimizing horizons identified in Section~\ref{sec:simulation_study}.
 
 A striking feature of the results is the divergence between asymptotic and cross-validation inference.
-Asymptotic $t$-ratios ($t_A$) are borderline at short horizons ($\approx 1.8$) and drop well below 1.96 at longer horizons; partly driven by extremely large and erratic asymptotic standard errors (e.g., SE$_A > 1.7$ for horizons $\geq 15$ years).
-In contrast, cross-validation $t$-ratios ($t_{CV}$) are uniformly large, ranging from 5.2 to 10.3 under EW and from 5.99 to 44.5 under FW, clearly indicating significance of the single-factor MKT model.
+Both asymptotic and cross validation ratios are lower for this restricted 2010-cutoff sample.
+Asymptotic $t$-ratios ($t_A$) fall slightly below significance thresholds at short horizons (e.g. 1.58 under EW and 1.10 under FW) and drop further at longer horizons. 
+In contrast, cross-validation $t$-ratios ($t_{CV}$) continue to be large, ranging from 4.90 to 21.51 under EW and from 2.98 to 6.38 under FW, clearly indicating significance of the single-factor MKT model.
 Given the small number of cross-sectional units (vintage-year portfolios) available for estimation, the asymptotic approximation appears unreliable, and we regard the $hv$-block cross-validation results as more trustworthy.
 Therefore, drawing on both the simulation evidence and the cross-validation results, we focus on single MKT factor models for the remainder of the empirical analysis, even when their asymptotic $t$-ratios fall below conventional thresholds.
 
@@ -1321,19 +1360,19 @@ Therefore, drawing on both the simulation evidence and the cross-validation resu
 		\cmidrule(lr){2-6} \cmidrule(lr){7-11}
 		Horizon & $\hat{\beta}$ & SE$_A$ & SE$_{CV}$ & $t_A$ & $t_{CV}$ & $\hat{\beta}$ & SE$_A$ & SE$_{CV}$ & $t_A$ & $t_{CV}$ \\
 		\midrule
-		0 yr & 1.642 & 0.900 & 0.160 & 1.82 & 10.31 & 1.801 & 1.011 & 0.256 & 1.78 & 7.08 \\
-		%0.1 yr & 1.630 & 0.897 & 0.159 & 1.82 & 10.33 & 1.776 & 1.002 & 0.249 & 1.77 & 7.17 \\
-		%2.5 yr & 1.639 & 0.899 & 0.185 & 1.82 & 8.89 & 1.922 & 1.064 & 0.334 & 1.81 & 5.86 \\
-		5 yr & 1.685 & 0.892 & 0.188 & 1.89 & 8.96 & 2.061 & 1.124 & 0.364 & 1.83 & 5.69 \\
-		10 yr & 1.373 & 0.864 & 0.172 & 1.59 & 7.97 & 1.515 & 0.959 & 0.259 & 1.58 & 5.80 \\
-		%12.5 yr & 1.164 & 0.846 & 0.187 & 1.38 & 6.19 & 1.246 & 0.925 & 0.232 & 1.35 & 5.33 \\
-		15 yr & 1.053 & 1.716 & 0.186 & 0.61 & 5.60 & 1.121 & 0.908 & 0.212 & 1.23 & 5.23 \\
-		%17.5 yr & 0.970 & 1.588 & 0.179 & 0.61 & 5.31 & 1.054 & 1.033 & 0.216 & 1.02 & 4.83 \\
-		20 yr & 0.920 & 1.856 & 0.172 & 0.50 & 5.22 & 1.002 & 1.744 & 0.214 & 0.57 & 4.63 \\
-		%22.5 yr & 0.907 & 1.826 & 0.162 & 0.50 & 5.42 & 0.980 & 1.708 & 0.206 & 0.57 & 4.69 \\
-		%25 yr & 0.909 & 1.830 & 0.158 & 0.50 & 5.54 & 0.974 & 1.702 & 0.204 & 0.57 & 4.72 \\
-		%27.5 yr & 0.909 & 1.832 & 0.158 & 0.50 & 5.53 & 0.974 & 1.702 & 0.204 & 0.57 & 4.71 \\
-		30 yr & 0.909 & 1.832 & 0.158 & 0.50 & 5.53 & 0.974 & 1.702 & 0.204 & 0.57 & 4.71 \\
+		0 yr & 1.269 & 0.801 & 0.065 & 1.58 & 19.48 & 1.128 & 1.024 & 0.171 & 1.10 & 6.19 \\
+		0.1 yr & 1.266 & 0.801 & 0.059 & 1.58 & 21.51 & 1.124 & 1.024 & 0.166 & 1.10 & 6.38 \\
+		2.5 yr & 1.229 & 0.794 & 0.070 & 1.55 & 17.59 & 1.109 & 1.024 & 0.196 & 1.08 & 5.33 \\
+		5 yr & 1.247 & 0.797 & 0.082 & 1.56 & 15.07 & 1.088 & 1.092 & 0.210 & 1.00 & 4.88 \\
+		10 yr & 1.084 & 1.389 & 0.127 & 0.78 & 8.51 & 0.917 & 1.872 & 0.218 & 0.49 & 3.99 \\
+		12.5 yr & 0.933 & 1.895 & 0.169 & 0.49 & 5.57 & 0.806 & 1.698 & 0.227 & 0.47 & 3.43 \\
+		15 yr & 0.839 & 1.670 & 0.171 & 0.50 & 4.90 & 0.734 & 1.703 & 0.219 & 0.43 & 3.22 \\
+		17.5 yr & 0.747 & 1.485 & 0.134 & 0.50 & 5.40 & 0.660 & 1.576 & 0.208 & 0.42 & 3.08 \\
+		20 yr & 0.688 & 1.776 & 0.105 & 0.39 & 6.20 & 0.597 & 1.445 & 0.189 & 0.41 & 3.04 \\
+		22.5 yr & 0.668 & 1.716 & 0.093 & 0.39 & 6.64 & 0.571 & 1.397 & 0.181 & 0.41 & 3.01 \\
+		25 yr & 0.668 & 1.716 & 0.093 & 0.39 & 6.60 & 0.564 & 1.385 & 0.180 & 0.41 & 2.99 \\
+		27.5 yr & 0.669 & 1.718 & 0.094 & 0.39 & 6.55 & 0.564 & 1.385 & 0.181 & 0.41 & 2.98 \\
+		30 yr & 0.669 & 1.718 & 0.094 & 0.39 & 6.55 & 0.564 & 1.385 & 0.181 & 0.41 & 2.98 \\
 		\bottomrule
 	\end{tabular}
 	\par\vspace{2pt}
@@ -1345,21 +1384,23 @@ Therefore, drawing on both the simulation evidence and the cross-validation resu
 
 
 
+
 \subsubsection{Two-factor models}
+\label{sec:empirical_multi}
 
 We now examine two-factor models for PE that pair the MKT factor with either an Alpha intercept or one of the four non-market $q^5$ factors (Tables~\ref{tab:empirical_pe_alpha}--\ref{tab:empirical_pe_roe} and Figure~\ref{fig:empirical}).
 
 \textit{MKT + Alpha} (Table~\ref{tab:empirical_pe_alpha}):
-Adding an $\alpha$ term increases the MKT loading relative to the single-factor model at most horizons: under EW, $\hat{\beta}_{\mathrm{MKT}}$ ranges from $1.24$ to $1.44$; under FW, from $1.36$ to $1.93$.
-The Alpha coefficient is positive at short horizons ($\hat{\beta}_{\alpha} \approx 0.003$--$0.005$ per month, corresponding to roughly 3.6--6\% annualized) but turns negative at horizons beyond 10~years ($\hat{\beta}_{\alpha} \approx -0.002$ to $-0.004$ per month).
-This sign-reversal across horizons is consistent with the horizon-dependent bias pattern documented in the simulation study.
-While a few isolated asymptotic $t$-ratios are significant (e.g., EW at 5~years: $t_A = 10.8$ for MKT, $t_A = 3.49$ for Alpha), the asymptotic standard errors are highly erratic across horizons (SE$_A$ ranging from 0.13 to over 26), precluding a reliable asymptotic inference for the two-factor model.
+Adding an $\alpha$ term tends to decrease the MKT loading relative to the single-factor model at most horizons, especially under FW: under EW, $\hat{\beta}_{\mathrm{MKT}}$ ranges from $0.53$ to $1.00$; under FW, from $-0.22$ to $0.09$.
+The Alpha coefficient is significantly positive at short horizons for EW ($\hat{\beta}_{\alpha} \approx 0.004$--$0.006$ per month) and reaches $0.010$ per month under FW at short horizons.
+Across the board, the alphas maintain a positive or negligible value and do not dip far into the negatives at long horizons as seen with larger, unseasoned samples.
+While a few isolated asymptotic $t$-ratios are significant (e.g., EW at 2.5~years: $t_A = 9.03$ for MKT, $t_A = 12.17$ for Alpha), the asymptotic standard errors are highly erratic across horizons (SE$_A$ ranging from 0.05 to over 11), precluding a reliable asymptotic inference for the two-factor model.
 
 \textit{Non-market $q^5$ factors} (Tables~\ref{tab:empirical_pe_eg}--\ref{tab:empirical_pe_roe}): 
-A common pattern emerges across all four specifications (EG, IA, ME, ROE): the second-factor loading is positive at short horizons and declines (often changing sign) as the horizon increases, while the MKT loading absorbs a compensating adjustment.
+A common pattern emerges across all four specifications (EG, IA, ME, ROE): the second-factor loading is positive at short horizons and generally declines as the horizon increases, while the MKT loading absorbs a compensating adjustment.
 None of the second-factor coefficients are asymptotically significant at any horizon, and the asymptotic standard errors are again extremely large and unstable.
-Among the $q^5$ factors, ME stands out with particularly large positive loading estimates under FW at short horizons ($\hat{\beta}_{\mathrm{ME}} \approx 1.0$--$1.6$) that remain positive and CV-significant even at long horizons.
-In contrast, the EG, IA, and ROE loadings uniformly become negative beyond 10~years and remain insignificant under both weighting schemes.
+Among the $q^5$ factors, ME stands out with particularly large positive loading estimates under FW at short horizons ($\hat{\beta}_{\mathrm{ME}} \approx 1.7$--$2.1$) that remain positive and CV-significant even at long horizons.
+In contrast, the EG, IA, and ROE loadings generally become negative or trend tightly toward zero beyond 10~years and remain insignificant under both weighting schemes.
 
 Overall, the two-factor models for PE are fragile: estimates are highly horizon-dependent, asymptotic inference is unreliable, and no second factor consistently adds explanatory power beyond MKT.
 These findings corroborate the simulation-based recommendation to focus on single-factor MKT models given the limited cross-section of vintage-year portfolios currently available, avoiding over-interpretation of the non-market $q^5$ factor exposures.
@@ -1389,35 +1430,35 @@ These findings corroborate the simulation-based recommendation to focus on singl
 		\midrule
 		\multicolumn{11}{l}{\textit{Panel A: Market Factor ($\beta_{MKT}$)}} \\
 		\addlinespace[2pt]
-		0 yr & 1.222 & 1.302 & 0.220 & 0.94 & 6.01 & 0.949 & 1.810 & 0.551 & 0.52 & 2.04 \\
-		%0.1 yr & 1.244 & 1.494 & 0.227 & 0.83 & 5.89 & 0.915 & 1.900 & 0.580 & 0.48 & 2.14 \\
-		%2.5 yr & 1.348 & 1.201 & 0.379 & 1.12 & 3.74 & 1.806 & 1.733 & 0.635 & 1.04 & 2.97 \\
-		5 yr & 1.438$^{***}$ & 0.139 & 0.302 & 10.36 & 5.02 & 1.928 & 1.015 & 0.648 & 1.90 & 3.03 \\
-		10 yr & 1.338 & 12.857 & 0.374 & 0.10 & 3.68 & 1.601 & 24.401 & 0.613 & 0.07 & 2.74 \\
-		%12.5 yr & 1.266 & 9.457 & 0.302 & 0.13 & 4.19 & 1.541 & 26.373 & 0.639 & 0.06 & 2.49 \\
-		15 yr & 1.000 & 2.070 & 0.130 & 0.48 & 8.05 & 1.598 & 9.207 & 0.668 & 0.17 & 2.39 \\
-		%17.5 yr & 1.000 & 1.404 & 0.089 & 0.71 & 10.89 & 1.549 & 8.229 & 0.687 & 0.19 & 2.27 \\
-		20 yr & 0.999 & 2.131 & 0.164 & 0.47 & 6.27 & 1.488 & 6.691 & 0.748 & 0.22 & 1.98 \\
-		%22.5 yr & 0.999 & 3.073 & 0.395 & 0.32 & 3.18 & 1.410$^{***}$ & 0.158 & 0.797 & 8.95 & 1.76 \\
-		%25 yr & 0.999 & 3.283 & 0.393 & 0.30 & 3.21 & 1.384 & 5.598 & 0.799 & 0.25 & 1.74 \\
-		%27.5 yr & 0.999 & 3.300 & 0.394 & 0.30 & 3.21 & 1.385 & 5.594 & 0.797 & 0.25 & 1.74 \\
-		30 yr & 0.999 & 3.300 & 0.394 & 0.30 & 3.21 & 1.385 & 5.594 & 0.797 & 0.25 & 1.74 \\
+		0 yr & 1.005 & 0.646 & 0.374 & 1.56 & 1.97 & -0.101 & 11.574 & 0.637 & -0.01 & -0.22 \\
+		0.1 yr & 1.005 & 0.609 & 0.002 & 1.65 & 405.43 & -0.083 & 11.272 & 0.637 & -0.01 & -0.18 \\
+		2.5 yr & 0.535$^{***}$ & 0.059 & 0.199 & 9.03 & 2.95 & -0.027 & 0.279 & 0.611 & -0.10 & -0.09 \\
+		5 yr & 1.004 & 3.250 & 0.004 & 0.31 & 279.59 & 0.003 & 2.608 & 0.581 & 0.00 & 0.05 \\
+		10 yr & 0.675$^{***}$ & 0.065 & 0.270 & 10.30 & 2.98 & 0.098 & 4.417 & 0.573 & 0.02 & 0.38 \\
+		12.5 yr & 1.000 & 1.134 & 0.268 & 0.88 & 2.87 & -0.029 & 0.082 & 0.570 & -0.36 & 0.24 \\
+		15 yr & 0.998 & 0.917 & 0.284 & 1.09 & 2.94 & -0.079 & 3.171 & 0.630 & -0.02 & 0.17 \\
+		17.5 yr & 0.726$^{***}$ & 0.042 & 0.321 & 17.32 & 2.41 & -0.085 & 2.777 & 0.690 & -0.03 & 0.18 \\
+		20 yr & 0.792 & 0.877 & 0.386 & 0.90 & 2.03 & -0.177 & 2.756 & 0.716 & -0.06 & 0.13 \\
+		22.5 yr & 0.849 & 0.978 & 0.416 & 0.87 & 2.03 & -0.224 & 2.228 & 0.723 & -0.10 & 0.10 \\
+		25 yr & 0.873 & 1.298 & 0.425 & 0.67 & 2.01 & -0.163 & 2.849 & 0.720 & -0.06 & 0.11 \\
+		27.5 yr & 0.877 & 1.449 & 0.423 & 0.61 & 2.03 & -0.157 & 2.860 & 0.719 & -0.05 & 0.11 \\
+		30 yr & 0.877 & 1.449 & 0.423 & 0.61 & 2.03 & -0.157 & 2.860 & 0.719 & -0.05 & 0.11 \\
 		\addlinespace[4pt]
 		\multicolumn{11}{l}{\textit{Panel B: Alpha ($\beta_{Alpha}$)}} \\
 		\addlinespace[2pt]
-		0 yr & 0.005 & 0.007 & 0.002 & 0.73 & 2.40 & 0.020$^{*}$ & 0.009 & 0.008 & 2.17 & 1.95 \\
-		%0.1 yr & 0.005 & 0.009 & 0.002 & 0.61 & 2.26 & 0.020$^{*}$ & 0.010 & 0.009 & 2.05 & 1.42 \\
-		2.5 yr & 0.004 & 0.003 & 0.002 & 1.19 & 1.39 & 0.005 & 0.010 & 0.004 & 0.56 & 1.05 \\
-		5 yr & 0.003$^{***}$ & 0.001 & 0.002 & 3.51 & 1.01 & 0.003$^{*}$ & 0.001 & 0.003 & 2.44 & 0.82 \\
-		10 yr & 0.000 & 0.038 & 0.003 & 0.01 & -0.00 & -0.001 & 0.158 & 0.004 & -0.00 & -0.34 \\
-		%12.5 yr & -0.001 & 0.163 & 0.003 & -0.01 & -0.27 & -0.002 & 0.179 & 0.004 & -0.01 & -0.62 \\
-		15 yr & 0.000 & 0.077 & 0.002 & 0.00 & -0.07 & -0.004 & 0.073 & 0.004 & -0.05 & -0.79 \\
-		%17.5 yr & -0.001 & 0.072 & 0.002 & -0.01 & -0.19 & -0.004 & 0.067 & 0.004 & -0.05 & -0.78 \\
-		20 yr & -0.001 & 0.130 & 0.002 & -0.01 & -0.59 & -0.004 & 0.062 & 0.005 & -0.06 & -0.65 \\
-		%22.5 yr & -0.001 & 0.196 & 0.003 & -0.01 & -0.87 & -0.003$^{***}$ & 0.001 & 0.005 & -4.25 & -0.51 \\
-		%25 yr & -0.001 & 0.210 & 0.003 & -0.01 & -0.88 & -0.003 & 0.060 & 0.005 & -0.05 & -0.50 \\
-		%27.5 yr & -0.001 & 0.211 & 0.003 & -0.01 & -0.88 & -0.003 & 0.060 & 0.005 & -0.05 & -0.50 \\
-		30 yr & -0.001 & 0.211 & 0.003 & -0.01 & -0.88 & -0.003 & 0.060 & 0.005 & -0.05 & -0.50 \\
+		0 yr & 0.004$^{***}$ & 0.001 & 0.003 & 4.49 & 1.99 & 0.010 & 0.069 & 0.005 & 0.15 & 1.88 \\
+		0.1 yr & 0.004$^{***}$ & 0.001 & 0.001 & 4.44 & 3.07 & 0.010 & 0.067 & 0.005 & 0.15 & 1.86 \\
+		2.5 yr & 0.006$^{***}$ & 0.000 & 0.002 & 12.17 & 2.91 & 0.009$^{***}$ & 0.001 & 0.005 & 7.98 & 1.78 \\
+		5 yr & 0.003 & 0.022 & 0.001 & 0.13 & 2.18 & 0.008 & 0.005 & 0.004 & 1.79 & 1.66 \\
+		10 yr & 0.003$^{***}$ & 0.001 & 0.003 & 3.71 & 0.86 & 0.006 & 0.038 & 0.004 & 0.17 & 1.16 \\
+		12.5 yr & -0.000 & 0.058 & 0.002 & -0.00 & 0.63 & 0.007$^{***}$ & 0.001 & 0.004 & 12.91 & 1.19 \\
+		15 yr & -0.001 & 0.054 & 0.003 & -0.02 & 0.11 & 0.007 & 0.044 & 0.005 & 0.15 & 1.04 \\
+		17.5 yr & 0.000 & 0.001 & 0.003 & 0.26 & -0.00 & 0.006 & 0.043 & 0.005 & 0.14 & 0.85 \\
+		20 yr & -0.001 & 0.069 & 0.004 & -0.01 & -0.22 & 0.006 & 0.042 & 0.005 & 0.15 & 0.84 \\
+		22.5 yr & -0.002 & 0.172 & 0.004 & -0.01 & -0.42 & 0.007 & 0.038 & 0.005 & 0.18 & 0.86 \\
+		25 yr & -0.002 & 0.278 & 0.004 & -0.01 & -0.45 & 0.006 & 0.044 & 0.005 & 0.14 & 0.86 \\
+		27.5 yr & -0.002 & 0.305 & 0.004 & -0.01 & -0.45 & 0.006 & 0.045 & 0.005 & 0.14 & 0.85 \\
+		30 yr & -0.002 & 0.305 & 0.004 & -0.01 & -0.45 & 0.006 & 0.045 & 0.005 & 0.14 & 0.85 \\
 		\bottomrule
 	\end{tabular}
 	\par\vspace{2pt}
@@ -1437,35 +1478,35 @@ These findings corroborate the simulation-based recommendation to focus on singl
 		\midrule
 		\multicolumn{11}{l}{\textit{Panel A: Market Factor ($\beta_{MKT}$)}} \\
 		\addlinespace[2pt]
-		0 yr & 1.528 & 1.818 & 0.250 & 0.84 & 6.28 & 1.817$^{**}$ & 0.661 & 0.546 & 2.75 & 3.68 \\
-		%0.1 yr & 1.524 & 1.791 & 0.246 & 0.85 & 6.36 & 1.802$^{**}$ & 0.698 & 0.437 & 2.58 & 4.38 \\
-		%2.5 yr & 1.576 & 3.504 & 0.287 & 0.45 & 5.69 & 2.095 & 1.725 & 0.448 & 1.21 & 4.82 \\
-		5 yr & 1.621 & 17.286 & 0.282 & 0.09 & 5.87 & 2.101 & 4.304 & 0.448 & 0.49 & 4.80 \\
-		10 yr & 1.474 & 2.814 & 0.241 & 0.52 & 6.14 & 1.749 & 6.056 & 0.337 & 0.29 & 5.32 \\
-		%12.5 yr & 1.399 & 1.379 & 0.229 & 1.01 & 6.06 & 1.678 & 4.452 & 0.290 & 0.38 & 5.83 \\
-		15 yr & 1.400 & 1.279 & 0.216 & 1.09 & 6.34 & 1.637 & 2.492 & 0.289 & 0.66 & 5.70 \\
-		%17.5 yr & 1.366 & 1.876 & 0.225 & 0.73 & 5.91 & 1.580 & 2.357 & 0.317 & 0.67 & 5.02 \\
-		20 yr & 1.338 & 1.361 & 0.244 & 0.98 & 5.41 & 1.487 & 2.312 & 0.348 & 0.64 & 4.31 \\
-		%22.5 yr & 1.287 & 1.347 & 0.267 & 0.96 & 4.84 & 1.398 & 2.280 & 0.368 & 0.61 & 3.84 \\
-		%25 yr & 1.259 & 1.426 & 0.276 & 0.88 & 4.60 & 1.369 & 1.832 & 0.373 & 0.75 & 3.72 \\
-		%27.5 yr & 1.257 & 1.439 & 0.277 & 0.87 & 4.59 & 1.368 & 1.832 & 0.373 & 0.75 & 3.72 \\
-		30 yr & 1.257 & 1.439 & 0.277 & 0.87 & 4.59 & 1.368 & 1.832 & 0.373 & 0.75 & 3.72 \\
+		0 yr & 0.938 & 1.150 & 0.159 & 0.82 & 5.79 & 0.817 & 0.914 & 0.275 & 0.89 & 3.08 \\
+		0.1 yr & 0.946 & 1.136 & 0.151 & 0.83 & 6.17 & 0.832 & 0.899 & 0.263 & 0.93 & 3.30 \\
+		2.5 yr & 0.958 & 3.006 & 0.176 & 0.32 & 5.61 & 0.899 & 1.932 & 0.251 & 0.47 & 3.70 \\
+		5 yr & 0.979 & 7.615 & 0.178 & 0.13 & 5.58 & 0.904 & 3.275 & 0.279 & 0.28 & 3.27 \\
+		10 yr & 0.984 & 1.564 & 0.229 & 0.63 & 4.34 & 0.963 & 10.821 & 0.335 & 0.09 & 2.75 \\
+		12.5 yr & 0.957 & 7.530 & 0.254 & 0.13 & 3.73 & 0.970 & 3.729 & 0.344 & 0.26 & 2.52 \\
+		15 yr & 0.979 & 3.802 & 0.233 & 0.26 & 4.07 & 0.959 & 3.665 & 0.382 & 0.26 & 2.11 \\
+		17.5 yr & 0.956 & 2.424 & 0.218 & 0.39 & 4.27 & 0.870 & 3.184 & 0.426 & 0.27 & 1.73 \\
+		20 yr & 0.944 & 5.827 & 0.240 & 0.16 & 3.98 & 0.732 & 1.710 & 0.485 & 0.43 & 1.29 \\
+		22.5 yr & 0.903 & 7.869 & 0.274 & 0.11 & 3.42 & 0.643 & 1.500 & 0.513 & 0.43 & 1.12 \\
+		25 yr & 0.881 & 6.835 & 0.288 & 0.13 & 3.20 & 0.621 & 1.464 & 0.519 & 0.42 & 1.08 \\
+		27.5 yr & 0.878 & 6.699 & 0.289 & 0.13 & 3.19 & 0.620 & 1.463 & 0.520 & 0.42 & 1.08 \\
+		30 yr & 0.878 & 6.699 & 0.289 & 0.13 & 3.19 & 0.620 & 1.463 & 0.520 & 0.42 & 1.08 \\
 		\addlinespace[4pt]
 		\multicolumn{11}{l}{\textit{Panel B: EG ($\beta_{EG}$)}} \\
 		\addlinespace[2pt]
-		0 yr & 0.477 & 1.098 & 0.296 & 0.43 & 1.36 & 1.102$^{**}$ & 0.407 & 1.838 & 2.71 & 0.81 \\
-		%0.1 yr & 0.489 & 1.081 & 0.286 & 0.45 & 1.44 & 1.023$^{*}$ & 0.444 & 1.213 & 2.30 & 0.84 \\
-		%2.5 yr & 0.312 & 2.137 & 0.292 & 0.15 & 0.78 & 0.626 & 1.011 & 0.549 & 0.62 & 0.77 \\
-		5 yr & 0.148 & 11.338 & 0.243 & 0.01 & 0.47 & 0.294 & 2.526 & 0.427 & 0.12 & 0.37 \\
-		10 yr & -0.120 & 2.641 & 0.271 & -0.05 & -0.39 & -0.348 & 4.373 & 0.368 & -0.08 & -0.95 \\
-		%12.5 yr & -0.256 & 5.720 & 0.289 & -0.04 & -0.73 & -0.506 & 3.542 & 0.336 & -0.14 & -1.38 \\
-		15 yr & -0.345 & 4.565 & 0.318 & -0.08 & -0.89 & -0.547 & 2.205 & 0.322 & -0.25 & -1.55 \\
-		%17.5 yr & -0.394 & 10.642 & 0.380 & -0.04 & -0.83 & -0.542 & 2.083 & 0.345 & -0.26 & -1.41 \\
-		20 yr & -0.431 & 7.164 & 0.383 & -0.06 & -0.97 & -0.520 & 2.175 & 0.366 & -0.24 & -1.24 \\
-		%22.5 yr & -0.415 & 7.434 & 0.262 & -0.06 & -1.60 & -0.480 & 2.272 & 0.404 & -0.21 & -1.01 \\
-		%25 yr & -0.395 & 8.352 & 0.288 & -0.05 & -1.38 & -0.465 & 2.056 & 0.410 & -0.23 & -0.96 \\
-		%27.5 yr & -0.392 & 8.473 & 0.289 & -0.05 & -1.36 & -0.465 & 2.057 & 0.407 & -0.23 & -0.97 \\
-		30 yr & -0.392 & 8.473 & 0.289 & -0.05 & -1.36 & -0.465 & 2.057 & 0.407 & -0.23 & -0.97 \\
+		0 yr & 0.529 & 0.817 & 0.255 & 0.65 & 2.06 & 0.884 & 0.641 & 0.705 & 1.38 & 0.97 \\
+		0.1 yr & 0.534 & 0.804 & 0.244 & 0.66 & 2.16 & 0.851 & 0.650 & 0.674 & 1.31 & 0.95 \\
+		2.5 yr & 0.405 & 2.207 & 0.242 & 0.18 & 1.50 & 0.544 & 1.592 & 0.491 & 0.34 & 0.72 \\
+		5 yr & 0.316 & 6.126 & 0.228 & 0.05 & 1.31 & 0.342 & 2.517 & 0.449 & 0.14 & 0.52 \\
+		10 yr & 0.102 & 2.331 & 0.278 & 0.04 & 0.41 & -0.058 & 7.056 & 0.429 & -0.01 & -0.01 \\
+		12.5 yr & -0.024 & 43.324 & 0.304 & -0.00 & 0.09 & -0.178 & 1.871 & 0.420 & -0.10 & -0.10 \\
+		15 yr & -0.132 & 18.057 & 0.332 & -0.01 & -0.17 & -0.224 & 2.411 & 0.432 & -0.09 & -0.10 \\
+		17.5 yr & -0.200 & 5.327 & 0.378 & -0.04 & -0.34 & -0.206 & 2.521 & 0.444 & -0.08 & -0.07 \\
+		20 yr & -0.256 & 12.839 & 0.257 & -0.02 & -1.07 & -0.142 & 1.690 & 0.463 & -0.08 & 0.05 \\
+		22.5 yr & -0.251 & 19.465 & 0.239 & -0.01 & -1.31 & -0.082 & 1.688 & 0.482 & -0.05 & 0.13 \\
+		25 yr & -0.234 & 17.656 & 0.253 & -0.01 & -1.18 & -0.065 & 1.697 & 0.484 & -0.04 & 0.15 \\
+		27.5 yr & -0.231 & 17.398 & 0.255 & -0.01 & -1.16 & -0.065 & 1.697 & 0.484 & -0.04 & 0.15 \\
+		30 yr & -0.231 & 17.398 & 0.255 & -0.01 & -1.16 & -0.065 & 1.697 & 0.484 & -0.04 & 0.15 \\
 		\bottomrule
 	\end{tabular}
 	\par\vspace{2pt}
@@ -1485,35 +1526,35 @@ These findings corroborate the simulation-based recommendation to focus on singl
 		\midrule
 		\multicolumn{11}{l}{\textit{Panel A: Market Factor ($\beta_{MKT}$)}} \\
 		\addlinespace[2pt]
-		0 yr & 1.763 & 1.222 & 0.280 & 1.44 & 6.27 & 2.015 & 1.754 & 0.567 & 1.15 & 3.82 \\
-		%0.1 yr & 1.760 & 1.228 & 0.274 & 1.43 & 6.40 & 1.989 & 1.846 & 0.465 & 1.08 & 4.46 \\
-		%2.5 yr & 1.716 & 1.479 & 0.273 & 1.16 & 6.35 & 2.207 & 1.999 & 0.428 & 1.10 & 5.19 \\
-		5 yr & 1.689 & 3.710 & 0.255 & 0.46 & 6.70 & 2.156 & 5.420 & 0.423 & 0.40 & 5.17 \\
-		10 yr & 1.451 & 1.126 & 0.206 & 1.29 & 7.06 & 1.640 & 5.551 & 0.282 & 0.30 & 5.92 \\
-		%12.5 yr & 1.321 & 1.039 & 0.199 & 1.27 & 6.63 & 1.510 & 1.558 & 0.236 & 0.97 & 6.47 \\
-		15 yr & 1.276 & 1.037 & 0.191 & 1.23 & 6.60 & 1.453 & 1.682 & 0.225 & 0.86 & 6.52 \\
-		%17.5 yr & 1.200 & 1.032 & 0.216 & 1.16 & 5.47 & 1.384 & 1.691 & 0.256 & 0.82 & 5.45 \\
-		20 yr & 1.132 & 1.001 & 0.240 & 1.13 & 4.74 & 1.255 & 1.776 & 0.299 & 0.71 & 4.26 \\
-		%22.5 yr & 1.068 & 2.835 & 0.257 & 0.38 & 4.28 & 1.149 & 1.602 & 0.319 & 0.72 & 3.73 \\
-		%25 yr & 1.046 & 2.831 & 0.253 & 0.37 & 4.27 & 1.119 & 1.836 & 0.324 & 0.61 & 3.60 \\
-		%27.5 yr & 1.045 & 2.839 & 0.249 & 0.37 & 4.32 & 1.118 & 1.835 & 0.323 & 0.61 & 3.60 \\
-		30 yr & 1.045 & 2.839 & 0.249 & 0.37 & 4.32 & 1.118 & 1.835 & 0.323 & 0.61 & 3.60 \\
+		0 yr & 1.109$^{*}$ & 0.511 & 0.152 & 2.17 & 7.13 & 1.003$^{*}$ & 0.480 & 0.324 & 2.09 & 2.97 \\
+		0.1 yr & 1.129 & 0.680 & 0.141 & 1.66 & 7.91 & 1.015$^{*}$ & 0.419 & 0.291 & 2.42 & 3.34 \\
+		2.5 yr & 1.125 & 13.744 & 0.164 & 0.08 & 7.08 & 1.043 & 1.077 & 0.280 & 0.97 & 3.72 \\
+		5 yr & 1.129 & 6.348 & 0.144 & 0.18 & 7.97 & 1.003 & 1.637 & 0.311 & 0.61 & 3.25 \\
+		10 yr & 1.046 & 4.873 & 0.171 & 0.21 & 6.26 & 0.922 & 10.419 & 0.354 & 0.09 & 2.55 \\
+		12.5 yr & 0.965 & 3.147 & 0.195 & 0.31 & 5.05 & 0.890 & 4.476 & 0.372 & 0.20 & 2.22 \\
+		15 yr & 0.926 & 2.916 & 0.191 & 0.32 & 4.84 & 0.858 & 3.737 & 0.404 & 0.23 & 1.87 \\
+		17.5 yr & 0.837 & 59.964 & 0.203 & 0.01 & 4.16 & 0.724 & 1.949 & 0.421 & 0.37 & 1.57 \\
+		20 yr & 0.776 & 9.304 & 0.225 & 0.08 & 3.61 & 0.565 & 1.393 & 0.441 & 0.41 & 1.27 \\
+		22.5 yr & 0.741 & 7.745 & 0.247 & 0.10 & 3.27 & 0.503 & 1.248 & 0.447 & 0.40 & 1.19 \\
+		25 yr & 0.730 & 8.066 & 0.241 & 0.09 & 3.31 & 0.492 & 1.224 & 0.448 & 0.40 & 1.17 \\
+		27.5 yr & 0.728 & 8.224 & 0.237 & 0.09 & 3.34 & 0.491 & 1.222 & 0.449 & 0.40 & 1.17 \\
+		30 yr & 0.728 & 8.224 & 0.237 & 0.09 & 3.34 & 0.491 & 1.222 & 0.449 & 0.40 & 1.17 \\
 		\addlinespace[4pt]
 		\multicolumn{11}{l}{\textit{Panel B: IA ($\beta_{IA}$)}} \\
 		\addlinespace[2pt]
-		0 yr & 0.656 & 2.240 & 0.537 & 0.29 & 1.07 & 0.932 & 3.059 & 1.448 & 0.30 & 0.72 \\
-		%0.1 yr & 0.649 & 2.253 & 0.531 & 0.29 & 1.04 & 0.889 & 3.240 & 1.212 & 0.27 & 0.66 \\
-		%2.5 yr & 0.413 & 2.708 & 0.567 & 0.15 & 0.48 & 0.886 & 3.182 & 1.064 & 0.28 & 0.46 \\
-		5 yr & 0.156 & 6.603 & 0.462 & 0.02 & 0.19 & 0.383 & 8.311 & 0.894 & 0.05 & 0.11 \\
-		10 yr & -0.328 & 4.260 & 0.471 & -0.08 & -0.61 & -0.696 & 10.654 & 0.619 & -0.07 & -1.10 \\
-		%12.5 yr & -0.538 & 4.211 & 0.496 & -0.13 & -0.89 & -0.943 & 2.463 & 0.539 & -0.38 & -1.59 \\
-		15 yr & -0.646 & 3.722 & 0.553 & -0.17 & -0.91 & -0.999 & 2.453 & 0.511 & -0.41 & -1.75 \\
-		%17.5 yr & -0.663 & 3.640 & 0.694 & -0.18 & -0.69 & -0.936 & 2.625 & 0.619 & -0.36 & -1.29 \\
-		20 yr & -0.660 & 3.449 & 0.745 & -0.19 & -0.67 & -0.774 & 2.986 & 0.713 & -0.26 & -0.88 \\
-		%22.5 yr & -0.580 & 4.544 & 0.757 & -0.13 & -0.62 & -0.599 & 2.783 & 0.748 & -0.22 & -0.65 \\
-		%25 yr & -0.531 & 4.858 & 0.735 & -0.11 & -0.61 & -0.545 & 2.818 & 0.750 & -0.19 & -0.60 \\
-		%27.5 yr & -0.525 & 4.910 & 0.727 & -0.11 & -0.62 & -0.543 & 2.820 & 0.747 & -0.19 & -0.61 \\
-		30 yr & -0.525 & 4.910 & 0.727 & -0.11 & -0.62 & -0.543 & 2.820 & 0.747 & -0.19 & -0.61 \\
+		0 yr & 0.995 & 0.880 & 0.382 & 1.13 & 2.42 & 1.632 & 1.371 & 1.230 & 1.19 & 0.99 \\
+		0.1 yr & 0.940 & 1.302 & 0.378 & 0.72 & 2.27 & 1.396 & 1.320 & 1.055 & 1.06 & 0.91 \\
+		2.5 yr & 0.597 & 30.513 & 0.459 & 0.02 & 1.03 & 0.789 & 2.613 & 0.852 & 0.30 & 0.50 \\
+		5 yr & 0.433 & 14.003 & 0.430 & 0.03 & 0.86 & 0.500 & 3.850 & 0.841 & 0.13 & 0.30 \\
+		10 yr & 0.108 & 23.281 & 0.515 & 0.00 & 0.23 & -0.016 & 19.073 & 0.850 & -0.00 & 0.04 \\
+		12.5 yr & -0.088 & 9.703 & 0.551 & -0.01 & -0.03 & -0.232 & 4.226 & 0.827 & -0.05 & -0.02 \\
+		15 yr & -0.217 & 7.182 & 0.616 & -0.03 & -0.11 & -0.300 & 3.166 & 0.852 & -0.09 & 0.03 \\
+		17.5 yr & -0.230 & 126.784 & 0.710 & -0.00 & -0.08 & -0.153 & 2.453 & 0.875 & -0.06 & 0.15 \\
+		20 yr & -0.247 & 20.104 & 0.787 & -0.01 & -0.14 & 0.085 & 2.476 & 0.896 & 0.03 & 0.31 \\
+		22.5 yr & -0.237 & 17.037 & 0.828 & -0.01 & -0.18 & 0.206 & 2.526 & 0.897 & 0.08 & 0.36 \\
+		25 yr & -0.214 & 18.185 & 0.817 & -0.01 & -0.18 & 0.230 & 2.535 & 0.894 & 0.09 & 0.37 \\
+		27.5 yr & -0.209 & 18.621 & 0.815 & -0.01 & -0.18 & 0.232 & 2.536 & 0.893 & 0.09 & 0.38 \\
+		30 yr & -0.209 & 18.621 & 0.815 & -0.01 & -0.18 & 0.232 & 2.536 & 0.893 & 0.09 & 0.38 \\
 		\bottomrule
 	\end{tabular}
 	\par\vspace{2pt}
@@ -1533,35 +1574,35 @@ These findings corroborate the simulation-based recommendation to focus on singl
 		\midrule
 		\multicolumn{11}{l}{\textit{Panel A: Market Factor ($\beta_{MKT}$)}} \\
 		\addlinespace[2pt]
-		0 yr & 1.781 & 1.143 & 0.217 & 1.56 & 8.13 & 1.955$^{*}$ & 0.955 & 0.342 & 2.05 & 5.65 \\
-		%0.1 yr & 1.773 & 1.142 & 0.214 & 1.55 & 8.23 & 1.933$^{*}$ & 0.974 & 0.338 & 1.98 & 5.66 \\
-		%2.5 yr & 1.836 & 1.033 & 0.221 & 1.78 & 8.16 & 2.285$^{**}$ & 0.748 & 0.404 & 3.05 & 5.51 \\
-		5 yr & 1.800 & 1.142 & 0.218 & 1.58 & 8.16 & 2.392$^{***}$ & 0.538 & 0.421 & 4.45 & 5.56 \\
-		10 yr & 1.401 & 1.008 & 0.191 & 1.39 & 7.31 & 1.593$^{***}$ & 0.464 & 0.303 & 3.44 & 5.23 \\
-		%12.5 yr & 1.240 & 1.426 & 0.187 & 0.87 & 6.61 & 1.396 & 1.229 & 0.258 & 1.14 & 5.50 \\
-		15 yr & 1.118 & 0.939 & 0.187 & 1.19 & 5.90 & 1.267 & 1.579 & 0.255 & 0.80 & 5.16 \\
-		%17.5 yr & 0.984 & 1.706 & 0.187 & 0.58 & 5.25 & 1.110 & 3.220 & 0.279 & 0.34 & 4.15 \\
-		20 yr & 0.918 & 1.850 & 0.184 & 0.50 & 5.10 & 1.028 & 3.363 & 0.296 & 0.31 & 3.62 \\
-		%22.5 yr & 0.908 & 1.820 & 0.180 & 0.50 & 5.10 & 1.024 & 3.135 & 0.289 & 0.33 & 3.68 \\
-		%25 yr & 0.911 & 1.827 & 0.180 & 0.50 & 5.09 & 1.023 & 3.129 & 0.288 & 0.33 & 3.69 \\
-		%27.5 yr & 0.912 & 1.830 & 0.180 & 0.50 & 5.09 & 1.024 & 3.133 & 0.288 & 0.33 & 3.69 \\
-		30 yr & 0.912 & 1.830 & 0.180 & 0.50 & 5.09 & 1.024 & 3.133 & 0.288 & 0.33 & 3.69 \\
+		0 yr & 1.280 & 0.899 & 0.085 & 1.42 & 15.19 & 0.947 & 3.390 & 0.140 & 0.28 & 6.48 \\
+		0.1 yr & 1.281 & 0.912 & 0.079 & 1.40 & 16.41 & 0.945 & 3.456 & 0.140 & 0.27 & 6.51 \\
+		2.5 yr & 1.302 & 0.873 & 0.115 & 1.49 & 11.34 & 1.041 & 1.774 & 0.192 & 0.59 & 5.23 \\
+		5 yr & 1.292 & 2.154 & 0.100 & 0.60 & 12.91 & 1.071 & 1.667 & 0.218 & 0.64 & 4.82 \\
+		10 yr & 1.100 & 8.666 & 0.132 & 0.13 & 8.39 & 0.896 & 3.839 & 0.230 & 0.23 & 3.95 \\
+		12.5 yr & 0.997 & 7.176 & 0.150 & 0.14 & 6.67 & 0.837 & 6.832 & 0.244 & 0.12 & 3.57 \\
+		15 yr & 0.895 & 2.173 & 0.150 & 0.41 & 5.87 & 0.770 & 7.482 & 0.255 & 0.10 & 3.21 \\
+		17.5 yr & 0.770 & 2.072 & 0.120 & 0.37 & 6.20 & 0.670 & 4.191 & 0.259 & 0.16 & 2.78 \\
+		20 yr & 0.695 & 1.740 & 0.114 & 0.40 & 5.85 & 0.606 & 3.588 & 0.241 & 0.17 & 2.65 \\
+		22.5 yr & 0.671 & 2.018 & 0.116 & 0.33 & 5.49 & 0.601 & 2.598 & 0.231 & 0.23 & 2.70 \\
+		25 yr & 0.669 & 1.982 & 0.123 & 0.34 & 5.14 & 0.600 & 2.600 & 0.230 & 0.23 & 2.67 \\
+		27.5 yr & 0.669 & 1.980 & 0.124 & 0.34 & 5.11 & 0.600 & 2.150 & 0.231 & 0.28 & 2.66 \\
+		30 yr & 0.669 & 1.980 & 0.124 & 0.34 & 5.11 & 0.600 & 2.150 & 0.231 & 0.28 & 2.66 \\
 		\addlinespace[4pt]
 		\multicolumn{11}{l}{\textit{Panel B: ME ($\beta_{ME}$)}} \\
 		\addlinespace[2pt]
-		0 yr & 0.811 & 2.089 & 0.566 & 0.39 & 0.99 & 1.048 & 2.126 & 0.957 & 0.49 & 0.77 \\
-		%0.1 yr & 0.740 & 1.980 & 0.612 & 0.37 & 0.77 & 0.954 & 1.963 & 0.979 & 0.49 & 0.66 \\
-		%2.5 yr & 0.898 & 2.056 & 0.391 & 0.44 & 1.81 & 1.379 & 2.973 & 0.697 & 0.46 & 1.95 \\
-		5 yr & 0.888 & 2.234 & 0.296 & 0.40 & 2.55 & 1.587 & 3.536 & 0.529 & 0.45 & 3.11 \\
-		10 yr & 0.814 & 12.157 & 0.417 & 0.07 & 1.58 & 1.373 & 3.431 & 0.781 & 0.40 & 1.58 \\
-		%12.5 yr & 1.027 & 3.631 & 0.235 & 0.28 & 4.06 & 1.704 & 5.756 & 0.297 & 0.30 & 6.23 \\
-		15 yr & 0.893 & 2.958 & 0.346 & 0.30 & 2.19 & 1.732 & 6.762 & 0.412 & 0.26 & 4.78 \\
-		%17.5 yr & 0.590 & 2.507 & 0.672 & 0.24 & 0.48 & 1.467 & 14.712 & 1.020 & 0.10 & 1.41 \\
-		20 yr & 0.218 & 1.749 & 0.786 & 0.12 & -0.15 & 1.313 & 7.376 & 1.023 & 0.18 & 1.00 \\
-		%22.5 yr & 0.075 & 1.734 & 0.737 & 0.04 & -0.37 & 1.286 & 9.366 & 0.998 & 0.14 & 0.99 \\
-		%25 yr & 0.080 & 1.736 & 0.743 & 0.05 & -0.37 & 1.265 & 9.487 & 0.991 & 0.13 & 0.98 \\
-		%27.5 yr & 0.080 & 1.736 & 0.742 & 0.05 & -0.37 & 1.263 & 9.526 & 0.989 & 0.13 & 0.98 \\
-		30 yr & 0.080 & 1.736 & 0.742 & 0.05 & -0.37 & 1.263 & 9.526 & 0.989 & 0.13 & 0.98 \\
+		0 yr & 0.900 & 5.002 & 0.375 & 0.18 & 1.76 & 1.794 & 10.281 & 0.432 & 0.17 & 4.15 \\
+		0.1 yr & 0.824 & 4.778 & 0.413 & 0.17 & 1.36 & 1.766 & 10.532 & 0.708 & 0.17 & 2.27 \\
+		2.5 yr & 0.924 & 7.566 & 0.289 & 0.12 & 2.53 & 2.120 & 4.776 & 0.538 & 0.44 & 3.81 \\
+		5 yr & 0.994 & 14.402 & 0.227 & 0.07 & 3.67 & 2.042 & 5.068 & 0.587 & 0.40 & 3.59 \\
+		10 yr & 1.015 & 16.368 & 0.246 & 0.06 & 3.75 & 1.610 & 13.506 & 0.649 & 0.12 & 2.91 \\
+		12.5 yr & 1.040 & 6.372 & 0.316 & 0.16 & 3.11 & 1.647 & 16.615 & 0.728 & 0.10 & 2.69 \\
+		15 yr & 0.837 & 4.392 & 0.489 & 0.19 & 1.51 & 1.597 & 2.591 & 0.757 & 0.62 & 2.55 \\
+		17.5 yr & 0.602 & 4.727 & 0.759 & 0.13 & 0.66 & 1.488 & 1.672 & 0.745 & 0.89 & 2.37 \\
+		20 yr & 0.274 & 3.077 & 0.792 & 0.09 & 0.15 & 1.415 & 1.253 & 0.661 & 1.13 & 2.35 \\
+		22.5 yr & 0.060 & 2.449 & 0.719 & 0.02 & -0.24 & 1.363 & 0.955 & 0.574 & 1.43 & 2.51 \\
+		25 yr & 0.018 & 2.389 & 0.729 & 0.01 & -0.28 & 1.332 & 0.954 & 0.550 & 1.40 & 2.50 \\
+		27.5 yr & 0.014 & 2.384 & 0.729 & 0.01 & -0.28 & 1.326 & 0.759 & 0.549 & 1.75 & 2.48 \\
+		30 yr & 0.014 & 2.384 & 0.729 & 0.01 & -0.28 & 1.326 & 0.759 & 0.549 & 1.75 & 2.48 \\
 		\bottomrule
 	\end{tabular}
 	\par\vspace{2pt}
@@ -1581,35 +1622,35 @@ These findings corroborate the simulation-based recommendation to focus on singl
 		\midrule
 		\multicolumn{11}{l}{\textit{Panel A: Market Factor ($\beta_{MKT}$)}} \\
 		\addlinespace[2pt]
-		0 yr & 1.588 & 2.540 & 0.248 & 0.63 & 6.57 & 1.877$^{*}$ & 0.779 & 0.360 & 2.41 & 5.35 \\
-		%0.1 yr & 1.585 & 2.675 & 0.244 & 0.59 & 6.66 & 1.856$^{*}$ & 0.912 & 0.351 & 2.04 & 5.42 \\
-		%2.5 yr & 1.613 & 5.218 & 0.278 & 0.31 & 5.99 & 2.126 & 1.530 & 0.428 & 1.39 & 5.09 \\
-		5 yr & 1.657 & 18.700 & 0.261 & 0.09 & 6.49 & 2.103 & 12.191 & 0.421 & 0.17 & 5.12 \\
-		10 yr & 1.538 & 1.688 & 0.205 & 0.91 & 7.57 & 1.755 & 4.738 & 0.316 & 0.37 & 5.70 \\
-		%12.5 yr & 1.461 & 1.249 & 0.185 & 1.17 & 7.87 & 1.671 & 2.401 & 0.271 & 0.70 & 6.23 \\
-		15 yr & 1.437 & 1.213 & 0.179 & 1.18 & 7.90 & 1.605 & 2.205 & 0.273 & 0.73 & 5.94 \\
-		%17.5 yr & 1.402 & 1.079 & 0.196 & 1.30 & 6.99 & 1.544 & 2.096 & 0.298 & 0.74 & 5.24 \\
-		20 yr & 1.361 & 1.135 & 0.208 & 1.20 & 6.53 & 1.445 & 1.992 & 0.324 & 0.73 & 4.51 \\
-		%22.5 yr & 1.307 & 1.129 & 0.231 & 1.16 & 5.70 & 1.355 & 1.919 & 0.336 & 0.71 & 4.10 \\
-		%25 yr & 1.283 & 1.133 & 0.239 & 1.13 & 5.43 & 1.326 & 1.843 & 0.338 & 0.72 & 4.00 \\
-		%27.5 yr & 1.282 & 1.134 & 0.239 & 1.13 & 5.41 & 1.325 & 1.843 & 0.338 & 0.72 & 4.00 \\
-		30 yr & 1.282 & 1.134 & 0.239 & 1.13 & 5.41 & 1.325 & 1.843 & 0.338 & 0.72 & 4.00 \\
+		0 yr & 1.021 & 1.241 & 0.124 & 0.82 & 8.24 & 0.976 & 1.582 & 0.207 & 0.62 & 4.79 \\
+		0.1 yr & 1.037 & 2.388 & 0.125 & 0.43 & 8.35 & 0.989 & 1.627 & 0.207 & 0.61 & 4.86 \\
+		2.5 yr & 1.020 & 2.370 & 0.147 & 0.43 & 7.11 & 0.996 & 6.597 & 0.222 & 0.15 & 4.46 \\
+		5 yr & 1.088 & 0.928 & 0.129 & 1.17 & 8.56 & 1.012 & 784.787 & 0.228 & 0.00 & 4.37 \\
+		10 yr & 1.129 & 0.857 & 0.132 & 1.32 & 8.64 & 1.036 & 6.643 & 0.243 & 0.16 & 4.11 \\
+		12.5 yr & 1.101 & 0.890 & 0.141 & 1.24 & 7.70 & 1.031 & 3.514 & 0.243 & 0.29 & 3.91 \\
+		15 yr & 1.093 & 0.854 & 0.145 & 1.28 & 7.27 & 1.002 & 3.999 & 0.270 & 0.25 & 3.27 \\
+		17.5 yr & 1.052 & 14.386 & 0.176 & 0.07 & 5.71 & 0.908 & 3.293 & 0.323 & 0.28 & 2.47 \\
+		20 yr & 1.012 & 5.785 & 0.188 & 0.17 & 5.42 & 0.768 & 2.823 & 0.390 & 0.27 & 1.74 \\
+		22.5 yr & 0.965 & 4.297 & 0.230 & 0.22 & 4.30 & 0.684 & 2.033 & 0.425 & 0.34 & 1.47 \\
+		25 yr & 0.946 & 4.686 & 0.243 & 0.20 & 4.01 & 0.664 & 1.961 & 0.433 & 0.34 & 1.41 \\
+		27.5 yr & 0.944 & 4.685 & 0.244 & 0.20 & 3.99 & 0.664 & 1.958 & 0.434 & 0.34 & 1.41 \\
+		30 yr & 0.944 & 4.685 & 0.244 & 0.20 & 3.99 & 0.664 & 1.958 & 0.434 & 0.34 & 1.41 \\
 		\addlinespace[4pt]
 		\multicolumn{11}{l}{\textit{Panel B: ROE ($\beta_{ROE}$)}} \\
 		\addlinespace[2pt]
-		0 yr & 0.600 & 2.202 & 0.499 & 0.27 & 1.02 & 1.424$^{*}$ & 0.699 & 0.933 & 2.04 & 1.05 \\
-		%0.1 yr & 0.568 & 2.320 & 0.477 & 0.24 & 0.99 & 1.330 & 0.820 & 0.904 & 1.62 & 1.00 \\
-		%2.5 yr & 0.393 & 4.496 & 0.454 & 0.09 & 0.67 & 0.977 & 1.259 & 0.817 & 0.78 & 0.83 \\
-		5 yr & 0.117 & 15.801 & 0.365 & 0.01 & 0.25 & 0.325 & 9.526 & 0.597 & 0.03 & 0.31 \\
-		10 yr & -0.276 & 2.999 & 0.395 & -0.09 & -0.58 & -0.489 & 4.149 & 0.516 & -0.12 & -0.89 \\
-		%12.5 yr & -0.437 & 2.922 & 0.436 & -0.15 & -0.79 & -0.666 & 2.513 & 0.486 & -0.26 & -1.20 \\
-		15 yr & -0.516 & 2.828 & 0.536 & -0.18 & -0.72 & -0.695 & 2.280 & 0.483 & -0.30 & -1.24 \\
-		%17.5 yr & -0.577 & 2.667 & 0.668 & -0.22 & -0.61 & -0.684 & 2.270 & 0.520 & -0.30 & -1.11 \\
-		20 yr & -0.607 & 3.573 & 0.227 & -0.17 & -2.71 & -0.645 & 2.145 & 0.551 & -0.30 & -0.96 \\
-		%22.5 yr & -0.583 & 3.639 & 0.223 & -0.16 & -2.75 & -0.586 & 2.155 & 0.597 & -0.27 & -0.77 \\
-		%25 yr & -0.561 & 3.730 & 0.240 & -0.15 & -2.47 & -0.564 & 2.136 & 0.597 & -0.26 & -0.75 \\
-		%27.5 yr & -0.558 & 3.742 & 0.243 & -0.15 & -2.43 & -0.564 & 2.136 & 0.589 & -0.26 & -0.76 \\
-		30 yr & -0.558 & 3.742 & 0.243 & -0.15 & -2.43 & -0.564 & 2.136 & 0.589 & -0.26 & -0.76 \\
+		0 yr & 0.668 & 1.238 & 0.571 & 0.54 & 1.19 & 1.063 & 1.569 & 1.022 & 0.68 & 0.78 \\
+		0.1 yr & 0.634 & 2.298 & 0.544 & 0.28 & 1.17 & 1.009 & 1.650 & 0.971 & 0.61 & 0.77 \\
+		2.5 yr & 0.506 & 2.024 & 0.476 & 0.25 & 1.04 & 0.670 & 6.647 & 0.960 & 0.10 & 0.59 \\
+		5 yr & 0.287 & 0.984 & 0.441 & 0.29 & 0.71 & 0.240 & 736.719 & 0.819 & 0.00 & 0.35 \\
+		10 yr & -0.062 & 3.275 & 0.495 & -0.02 & 0.04 & -0.204 & 4.578 & 0.727 & -0.04 & -0.04 \\
+		12.5 yr & -0.220 & 2.701 & 0.560 & -0.08 & -0.14 & -0.325 & 2.025 & 0.725 & -0.16 & -0.10 \\
+		15 yr & -0.312 & 3.489 & 0.684 & -0.09 & -0.16 & -0.354 & 1.942 & 0.696 & -0.18 & -0.10 \\
+		17.5 yr & -0.379 & 22.063 & 0.803 & -0.02 & -0.18 & -0.323 & 1.986 & 0.678 & -0.16 & -0.07 \\
+		20 yr & -0.419 & 9.840 & 0.203 & -0.04 & -2.28 & -0.239 & 3.292 & 0.680 & -0.07 & 0.04 \\
+		22.5 yr & -0.406 & 7.976 & 0.213 & -0.05 & -2.29 & -0.171 & 2.541 & 0.714 & -0.07 & 0.12 \\
+		25 yr & -0.388 & 8.204 & 0.224 & -0.05 & -2.11 & -0.154 & 2.489 & 0.712 & -0.06 & 0.13 \\
+		27.5 yr & -0.386 & 8.218 & 0.225 & -0.05 & -2.10 & -0.154 & 2.487 & 0.707 & -0.06 & 0.13 \\
+		30 yr & -0.386 & 8.218 & 0.225 & -0.05 & -2.10 & -0.154 & 2.487 & 0.707 & -0.06 & 0.13 \\
 		\bottomrule
 	\end{tabular}
 	\par\vspace{2pt}
@@ -1620,41 +1661,6 @@ These findings corroborate the simulation-based recommendation to focus on singl
 
 
 
-
-\subsubsection{Focus on varying vintage cutoffs}
-
-Our standard vintage year cutoff in our empirical Preqin dataset is 2019.
-In this section, we analyze how altering the maximum vintage cutoff influences the parameter estimates.
-Concretely, we compare yearly cutoff-vintages from 2021 to 2011, making it 11 distinct cutoff dates; note that cutoffs beyond 2019 include only vintage years already present in the dataset but allow their most recent (and potentially still unrealized) cash flows to fully enter the estimation.
-We only consider asymptotic estimates in this section, i.e., we did not perform cross-validation results for the different vintage cutoffs.
-
-Figure \ref{fig:max_vintage_PE_MKT} shows the market beta estimates for the single-factor model across different vintage cutoffs.
-We observe a clear upward trend in the market beta as we include more recent vintages.
-For equal-weighted (EW) portfolios, $\hat{\beta}_{\mathrm{MKT}}$ rises from approximately 0.87 with a 2011 cutoff to 1.05 with the full sample (2019/2021).
-Similarly, value-weighted (FW) estimates increase from 0.79 to 1.12.
-This could suggest that recent vintage years display higher market co-movements or that treating unrealized NAVs as distribution cash flows mechanically increases the $\beta$ exposures.
-Interestingly, asymptotic standard errors tend to increase when including the most recent vintages (e.g., jumping from $\approx 0.5$ to $>1.0$ for FW after 2016), likely because these younger funds contribute fewer informative cash flows given the 15-year horizon.
-
-\begin{figure}
-	\centering
-	\includegraphics[width=0.9\textwidth]{empirical/max_vintage_PE_MKT}
-	\caption{\textbf{Sensitivity analysis ($MKT$ factor):} Single-factor model for PE using VYP with different vintage-year cutoffs (asymptotic estimates).}
-	\label{fig:max_vintage_PE_MKT}
-\end{figure}
-
-
-Figure \ref{fig:max_vintage_PE_all_factors} displays the coefficients for the two-factor models.
-The second-factor estimates are largely robust to the vintage cutoff, maintaining their general sign and magnitude.
-For instance, the ME factor loading remains consistently positive (around 0.9 for EW and 1.7 for FW).
-In contrast, the Alpha coefficient in the MKT+Alpha model exhibits a downward drift, turning from insignificant positive values in the earlier cutoffs to significantly negative values (e.g., -0.18\% per month) when including post-2016 vintages.
-
-
-\begin{figure}
-	\centering
-	\includegraphics[width=0.9\textwidth]{empirical/max_vintage_PE_all_factors}
-	\caption{\textbf{Sensitivity analysis ($q^5$ factors):} Two-factor models for PE using VYP with different vintage-year cutoffs (asymptotic estimates).}
-	\label{fig:max_vintage_PE_all_factors}
-\end{figure}
 
 
 

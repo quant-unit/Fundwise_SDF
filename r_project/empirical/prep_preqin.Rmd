@@ -26,7 +26,7 @@ if (sys.nframe() == 0L) rm(list = ls())
 library(readxl)
 library(here)
 
-data.prepared.folder <- here("empirical/data_prepared_2026")
+data.prepared.folder <- here("empirical/data_prepared_2026_b")
 
 
 # setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
@@ -159,7 +159,8 @@ make.preqin.df <- function(
     acs.filter = "Fund of Funds",
     out.name = "FOF",
     region.filter = NA,
-    vin.year.pfs = FALSE) {
+    vin.year.pfs = FALSE,
+    final.nav.discount = 1) {
     col.to.keep <- c(
         "FUND.ID", "FUND.SIZE..USD.MN.", "VINTAGE...INCEPTION.YEAR",
         "TRANSACTION.DATE", "TRANSACTION.AMOUNT", "NET.CASHFLOW",
@@ -199,7 +200,7 @@ make.preqin.df <- function(
         df.ss$CUMULATIVE.CONTRIBUTION <- c(df.ss$CUMULATIVE.CONTRIBUTION[1], diff(df.ss$CUMULATIVE.CONTRIBUTION))
         df.ss$CUMULATIVE.DISTRIBUTION <- c(df.ss$CUMULATIVE.DISTRIBUTION[1], diff(df.ss$CUMULATIVE.DISTRIBUTION))
         # for last date: CF = CF + NAV, i.e., regard final NAV as final distribution
-        final.nav <- df.ss$TRANSACTION.AMOUNT[nrow(df.ss)]
+        final.nav <- df.ss$TRANSACTION.AMOUNT[nrow(df.ss)] * final.nav.discount
         df.ss$CF[nrow(df.ss)] <- df.ss$CF[nrow(df.ss)] + final.nav
 
         year.diff <- min(as.numeric(format(df.ss$TRANSACTION.DATE, "%Y"))) - as.numeric(df.ss$VINTAGE...INCEPTION.YEAR[1])
@@ -286,7 +287,7 @@ acs <- list(
 )
 
 
-make.preqin.csv <- function(fund.size.weighting, vin.year.pfs, region.filter) {
+make.preqin.csv <- function(fund.size.weighting, vin.year.pfs, region.filter, final.nav.discount=1) {
     l <- list()
     for (i in names(acs)) {
         print(acs[[i]])
@@ -295,7 +296,8 @@ make.preqin.csv <- function(fund.size.weighting, vin.year.pfs, region.filter) {
             acs.filter = acs[[i]],
             region.filter = region.filter,
             vin.year.pfs = vin.year.pfs,
-            out.name = i
+            out.name = i,
+            final.nav.discount = final.nav.discount
         )
         l[[i]] <- df0
     }
@@ -304,6 +306,7 @@ make.preqin.csv <- function(fund.size.weighting, vin.year.pfs, region.filter) {
     tag <- ifelse(fund.size.weighting, "FW", "EW")
     tag <- ifelse(vin.year.pfs, paste0(tag, "_VYP"), tag)
     tag <- ifelse(is.na(region.filter), tag, paste0(tag, "_", region.filter))
+    tag <- ifelse(final.nav.discount != 1, paste0(tag, "_NC", final.nav.discount*100), tag)
     file <- paste0(data.prepared.folder, "/preqin_cashflows_2022_", tag, "_NAV.csv")
     file <- paste0(data.prepared.folder, "/preqin_cashflows_", tag, "_NAV.csv")
     write.csv(df.out, file, row.names = FALSE)
@@ -316,6 +319,8 @@ df.out <- make.preqin.csv(TRUE, FALSE, NA)
 df.out <- make.preqin.csv(FALSE, FALSE, NA)
 df.out <- make.preqin.csv(TRUE, TRUE, "Europe")
 df.out <- make.preqin.csv(FALSE, TRUE, "Europe")
+df.out <- make.preqin.csv(TRUE, TRUE, NA, 0.5) # 50% final NAV discount
+df.out <- make.preqin.csv(FALSE, TRUE, NA, 0.5) # 50% final NAV discount
 
 summary(df.out)
 ```

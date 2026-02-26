@@ -11,7 +11,7 @@
 
 <meta name="author" content="Christian Tausch" />
 
-<meta name="date" content="2026-02-03" />
+<meta name="date" content="2026-02-25" />
 
 <title>Documentation of Preqin Data Preparation</title>
 
@@ -1624,7 +1624,7 @@ display: none;
 <h1 class="title toc-ignore">Documentation of Preqin Data
 Preparation</h1>
 <h4 class="author">Christian Tausch</h4>
-<h4 class="date">2026-02-03</h4>
+<h4 class="date">2026-02-25</h4>
 
 </div>
 
@@ -1650,7 +1650,7 @@ if (sys.nframe() == 0L) rm(list = ls())
 library(readxl)
 library(here)
 
-data.prepared.folder &lt;- here(&quot;empirical/data_prepared_2026&quot;)
+data.prepared.folder &lt;- here(&quot;empirical/data_prepared_2026_b&quot;)
 
 
 # setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
@@ -1925,7 +1925,7 @@ helps in understanding the coverage of the dataset.</p>
 }
 make.strategy.summary()</code></pre>
 <pre><code>## % latex table generated in R 4.3.1 by xtable 1.8-4 package
-## % Tue Feb  3 15:31:37 2026
+## % Wed Feb 25 19:20:39 2026
 ## \begin{table}[ht]
 ## \centering
 ## \begin{tabular}{llr}
@@ -2072,7 +2072,8 @@ Year Portfolios (VYP) by averaging metadata-matched cash flows.</p>
     acs.filter = &quot;Fund of Funds&quot;,
     out.name = &quot;FOF&quot;,
     region.filter = NA,
-    vin.year.pfs = FALSE) {
+    vin.year.pfs = FALSE,
+    final.nav.discount = 1) {
     col.to.keep &lt;- c(
         &quot;FUND.ID&quot;, &quot;FUND.SIZE..USD.MN.&quot;, &quot;VINTAGE...INCEPTION.YEAR&quot;,
         &quot;TRANSACTION.DATE&quot;, &quot;TRANSACTION.AMOUNT&quot;, &quot;NET.CASHFLOW&quot;,
@@ -2112,7 +2113,7 @@ Year Portfolios (VYP) by averaging metadata-matched cash flows.</p>
         df.ss$CUMULATIVE.CONTRIBUTION &lt;- c(df.ss$CUMULATIVE.CONTRIBUTION[1], diff(df.ss$CUMULATIVE.CONTRIBUTION))
         df.ss$CUMULATIVE.DISTRIBUTION &lt;- c(df.ss$CUMULATIVE.DISTRIBUTION[1], diff(df.ss$CUMULATIVE.DISTRIBUTION))
         # for last date: CF = CF + NAV, i.e., regard final NAV as final distribution
-        final.nav &lt;- df.ss$TRANSACTION.AMOUNT[nrow(df.ss)]
+        final.nav &lt;- df.ss$TRANSACTION.AMOUNT[nrow(df.ss)] * final.nav.discount
         df.ss$CF[nrow(df.ss)] &lt;- df.ss$CF[nrow(df.ss)] + final.nav
 
         year.diff &lt;- min(as.numeric(format(df.ss$TRANSACTION.DATE, &quot;%Y&quot;))) - as.numeric(df.ss$VINTAGE...INCEPTION.YEAR[1])
@@ -2201,7 +2202,7 @@ acs &lt;- list(
 )
 
 
-make.preqin.csv &lt;- function(fund.size.weighting, vin.year.pfs, region.filter) {
+make.preqin.csv &lt;- function(fund.size.weighting, vin.year.pfs, region.filter, final.nav.discount=1) {
     l &lt;- list()
     for (i in names(acs)) {
         print(acs[[i]])
@@ -2210,7 +2211,8 @@ make.preqin.csv &lt;- function(fund.size.weighting, vin.year.pfs, region.filter)
             acs.filter = acs[[i]],
             region.filter = region.filter,
             vin.year.pfs = vin.year.pfs,
-            out.name = i
+            out.name = i,
+            final.nav.discount = final.nav.discount
         )
         l[[i]] &lt;- df0
     }
@@ -2219,6 +2221,7 @@ make.preqin.csv &lt;- function(fund.size.weighting, vin.year.pfs, region.filter)
     tag &lt;- ifelse(fund.size.weighting, &quot;FW&quot;, &quot;EW&quot;)
     tag &lt;- ifelse(vin.year.pfs, paste0(tag, &quot;_VYP&quot;), tag)
     tag &lt;- ifelse(is.na(region.filter), tag, paste0(tag, &quot;_&quot;, region.filter))
+    tag &lt;- ifelse(final.nav.discount != 1, paste0(tag, &quot;_NC&quot;, final.nav.discount*100), tag)
     file &lt;- paste0(data.prepared.folder, &quot;/preqin_cashflows_2022_&quot;, tag, &quot;_NAV.csv&quot;)
     file &lt;- paste0(data.prepared.folder, &quot;/preqin_cashflows_&quot;, tag, &quot;_NAV.csv&quot;)
     write.csv(df.out, file, row.names = FALSE)
@@ -2303,23 +2306,49 @@ df.out &lt;- make.preqin.csv(TRUE, TRUE, NA)</code></pre>
 ## [1] &quot;Growth&quot; &quot;Buyout&quot;
 ## [1] &quot;Fund of Funds&quot;
 ## [1] &quot;Secondaries&quot;</code></pre>
+<pre class="r"><code>df.out &lt;- make.preqin.csv(TRUE, TRUE, NA, 0.5) # 50% final NAV discount</code></pre>
+<pre><code>## [1] &quot;Infrastructure&quot;
+## [1] &quot;Natural Resources&quot;
+## [1] &quot;Private Debt&quot;
+## [1] &quot;Private Equity&quot;
+## [1] &quot;Real Estate&quot;
+## [1] &quot;Venture Capital&quot;
+## [1] &quot;Mezzanine&quot;
+## [1] &quot;Special Situations&quot; &quot;Distressed Debt&quot;   
+## [1] &quot;Buyout&quot;
+## [1] &quot;Growth&quot; &quot;Buyout&quot;
+## [1] &quot;Fund of Funds&quot;
+## [1] &quot;Secondaries&quot;</code></pre>
+<pre class="r"><code>df.out &lt;- make.preqin.csv(FALSE, TRUE, NA, 0.5) # 50% final NAV discount</code></pre>
+<pre><code>## [1] &quot;Infrastructure&quot;
+## [1] &quot;Natural Resources&quot;
+## [1] &quot;Private Debt&quot;
+## [1] &quot;Private Equity&quot;
+## [1] &quot;Real Estate&quot;
+## [1] &quot;Venture Capital&quot;
+## [1] &quot;Mezzanine&quot;
+## [1] &quot;Special Situations&quot; &quot;Distressed Debt&quot;   
+## [1] &quot;Buyout&quot;
+## [1] &quot;Growth&quot; &quot;Buyout&quot;
+## [1] &quot;Fund of Funds&quot;
+## [1] &quot;Secondaries&quot;</code></pre>
 <pre class="r"><code>summary(df.out)</code></pre>
-<pre><code>##       Date                              CF                NAV        
-##  Min.   :1990-12-31 00:00:00.00   Min.   :-1.00000   Min.   :0.0000  
-##  1st Qu.:2008-03-31 00:00:00.00   1st Qu.:-0.01914   1st Qu.:0.1520  
-##  Median :2013-12-31 00:00:00.00   Median : 0.00000   Median :0.3992  
-##  Mean   :2012-08-30 03:56:09.99   Mean   : 0.02298   Mean   :0.4525  
-##  3rd Qu.:2018-03-31 00:00:00.00   3rd Qu.: 0.03000   3rd Qu.:0.6682  
-##  Max.   :2021-12-31 00:00:00.00   Max.   : 2.78415   Max.   :7.2105  
-##       CON                 DIS                type              Vintage    
-##  Min.   :-2.200000   Min.   :-0.163137   Length:8890        Min.   :1990  
-##  1st Qu.:-0.036198   1st Qu.: 0.000000   Class :character   1st Qu.:2000  
-##  Median :-0.003334   Median : 0.005778   Mode  :character   Median :2006  
-##  Mean   :-0.027116   Mean   : 0.027100                      Mean   :2006  
-##  3rd Qu.: 0.000000   3rd Qu.: 0.033341                      3rd Qu.:2011  
-##  Max.   : 0.138825   Max.   : 1.197800                      Max.   :2021  
+<pre><code>##       Date                              CF                 NAV        
+##  Min.   :1982-12-31 00:00:00.00   Min.   :-1.000000   Min.   :0.0000  
+##  1st Qu.:2003-12-31 00:00:00.00   1st Qu.:-0.007290   1st Qu.:0.1144  
+##  Median :2011-03-31 00:00:00.00   Median : 0.002772   Median :0.3481  
+##  Mean   :2009-11-22 17:12:17.21   Mean   : 0.013259   Mean   :0.4104  
+##  3rd Qu.:2016-09-30 00:00:00.00   3rd Qu.: 0.029266   3rd Qu.:0.6304  
+##  Max.   :2022-03-31 00:00:00.00   Max.   : 2.638653   Max.   :7.0521  
+##       CON                 DIS                 type              Vintage    
+##  Min.   :-1.000000   Min.   :-0.1193366   Length:18991       Min.   :1982  
+##  1st Qu.:-0.031279   1st Qu.: 0.0003324   Class :character   1st Qu.:1995  
+##  Median :-0.001984   Median : 0.0108276   Mode  :character   Median :2001  
+##  Mean   :-0.022342   Mean   : 0.0267542                      Mean   :2001  
+##  3rd Qu.: 0.000000   3rd Qu.: 0.0343327                      3rd Qu.:2008  
+##  Max.   : 0.134854   Max.   : 1.7964583                      Max.   :2021  
 ##    Fund.ID         
-##  Length:8890       
+##  Length:18991      
 ##  Class :character  
 ##  Mode  :character  
 ##                    

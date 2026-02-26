@@ -174,7 +174,9 @@ run_estimation <- function(
     scenario_id = NULL,
     # Alpha bounds (for optimx)
     alpha_lower = -Inf,
-    alpha_upper = Inf) {
+    alpha_upper = Inf,
+    # NAV discount
+    final_nav_discount = 100) {
     # -------------------------------------------------------------------------
     # Store current working directory to restore later
     # -------------------------------------------------------------------------
@@ -245,7 +247,8 @@ run_estimation <- function(
             factor_tag <- ""
             if (include_alpha_term) factor_tag <- paste0(factor_tag, "alpha_")
             if (length(factors_to_use) > 0 && any(factors_to_use != "")) factor_tag <- paste0(factor_tag, paste(factors_to_use, collapse = "_"), "_")
-            cache_folder_tag <- paste0(private_source, "_", factor_tag, weighting)
+            nc_tag <- if (final_nav_discount != 100) paste0("_NC", final_nav_discount) else ""
+            cache_folder_tag <- paste0(private_source, "_", factor_tag, weighting, nc_tag)
         }
     }
 
@@ -328,6 +331,9 @@ run_estimation <- function(
     assign("lambdas", lambdas, envir = .GlobalEnv)
     assign("kernel.bandwidth", kernel_bandwidth, envir = .GlobalEnv)
     assign("max.vintage", max_vintage, envir = .GlobalEnv)
+
+    # NAV discount
+    assign("final.nav.discount", final_nav_discount, envir = .GlobalEnv)
 
     # Alpha bounds
     assign("alpha.lower", alpha_lower, envir = .GlobalEnv)

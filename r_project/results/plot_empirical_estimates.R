@@ -757,6 +757,7 @@ plot_max_vintage_cutoff <- function(
     fund_type = "PE",
     factors = c("MKT", "Alpha", "EG", "IA", "ME", "ROE"),
     vintages = 2011:2021,
+    nc_tag = "",
     export_svg = FALSE,
     export_png = FALSE,
     export_pdf = FALSE,
@@ -780,7 +781,7 @@ plot_max_vintage_cutoff <- function(
         for (w in c("EW", "FW")) {
             folder <- file.path(
                 data_dir,
-                paste0("cache_q_factors_preqin_", w, "_VYP_max_vin_", v)
+                paste0("cache_q_factors_preqin_", w, "_VYP", nc_tag, "_max_vin_", v)
             )
             csv_path <- file.path(folder, "0_asymptotic_inference_summary.csv")
 
@@ -1367,7 +1368,7 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 getwd()
 
 file.folder <- "results/data_out_2026-emp-max-vin-2019"
-file.folder <- "data_out_2026_02_24"
+file.folder <- "data_out_2026_02_26"
 
 # # Two-factor model with all factors
 plot_empirical_estimates(
@@ -1377,7 +1378,7 @@ plot_empirical_estimates(
     export_pdf = TRUE,
     export_csv = TRUE,
     export_latex = TRUE,
-    y.max.mkt = 2.5, y.min.mkt = 0.7,
+    y.max.mkt = 1.5, y.min.mkt = -0.25,
     y.lim.second = list(Alpha = c(-0.01, 0.01)),
     output_file = "figures/empirical_PE_all_factors"
 )
@@ -1391,8 +1392,8 @@ plot_empirical_estimates(
     export_csv = TRUE,
     export_latex = TRUE,
     height = 4,
-    y.max.mkt = 2.5, y.min.mkt = 0.7,
-    y.lim.second = list(Alpha = c(-0.01, 0.01)),
+    y.max.mkt = 1.5, y.min.mkt = 0.5,
+    # y.lim.second = list(Alpha = c(-0.01, 0.01)),
     output_file = "figures/empirical_PE_MKT"
 )
 
@@ -1406,7 +1407,8 @@ plot_max_vintage_cutoff(
     export_svg = TRUE,
     export_csv = TRUE,
     export_latex = TRUE,
-    y.max.mkt = 2.5, y.min.mkt = 0.5,
+    height = 5,
+    y.max.mkt = 2.5, y.min.mkt = 0,
     y.lim.second = list(Alpha = c(-0.01, 0.01)),
     output_file = "figures/max_vintage_PE_all_factors"
 )
@@ -1421,7 +1423,40 @@ plot_max_vintage_cutoff(
     export_svg = TRUE,
     export_csv = TRUE,
     export_latex = TRUE,
-    height = 4,
-    y.max.mkt = 2.5, y.min.mkt = 0.5,
+    height = 3,
+    y.max.mkt = 2.5, y.min.mkt = 0,
     output_file = "figures/max_vintage_PE_MKT"
+)
+
+# Max vintage-year cutoff analysis (MKT only, NC50)
+plot_max_vintage_cutoff(
+    data_dir = file.folder,
+    fund_type = "PE",
+    factors = c("MKT"),
+    vintages = 2011:2021,
+    nc_tag = "_NC50",
+    export_pdf = TRUE,
+    export_svg = TRUE,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    height = 3,
+    y.max.mkt = 2.5, y.min.mkt = 0,
+    output_file = "figures/max_vintage_PE_NC50_MKT"
+)
+
+# Max vintage-year cutoff analysis (all factors)
+plot_max_vintage_cutoff(
+    data_dir = file.folder,
+    fund_type = "PE",
+    factors = c("Alpha", "EG", "IA", "ME", "ROE"),
+    vintages = 2011:2021,
+    nc_tag = "_NC50",
+    export_pdf = TRUE,
+    export_svg = TRUE,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    height = 5,
+    y.max.mkt = 2.5, y.min.mkt = 0,
+    y.lim.second = list(Alpha = c(-0.01, 0.01)),
+    output_file = "figures/max_vintage_PE_NC50_all_factors"
 )

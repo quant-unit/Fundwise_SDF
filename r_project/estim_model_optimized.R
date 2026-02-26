@@ -59,6 +59,7 @@ if (source.internally) {
   max.months <- c(1, 60, 120, 150, 180)
 
   include.alpha.term <- FALSE
+  final.nav.discount <- 100
   lambdas <- 0
   kernel.bandwidth <- 12
   alpha.lower <- -0.01
@@ -133,7 +134,10 @@ if (export.data) {
 if (!use.simulation) {
   if (private.source == "preqin") {
     year.tag <- ""
-    df.private.cfs <- read.csv(paste0("empirical/", data.prepared.folder, "/preqin_cashflows_", weighting, year.tag, "_NAV.csv"))
+    nc.tag <- if (exists("final.nav.discount") && final.nav.discount != 100) paste0("_NC", final.nav.discount) else ""
+    private.file <- paste0("empirical/", data.prepared.folder, "/preqin_cashflows_", weighting, nc.tag, year.tag, "_NAV.csv")
+    cat("Loading private data:", private.file, "\n")
+    df.private.cfs <- read.csv(private.file)
     colnames(df.private.cfs)
   }
 
