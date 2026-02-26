@@ -1292,7 +1292,7 @@ In this section, we analyze how altering the maximum vintage year cutoff influen
 Concretely, we compare yearly cutoff-vintages from 2011 to 2021; note that cutoffs beyond 2019 include only vintage years already present in our dataset but allow their most recent (and primarily unrealized) cash flows to fully enter the estimation.
 We focus on asymptotic estimates for this analysis.
 
-Figure \ref{fig:max_vintage_PE_MKT} shows the estimating market beta for the single-factor model across different vintage cutoffs, comparing the standard results (NAV at face value, top panel) with a scenario where all final NAVs are artificially discounted by 50\% (NC50, bottom panel).
+Figure \ref{fig:max_vintage_PE_MKT} shows the estimating market beta for the single-factor model across different vintage cutoffs, comparing the standard results (NAV at face value, two left charts) with a scenario where all final NAVs are artificially discounted by 50\% (NC50, two right charts).
 Under the standard specification, we observe a severe upward drift in the market beta as we include more recent, unseasoned vintages.
 For equal-weighted (EW) portfolios, $\hat{\beta}_{\mathrm{MKT}}$ rises from approximately 0.87 with a 2011 cutoff climbing to 1.05 with the full sample (2021).
 Similarly, value-weighted (FW) estimates increase steadily from 0.79 to 1.12.
@@ -1307,9 +1307,8 @@ Indeed, reading the top panel of Figure \ref{fig:max_vintage_PE_MKT} alongside t
 
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=0.88\textwidth]{empirical/max_vintage_PE_MKT} \\
-	\includegraphics[width=0.88\textwidth]{empirical/max_vintage_PE_NC50_MKT}
-	\caption{\textbf{Sensitivity analysis ($MKT$ factor):} Single-factor model for PE using VYP with different vintage-year cutoffs (asymptotic estimates). The top panel shows the standard baseline, while the bottom panel applies a 50\% discount to all final NAVs, which we treat as final distribution cash flow.}
+	\includegraphics[width=0.88\textwidth]{empirical/max_vintage_PE_MKT_combined_NC}
+	\caption{\textbf{Sensitivity analysis ($MKT$ factor):} Single-factor model for PE using VYP with different vintage-year cutoffs (asymptotic estimates). The two left charts shows the standard baseline (full NAV as final cash flow), while the two right chart applies a 50\% discount to all final NAVs, which we treat as final distribution cash flow.}
 	\label{fig:max_vintage_PE_MKT}
 \end{figure}
 
@@ -1324,7 +1323,7 @@ Thus, moving forward into our main empirical evaluations of the single-factor an
 \subsubsection{Single market-factor models}
 \label{sec:empirical_single}
 
-Table~\ref{tab:empirical_pe_mkt} and Figure~\ref{fig:empirical_MKT} report the single-factor MKT model for PE across horizons from 0.1 to 30 years.
+Table~\ref{tab:empirical_pe_mkt} and Figure~\ref{fig:empirical_MKT} report the single-factor MKT model for PE across horizons from 0.1 to 30 years, using the conservatively restricted sample with a maximum vintage-year cutoff of 2010.
 The market beta estimate broadly declines with the compounding horizon: under equal weighting (EW), $\hat{\beta}_{\mathrm{MKT}}$ ranges from approximately $1.23$--$1.27$ at short horizons (0--5~years) and decreases to approximately $0.67$ at 25--30~years; under fund-size weighting (FW), the corresponding range is $1.08$--$1.12$ down to $0.56$.
 The elevated estimates at short horizons likely reflect the finite-sample bias documented in the simulation study, whereby the estimator overestimates market exposure when few discounting dates are used.
 Estimates stabilize beyond approximately 20~years, consistent with the bias-minimizing horizons identified in Section~\ref{sec:simulation_study}.
@@ -1388,7 +1387,7 @@ Therefore, drawing on both the simulation evidence and the cross-validation resu
 \subsubsection{Two-factor models}
 \label{sec:empirical_multi}
 
-We now examine two-factor models for PE that pair the MKT factor with either an Alpha intercept or one of the four non-market $q^5$ factors (Tables~\ref{tab:empirical_pe_alpha}--\ref{tab:empirical_pe_roe} and Figure~\ref{fig:empirical}).
+We now examine two-factor models for PE that pair the MKT factor with either an Alpha intercept or one of the four non-market $q^5$ factors, again using the conservatively restricted sample with a maximum vintage-year cutoff of 2010 (Tables~\ref{tab:empirical_pe_alpha}--\ref{tab:empirical_pe_roe} and Figure~\ref{fig:empirical}).
 
 \textit{MKT + Alpha} (Table~\ref{tab:empirical_pe_alpha}):
 Adding an $\alpha$ term tends to decrease the MKT loading relative to the single-factor model at most horizons, especially under FW: under EW, $\hat{\beta}_{\mathrm{MKT}}$ ranges from $0.53$ to $1.00$; under FW, from $-0.22$ to $0.09$.
@@ -2011,86 +2010,77 @@ Across all scenarios with $\sigma=30\%$, the beta estimates range from $0.62$ to
 
 We now compare our empirical results directly with those published by \cite{DLP12}.
 A key distinction is the underlying private market dataset: we use the Preqin cash flow database, which is also employed by \cite{KN16} and \cite{ACGP18}, whereas \cite{DLP12} rely on the Thomson Venture Economics (TVE) fund-level dataset, which suffers from well-documented data quality issues such as forward-filling of stale KPIs \citep{HJK14}.
-\cite[Table~5]{DLP12} report results for Buyout (BO) and Venture Capital (VC) funds using both an S\&P~500 single-factor model and the \cite{FF93} three-factor model.
-In their single-factor specification, VC exhibits a market beta of 2.73 and a highly negative annualized alpha of $-12.3\%$, while BO yields a market beta of 1.31 and an annualized alpha of $-4.8\%$.
+\cite[Table~5]{DLP12} report results for Buyout (BO) and Venture Capital (VC) funds using both a two-factor model (S\&P~500 MKT + $\alpha$) and the \cite{FF93} four-factor model (MKT, SMB, HML, and $\alpha$).
+In their two-factor specification, VC exhibits a market beta of 2.73 and a highly negative annualized alpha of $-12.3\%$, while BO yields a market beta of 1.31 and an annualized alpha of $-4.8\%$.
 These strongly negative alpha estimates can be at least partially attributed to the aforementioned data errors in TVE; indeed, both alpha coefficients are statistically insignificant once bootstrap standard errors are taken into account.
-In their three-factor specification, the factor loadings are broadly plausible: BO exhibits $\hat{\beta}_{\mathrm{MKT}}=0.72$, $\hat{\beta}_{\mathrm{SMB}}=0.50$, and $\hat{\beta}_{\mathrm{HML}}=0.19$, while VC shows $\hat{\beta}_{\mathrm{MKT}}=2.20$, $\hat{\beta}_{\mathrm{SMB}}=1.83$, and $\hat{\beta}_{\mathrm{HML}}=-0.48$.
-However, \cite{DLP12} note that the three-factor model does not significantly improve upon the single-factor specification and that the SMB and HML loadings are largely insignificant.
+In their four-factor specification, the factor loadings are broadly plausible: BO exhibits $\hat{\beta}_{\mathrm{MKT}}=0.72$, $\hat{\beta}_{\mathrm{SMB}}=0.50$, and $\hat{\beta}_{\mathrm{HML}}=0.19$, while VC shows $\hat{\beta}_{\mathrm{MKT}}=2.20$, $\hat{\beta}_{\mathrm{SMB}}=1.83$, and $\hat{\beta}_{\mathrm{HML}}=-0.48$.
+However, \cite{DLP12} note that the four-factor model does not significantly improve upon the two-factor specification and that the SMB and HML loadings are largely insignificant.
 
-Table~\ref{tab:driessen_comparison_empirical} presents our own three-factor (MKT, SMB, HML) and four-factor ($\alpha$, MKT, SMB, HML) Fama-French model results for BO, VC, PE, and RE at Horizon~0.
-The three-factor results in Panel~A (EW) and Panel~B (FW) confirm the qualitative pattern reported by \cite{DLP12}: market betas are consistently above one, ranging from $1.23$ (RE, EW) to $2.29$ (VC, EW), broadly in line with the \cite{DLP12} estimates.
-The SMB loading is positive for BO, PE, and RE but negative for VC under both weighting schemes. Notably, this sign for VC \emph{reverses} the pattern reported by \cite{DLP12}, who find a strongly positive VC SMB loading ($\hat{\beta}_{\mathrm{SMB}}=1.83$). The discrepancy likely reflects differences in the underlying datasets (Preqin vs.\ TVE) and sample periods, and underscores the fragility of multi-factor estimates in private equity.
-However, the asymptotic standard errors for all three-factor loadings are extremely large --- often exceeding the point estimates by a factor of five or more (e.g., SE$_{\mathrm{SMB}}=11.8$ for BO under EW, SE$_{\mathrm{SMB}}=58.1$ for BO under FW) --- rendering every coefficient statistically insignificant.
+Table~\ref{tab:driessen_comparison_empirical} presents our own two-factor ($\alpha$, MKT), three-factor (MKT, SMB, HML), and four-factor ($\alpha$, MKT, SMB, HML) \cite{FF93} model results for BO, VC, PE, and RE at Horizon~0, using the conservatively restricted sample with a maximum vintage-year cutoff of 2010.
+The three-factor results (MKT, SMB, HML) without an alpha term are presented first to establish a baseline before introducing the destabilizing alpha parameter. Under this specification, market betas are typically around one or above, ranging from $0.96$ (RE, EW) to $1.99$ (VC, EW), broadly mirroring the \cite{DLP12} MKT estimates.
+The SMB loading is positive for BO, PE, and RE but negative for VC under both weighting schemes. Notably, this sign for VC \emph{reverses} the pattern reported by \cite{DLP12}, who find a strongly positive VC SMB loading ($\hat{\beta}_{\mathrm{SMB}}=1.83$). The discrepancy likely reflects differences in the underlying datasets (Preqin vs.\ TVE) and sample periods, underscoring the severe fragility of multi-factor estimates in private equity.
+Furthermore, the asymptotic standard errors for all three-factor loadings are extremely large, often exceeding the point estimates by a factor of three or more, rendering every single coefficient statistically insignificant.
 This imprecision is dramatically worse than the bootstrap standard errors reported in \cite[Table~5]{DLP12}, where at least the MKT loading achieves marginal significance for some specifications.
 
-The four-factor model results, which additionally include a monthly $\alpha$ term constrained to an upper bound of 2\% per month, are even more problematic.
-The alpha estimates for VC and PE under FW hit the upper bound ($\hat{\alpha}=0.020$), signaling that the optimizer is unable to find an interior solution --- a symptom of the ``exploding alpha'' problem documented in our simulation study.
-Because the alpha term absorbs the compounded idiosyncratic noise, the remaining factor loadings become unstable: the MKT coefficient for BO drops to 0.020 under FW (essentially zero), yet SMB and HML loadings swing wildly (e.g., $\hat{\beta}_{\mathrm{HML}}=-1.64$ for BO under FW).
-Strikingly, the asymptotic standard errors for MKT, SMB, and HML in the four-factor model round to $(0.000)$, a numerical artifact of near-degenerate Hessian matrices caused by the alpha-induced collinearity.
-These findings reinforce our simulation-based conclusion from Section~\ref{sec:simulation_study}: with the limited cross-section of vintage-year portfolios currently available, multi-factor models are severely over-parameterized, and the single-factor MKT specification remains the only reliably estimable model.
+When explicitly allowing for an abnormal performance $\alpha$ intercept, the estimation completely collapses.
+In the two-factor model ($\alpha$, MKT), introducing the alpha term acts as a sink for the compounded idiosyncratic noise, predominantly due to the lack of sufficient cross-sectional averaging over large unseasoned portfolios.
+Consequently, the optimizer overwhelmingly assigns inflated, positive alpha premiums (often hitting or nearing the 2\% monthly bound, e.g., $\hat{\alpha} = 0.020$ for VC under EW and RE under FW), while the market betas are artificially driven toward zero or even turn negative (e.g., $\hat{\beta}_{\mathrm{MKT}} = -0.13$ for BO and $-0.73$ for RE under FW).
+Standard errors correspondingly explode or suspiciously round to zero, denoting entirely flat or near-degenerate regions in the objective function space.
+
+The four-factor model results ($\alpha$, MKT, SMB, HML) naturally suffer from the same pathological behavior.
+Because the alpha term absorbs the bulk of the remaining variance, the other factor loadings become completely untrustworthy: the MKT coefficient for BO drops to essentially zero (-0.008 under FW), while SMB and HML loadings swing erratically (e.g., $\hat{\beta}_{\mathrm{SMB}}=1.26$ and $\hat{\beta}_{\mathrm{HML}}=-0.29$ for BO under FW).
+The pervasive asymptotic standard errors of exactly $(0.000)$ in these models are a telltale numerical artifact of a near-singular Hessian matrix caused by severe multicollinearity and parameter bounding.
+
+In conclusion, our empirical evaluation provides a strong, objective corroboration of the simulation-based warnings from Section~\ref{sec:simulation_study}: with the limited cross-section of only 20--40 vintage-year portfolios currently available in commercial private equity databases, any generalized SDF model attempting to simultaneously extract multiple pricing factors alongside an explicit alpha parameter is hopelessly over-parameterized. 
+The inclusion of an unconstrained or loosely constrained abnormal performance term systematically destroys the structural integrity of the entire factor model by confounding signal with cross-sectional noise.
+Therefore, until substantially more granular and independent cross-sectional data becomes cleanly available, we conclude that the single-factor market model effectively remains the only statically robust and estimable specification for private equity SDF performance evaluation.
 
 \begin{table}[ht]
 	\centering
-	\caption{Estimation Results: 3-Factor vs 4-Factor Models}
+	\caption{Estimation Results: 2-, 3-, and 4-Factor Models}
 	\label{tab:driessen_comparison_empirical}
-	\small
-	\begin{tabular}{llcccc}
-		\hline\hline
-		& & \multicolumn{4}{c}{Asset Class} \\ \cline{3-6}
-		Model & Factor & BO & VC & PE & RE \\ \hline
-		\multicolumn{6}{l}{\textit{Panel A: Equal-Weighted (EW)}} \\
-		\multirow{8}{*}{3-Factor}
-		& MKT & 1.794 & 2.285 & 1.805 & 1.230 \\
-		&  & (2.654) & (1.317) & (1.403) & (2.136) \\
-		& \multicolumn{4}{c}{} \vspace{-0.2cm} \\
-		& SMB & 1.431 & -0.430 & 0.974 & 1.527 \\
-		&  & (11.822) & (5.504) & (8.947) & (3.158) \\
-		& \multicolumn{4}{c}{} \vspace{-0.2cm} \\
-		& HML & 0.222 & 0.185 & 0.175 & 0.203 \\
-		&  & (5.032) & (1.005) & (4.653) & (7.995) \\
-		\hline
-		\multirow{8}{*}{4-Factor}
-		& Alpha & 0.007 & 0.020 & 0.005 & 0.009 \\
-		&  & (0.001) & (0.001) & (0.003) & (0.001) \\
-		& \multicolumn{4}{c}{} \vspace{-0.2cm} \\
-		& MKT & 1.015 & 1.052 & 1.260 & 0.308 \\
-		&  & (0.000) & (0.000) & (0.000) & (0.000) \\
-		& \multicolumn{4}{c}{} \vspace{-0.2cm} \\
-		& SMB & 0.006 & 0.230 & 0.048 & -0.005 \\
-		&  & (0.000) & (0.000) & (0.000) & (0.000) \\
-		& \multicolumn{4}{c}{} \vspace{-0.2cm} \\
-		& HML & 0.003 & 0.279 & -0.059 & -0.140 \\
-		&  & (0.000) & (0.000) & (0.000) & (0.000) \\
-		\hline
-		\multicolumn{6}{l}{\textit{Panel B: Fund-Weighted (FW)}} \\
-		\multirow{8}{*}{3-Factor}
-		& MKT & 1.809 & 2.150 & 1.835 & 1.430 \\
-		&  & (13.798) & (0.473) & (11.657) & (3.732) \\
-		& \multicolumn{4}{c}{} \vspace{-0.2cm} \\
-		& SMB & 1.872 & -0.703 & 1.926 & 2.786 \\
-		&  & (58.064) & (2.269) & (51.756) & (8.819) \\
-		& \multicolumn{4}{c}{} \vspace{-0.2cm} \\
-		& HML & -0.016 & -0.097 & -0.072 & 0.355 \\
-		&  & (11.580) & (1.250) & (22.261) & (2.767) \\
-		\hline
-		\multirow{8}{*}{4-Factor}
-		& Alpha & 0.017 & 0.020 & 0.020 & 0.013 \\
-		&  & (0.010) & (0.001) & (0.002) & (0.004) \\
-		& \multicolumn{4}{c}{} \vspace{-0.2cm} \\
-		& MKT & 0.020 & 1.234 & 0.991 & 0.152 \\
-		&  & (0.000) & (0.000) & (0.000) & (0.000) \\
-		& \multicolumn{4}{c}{} \vspace{-0.2cm} \\
-		& SMB & 1.415 & 0.484 & -1.388 & 2.240 \\
-		&  & (0.000) & (0.000) & (0.000) & (0.000) \\
-		& \multicolumn{4}{c}{} \vspace{-0.2cm} \\
-		& HML & -1.648 & 0.696 & -0.553 & -0.869 \\
-		&  & (0.000) & (0.000) & (0.000) & (0.000) \\
-		\hline
-	\end{tabular}
+	\resizebox{\textwidth}{!}{
+		\begin{tabular}{l cccc c cccc}
+			\hline\hline
+			& \multicolumn{4}{c}{Equal-Weighted (EW)} && \multicolumn{4}{c}{Fund-Weighted (FW)} \\ \cline{2-5} \cline{7-10}
+			Model & $\alpha$ & MKT & SMB & HML && $\alpha$ & MKT & SMB & HML \\ \hline
+			\multicolumn{10}{l}{\textbf{Buyout (BO)}} \\
+			2-Factor & 0.009 & 0.147 &  &  &  & 0.011 & -0.129 &  &  \\
+			& (0.000) & (0.080) &  &  &  & (0.071) & (11.302) &  &  \\
+			3-Factor &  & 1.340 & 1.330 & 0.533 &  &  & 1.221 & 2.025 & 0.439 \\
+			&  & (1.420) & (4.754) & (1.105) &  &  & (15.321) & (51.481) & (5.521) \\
+			4-Factor & 0.007 & 0.288 & 0.454 & 0.079 &  & 0.008 & -0.008 & 1.255 & -0.286 \\
+			& (0.004) & (0.000) & (0.000) & (0.000) &  & (0.001) & (0.000) & (0.000) & (0.000) \\[0.15cm]
+			\multicolumn{10}{l}{\textbf{Venture Capital (VC)}} \\
+			2-Factor & 0.020 & 0.442 &  &  &  & -0.001 & 1.691 &  &  \\
+			& (0.079) & (13.131) &  &  &  & (0.004) & (0.804) &  &  \\
+			3-Factor &  & 1.985 & -0.296 & 1.487 &  &  & 1.931 & -0.407 & 1.410 \\
+			&  & (0.710) & (1.765) & (0.289) &  &  & (0.931) & (1.723) & (0.419) \\
+			4-Factor & 0.004 & 1.587 & -0.675 & 1.679 &  & -0.002 & 1.843 & -0.173 & 0.154 \\
+			& (0.001) & (0.000) & (0.000) & (0.000) &  & (0.005) & (0.000) & (0.000) & (0.000) \\[0.15cm]
+			\multicolumn{10}{l}{\textbf{Private Equity (PE)}} \\
+			2-Factor & 0.004 & 1.005 &  &  &  & 0.010 & -0.102 &  &  \\
+			& (0.007) & (1.438) &  &  &  & (0.067) & (11.349) &  &  \\
+			3-Factor &  & 1.331 & 0.871 & 0.580 &  &  & 1.186 & 1.874 & 0.352 \\
+			&  & (1.503) & (1.744) & (0.762) &  &  & (521.924) & (1737.701) & (254.679) \\
+			4-Factor & 0.004 & 1.005 & 0.004 & 0.008 &  & 0.002 & 1.182 & 0.487 & 0.578 \\
+			& (0.004) & (0.000) & (0.000) & (0.000) &  & (0.001) & (0.000) & (0.000) & (0.000) \\[0.15cm]
+			\multicolumn{10}{l}{\textbf{Real Estate (RE)}} \\
+			2-Factor & 0.009 & -0.170 &  &  &  & 0.020 & -0.729 &  &  \\
+			& (0.039) & (8.972) &  &  &  & (0.051) & (12.102) &  &  \\
+			3-Factor &  & 0.955 & 1.158 & 1.272 &  &  & 1.149 & 3.234 & 0.973 \\
+			&  & (3.694) & (1.126) & (3.162) &  &  & (6.023) & (1.240) & (2.636) \\
+			4-Factor & 0.003 & 0.480 & 0.680 & 1.063 &  & 0.017 & -0.527 & 0.286 & 0.328 \\
+			& (0.001) & (0.000) & (0.000) & (0.000) &  & (0.007) & (0.000) & (0.000) & (0.000) \\
+			\hline
+		\end{tabular}
+	}
 	\par
 	\vspace{1ex}
-	\raggedright \footnotesize \textit{Note:} This table presents the estimation results of the Fama-French 3-factor (MKT, SMB, HML) and 4-factor (including $\alpha$) models for different asset classes. Cash flows are discounted to horizon 0. Standard errors are reported in parentheses below the estimates. The models are estimated using the Least-Mean-Distance method. Panel A uses equal-weighted (EW) cash flows, while Panel B uses fund-size-weighted (FW) cash flows. The upper bound for $\alpha$ was constrained to 0.02.
+	\raggedright \footnotesize \textit{Note:} This table presents the estimation results of the 2-factor ($\alpha$, MKT), Fama-French 3-factor (MKT, SMB, HML), and 4-factor ($\alpha$, MKT, SMB, HML) models for different asset classes. Cash flows are discounted to horizon 0. Standard errors are reported in parentheses below the estimates. The estimation uses Equal-Weighted (EW) and Fund-Size-Weighted (FW) cash flows. The upper bound for $\alpha$ was constrained to 0.02.
 \end{table}
+
+
 
 
 

@@ -5,11 +5,37 @@
 library(dplyr)
 library(tidyr)
 
+if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
+    setwd(dirname(dirname(rstudioapi::getActiveDocumentContext()$path)))
+}
+getwd()
+
 # File paths
-f_4f_ew <- "results/data_out_2026_02_24/cache_ff3_factors_preqin_alpha_ALL_EW_VYP/2026-02-24_165128_cached_res.csv"
-f_4f_fw <- "results/data_out_2026_02_24/cache_ff3_factors_preqin_alpha_ALL_FW_VYP/2026-02-24_164657_cached_res.csv"
-f_3f_ew <- "results/data_out_2026_02_24/cache_ff3_factors_preqin_MKT_SMB_HML_EW_VYP/2026-02-24_202316_cached_res.csv"
-f_3f_fw <- "results/data_out_2026_02_24/cache_ff3_factors_preqin_MKT_SMB_HML_FW_VYP/2026-02-24_202131_cached_res.csv"
+
+# two-factor model: Alpha + MKT
+f_2f_ew <- "results/data_out_2026_02_26/cache_ff3_factors_preqin_alpha_Alpha_EW_VYP/2026-02-26_142159_cached_res.csv"
+f_2f_fw <- "results/data_out_2026_02_26/cache_ff3_factors_preqin_alpha_Alpha_FW_VYP/2026-02-26_141951_cached_res.csv"
+# three-factor model: MKT + SMB + HML
+f_3f_ew <- "results/data_out_2026_02_26/cache_ff3_factors_preqin_MKT_SMB_HML_EW_VYP/2026-02-26_053048_cached_res.csv"
+f_3f_fw <- "results/data_out_2026_02_26/cache_ff3_factors_preqin_MKT_SMB_HML_FW_VYP/2026-02-26_052834_cached_res.csv"
+# four-factor model: Alpha + MKT + SMB + HML
+f_4f_ew <- "results/data_out_2026_02_26/cache_ff3_factors_preqin_alpha_ALL_EW_VYP/2026-02-26_041833_cached_res.csv"
+f_4f_fw <- "results/data_out_2026_02_26/cache_ff3_factors_preqin_alpha_ALL_FW_VYP/2026-02-26_041328_cached_res.csv"
+
+# folder for cross-validation
+base_folder <- "results/data_out_2026_02_26/"
+f_2f_ew_folder <- "cache_ff3_factors_preqin_alpha_Alpha_EW_VYP"
+f_2f_fw_folder <- "cache_ff3_factors_preqin_alpha_Alpha_FW_VYP"
+# three-factor model: MKT + SMB + HML
+f_3f_ew_folder <- "cache_ff3_factors_preqin_MKT_SMB_HML_EW_VYP"
+f_3f_fw_folder <- "cache_ff3_factors_preqin_MKT_SMB_HML_FW_VYP"
+# four-factor model: Alpha + MKT + SMB + HML
+f_4f_ew_folder <- "cache_ff3_factors_preqin_alpha_ALL_EW_VYP"
+f_4f_fw_folder <- "cache_ff3_factors_preqin_alpha_ALL_FW_VYP"
+
+# Goal: 1. read all files per folder, 2. filter appropriately, 3. determine CV mean and SD, 4. add CV results to table
+# Filters for asymptotic results: max.month = 0, CV.key == "ALL" (then "use as is")
+# Filters for CV results: max.month = 0, CV.key != "ALL" (then determine MEAN and SD)
 
 # Load and filter data function
 load_and_prep <- function(path, model_name, w_val) {
@@ -35,11 +61,13 @@ load_and_prep <- function(path, model_name, w_val) {
         select(Type, Model, Weighting, MKT, SMB, HML, Alpha, SE.MKT, SE.SMB, SE.HML, SE.Alpha)
 }
 
-# Load all 4 files
+# Load all files
 data_all <- bind_rows(
+    load_and_prep(f_2f_ew, "2-Factor", "EW"),
+    load_and_prep(f_2f_fw, "2-Factor", "FW"),
     load_and_prep(f_3f_ew, "3-Factor", "EW"),
-    load_and_prep(f_4f_ew, "4-Factor", "EW"),
     load_and_prep(f_3f_fw, "3-Factor", "FW"),
+    load_and_prep(f_4f_ew, "4-Factor", "EW"),
     load_and_prep(f_4f_fw, "4-Factor", "FW")
 )
 
@@ -66,65 +94,77 @@ fmt_est <- function(val, se) {
 latex_out <- c()
 latex_out <- c(latex_out, "\\begin{table}[ht]")
 latex_out <- c(latex_out, "\\centering")
-latex_out <- c(latex_out, "\\caption{Estimation Results: 3-Factor vs 4-Factor Models}")
+latex_out <- c(latex_out, "\\caption{Estimation Results: 2-, 3-, and 4-Factor Models}")
 latex_out <- c(latex_out, "\\label{tab:driessen_comparison_empirical}")
-latex_out <- c(latex_out, "\\small")
-latex_out <- c(latex_out, paste0("\\begin{tabular}{ll", paste(rep("c", length(target_types)), collapse = ""), "}"))
+latex_out <- c(latex_out, "\\resizebox{\\textwidth}{!}{")
+latex_out <- c(latex_out, "\\begin{tabular}{l cccc c cccc}")
 latex_out <- c(latex_out, "\\hline\\hline")
 
 # Header
-latex_out <- c(latex_out, paste0(" & & \\multicolumn{", length(target_types), "}{c}{Asset Class} \\\\ \\cline{3-", 2 + length(target_types), "}"))
-latex_out <- c(latex_out, paste0("Model & Factor & ", paste(target_types, collapse = " & "), " \\\\ \\hline"))
+latex_out <- c(latex_out, "& \\multicolumn{4}{c}{Equal-Weighted (EW)} && \\multicolumn{4}{c}{Fund-Weighted (FW)} \\\\ \\cline{2-5} \\cline{7-10}")
+latex_out <- c(latex_out, "Model & $\\alpha$ & MKT & SMB & HML && $\\alpha$ & MKT & SMB & HML \\\\ \\hline")
 
-# Helper for a Panel
-build_panel <- function(weighting_label, w_filter) {
-    lines <- c()
-    lines <- c(lines, paste0("\\multicolumn{", 2 + length(target_types), "}{l}{\\textit{Panel ", ifelse(w_filter == "EW", "A", "B"), ": ", weighting_label, "}} \\\\"))
+# Body
+for (ty in target_types) {
+    ty_label <- switch(ty,
+        "BO" = "Buyout (BO)",
+        "VC" = "Venture Capital (VC)",
+        "PE" = "Private Equity (PE)",
+        "RE" = "Real Estate (RE)",
+        ty
+    )
+    latex_out <- c(latex_out, paste0("\\multicolumn{10}{l}{\\textbf{", ty_label, "}} \\\\"))
 
-    for (mod in c("3-Factor", "4-Factor")) {
-        lines <- c(lines, paste0("\\multirow{8}{*}{", mod, "}"))
+    for (mod in c("2-Factor", "3-Factor", "4-Factor")) {
+        row_ew <- data_filtered %>% filter(Type == ty, Model == mod, Weighting == "EW")
+        row_fw <- data_filtered %>% filter(Type == ty, Model == mod, Weighting == "FW")
 
-        factors_to_show <- if (mod == "4-Factor") c("Alpha", "MKT", "SMB", "HML") else c("MKT", "SMB", "HML")
-        for (fac in factors_to_show) {
-            est_row <- paste0(" & ", fac)
-            se_row <- " & "
+        facs <- c("Alpha", "MKT", "SMB", "HML")
+        est_cols <- c(mod)
+        se_cols <- c("")
 
-            for (ty in target_types) {
-                row_data <- data_filtered %>% filter(Weighting == w_filter, Model == mod, Type == ty)
-                if (nrow(row_data) > 0) {
+        for (w_filter in c("EW", "FW")) {
+            if (w_filter == "FW") {
+                est_cols <- c(est_cols, "")
+                se_cols <- c(se_cols, "")
+            }
+
+            row_data <- if (w_filter == "EW") row_ew else row_fw
+            for (fac in facs) {
+                if (mod == "2-Factor" && fac %in% c("SMB", "HML")) {
+                    est_cols <- c(est_cols, "")
+                    se_cols <- c(se_cols, "")
+                } else if (mod == "3-Factor" && fac == "Alpha") {
+                    est_cols <- c(est_cols, "")
+                    se_cols <- c(se_cols, "")
+                } else if (nrow(row_data) > 0) {
                     val <- row_data[[fac]][1]
-                    se_col <- paste0("SE.", fac)
-                    se_val <- row_data[[se_col]][1]
-
-                    # Convert Alpha scale if needed. If it's pure decimal, leave as is or multiply by 100 for %.
-                    # Driessen reports regular values. Leave as is, just 3 decimals.
-
+                    se_val <- row_data[[paste0("SE.", fac)]][1]
                     fmt <- fmt_est(val, se_val)
-                    est_row <- paste0(est_row, " & ", fmt[1])
-                    se_row <- paste0(se_row, " & ", fmt[2])
+                    est_cols <- c(est_cols, fmt[1])
+                    se_cols <- c(se_cols, fmt[2])
                 } else {
-                    est_row <- paste0(est_row, " & ")
-                    se_row <- paste0(se_row, " & ")
+                    est_cols <- c(est_cols, "")
+                    se_cols <- c(se_cols, "")
                 }
             }
-            lines <- c(lines, paste0(est_row, " \\\\"))
-            lines <- c(lines, paste0(se_row, " \\\\"))
-            if (fac != tail(factors_to_show, 1)) {
-                lines <- c(lines, paste0(" & \\multicolumn{", length(target_types), "}{c}{} \\vspace{-0.2cm} \\\\")) # Small spacer
-            }
         }
-        lines <- c(lines, "\\hline")
+
+        latex_out <- c(latex_out, paste0(paste(est_cols, collapse = " & "), " \\\\"))
+        if (mod == "4-Factor" && ty != tail(target_types, 1)) {
+            latex_out <- c(latex_out, paste0(paste(se_cols, collapse = " & "), " \\\\[0.15cm]"))
+        } else {
+            latex_out <- c(latex_out, paste0(paste(se_cols, collapse = " & "), " \\\\"))
+        }
     }
-    return(lines)
 }
 
-latex_out <- c(latex_out, build_panel("Equal-Weighted (EW)", "EW"))
-latex_out <- c(latex_out, build_panel("Fund-Weighted (FW)", "FW"))
-
+latex_out <- c(latex_out, "\\hline")
 latex_out <- c(latex_out, "\\end{tabular}")
+latex_out <- c(latex_out, "}")
 latex_out <- c(latex_out, "\\par")
 latex_out <- c(latex_out, "\\vspace{1ex}")
-latex_out <- c(latex_out, "\\raggedright \\footnotesize \\textit{Note:} This table presents the estimation results of the Fama-French 3-factor (MKT, SMB, HML) and 4-factor (including $\\alpha$) models for different asset classes. Cash flows are discounted to horizon 0. Standard errors are reported in parentheses below the estimates. The models are estimated using the Least-Mean-Distance method. Panel A uses equal-weighted (EW) cash flows, while Panel B uses fund-size-weighted (FW) cash flows. The upper bound for $\\alpha$ was constrained to 0.02.")
+latex_out <- c(latex_out, "\\raggedright \\footnotesize \\textit{Note:} This table presents the estimation results of the 2-factor ($\\alpha$, MKT), Fama-French 3-factor (MKT, SMB, HML), and 4-factor ($\\alpha$, MKT, SMB, HML) models for different asset classes. Cash flows are discounted to horizon 0. Standard errors are reported in parentheses below the estimates. The estimation uses Equal-Weighted (EW) and Fund-Size-Weighted (FW) cash flows. The upper bound for $\\alpha$ was constrained to 0.02.")
 latex_out <- c(latex_out, "\\end{table}")
 
 # Write to file
