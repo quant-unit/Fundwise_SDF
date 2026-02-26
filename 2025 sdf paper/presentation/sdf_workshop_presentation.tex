@@ -52,8 +52,7 @@
 	
 	\vspace{0.6em}
 	\begin{itemize}
-		\item Target: recover latent market exposure from non-traded PE cash flow/NAV data.
-		\item Challenge: stale NAVs, asynchronous cash flows, and overlapping fund lives.
+		\item Goal: recover latent market exposure from non-traded PE cash flow data.
 		\item Plan: naive approach first, then semiparametric SDF estimation.
 	\end{itemize}
 	
@@ -87,18 +86,18 @@
 \end{frame}
 
 \begin{frame}{Motivation: \cite{D79} Regression from NAV Returns}
-\begin{center}
-\includegraphics[width=0.93\linewidth]{figures/motivating_nav_acf_dimson.pdf}
-\end{center}
-\vspace{-0.4em}
-\scriptsize Data: Preqin quarterly index levels and q5 monthly $R_{MKT}$ aggregated to quarters (overlap through 2022Q4).
+	\begin{center}
+		\includegraphics[width=0.93\linewidth]{figures/motivating_nav_acf_dimson_no_intercept.pdf}
+	\end{center}
+	\vspace{-0.4em}
+	\scriptsize Data: Preqin quarterly index levels and q5 monthly $R_{MKT}$ aggregated to quarters (overlap through 2022Q4).
 \end{frame}
 
 \begin{frame}{Estimator: Starting Point \cite{DLP12}}
 \small
-For each fund $i$, \cite{DLP12} imposes a zero-NPV pricing condition at inception date $\tau_i^{(0)}$:
+For each fund $i$, \cite{DLP12} imposes a zero-NPV pricing condition at inception date $t_{0,i}$:
 \[
-\epsilon_i^{\text{DLP}}(\theta)=\sum_t \Psi_{t}(\theta)\,CF_{i,t}
+\epsilon_i^{\text{DLP}}(\theta)=\sum_{t=0}^T \Psi_{t}(\theta)\,CF_{i,t}
 \]
 
 Cross-sectional estimator:
@@ -106,21 +105,18 @@ Cross-sectional estimator:
 \hat\theta_{\text{DLP}}=\arg\min_{\theta\in\Theta}\frac{1}{n}\sum_{i=1}^n\left(\epsilon_i^{\text{DLP}}(\theta)\right)^2
 \]
 
-\vspace{0.2em}
-\textbf{Mapping to our notation}
-\begin{itemize}
-  \item DLP12 is the special case $\mathcal{T}_i=\{\tau_i^{(0)}\}$, so $|\mathcal{T}_i|=1$.
-  \item Then $\bar\epsilon_i(\theta)=\epsilon_i^{\text{DLP}}(\theta)$ and the LMD objective nests DLP12.
-  \item This paper extends DLP12 by allowing multiple discount dates per fund ($|\mathcal{T}_i|>1$).
-\end{itemize}
-\vspace{0.15em}
-{\tiny Variables: $i$ fund/portfolio index, $t$ cash-flow time, $\tau_i^{(0)}$ inception discount date, $CF_{i,t}$ net cash flow, $\Psi_{\tau,t}(\theta)$ SDF ratio, $\theta$ parameter vector, $\Theta$ parameter space, $n$ number of units.}
+\vspace{1.5em}
+\textbf{We propose generalization} that nests the \cite{DLP12} estimator as special case. \\
+\vspace{3.5em}
+
+{\small Variables: $i$ fund/portfolio index, $t$ cash-flow time, $CF_{i,t}$ net cash flow, $\theta$ parameter vector, $\Theta$ parameter space, $n$ number of units, sample end date $T$.} \\
+\textbf{Important:} $\Psi_{t}(\theta)$ Stochastic Discount Factor (SDF) from $t$ to time $t_{0,i}$ (=fund inception date).
 \end{frame}
 
-\begin{frame}{Estimator: Least Mean Distance (LMD)}
+\begin{frame}{Estimator: Our generalization}
 For fund $i$ and discounting date $\tau$:
 \[
-\epsilon_{\tau,i}(\theta)=\sum_t \frac{\Psi_{t}(\theta)}{\Psi_{\tau}(\theta)} \,CF_{i,t}
+\epsilon_{\tau,i}(\theta)=\sum_{t=0}^T \frac{\Psi_{t}(\theta)}{\Psi_{\tau}(\theta)} CF_{i,t}
 \]
 
 Average over selected compounding dates $\mathcal{T}_i$ (\textcolor{blue}{compounding horizons}):
@@ -133,13 +129,13 @@ Estimate parameters by nonlinear least-mean-distance:
 \hat\theta=\arg\min_{\theta\in\Theta}\left(\frac{1}{n}\sum_{i=1}^n L(\bar\epsilon_i(\theta))\right),\quad L(x)=x^2
 \]
 \vspace{0.25em}
-{\tiny Variables: $i$ fund/portfolio index, $t$ cash-flow time, $\tau$ discounting date, $CF_{i,t}$ net cash flow, $\Psi_{\tau,t}(\theta)$ SDF ratio, $\theta$ parameter vector, $\mathcal{T}_i$ discount-date set.}
+\tiny Variables: $i$ fund/portfolio index, $t$ cash-flow time, $\tau$ compounding date, $CF_{i,t}$ net cash flow, $\frac{\Psi_{t}(\theta)}{\Psi_{\tau}(\theta)}$ SDF ratio, $\theta$ parameter vector, $\mathcal{T}_i$ compounding-date set, $L$ loss function.
 \end{frame}
 
 \begin{frame}[t]{Estimator: Net Present Value (NPV) vs Net Future Value (NFV)}
 \begin{itemize}
   \item NPV-only discounting (fund inception) is theoretically unbiased.
-  \item NFV: Adding \textcolor{blue}{compounding horizons $>0$} introduces a timing risk \textbf{bias} term.
+  \item NFV: Adding \textcolor{blue}{compounding horizons $>0$} introduces a \textbf{bias term}.
   \item \textbf{Spoiler:} Finite-sample performance can improve when averaging across future dates.
 \end{itemize}
 
@@ -157,9 +153,9 @@ Estimate parameters by nonlinear least-mean-distance:
 		\item 5 year initial investment period per fund.
 		\item 10 year maximum holding period per deal.
 		\item 20 vintages years from 1986 to 2005 using this macro environment.
-		\item Monthly returns: $R_i = \alpha + \beta_{\textbf{MKT}} R_{\textbf{MKT}} + \beta_{2} R_{2} + \dots + e_i$
+		\item Monthly returns: $R_i = \alpha + R_{\textbf{riskfree}} + \beta_{\textbf{MKT}} R_{\textbf{MKT}} + \beta_{2} R_{2} + \dots + e_i$ (with i.i.d.\ $e_i$)
   	\end{itemize}
-  \item \textbf{Main focus on horizon choice:} size of discounting set $\mathcal{T}$.
+  \item \textbf{Main focus on horizon choice:} size of \textcolor{blue}{compounding horizon set $\mathcal{T}$}.
   \item \textbf{Compare units:} individual funds vs vintage-year portfolios (VYP).
   \item \textbf{Compare sample geometry:} more vintages ($V$) vs larger within-vintage size ($n/V$).
   \item \textbf{Compare SDF model forms:} 
@@ -207,10 +203,10 @@ Estimate parameters by nonlinear least-mean-distance:
 
 \begin{frame}{Simulation: Synthesis}
 \begin{enumerate}
-  \item Use portfolio aggregation to stabilize estimation.
-  \item Prioritize richer cross-sections per vintage when possible (more funds per moment).
-  \item Prefer parsimonious factor structure in current PE data regime.
-  \item Horizon choice (size of $\mathcal{T}$) is a first-order control for finite-sample performance.
+  \item Use portfolio formation to stabilize estimation.
+  \item Increase number of funds per vintage (if possible).
+  \item Use simple SDF models given limited amount of PE data (avoid multi-factor models).
+  \item \textcolor{blue}{Compounding horizon choice (size of $\mathcal{T}$)} is a control for finite-sample bias.
 \end{enumerate}
 
 \vspace{0.4em}
@@ -222,7 +218,7 @@ Estimate parameters by nonlinear least-mean-distance:
   \item Preqin Data: 3005 PE funds, vintages 1983--2021.
   \item Primary unit for estimation: vintage-year portfolios (equal- and value-weighted).
   \item Factors: $q^5$ family; focus on MKT and simple two-factor extensions.
-  \item Horizon selected from simulation guidance: 15-year baseline.
+  \item \textcolor{blue}{Compounding horizon} selected from simulation guidance: 15-year baseline.
   \item Benchmark for comparison: NAV-based naive/Dimson market-exposure estimates from the motivation section.
 \end{itemize}
 
@@ -321,10 +317,10 @@ Estimate parameters by nonlinear least-mean-distance:
 \textbf{Main results}
 \begin{itemize}
  	 \item Our approach can better control finite-sample bias than \cite{DLP12}.
-	\item Our approach yields empirical $\beta_{\text{MKT}}$ estimates close to \cite{D79}.
+	\item Our approach yields empirical $\beta_{\text{MKT}}$ estimates similar to \cite{D79}.
 	\item Given amount of \textbf{currently available} private market data: \\
 Cash-flow based estimation results are close to NAV-return-based estimation results.
-    \item Portfolio formation and horizon design are key levers for cash-flow-based inference.
+    \item Portfolio formation and \textcolor{blue}{compounding horizons} are key for cash-flow-based inference.
 \end{itemize}
 
 \textbf{Additional topics (for cash-flow-based inference)}
@@ -349,7 +345,21 @@ Cash-flow based estimation results are close to NAV-return-based estimation resu
 % Appendix
 
 
+% Dimson with intercept (= Alpha + MKT)
 
+\begin{frame}{Motivation: \cite{D79} Regression from NAV Returns (Alpha+MKT)}
+	\begin{center}
+		\includegraphics[width=0.93\linewidth]{figures/motivating_nav_acf_dimson.pdf}
+	\end{center}
+	\vspace{-0.4em}
+	\scriptsize Data: Preqin quarterly index levels and q5 monthly $R_{MKT}$ aggregated to quarters (overlap through 2022Q4).
+\end{frame}
+
+\begin{frame}[plain]
+	\begin{center}
+		\includegraphics[height=0.94\textheight]{figures/dimson_alpha_mkt_fundtypes_square.pdf}
+	\end{center}
+\end{frame}
 
 
 \begin{frame}{Backup: Comparison to DLP12 and KN16}

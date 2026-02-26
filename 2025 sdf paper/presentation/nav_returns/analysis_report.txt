@@ -11,9 +11,23 @@ acf_significant_lags_by_series:
   - VC Global: n_sig_lags=5, consec_sig_lags=5, sig_lags=[1, 2, 3, 4, 5]
 
 dimson_summary:
-  - Buyout Global: L=2, beta_naive=0.344, beta_dimson=0.631, uplift=0.287
-  - Growth Global: L=2, beta_naive=0.388, beta_dimson=0.637, uplift=0.250
-  - PE Europe: L=2, beta_naive=0.355, beta_dimson=0.641, uplift=0.286
-  - PE Global: L=2, beta_naive=0.329, beta_dimson=0.633, uplift=0.304
-  - PE North America: L=3, beta_naive=0.315, beta_dimson=0.731, uplift=0.416
-  - VC Global: L=5, beta_naive=0.324, beta_dimson=0.955, uplift=0.632
+  - Buyout Global: L=2, beta_naive=0.352, beta_dimson=0.647, uplift=0.296
+  - Growth Global: L=2, beta_naive=0.396, beta_dimson=0.654, uplift=0.258
+  - PE Europe: L=2, beta_naive=0.363, beta_dimson=0.657, uplift=0.294
+  - PE Global: L=2, beta_naive=0.337, beta_dimson=0.649, uplift=0.312
+  - PE North America: L=3, beta_naive=0.323, beta_dimson=0.750, uplift=0.427
+  - VC Global: L=5, beta_naive=0.332, beta_dimson=0.976, uplift=0.643
+
+dimson_summary_no_intercept:
+  - Buyout Global: L=2, beta_naive=0.407, beta_dimson=0.770, uplift=0.363
+  - Growth Global: L=2, beta_naive=0.439, beta_dimson=0.751, uplift=0.311
+  - PE Europe: L=2, beta_naive=0.423, beta_dimson=0.793, uplift=0.371
+  - PE Global: L=2, beta_naive=0.389, beta_dimson=0.761, uplift=0.371
+  - PE North America: L=3, beta_naive=0.376, beta_dimson=0.889, uplift=0.513
+  - VC Global: L=5, beta_naive=0.342, beta_dimson=0.926, uplift=0.584
+
+dimson_alpha_mkt_summary:
+  - PE Global: L=2, alpha_q=0.0176, beta_dimson=0.649
+  - Buyout Global: L=2, alpha_q=0.0194, beta_dimson=0.647
+  - Growth Global: L=2, alpha_q=0.0154, beta_dimson=0.654
+  - VC Global: L=5, alpha_q=-0.0039, beta_dimson=0.976

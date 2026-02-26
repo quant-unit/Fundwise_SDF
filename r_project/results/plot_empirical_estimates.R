@@ -1768,7 +1768,7 @@ plot_empirical_estimates(
     y.max.mkt = 1.5, y.min.mkt = -0.1,
     # y.lim.second = list(Alpha = c(-0.01, 0.01)),
     v.lines = c(0, 15),
-    h.lines = c(0, 0.75),
+    h.lines = c(0, 0.8),
     v.colors = c("blue", "orange"),
     h.colors = c("gray", "red"),
     main.linewidth = 2,
