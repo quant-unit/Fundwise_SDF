@@ -8,6 +8,7 @@
 \usepackage{amsmath}
 \usepackage{booktabs}
 \usepackage{graphicx}
+\usepackage{xcolor}
 
 \title{Semiparametric SDF Estimators\\for Pooled, Non-Traded Cash Flows}
 \subtitle{GOR AG Analytics Workshop, Frankurt (Deutsche Bahn)}
@@ -44,7 +45,7 @@
 
 \begin{frame}{Guiding Question}
 	
-	\emph{Are private markets really not connected to public market volatility?}
+	\textcolor{gray}{\emph{Are private markets really not connected to public market volatility?}}
 	\vspace{1.6em}
 	
 	\textbf{How can we estimate the true public-market exposure of private equity funds?}
@@ -70,11 +71,11 @@
 
 \begin{frame}{Agenda}
 \begin{enumerate}
-  \item Motivation: NAV-return autocorrelation
+  \item Motivation: simple approach
   \item Estimation framework
   \item Simulation evidence
   \item Empirical PE results
-  \item Takeaways
+  \item Conclusion
 \end{enumerate}
 \end{frame}
 
@@ -97,7 +98,7 @@
 \small
 For each fund $i$, \cite{DLP12} imposes a zero-NPV pricing condition at inception date $\tau_i^{(0)}$:
 \[
-\epsilon_i^{\text{DLP}}(\theta)=\sum_t \Psi_{\tau_i^{(0)},t}(\theta)\,CF_{i,t}
+\epsilon_i^{\text{DLP}}(\theta)=\sum_t \Psi_{t}(\theta)\,CF_{i,t}
 \]
 
 Cross-sectional estimator:
@@ -119,17 +120,17 @@ Cross-sectional estimator:
 \begin{frame}{Estimator: Least Mean Distance (LMD)}
 For fund $i$ and discounting date $\tau$:
 \[
-\epsilon_{\tau,i}(\theta)=\sum_t \Psi_{\tau,t}(\theta)\,CF_{i,t}
+\epsilon_{\tau,i}(\theta)=\sum_t \frac{\Psi_{t}(\theta)}{\Psi_{\tau}(\theta)} \,CF_{i,t}
 \]
 
-Average over selected discounting dates $\mathcal{T}_i$:
+Average over selected compounding dates $\mathcal{T}_i$ (\textcolor{blue}{compounding horizons}):
 \[
 \bar\epsilon_i(\theta)=\frac{1}{|\mathcal{T}_i|}\sum_{\tau\in\mathcal{T}_i}\epsilon_{\tau,i}(\theta)
 \]
 
 Estimate parameters by nonlinear least-mean-distance:
 \[
-\hat\theta=\arg\max_{\theta\in\Theta}\left(-\frac{1}{n}\sum_{i=1}^n L(\bar\epsilon_i(\theta))\right),\quad L(x)=x^2
+\hat\theta=\arg\min_{\theta\in\Theta}\left(\frac{1}{n}\sum_{i=1}^n L(\bar\epsilon_i(\theta))\right),\quad L(x)=x^2
 \]
 \vspace{0.25em}
 {\tiny Variables: $i$ fund/portfolio index, $t$ cash-flow time, $\tau$ discounting date, $CF_{i,t}$ net cash flow, $\Psi_{\tau,t}(\theta)$ SDF ratio, $\theta$ parameter vector, $\mathcal{T}_i$ discount-date set.}
@@ -138,8 +139,8 @@ Estimate parameters by nonlinear least-mean-distance:
 \begin{frame}[t]{Estimator: Net Present Value (NPV) vs Net Future Value (NFV)}
 \begin{itemize}
   \item NPV-only discounting (fund inception) is theoretically unbiased.
-  \item NFV: Adding future-value dates introduces a timing risk \textbf{bias} term.
-  \item \textbf{But:} Finite-sample performance can improve when averaging across dates.
+  \item NFV: Adding \textcolor{blue}{compounding horizons $>0$} introduces a timing risk \textbf{bias} term.
+  \item \textbf{Spoiler:} Finite-sample performance can improve when averaging across future dates.
 \end{itemize}
 
 \begin{center}
@@ -149,11 +150,23 @@ Estimate parameters by nonlinear least-mean-distance:
 
 \begin{frame}{Simulation: What Is Tested?}
 \begin{itemize}
-  \item \textbf{Base:} 20 vintages, synthetic fund cash flows generated under known SDF structure.
-  \item \textbf{Focus on horizon choice:} size of discounting set $\mathcal{T}$.
+  \item \textbf{Base simulation setup:} 
+  	\begin{itemize}
+		\item Synthetic fund cash flows generated under known SDF structure.
+		\item 15 equally-sized deals per fund. 
+		\item 5 year initial investment period per fund.
+		\item 10 year maximum holding period per deal.
+		\item 20 vintages years from 1986 to 2005 using this macro environment.
+		\item Monthly returns: $R_i = \alpha + \beta_{\textbf{MKT}} R_{\textbf{MKT}} + \beta_{2} R_{2} + \dots + e_i$
+  	\end{itemize}
+  \item \textbf{Main focus on horizon choice:} size of discounting set $\mathcal{T}$.
   \item \textbf{Compare units:} individual funds vs vintage-year portfolios (VYP).
   \item \textbf{Compare sample geometry:} more vintages ($V$) vs larger within-vintage size ($n/V$).
-  \item \textbf{Compare model forms:} simple linear vs exponential affine SDF.
+  \item \textbf{Compare SDF model forms:} 
+   	\begin{itemize}
+  		\item Exponential affine vs simple linear SDF.
+		\item Single-factor vs multi-factor models.
+  	\end{itemize}
 \end{itemize}
 \end{frame}
 
@@ -162,26 +175,34 @@ Estimate parameters by nonlinear least-mean-distance:
 \includegraphics[width=0.8\linewidth]{figures/bias_comparison1.pdf}
 \end{center}
 
-\textbf{Takeaway:} vintage-year portfolios materially reduce bias and variance versus single-fund estimation.
+\textbf{Takeaway:} Vintage-year portfolios reduce bias and variance versus single-fund estimation.
+\footnotesize Horizon on x-axis corresponds to $\mathcal{T}$-averaging in all charts. Horizon 0 is base case \cite{DLP12}.
 \end{frame}
 
 \begin{frame}{Simulation: 2.\ More Vintages or More Funds per Vintage?}
 \begin{center}
-\includegraphics[width=0.82\linewidth]{figures/bias_comparison3.pdf}
-%\includegraphics[width=0.49\linewidth]{figures/bias_comparison2.pdf}
+\includegraphics[width=0.8\linewidth]{figures/bias_comparison3.pdf}
 \end{center}
 
-\textbf{Takeaway:} increasing funds per vintage is more powerful for variance reduction than only extending the time span.
+\textbf{Takeaway:} Increasing funds per vintage is more powerful for bias/variance reduction than only extending the time span.
 \end{frame}
 
-\begin{frame}[t]{Simulation: 3.\ Linear vs Exponential Affine SDF}
+\begin{frame}[t]{Simulation: 3.\ Exponential Affine vs Linear SDF}
 \begin{center}
-\includegraphics[width=0.82\linewidth]{figures/bias_comparison5.pdf}
+\includegraphics[width=0.8\linewidth]{figures/bias_comparison5.pdf}
 \end{center}
 
-\textbf{Takeaway:} no robust finite-sample superiority of exponential affine specification in this setting.
+\textbf{Takeaway:} No robust finite-sample superiority of exponential affine SDF in this setting. \\
+\footnotesize SDF model comparison: \cite{KN16} vs \cite{DLP12}
+\end{frame}
 
-\cite{KN16}
+\begin{frame}[t]{Simulation 4: Two-Factor q-Factor Models}
+	\begin{center}
+		\includegraphics[width=0.8\linewidth]{figures/bias_comparison4.pdf}
+	\end{center}
+	
+	\textbf{Takeaway:} Multivariate identification is fragile. Estimate $\approx 1$ instead of $0.5$ for 2nd factors.
+	\footnotesize q-factor model from \cite{hou2021augmented} is competitor to \cite{FF15}.
 \end{frame}
 
 \begin{frame}{Simulation: Synthesis}
@@ -198,16 +219,13 @@ Estimate parameters by nonlinear least-mean-distance:
 
 \begin{frame}{Empirical: Preqin PE Data \& $q^5$ Public Factors}
 \begin{itemize}
-  \item Data snapshot: 3005 PE funds, vintages 1983--2021.
+  \item Preqin Data: 3005 PE funds, vintages 1983--2021.
   \item Primary unit for estimation: vintage-year portfolios (equal- and value-weighted).
   \item Factors: $q^5$ family; focus on MKT and simple two-factor extensions.
   \item Horizon selected from simulation guidance: 15-year baseline.
   \item Benchmark for comparison: NAV-based naive/Dimson market-exposure estimates from the motivation section.
 \end{itemize}
 
-\textbf{Singe-factor models:} Dimson beta as lower bound.
-
-\textbf{Two-factor models:} Apply machine-learning methods to form ``stronger learner."
 \end{frame}
 
 \begin{frame}{Empirical: 1.\ Vintage Cutoffs for Single-Factor Model}
@@ -215,69 +233,115 @@ Estimate parameters by nonlinear least-mean-distance:
 		\includegraphics[width=1\linewidth]{figures/max_vintage_PE_MKT_combined_NC.pdf}
 	\end{center}
 	
-	\textbf{Reading:} including newer vintages tends to increase estimated market exposure, but totally depending on final NAV $\to$ Use vintage 2010 cutoff in subsequent analysis
+	\textbf{Reading:} including newer vintages tends to increase estimated market exposure, but totally depending on final NAV $\to$ Use vintage 2010 cutoff in subsequent analysis.
 	
 \end{frame}
 
 \begin{frame}{Empirical: 2.\ Single-Factor MKT Model}
 \begin{center}
-\includegraphics[width=0.86\linewidth]{figures/empirical_PE_MKT.pdf}
+\includegraphics[width=0.9\linewidth]{figures/empirical_PE_MKT_larger.pdf}
 \end{center}
 
-\textbf{Horizon 15 as our ``best guess". Dimson beta as lower bound!} 
+\textbf{Singe-factor models:} Dimson beta as lower bound approximation.
 	
+\footnotesize We use empirical vintages until 2010.
 \end{frame}
 
 \begin{frame}[t]{Empirical: 3.\ Two-Factor Models}
 \begin{center}
-\includegraphics[width=0.84\linewidth]{figures/empirical_PE_all_factors.pdf}
+\includegraphics[width=0.95\linewidth]{figures/empirical_PE_all_factors.pdf}
 \end{center}
 
-\textbf{Reading:}
-\begin{itemize}
-  \item Second-factor loadings vary strongly with horizon and weighting scheme.
-  \item Most non-MKT factors do not show robust incremental signal.
-\end{itemize}
-\end{frame}
+\textbf{Two-factor models:} Apply machine-learning methods to form ``stronger learner."
 
-\begin{frame}{Conclusion: What This Means for Practice and Research}
-\textbf{For practitioners}
-\begin{itemize}
-  \item Start with parsimonious SDFs (MKT-first), then add complexity cautiously.
-  \item Treat asymptotic significance alone as insufficient in sparse PE samples.
-  \item Use dependence-aware validation (e.g., $hv$-block CV) as a default diagnostic.
-\end{itemize}
-
-\textbf{For researchers}
-\begin{itemize}
-  \item Finite-sample design choices can dominate asymptotic elegance.
-  \item Data architecture (portfolio formation, horizon design) is part of identification.
-\end{itemize}
-\end{frame}
-
-\begin{frame}{Conclusion: Main Takeaways}
-\begin{enumerate}
-  \item A semiparametric LMD framework can price pooled non-traded cash flows directly.
-  \item The central empirical issue is finite-sample stability, not asymptotic theory alone.
-  \item Portfolio aggregation and horizon design are key levers for usable inference.
-  \item Current evidence supports single-factor MKT models as the robust baseline for PE.
-  \item Naive contemporaneous NAV betas understate exposure; lag-aware methods partially recover it.
-  \item Outlook: Multi-factor models can be stabilized by machine-learning techniques.
-\end{enumerate}
-
-\vspace{0.6em}
-\centering
-\Large Questions and Discussion
+\footnotesize We use empirical vintages until 2010.
 \end{frame}
 
 
-\begin{frame}{Literature}
+\begin{frame}[t]{Empirical: Synthesis}
+	
+	\begin{columns}[T] % T = top alignment
+		\begin{column}{0.64\textwidth}
+			\includegraphics[width=\linewidth]{figures/empirical_PE_MKT_alines.pdf}
+		\end{column}
+		
+		\begin{column}{0.36\textwidth}
+			Use $MKT$-factor model. \\
+			Don't use unrealized NAVs.
+			
+			\vspace{1.3em}
+			\begin{itemize}
+				\item \textcolor{blue}{Unbiased estimator}
+				\item \textcolor{orange}{Best biased estimator}
+				\item \textcolor{red}{Dimson benchmark}
+				\item \textcolor{gray}{Luciano bound}
+			\end{itemize}
+			
+			
+		\end{column}
+	\end{columns}
+	
+\end{frame}
 
+
+\begin{frame}[t]{Empirical: Synthesis}
+	
+	\begin{columns}[T] % T = top alignment
+		\begin{column}{0.64\textwidth}
+			\includegraphics[width=\linewidth]{figures/empirical_PE_MKT_alines.pdf}
+		\end{column}
+		
+		\begin{column}{0.36\textwidth}
+			Use $MKT$-factor model. \\
+			Don't use unrealized NAVs.
+			
+			\vspace{1.3em}
+			\begin{itemize}
+				\item \textcolor{blue}{Unbiased estimator}
+				\item \textcolor{orange}{Best biased estimator}
+				\item \textcolor{red}{Dimson benchmark}
+				\item \textcolor{gray}{Luciano bound}
+			\end{itemize}
+			
+			\begin{center}
+				\includegraphics[width=0.8\linewidth]{images/TR1.png}
+			\end{center}
+
+		\end{column}
+	\end{columns}
+	
+\end{frame}
+
+
+
+\begin{frame}{Conclusion}
+\textcolor{gray}{\emph{Private markets are connected to public market volatility.}}
+\vspace{1em}
+
+\textbf{Main results}
+\begin{itemize}
+ 	 \item Our approach can better control finite-sample bias than \cite{DLP12}.
+	\item Our approach yields empirical $\beta_{\text{MKT}}$ estimates close to \cite{D79}.
+	\item Given amount of \textbf{currently available} private market data: \\
+Cash-flow based estimation results are close to NAV-return-based estimation results.
+    \item Portfolio formation and horizon design are key levers for cash-flow-based inference.
+\end{itemize}
+
+\textbf{Additional topics (for cash-flow-based inference)}
+\begin{itemize}
+	\item Use dependence-aware cross validation instead of asymptotic standard errors.
+    \item Outlook: Multi-factor models must be stabilized (e.g.\ by machine-learning techniques).
+\end{itemize}
+\end{frame}
+
+
+
+
+\begin{frame}[shrink=15]{Literature}
 
 %% References
 \bibliographystyle{apalike}
 \bibliography{ref.bib}
-
 
 \end{frame}
 
@@ -357,14 +421,6 @@ VC Global & 5 & 5 & 5 \\
 	\textbf{Reason:} asymptotic approximations are fragile with only 20--40 vintage portfolios.
 \end{frame}
 
-\begin{frame}[t]{Simulation 4: Two-Factor q-Factor Models}
-	\begin{center}
-		\includegraphics[width=0.76\linewidth]{figures/bias_comparison4.pdf}
-	\end{center}
-	
-	\textbf{Takeaway:} two-factor estimates are horizon-sensitive and high-variance; multivariate identification is fragile.
-\end{frame}
-
 
 \begin{frame}{Conclusion: Machine-Learning Ensembles}
 	
@@ -372,10 +428,23 @@ VC Global & 5 & 5 & 5 \\
 	
 	- Idea: Combine multiple weak learners
 	
-	- Additionally estimate error term \cite{TP24}
+	% - Additionally estimate error term \cite{TP24}
 	
 \end{frame}
 
+\begin{frame}{Conclusion: Main Takeaways}
+	\begin{enumerate}
+		\item Start with parsimonious SDFs (MKT-first), then add complexity cautiously.
+		\item Finite-sample design choices can dominate asymptotic elegance.
+		\item Treat asymptotic significance alone as insufficient in sparse PE samples.
+		\item Data architecture (portfolio formation, horizon design) is part of identification.
+		
+	\end{enumerate}
+	
+	\vspace{0.6em}
+	\centering
+	\Large Questions and Discussion
+\end{frame}
 
 
 

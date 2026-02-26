@@ -68,7 +68,14 @@ plot_empirical_estimates <- function(
     y.min.mkt = NULL,
     y.lim.second = NULL,
     x.max = NULL,
-    x.min = NULL) {
+    x.min = NULL,
+    v.lines = NULL,
+    h.lines = NULL,
+    v.colors = c("black", "black"),
+    h.colors = c("black", "black"),
+    main.linewidth = 0.8,
+    abline.linewidth = 0.7,
+    cex = 1.0) {
     # -------------------------------------------------------------------------
     # Define file paths for the 4 CSV sources
     # -------------------------------------------------------------------------
@@ -169,30 +176,30 @@ plot_empirical_estimates <- function(
     # -------------------------------------------------------------------------
     # Define publication-quality theme
     # -------------------------------------------------------------------------
-    theme_publication <- theme_minimal(base_size = 11, base_family = "serif") +
+    theme_publication <- theme_minimal(base_size = 11 * cex, base_family = "serif") +
         theme(
             panel.grid.major = element_line(color = "grey85", linewidth = 0.3),
             panel.grid.minor = element_blank(),
             panel.border = element_rect(color = "grey40", fill = NA, linewidth = 0.5),
             panel.background = element_rect(fill = "white"),
-            strip.text = element_text(face = "bold", size = 10, margin = margin(b = 5, t = 5)),
+            strip.text = element_text(face = "bold", size = 10 * cex, margin = margin(b = 5, t = 5)),
             strip.background = element_rect(fill = "grey95", color = "grey40", linewidth = 0.5),
-            axis.title = element_text(face = "bold", size = 10),
-            axis.text = element_text(size = 9, color = "grey20"),
+            axis.title = element_text(face = "bold", size = 10 * cex),
+            axis.text = element_text(size = 9 * cex, color = "grey20"),
             axis.ticks = element_line(color = "grey40", linewidth = 0.3),
             axis.line = element_blank(),
             legend.position = "bottom",
-            legend.title = element_text(face = "bold", size = 10),
-            legend.text = element_text(size = 9),
-            legend.key.size = unit(0.8, "cm"),
+            legend.title = element_text(face = "bold", size = 10 * cex),
+            legend.text = element_text(size = 9 * cex),
+            legend.key.size = unit(0.8 * cex, "cm"),
             legend.background = element_rect(fill = "white", color = NA),
             legend.margin = margin(t = 5),
             plot.title = element_text(
-                face = "bold", size = 13, hjust = 0.5,
+                face = "bold", size = 13 * cex, hjust = 0.5,
                 margin = margin(b = 10)
             ),
             plot.subtitle = element_text(
-                size = 10, hjust = 0.5, color = "grey30",
+                size = 10 * cex, hjust = 0.5, color = "grey30",
                 margin = margin(b = 15)
             ),
             plot.margin = margin(5, 5, 5, 5)
@@ -260,8 +267,8 @@ plot_empirical_estimates <- function(
             x = horizon_years, y = beta_MKT,
             color = source, linetype = source, shape = source
         )) +
-            geom_line(linewidth = 0.8, alpha = 0.9) +
-            geom_point(size = 2.5, fill = "white", stroke = 0.8) +
+            geom_line(linewidth = main.linewidth, alpha = 0.9) +
+            geom_point(size = 2.5 * cex, fill = "white", stroke = 0.8) +
             scale_color_manual(values = colors_source, name = "Estimation Method") +
             scale_linetype_manual(values = linetypes_source, name = "Estimation Method") +
             scale_shape_manual(values = shapes_source, name = "Estimation Method") +
@@ -284,11 +291,29 @@ plot_empirical_estimates <- function(
                     NULL
                 }
             } +
+            {
+                if (!is.null(v.lines)) {
+                    lapply(seq_along(v.lines), function(idx) {
+                        geom_vline(xintercept = v.lines[idx], color = v.colors[min(idx, length(v.colors))], linetype = "dotted", linewidth = abline.linewidth)
+                    })
+                } else {
+                    NULL
+                }
+            } +
+            {
+                if (!is.null(h.lines)) {
+                    lapply(seq_along(h.lines), function(idx) {
+                        geom_hline(yintercept = h.lines[idx], color = h.colors[min(idx, length(h.colors))], linetype = "dotted", linewidth = abline.linewidth)
+                    })
+                } else {
+                    NULL
+                }
+            } +
             theme_publication +
             theme(
                 legend.position = "none",
-                plot.title = element_text(size = 10, hjust = 0.5, margin = margin(b = 5)),
-                axis.title.y = if (i > 1) element_blank() else element_text(face = "bold", size = 10)
+                plot.title = element_text(size = 10 * cex, hjust = 0.5, margin = margin(b = 5)),
+                axis.title.y = if (i > 1) element_blank() else element_text(face = "bold", size = 10 * cex)
             )
 
         mkt_plots[[i]] <- p
@@ -319,8 +344,8 @@ plot_empirical_estimates <- function(
                     x = horizon_years, y = Coef,
                     color = source, linetype = source, shape = source
                 )) +
-                    geom_line(linewidth = 0.8, alpha = 0.9) +
-                    geom_point(size = 2.5, fill = "white", stroke = 0.8) +
+                    geom_line(linewidth = main.linewidth, alpha = 0.9) +
+                    geom_point(size = 2.5 * cex, fill = "white", stroke = 0.8) +
                     scale_color_manual(values = colors_source, name = "Estimation Method") +
                     scale_linetype_manual(values = linetypes_source, name = "Estimation Method") +
                     scale_shape_manual(values = shapes_source, name = "Estimation Method") +
@@ -352,11 +377,29 @@ plot_empirical_estimates <- function(
                             NULL
                         }
                     } +
+                    {
+                        if (!is.null(v.lines)) {
+                            lapply(seq_along(v.lines), function(idx) {
+                                geom_vline(xintercept = v.lines[idx], color = v.colors[min(idx, length(v.colors))], linetype = "dotted", linewidth = abline.linewidth)
+                            })
+                        } else {
+                            NULL
+                        }
+                    } +
+                    {
+                        if (!is.null(h.lines)) {
+                            lapply(seq_along(h.lines), function(idx) {
+                                geom_hline(yintercept = h.lines[idx], color = h.colors[min(idx, length(h.colors))], linetype = "dotted", linewidth = abline.linewidth)
+                            })
+                        } else {
+                            NULL
+                        }
+                    } +
                     theme_publication +
                     theme(
                         legend.position = "none",
-                        plot.title = element_text(size = 10, hjust = 0.5, margin = margin(b = 5)),
-                        axis.title.y = if (!first_coef_plot) element_blank() else element_text(face = "bold", size = 10)
+                        plot.title = element_text(size = 10 * cex, hjust = 0.5, margin = margin(b = 5)),
+                        axis.title.y = if (!first_coef_plot) element_blank() else element_text(face = "bold", size = 10 * cex)
                     )
 
                 second_plots[[i]] <- p
@@ -382,7 +425,7 @@ plot_empirical_estimates <- function(
             panel = textGrob(
                 expression(bold("Panel A: Market Factor (" * beta[MKT] * ")")),
                 x = 0, y = 0, hjust = 0, vjust = 0,
-                gp = gpar(fontsize = 12, fontfamily = "serif", fontface = "bold")
+                gp = gpar(fontsize = 12 * cex, fontfamily = "serif", fontface = "bold")
             )
         )
 
@@ -398,7 +441,7 @@ plot_empirical_estimates <- function(
             panel = textGrob(
                 "Panel B: Second Factor",
                 x = 0, y = 0, hjust = 0, vjust = 0,
-                gp = gpar(fontsize = 12, fontfamily = "serif", fontface = "bold")
+                gp = gpar(fontsize = 12 * cex, fontfamily = "serif", fontface = "bold")
             )
         )
 
@@ -771,7 +814,14 @@ plot_max_vintage_cutoff <- function(
     y.min.mkt = NULL,
     y.lim.second = NULL,
     x.max = NULL,
-    x.min = NULL) {
+    x.min = NULL,
+    v.lines = NULL,
+    h.lines = NULL,
+    v.colors = c("black", "black"),
+    h.colors = c("black", "black"),
+    main.linewidth = 0.7,
+    abline.linewidth = 0.7,
+    cex = 1) {
     # -------------------------------------------------------------------------
     # 1. Load data from all vintage × weighting combinations
     # -------------------------------------------------------------------------
@@ -874,8 +924,8 @@ plot_max_vintage_cutoff <- function(
             color = vintage,
             group = vintage
         )) +
-            geom_line(linewidth = 0.7, alpha = 0.85) +
-            geom_point(size = 1.5, alpha = 0.85) +
+            geom_line(linewidth = main.linewidth, alpha = 0.85) +
+            geom_point(size = 1.5 * cex, alpha = 0.85) +
             scale_color_viridis_d(
                 option = "turbo",
                 name   = "Max Vintage Year",
@@ -890,13 +940,31 @@ plot_max_vintage_cutoff <- function(
                 x     = if (show_x) "Horizon (Years)" else NULL,
                 y     = if (show_y_label) y_label else NULL
             ) +
+            {
+                if (!is.null(v.lines)) {
+                    lapply(seq_along(v.lines), function(idx) {
+                        geom_vline(xintercept = v.lines[idx], color = v.colors[min(idx, length(v.colors))], linetype = "dotted", linewidth = abline.linewidth)
+                    })
+                } else {
+                    NULL
+                }
+            } +
+            {
+                if (!is.null(h.lines)) {
+                    lapply(seq_along(h.lines), function(idx) {
+                        geom_hline(yintercept = h.lines[idx], color = h.colors[min(idx, length(h.colors))], linetype = "dotted", linewidth = abline.linewidth)
+                    })
+                } else {
+                    NULL
+                }
+            } +
             theme_publication +
             theme(
                 legend.position = "none",
                 axis.title.y = if (!show_y_label) {
                     element_blank()
                 } else {
-                    element_text(face = "bold", size = 10)
+                    element_text(face = "bold", size = 10 * cex)
                 }
             )
 
@@ -1026,14 +1094,14 @@ plot_max_vintage_cutoff <- function(
             panel = textGrob(
                 expression(bold("Panel A: Market Factor (" * beta[MKT] * ")")),
                 x = 0, y = 0, hjust = 0, vjust = 0,
-                gp = gpar(fontsize = 12, fontfamily = "serif", fontface = "bold")
+                gp = gpar(fontsize = 12 * cex, fontfamily = "serif", fontface = "bold")
             )
         )
         panel_b_label <- wrap_elements(
             panel = textGrob(
                 "Panel B: Second Factor",
                 x = 0, y = 0, hjust = 0, vjust = 0,
-                gp = gpar(fontsize = 12, fontfamily = "serif", fontface = "bold")
+                gp = gpar(fontsize = 12 * cex, fontfamily = "serif", fontface = "bold")
             )
         )
 
@@ -1387,7 +1455,14 @@ plot_max_vintage_cutoff_combined_mkt <- function(
     y.max.mkt = NULL,
     y.min.mkt = NULL,
     x.max = NULL,
-    x.min = NULL) {
+    x.min = NULL,
+    v.lines = NULL,
+    h.lines = NULL,
+    v.colors = c("black", "black"),
+    h.colors = c("black", "black"),
+    main.linewidth = 0.7,
+    abline.linewidth = 0.7,
+    cex = 1.0) {
     all_rows <- list()
     for (v in vintages) {
         for (i in seq_along(nc_tags)) {
@@ -1422,39 +1497,57 @@ plot_max_vintage_cutoff_combined_mkt <- function(
     if (!is.null(x.min)) plot_data <- plot_data %>% filter(max.month >= x.min)
     if (!is.null(x.max)) plot_data <- plot_data %>% filter(max.month <= x.max)
 
-    theme_publication <- theme_minimal(base_size = 11, base_family = "serif") +
+    theme_publication <- theme_minimal(base_size = 11 * cex, base_family = "serif") +
         theme(
             panel.grid.major = element_line(color = "grey85", linewidth = 0.3),
             panel.grid.minor = element_blank(),
             panel.border = element_rect(color = "grey40", fill = NA, linewidth = 0.5),
             panel.background = element_rect(fill = "white"),
-            strip.text = element_text(face = "bold", size = 10, margin = margin(b = 5, t = 5)),
+            strip.text = element_text(face = "bold", size = 10 * cex, margin = margin(b = 5, t = 5)),
             strip.background = element_rect(fill = "grey95", color = "grey40", linewidth = 0.5),
-            axis.title = element_text(face = "bold", size = 10),
-            axis.text = element_text(size = 9, color = "grey20"),
+            axis.title = element_text(face = "bold", size = 10 * cex),
+            axis.text = element_text(size = 9 * cex, color = "grey20"),
             axis.ticks = element_line(color = "grey40", linewidth = 0.3),
             axis.line = element_blank(),
             legend.position = "bottom",
-            legend.title = element_text(face = "bold", size = 10),
-            legend.text = element_text(size = 9),
-            legend.key.size = unit(0.8, "cm"),
+            legend.title = element_text(face = "bold", size = 10 * cex),
+            legend.text = element_text(size = 9 * cex),
+            legend.key.size = unit(0.8 * cex, "cm"),
             legend.background = element_rect(fill = "white", color = NA),
             legend.margin = margin(t = 5),
-            plot.title = element_text(face = "bold", size = 10, hjust = 0.5, margin = margin(b = 5)),
+            plot.title = element_text(face = "bold", size = 10 * cex, hjust = 0.5, margin = margin(b = 5)),
             plot.margin = margin(5, 5, 5, 5)
         )
 
     .build_panel <- function(df, y_col, title, show_y_label, y_label, ylim_vec = NULL) {
         p <- ggplot(df, aes(x = horizon_years, y = .data[[y_col]], color = vintage, group = vintage)) +
-            geom_line(linewidth = 0.7, alpha = 0.85) +
-            geom_point(size = 1.5, alpha = 0.85) +
+            geom_line(linewidth = main.linewidth, alpha = 0.85) +
+            geom_point(size = 1.5 * cex, alpha = 0.85) +
             scale_color_viridis_d(option = "turbo", name = "Max Vintage Year", guide = guide_legend(nrow = 1)) +
             scale_x_continuous(breaks = seq(0, max(df$horizon_years, na.rm = TRUE), by = 5), expand = c(0.02, 0)) +
             labs(title = title, x = "Horizon (Years)", y = if (show_y_label) y_label else NULL) +
+            {
+                if (!is.null(v.lines)) {
+                    lapply(seq_along(v.lines), function(idx) {
+                        geom_vline(xintercept = v.lines[idx], color = v.colors[min(idx, length(v.colors))], linetype = "dotted", linewidth = abline.linewidth)
+                    })
+                } else {
+                    NULL
+                }
+            } +
+            {
+                if (!is.null(h.lines)) {
+                    lapply(seq_along(h.lines), function(idx) {
+                        geom_hline(yintercept = h.lines[idx], color = h.colors[min(idx, length(h.colors))], linetype = "dotted", linewidth = abline.linewidth)
+                    })
+                } else {
+                    NULL
+                }
+            } +
             theme_publication +
             theme(
                 legend.position = "none",
-                axis.title.y = if (!show_y_label) element_blank() else element_text(face = "bold", size = 10)
+                axis.title.y = if (!show_y_label) element_blank() else element_text(face = "bold", size = 10 * cex)
             )
         if (!is.null(ylim_vec)) {
             p <- p + coord_cartesian(ylim = ylim_vec)
@@ -1543,6 +1636,7 @@ getwd()
 
 file.folder <- "results/data_out_2026-emp-max-vin-2019"
 file.folder <- "data_out_2026_02_26"
+out.folder <- "figures2"
 
 # # Two-factor model with all factors
 plot_empirical_estimates(
@@ -1554,7 +1648,7 @@ plot_empirical_estimates(
     export_latex = TRUE,
     y.max.mkt = 1.5, y.min.mkt = -0.25,
     y.lim.second = list(Alpha = c(-0.01, 0.01)),
-    output_file = "figures/empirical_PE_all_factors"
+    output_file = paste0(out.folder, "/empirical_PE_all_factors")
 )
 
 # Single-factor model with MKT only
@@ -1568,7 +1662,7 @@ plot_empirical_estimates(
     height = 4,
     y.max.mkt = 1.5, y.min.mkt = 0.5,
     # y.lim.second = list(Alpha = c(-0.01, 0.01)),
-    output_file = "figures/empirical_PE_MKT"
+    output_file = paste0(out.folder, "/empirical_PE_MKT")
 )
 
 # Max vintage-year cutoff analysis (all factors)
@@ -1584,56 +1678,56 @@ plot_max_vintage_cutoff(
     height = 5,
     y.max.mkt = 2.5, y.min.mkt = 0,
     y.lim.second = list(Alpha = c(-0.01, 0.01)),
-    output_file = "figures/max_vintage_PE_all_factors"
+    output_file = paste0(out.folder, "/max_vintage_PE_all_factors")
 )
 
 if (FALSE) {
-  # Max vintage-year cutoff analysis (MKT only)
-  plot_max_vintage_cutoff(
-    data_dir = file.folder,
-    fund_type = "PE",
-    factors = c("MKT"),
-    vintages = 2011:2021,
-    export_pdf = TRUE,
-    export_svg = TRUE,
-    export_csv = TRUE,
-    export_latex = TRUE,
-    height = 3,
-    y.max.mkt = 2.5, y.min.mkt = 0,
-    output_file = "figures/max_vintage_PE_MKT"
-  )
-  
-  # Max vintage-year cutoff analysis (MKT only, NC50)
-  plot_max_vintage_cutoff(
-    data_dir = file.folder,
-    fund_type = "PE",
-    factors = c("MKT"),
-    vintages = 2011:2021,
-    nc_tag = "_NC50",
-    export_pdf = TRUE,
-    export_svg = TRUE,
-    export_csv = TRUE,
-    export_latex = TRUE,
-    height = 3,
-    y.max.mkt = 2.5, y.min.mkt = 0,
-    output_file = "figures/max_vintage_PE_NC50_MKT"
-  )
+    # Max vintage-year cutoff analysis (MKT only)
+    plot_max_vintage_cutoff(
+        data_dir = file.folder,
+        fund_type = "PE",
+        factors = c("MKT"),
+        vintages = 2011:2021,
+        export_pdf = TRUE,
+        export_svg = TRUE,
+        export_csv = TRUE,
+        export_latex = TRUE,
+        height = 3,
+        y.max.mkt = 2.5, y.min.mkt = 0,
+        output_file = paste0(out.folder, "/max_vintage_PE_MKT")
+    )
+
+    # Max vintage-year cutoff analysis (MKT only, NC50)
+    plot_max_vintage_cutoff(
+        data_dir = file.folder,
+        fund_type = "PE",
+        factors = c("MKT"),
+        vintages = 2011:2021,
+        nc_tag = "_NC50",
+        export_pdf = TRUE,
+        export_svg = TRUE,
+        export_csv = TRUE,
+        export_latex = TRUE,
+        height = 3,
+        y.max.mkt = 2.5, y.min.mkt = 0,
+        output_file = paste0(out.folder, "/max_vintage_PE_NC50_MKT")
+    )
 } else {
-  # Combined MKT Max vintage-year cutoff analysis (100% NAV and 50% NAV-discount)
-  plot_max_vintage_cutoff_combined_mkt(
-    data_dir = file.folder,
-    fund_type = "PE",
-    vintages = 2011:2021,
-    nc_tags = c("", "_NC50"),
-    nc_labels = c("100% NAV as Cashflow", "50% NAV-discount sample"),
-    export_pdf = TRUE,
-    export_svg = TRUE,
-    export_csv = TRUE,
-    width = 14,
-    height = 4,
-    y.max.mkt = 2.5, y.min.mkt = 0,
-    output_file = "figures/max_vintage_PE_MKT_combined_NC"
-  )
+    # Combined MKT Max vintage-year cutoff analysis (100% NAV and 50% NAV-discount)
+    plot_max_vintage_cutoff_combined_mkt(
+        data_dir = file.folder,
+        fund_type = "PE",
+        vintages = 2011:2021,
+        nc_tags = c("", "_NC50"),
+        nc_labels = c("100% NAV as Cashflow", "50% NAV-discount sample"),
+        export_pdf = TRUE,
+        export_svg = TRUE,
+        export_csv = TRUE,
+        width = 14,
+        height = 4,
+        y.max.mkt = 2.5, y.min.mkt = 0,
+        output_file = paste0(out.folder, "/max_vintage_PE_MKT_combined_NC")
+    )
 }
 
 
@@ -1651,5 +1745,49 @@ plot_max_vintage_cutoff(
     height = 5,
     y.max.mkt = 2.5, y.min.mkt = 0,
     y.lim.second = list(Alpha = c(-0.01, 0.01)),
-    output_file = "figures/max_vintage_PE_NC50_all_factors"
+    output_file = paste0(out.folder, "/max_vintage_PE_NC50_all_factors")
+)
+
+
+
+### PRESENTATION
+
+out.folder <- "figures3"
+
+
+# Single-factor model with MKT only
+plot_empirical_estimates(
+    data_dir = file.folder,
+    fund_type = "PE",
+    factors = c("MKT"),
+    export_pdf = TRUE,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    height = 6,
+    width = 8,
+    y.max.mkt = 1.5, y.min.mkt = -0.1,
+    # y.lim.second = list(Alpha = c(-0.01, 0.01)),
+    v.lines = c(0, 15),
+    h.lines = c(0, 0.75),
+    v.colors = c("blue", "orange"),
+    h.colors = c("gray", "red"),
+    main.linewidth = 2,
+    abline.linewidth = 1.5,
+    cex = 1,
+    output_file = paste0(out.folder, "/empirical_PE_MKT_alines")
+)
+
+# Single-factor model with MKT only
+plot_empirical_estimates(
+    data_dir = file.folder,
+    fund_type = "PE",
+    factors = c("MKT"),
+    export_pdf = TRUE,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    y.max.mkt = 1.5, y.min.mkt = 0.5,
+    main.linewidth = 2,
+    cex = 1.5,
+    # y.lim.second = list(Alpha = c(-0.01, 0.01)),
+    output_file = paste0(out.folder, "/empirical_PE_MKT_larger")
 )
