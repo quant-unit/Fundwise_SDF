@@ -274,13 +274,12 @@ scenarios <- c(
     "ff3_fw_cv_alpha", "ff3_ew_cv_alpha",
     "ff3_fw_no_cv_ALL", "ff3_ew_no_cv_ALL",
     "ff3_fw_cv_ALL", "ff3_ew_cv_ALL",
+    "ff3_fw_cv_ALL_3f", "ff3_ew_cv_ALL_3f",
     "ff3_fw_no_cv_ALL_3f", "ff3_ew_no_cv_ALL_3f",
     "fw_vintage_sweep", "ew_vintage_sweep",
     "fw_vintage_sweep_NC50", "ew_vintage_sweep_NC50"
 )
-scenarios <- c(
-  "ff3_fw_cv_alpha", "ff3_ew_cv_alpha"
-)
+
 results <- run_empirical_study(
     scenario_ids = scenarios,
     data_out_folder = data.out.folder

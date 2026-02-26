@@ -306,7 +306,24 @@ scenarios:
     factors_to_use: ["MKT", "SMB", "HML"]
     include_alpha_term: false
     active: true
-    
+ 
+  ff3_fw_cv_ALL_3f:
+    description: "FF3 data, fund-weighted VYP, no CV, MKT+SMB+HML"
+    public_filename: "ff3_factors"
+    weighting: "FW"
+    do_cross_validation: true
+    factors_to_use: ["MKT", "SMB", "HML"]
+    include_alpha_term: false
+    active: true
+
+  ff3_ew_cv_ALL_3f:
+    description: "FF3 data, equal-weighted VYP, no CV, MKT+SMB+HML"
+    public_filename: "ff3_factors"
+    weighting: "EW"
+    do_cross_validation: true
+    factors_to_use: ["MKT", "SMB", "HML"]
+    include_alpha_term: false
+    active: true    
   # --------------------------------------------------------------------------
   # Four-Factor: Alpha + MKT + SMB + HML (FF3 data)
   # --------------------------------------------------------------------------
