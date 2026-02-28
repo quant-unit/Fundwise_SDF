@@ -53,6 +53,7 @@ library(grid)
 #'
 plot_empirical_estimates <- function(
     data_dir,
+    data_source = "preqin",
     fund_type = "PE",
     factors = c("MKT", "EG", "IA", "ME", "ROE"),
     export_svg = FALSE,
@@ -81,25 +82,25 @@ plot_empirical_estimates <- function(
     # -------------------------------------------------------------------------
     csv_sources <- list(
         list(
-            path = file.path(data_dir, "cache_q_factors_preqin_EW_VYP", "0_asymptotic_inference_summary.csv"),
+            path = file.path(data_dir, paste0("cache_q_factors_", data_source, "_EW_VYP"), "0_asymptotic_inference_summary.csv"),
             label = "EW Asymptotic",
             weighting = "EW",
             method = "Asymptotic"
         ),
         list(
-            path = file.path(data_dir, "cache_q_factors_preqin_EW_VYP", "0_cross_validation_summary.csv"),
+            path = file.path(data_dir, paste0("cache_q_factors_", data_source, "_EW_VYP"), "0_cross_validation_summary.csv"),
             label = "EW Cross-Validation",
             weighting = "EW",
             method = "Cross-Validation"
         ),
         list(
-            path = file.path(data_dir, "cache_q_factors_preqin_FW_VYP", "0_asymptotic_inference_summary.csv"),
+            path = file.path(data_dir, paste0("cache_q_factors_", data_source, "_FW_VYP"), "0_asymptotic_inference_summary.csv"),
             label = "FW Asymptotic",
             weighting = "FW",
             method = "Asymptotic"
         ),
         list(
-            path = file.path(data_dir, "cache_q_factors_preqin_FW_VYP", "0_cross_validation_summary.csv"),
+            path = file.path(data_dir, paste0("cache_q_factors_", data_source, "_FW_VYP"), "0_cross_validation_summary.csv"),
             label = "FW Cross-Validation",
             weighting = "FW",
             method = "Cross-Validation"
@@ -797,6 +798,7 @@ plot_empirical_estimates <- function(
 #' @return A ggplot object (invisibly if exported).
 plot_max_vintage_cutoff <- function(
     data_dir,
+    data_source = "preqin",
     fund_type = "PE",
     factors = c("MKT", "Alpha", "EG", "IA", "ME", "ROE"),
     vintages = 2011:2021,
@@ -831,7 +833,7 @@ plot_max_vintage_cutoff <- function(
         for (w in c("EW", "FW")) {
             folder <- file.path(
                 data_dir,
-                paste0("cache_q_factors_preqin_", w, "_VYP", nc_tag, "_max_vin_", v)
+                paste0("cache_q_factors_", data_source, "_", w, "_VYP", nc_tag, "_max_vin_", v)
             )
             csv_path <- file.path(folder, "0_asymptotic_inference_summary.csv")
 
@@ -1440,6 +1442,7 @@ plot_max_vintage_cutoff <- function(
 #' @param nc_labels Headers for the different tags
 plot_max_vintage_cutoff_combined_mkt <- function(
     data_dir,
+    data_source = "preqin",
     fund_type = "PE",
     vintages = 2011:2021,
     nc_tags = c("", "_NC50"),
@@ -1469,7 +1472,7 @@ plot_max_vintage_cutoff_combined_mkt <- function(
             nt <- nc_tags[i]
             nl <- nc_labels[i]
             for (w in c("EW", "FW")) {
-                folder <- file.path(data_dir, paste0("cache_q_factors_preqin_", w, "_VYP", nt, "_max_vin_", v))
+                folder <- file.path(data_dir, paste0("cache_q_factors_", data_source, "_", w, "_VYP", nt, "_max_vin_", v))
                 csv_path <- file.path(folder, "0_asymptotic_inference_summary.csv")
                 if (!file.exists(csv_path)) {
                     warning(paste("File not found (skipped):", csv_path))
@@ -1636,7 +1639,7 @@ getwd()
 
 file.folder <- "results/data_out_2026-emp-max-vin-2019"
 file.folder <- "data_out_2026_02_26"
-out.folder <- "figures2"
+out.folder <- "figures"
 
 # # Two-factor model with all factors
 plot_empirical_estimates(
@@ -1752,7 +1755,7 @@ plot_max_vintage_cutoff(
 
 ### PRESENTATION
 
-out.folder <- "figures3"
+out.folder <- "figures_presentation"
 
 
 # Single-factor model with MKT only
@@ -1790,4 +1793,26 @@ plot_empirical_estimates(
     cex = 1.5,
     # y.lim.second = list(Alpha = c(-0.01, 0.01)),
     output_file = paste0(out.folder, "/empirical_PE_MKT_larger")
+)
+
+### Pitchbook
+
+file.folder <- "data_out_2026_02_27_pitchbook"
+out.folder <- "figures_pb"
+
+# Combined MKT Max vintage-year cutoff analysis (100% NAV and 50% NAV-discount)
+plot_max_vintage_cutoff_combined_mkt(
+    data_dir = file.folder,
+    data_source = "pitchbook",
+    fund_type = "PE",
+    vintages = 2011:2021,
+    nc_tags = c("", "_NC50"),
+    nc_labels = c("100% NAV as Cashflow", "50% NAV-discount sample"),
+    export_pdf = TRUE,
+    export_svg = TRUE,
+    export_csv = TRUE,
+    width = 14,
+    height = 4,
+    y.max.mkt = 2.5, y.min.mkt = 0,
+    output_file = paste0(out.folder, "/max_vintage_PE_MKT_combined_NC")
 )

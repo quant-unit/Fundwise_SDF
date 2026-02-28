@@ -9,13 +9,20 @@ getwd()
 if(!dir.exists("data_prepared")) dir.create("data_prepared")
 
 
-path <- "data_in/pitchbook_fc_estimation_validation_2023-04-19.csv"
+path <- "data_in/pitchbook_fc_estimation_validation_2023-04-19.csv" # Tausch Pietz 2024
+path <- "data_in/forecast_est_val_2026-02-18.csv"
 df.xl <- read.csv2(path)
 colnames(df.xl)
+df.xl <- df.xl[grepl("PIB_", df.xl$FundName), ]
+
 
 df.xl$Fund.ID <- df.xl$FundID
 df.xl$Vintage <- as.integer(df.xl$Vintage)
 df.xl$date <- as.Date(df.xl$date)
+df.xl$Distributed_investor_filled <- df.xl$Distributed_investee
+df.xl$Contributed_investor_filled <- df.xl$Contributed_investee
+df.xl$NAV_investor_filled <- df.xl$NAV_investee
+
 cols.numeric <- c("FundSize", "Distributed_investor_filled", "Contributed_investor_filled", "NAV_investor_filled")
 for (col in cols.numeric) df.xl[, col] <- as.numeric(df.xl[, col])
 
@@ -26,7 +33,7 @@ table(df.xl$Vintage[!duplicated(df.xl$Fund.ID)])
 
 # data cutoff to understand larger errors at time-series end
 max(df.xl$date)
-cutoff <- "2021"
+cutoff <- "2025" # This needs to match the available public market data cutoff!
 df.xl <- df.xl[df.xl$date < as.Date(paste0(cutoff, "-01-01")), ]
 
 
@@ -61,7 +68,8 @@ make.preqin.df <- function(
     acs.filter = "PE_FOF",
     out.name = "FOF",
     region.filter = NA,
-    vin.year.pfs = FALSE) {
+    vin.year.pfs = FALSE,
+    final.nav.discount = 1) {
   col.to.keep <- c("Fund.ID", "FundSize", "Vintage",
                    "date", 
                    "NAV_investor_filled", "Contributed_investor_filled", "Distributed_investor_filled"
@@ -101,7 +109,7 @@ make.preqin.df <- function(
     df.ss$CF <- df.ss$distributions - df.ss$contributions
     
     # for last date: CF = CF + NAV, i.e., regard final NAV as final distribution
-    df.ss$CF[nrow(df.ss)] <- df.ss$CF[nrow(df.ss)] + df.ss$NAV_investor_filled[nrow(df.ss)]
+    df.ss$CF[nrow(df.ss)] <- df.ss$CF[nrow(df.ss)] + df.ss$NAV_investor_filled[nrow(df.ss)] * final.nav.discount
     
     # sanity check if cash flows start around the vintage
     min.year <- min(as.numeric(format(df.ss$date, "%Y")))
@@ -121,10 +129,10 @@ make.preqin.df <- function(
     df$CF <- df$CF # PITCHBOOK
   } else {
     # df$CF <- df$CF * mean(df$FundSize) # PREQIN
-    df$CF <- df$CF / df$FundSize # PITCHBOOK
+    df$CF <- df$CF / df$FundSize * 100 # PITCHBOOK
   }
-  
-  df$CF <- df$CF/ 1000 / 1000
+  df$CF <- df$CF * 1000
+  # df$CF <- df$CF/ 1000 / 1000
   df <- df[, c("Fund.ID", "date", "CF", "Vintage")]
   colnames(df) <- c("Fund.ID", "Date", "CF", "Vintage")
   df$type <- out.name
@@ -168,7 +176,7 @@ acs <- list(
 )
 
 
-make.preqin.csv <- function(fund.size.weighting, region.filter=NA, vin.year.pfs=TRUE) {
+make.preqin.csv <- function(fund.size.weighting, region.filter=NA, vin.year.pfs=TRUE, final.nav.discount = 1) {
   l <- list()
   for(i in names(acs)) {
     print(acs[[i]])
@@ -177,7 +185,8 @@ make.preqin.csv <- function(fund.size.weighting, region.filter=NA, vin.year.pfs=
       acs.filter = acs[[i]],
       region.filter = region.filter,
       vin.year.pfs = vin.year.pfs,
-      out.name = i)
+      out.name = i,
+      final.nav.discount = final.nav.discount)
     l[[i]] <- df0
   }
   df.out <- data.frame(do.call(rbind, l))
@@ -191,19 +200,22 @@ make.preqin.csv <- function(fund.size.weighting, region.filter=NA, vin.year.pfs=
   region.tag = ""
   if (!is.na(region.filter)) region.tag <- paste0("_", region.filter)
   if (vin.year.pfs) region.tag <- paste0("_VYP", region.tag)
-    
-  file = paste0("data_prepared_cutoff_", cutoff, "/pitchbook_cashflows_", tag, region.tag, "_2023.csv")
+  region.tag <- ifelse(final.nav.discount != 1, paste0(region.tag, "_NC", final.nav.discount*100), region.tag)
+  
+  file = paste0("data_prepared_cutoff_", cutoff, "/pitchbook_cashflows_", tag, region.tag, "_2026.csv")
   write.csv(df.out, file, row.names = FALSE)
   invisible(df.out)
 }
 vin.year.pfs <- FALSE
-df.out <- make.preqin.csv(TRUE, "EU", vin.year.pfs)
-df.out <- make.preqin.csv(FALSE, "EU", vin.year.pfs)
-df.out <- make.preqin.csv(TRUE, NA, vin.year.pfs)
-df.out <- make.preqin.csv(FALSE, NA, vin.year.pfs)
+#df.out <- make.preqin.csv(TRUE, "EU", vin.year.pfs)
+#df.out <- make.preqin.csv(FALSE, "EU", vin.year.pfs)
+#df.out <- make.preqin.csv(TRUE, NA, vin.year.pfs)
+#df.out <- make.preqin.csv(FALSE, NA, vin.year.pfs)
 
 vin.year.pfs <- TRUE
-df.out <- make.preqin.csv(TRUE, "EU", vin.year.pfs)
-df.out <- make.preqin.csv(FALSE, "EU", vin.year.pfs)
+#df.out <- make.preqin.csv(TRUE, "EU", vin.year.pfs)
+#df.out <- make.preqin.csv(FALSE, "EU", vin.year.pfs)
 df.out <- make.preqin.csv(TRUE, NA, vin.year.pfs)
 df.out <- make.preqin.csv(FALSE, NA, vin.year.pfs)
+df.out <- make.preqin.csv(TRUE, NA, vin.year.pfs, final.nav.discount=0.5)
+df.out <- make.preqin.csv(FALSE, NA, vin.year.pfs, final.nav.discount=0.5)

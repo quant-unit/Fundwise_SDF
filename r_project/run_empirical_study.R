@@ -280,6 +280,13 @@ scenarios <- c(
     "fw_vintage_sweep_NC50", "ew_vintage_sweep_NC50"
 )
 
+data.out.folder <- "results/data_out_2026_02_27_pitchbook"
+
+scenarios <- c(
+  "pitchbook_fw_vintage_sweep_NC50", "pitchbook_ew_vintage_sweep_NC50",
+  "pitchbook_fw_vintage_sweep", "pitchbook_ew_vintage_sweep"
+)
+
 results <- run_empirical_study(
     scenario_ids = scenarios,
     data_out_folder = data.out.folder

@@ -382,3 +382,56 @@ scenarios:
     do_cross_validation: false
     factors_to_use: ""
     active: false
+
+### PITCHBOOK
+
+# ============================================================================
+# MAX VINTAGE SWEEP (Robustness: estimate for each max vintage year)
+# ============================================================================
+
+  pitchbook_fw_vintage_sweep:
+    private_source: "pitchbook"
+    data_prepared_folder: "data_prepared"
+    cutoff: "_cutoff_2025"
+    description: "FW VYP, no CV, max vintage 2011–2021"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: ""
+    max_vintages: [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+    active: false
+
+  pitchbook_ew_vintage_sweep:
+    private_source: "pitchbook"
+    data_prepared_folder: "data_prepared"
+    cutoff: "_cutoff_2025"
+    description: "EW VYP, no CV, max vintage 2011–2021"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: ""
+    max_vintages: [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+    active: false
+
+  pitchbook_fw_vintage_sweep_NC50:
+    private_source: "pitchbook"
+    data_prepared_folder: "data_prepared"
+    cutoff: "_cutoff_2025"
+    description: "FW VYP, no CV, max vintage 2011–2021, 50% final NAV discout"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: ""
+    max_vintages: [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+    active: false
+    final_nav_discount: 50
+
+  pitchbook_ew_vintage_sweep_NC50:
+    private_source: "pitchbook"
+    data_prepared_folder: "data_prepared"
+    cutoff: "_cutoff_2025"
+    description: "EW VYP, no CV, max vintage 2011–2021, 50% final NAV discout"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: ""
+    max_vintages: [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+    active: false
+    final_nav_discount: 50
+    

@@ -1025,7 +1025,7 @@ Thus, the minimum vintage year is 1983, and the maximum is 2021.
 The public market factors that enter our SDF draw on the US dataset of the recently popularized $q^5$ investment factor model sourced from \url{http://global-q.org/factors.html} \citep{HXZ15,hou2021augmented}. 
 Their five-factor model includes the market excess return (MKT), a size factor (ME), an investment factor (IA), a return on equity factor (ROE), and an expected growth factor (EG).
 
-
+\textcolor{orange}{q-factor maximum data 2024-12-31}
 
 \subsection{Model and estimator specifications}
 \label{sec:model_selection}
@@ -1281,6 +1281,8 @@ Following the conclusions from the simulation study, we use the Preqin data from
 For each model specification, we report both asymptotic standard errors (SE$_A$) and $hv$-block cross-validation standard errors (SE$_{CV}$).
 We focus the presentation on PE (i.e., mainly Buyout and Growth) as our primary fund type and report both equal-weighted (EW) and value-weighted (FW) estimates across a grid of compounding Horizons.
 Throughout this subsection, $t_A$ and $t_{CV}$ denote the $t$-ratios based on asymptotic and cross-validation standard errors, respectively\footnote{All R code and data are available in an online repository: \url{https://github.com/quant-unit/Fundwise_SDF/tree/master/r_project}.}.
+
+\textcolor{orange}{The max horizon is set to the max cash flow data per fund in the empirical application!}
 
 
 \subsubsection{The impact of unseasoned funds and reported NAVs}

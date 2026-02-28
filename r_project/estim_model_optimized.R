@@ -32,9 +32,10 @@ if (source.internally) {
   do.parallel <- ifelse(.Platform$OS.type == "windows", FALSE, TRUE)
 
   private.source <- "pitchbook"
-  private.source <- "preqin"
+  # private.source <- "preqin"
   cutoff <- "" # "_cutoff_2019" # only available for PitchBook (2024-09-28)
   cutoff <- "_cutoff_2021"
+  cutoff <- "_cutoff_2025"
   max.vintage <- 2011
 
   # public.filename <- "public_returns" # outdated
@@ -56,7 +57,7 @@ if (source.internally) {
   # sdf.model <- "exp.aff"
 
   max.months <- c(1, 60, 120, 150, 180, 210, 240, 300, 360) # c(10, 20) * 12 # c(12.5, 15, 17.5) * 12
-  max.months <- c(1, 60, 120, 150, 180)
+  max.months <- c(0, 180)
 
   include.alpha.term <- FALSE
   final.nav.discount <- 100
@@ -84,17 +85,23 @@ if (source.internally) {
 
   factors.to.use <- ""
 
-  data.prepared.folder <- "data_prepared_2026"
+  data.prepared.folder <- "data_prepared"
+  
+  #private.source <- "preqin"
+  #data.prepared.folder <- "data_prepared_2026"
+  
 }
 
 # 1.2) load data -----
 
 # load public data
 if (public.filename %in% c("q_factors", "ff3_factors")) {
-  df.public <- read.csv(paste0("empirical/", data.prepared.folder, "/", public.filename, ".csv"))
+  df.public <- read.csv(paste0("empirical/", "data_prepared_2026", "/", public.filename, ".csv"))
 } else {
   df.public <- read.csv2(paste0("empirical/", data.prepared.folder, "/", public.filename, ".csv"))
 }
+print(paste(public.filename, "max public date:", max(as.Date(df.public$Date))))
+
 colnames(df.public) <- gsub("_World", "", colnames(df.public))
 df.public$Date <- as.Date(df.public$Date)
 
@@ -142,8 +149,11 @@ if (!use.simulation) {
   }
 
   if (private.source == "pitchbook") {
-    year.tag <- "_2023"
-    df.private.cfs <- read.csv(paste0("empirical/", data.prepared.folder, cutoff, "/pitchbook_cashflows_", weighting, year.tag, ".csv"))
+    year.tag <- "_2026"
+    nc.tag <- if (exists("final.nav.discount") && final.nav.discount != 100) paste0("_NC", final.nav.discount) else ""
+    pitchbook.filename <- paste0("empirical/", data.prepared.folder, cutoff, "/pitchbook_cashflows_", weighting, nc.tag, year.tag, ".csv")
+    print(pitchbook.filename)
+    df.private.cfs <- read.csv(pitchbook.filename)
     colnames(df.private.cfs)
     print(max(df.private.cfs$Date))
   }
@@ -198,10 +208,13 @@ if (FALSE) {
   }
 }
 
+
 # split.private <- split(df.private.cfs, df.private.cfs$Fund.ID)
 # system.time(list.private <- lapply(split.private, to.monthly))
 # system.time(df.private.cfs <- as.data.frame(data.table::rbindlist(list.private)))
 system.time(df.private.cfs <- as.data.frame(data.table::rbindlist(lapply(split(df.private.cfs, df.private.cfs$Fund.ID), to.monthly))))
+
+stopifnot(sum(df.private.cfs$CF) >0)
 
 
 df.private.cfs$type <- as.factor(as.character(df.private.cfs$type))
@@ -405,6 +418,12 @@ lambda <- 0
 par <- c(MKT = 1, Alpha = 0)
 type <- levels(df0$type)[1]
 df.in <- df0[df0$type == type, ]
+
+#df.test <- df.in[df.in$Fund.ID == df.in$Fund.ID[1], ]
+#plot(df.test$Date, cumsum(df.test$CF))
+#plot(df.test$Date, exp(cumsum(log(1 + (as.matrix(df.test[, names(par)]) %*% par)))))
+#f1(df.test, 180, par)
+
 
 df.in$Fund.ID <- (as.character(df.in$Fund.ID))
 system.time(
