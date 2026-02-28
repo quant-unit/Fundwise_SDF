@@ -117,18 +117,18 @@ make.vintage.summary <- function(asset.class = "Private Equity") {
     )
     # cat(paste(strwrap(msg, width = 80), collapse = "\n"), "\n\n")
     print(msg)
-    
+
     msg <- paste0("The vintage year distribution is as follows: ", output_string, ".")
     # cat(paste(strwrap(msg, width = 80), collapse = "\n"), "\n")
     print(msg)
-    
+
     # Region split
     tbl <- table(df$REGION)
     output_string <- paste(paste0(names(tbl), " (", tbl, ")"), collapse = ", ")
     msg <- paste0("The region distribution is as follows: ", output_string, ".")
     # cat(paste(strwrap(msg, width = 80), collapse = "\n"), "\n")
     print(msg)
-    
+
     # Strategy split (sub-strategy of the asst class)
     tbl <- table(df$STRATEGY)
     output_string <- paste(paste0(names(tbl), " (", tbl, ")"), collapse = ", ")
@@ -204,9 +204,9 @@ make.preqin.df <- function(
         df.ss$CF[nrow(df.ss)] <- df.ss$CF[nrow(df.ss)] + final.nav
 
         year.diff <- min(as.numeric(format(df.ss$TRANSACTION.DATE, "%Y"))) - as.numeric(df.ss$VINTAGE...INCEPTION.YEAR[1])
-        
+
         if (is.na(final.nav)) print(paste("Missing Final NAV:", fund.id))
-        
+
         if ((abs(year.diff) < 2) & (!is.na(final.nav))) {
             list.df[[fund.id]] <- df.ss
         }
@@ -257,7 +257,7 @@ make.preqin.df <- function(
         dfx <- split(df, df$Vintage)
         df <- data.frame(do.call(rbind, lapply(dfx, agg.vin.year.pf)))
     }
-  
+
     return(df)
 }
 df <- make.preqin.df(acs.filter = "Private Equity")
@@ -287,7 +287,7 @@ acs <- list(
 )
 
 
-make.preqin.csv <- function(fund.size.weighting, vin.year.pfs, region.filter, final.nav.discount=1) {
+make.preqin.csv <- function(fund.size.weighting, vin.year.pfs, region.filter, final.nav.discount = 1) {
     l <- list()
     for (i in names(acs)) {
         print(acs[[i]])
@@ -306,7 +306,7 @@ make.preqin.csv <- function(fund.size.weighting, vin.year.pfs, region.filter, fi
     tag <- ifelse(fund.size.weighting, "FW", "EW")
     tag <- ifelse(vin.year.pfs, paste0(tag, "_VYP"), tag)
     tag <- ifelse(is.na(region.filter), tag, paste0(tag, "_", region.filter))
-    tag <- ifelse(final.nav.discount != 1, paste0(tag, "_NC", final.nav.discount*100), tag)
+    tag <- ifelse(final.nav.discount != 1, paste0(tag, "_NC", final.nav.discount * 100), tag)
     file <- paste0(data.prepared.folder, "/preqin_cashflows_2022_", tag, "_NAV.csv")
     file <- paste0(data.prepared.folder, "/preqin_cashflows_", tag, "_NAV.csv")
     write.csv(df.out, file, row.names = FALSE)
@@ -315,12 +315,83 @@ make.preqin.csv <- function(fund.size.weighting, vin.year.pfs, region.filter, fi
 # Execute for various configurations
 df.out <- make.preqin.csv(TRUE, TRUE, NA)
 df.out <- make.preqin.csv(FALSE, TRUE, NA)
-df.out <- make.preqin.csv(TRUE, FALSE, NA)
-df.out <- make.preqin.csv(FALSE, FALSE, NA)
+df.out.fw <- make.preqin.csv(TRUE, FALSE, NA)
+df.out.ew <- make.preqin.csv(FALSE, FALSE, NA)
 df.out <- make.preqin.csv(TRUE, TRUE, "Europe")
 df.out <- make.preqin.csv(FALSE, TRUE, "Europe")
 df.out <- make.preqin.csv(TRUE, TRUE, NA, 0.5) # 50% final NAV discount
 df.out <- make.preqin.csv(FALSE, TRUE, NA, 0.5) # 50% final NAV discount
 
 summary(df.out)
+```
+
+# Plot cumulative cash flows
+```{r plot_cum_cf, fig.width=10, fig.height=5, warning=FALSE, message=FALSE}
+library(ggplot2)
+library(dplyr)
+
+# Use all Private Equity vintages available in the dataset
+
+# Helper function to process the cashflow data into percentage of commitment proxy
+process_plot_data <- function(df, weight_label) {
+    df.pe <- df[df$type == "PE", ]
+
+    df.pe$Date <- as.Date(df.pe$Date)
+    df.pe$Year <- as.numeric(format(df.pe$Date, "%Y"))
+    df.pe$Age <- df.pe$Year - as.numeric(as.character(df.pe$Vintage))
+
+    # Filter up to year 20 (t+20)
+    df.pe <- df.pe[df.pe$Age >= 0 & df.pe$Age <= 20, ]
+
+    agg <- aggregate(cbind(CF, CON) ~ Vintage + Age, data = df.pe, sum, na.rm = TRUE)
+    agg <- agg[order(agg$Vintage, agg$Age), ]
+
+    # Calculate cumulative net cashflows and cumulative contributions
+    agg$CumCF <- unlist(tapply(agg$CF, agg$Vintage, cumsum))
+    agg$CumCON <- unlist(tapply(agg$CON, agg$Vintage, cumsum))
+
+    # Drawdown proxy: maximum drawn capital for the vintage (maximum absolute Cumulative CON)
+    max_con <- aggregate(CumCON ~ Vintage, data = agg, function(x) max(abs(x)))
+    colnames(max_con)[2] <- "MaxDrawn"
+    agg <- merge(agg, max_con, by = "Vintage")
+
+    # Scale to percent of proxy commitment
+    agg$CumCF_Pct <- agg$CumCF / agg$MaxDrawn
+    agg$Weighting <- weight_label
+    return(agg)
+}
+
+agg.fw <- process_plot_data(df.out.fw, "Fund-size weighted")
+agg.ew <- process_plot_data(df.out.ew, "Equal weighted")
+
+# Combine for side-by-side plotting
+agg.all <- rbind(agg.fw, agg.ew)
+agg.all$Vintage <- as.factor(agg.all$Vintage)
+agg.all$Weighting <- factor(agg.all$Weighting, levels = c("Fund-size weighted", "Equal weighted"))
+
+# Create faceted plot
+p_jcurve <- ggplot(agg.all, aes(x = Age, y = CumCF_Pct, color = Vintage)) +
+    geom_line(linewidth = 1) +
+    facet_wrap(~Weighting) +
+    scale_y_continuous(labels = scales::percent) +
+    scale_x_continuous(breaks = 0:20, labels = c("Inception", paste0("t+", 1:20))) +
+    theme_minimal() +
+    theme(
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 9),
+        legend.position = "right",
+        strip.text = element_text(size = 11, face = "bold"),
+        panel.grid.minor = element_blank()
+    ) +
+    scale_color_viridis_d(option = "plasma", end = 0.9) +
+    labs(
+        title = "Cumulative net cash flows since inception (all available PE vintages in Preqin dataset)",
+        y = "",
+        x = "",
+        color = "Vintage"
+    )
+
+print(p_jcurve)
+
+# Export the plot as PDF
+ggsave("cumcashflowsPE.pdf", p_jcurve, width = 10, height = 5)
 ```

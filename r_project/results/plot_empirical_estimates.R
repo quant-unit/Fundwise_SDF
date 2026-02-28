@@ -1651,6 +1651,7 @@ plot_empirical_estimates(
     export_latex = TRUE,
     y.max.mkt = 1.5, y.min.mkt = -0.25,
     y.lim.second = list(Alpha = c(-0.01, 0.01)),
+    main.linewidth = 1,
     output_file = paste0(out.folder, "/empirical_PE_all_factors")
 )
 
@@ -1664,6 +1665,7 @@ plot_empirical_estimates(
     export_latex = TRUE,
     height = 4,
     y.max.mkt = 1.5, y.min.mkt = 0.5,
+    main.linewidth = 1.5,
     # y.lim.second = list(Alpha = c(-0.01, 0.01)),
     output_file = paste0(out.folder, "/empirical_PE_MKT")
 )
@@ -1681,6 +1683,7 @@ plot_max_vintage_cutoff(
     height = 5,
     y.max.mkt = 2.5, y.min.mkt = 0,
     y.lim.second = list(Alpha = c(-0.01, 0.01)),
+    main.linewidth = 0.8,
     output_file = paste0(out.folder, "/max_vintage_PE_all_factors")
 )
 
@@ -1697,6 +1700,7 @@ if (FALSE) {
         export_latex = TRUE,
         height = 3,
         y.max.mkt = 2.5, y.min.mkt = 0,
+        main.linewidth = 0.8,
         output_file = paste0(out.folder, "/max_vintage_PE_MKT")
     )
 
@@ -1713,6 +1717,7 @@ if (FALSE) {
         export_latex = TRUE,
         height = 3,
         y.max.mkt = 2.5, y.min.mkt = 0,
+        main.linewidth = 0.8,
         output_file = paste0(out.folder, "/max_vintage_PE_NC50_MKT")
     )
 } else {
@@ -1729,6 +1734,7 @@ if (FALSE) {
         width = 14,
         height = 4,
         y.max.mkt = 2.5, y.min.mkt = 0,
+        main.linewidth = 0.8,
         output_file = paste0(out.folder, "/max_vintage_PE_MKT_combined_NC")
     )
 }
@@ -1748,6 +1754,7 @@ plot_max_vintage_cutoff(
     height = 5,
     y.max.mkt = 2.5, y.min.mkt = 0,
     y.lim.second = list(Alpha = c(-0.01, 0.01)),
+    main.linewidth = 0.8,
     output_file = paste0(out.folder, "/max_vintage_PE_NC50_all_factors")
 )
 

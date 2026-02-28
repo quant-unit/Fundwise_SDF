@@ -1012,7 +1012,7 @@ Table \ref{tab:comparison} summarizes the most prominent distinctions between th
 We use the Preqin cash flow data set as of 14th April 2022, which is well known in the academic private equity literature \citep{HJK14,brown2015different,KN16,ACGP18}.
 To keep the empirical analysis clear and concise, we filter the dataset for Private Equity (PE) funds.
 
-The Private Equity sample contains 3005 distinct funds spreading over 37 vintage years.
+The Private Equity sample contains 3005 distinct funds spreading over 37 vintage years (cf.\ Figure \ref{fig:preqin_cashflows}).
 The vintage year distribution is as follows: 1983 (1), 1985 (2), 1986 (4), 1987 (5), 1988 (7), 1990 (2), 1991 (4), 1992 (9), 1993 (13), 1994 (20), 1995 (16), 1996 (20), 1997 (24), 1998 (59), 1999 (46), 2000 (72), 2001 (51), 2002 (41), 2003 (45), 2004 (64), 2005 (117), 2006 (154), 2007 (176), 2008 (183), 2009 (83), 2010 (92), 2011 (146), 2012 (136), 2013 (142), 2014 (182), 2015 (152), 2016 (186), 2017 (143), 2018 (157), 2019 (190), 2020 (140), 2021 (120).
 The region distribution is as follows: Africa (21), Asia (173), Australasia (41), Europe (749), Latin America \& Caribbean (34), Middle East (17), North America (1968).
 The strategy distribution is as follows: Balanced (71), Buyout (1449), Co-Investment (108), Co-Investment Multi-Manager (67), Direct Secondaries (34), Fund of Funds (696), Growth (386), Secondaries (174), Turnaround (19).
@@ -1022,10 +1022,18 @@ For non-liquidated funds, we treat the latest net asset value as final cash flow
 We explicitly refrain from excluding the most recent vintage years.
 Thus, the minimum vintage year is 1983, and the maximum is 2021.
 
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.9\textwidth]{empirical/cumcashflowsPE.pdf}
+	\caption{\textbf{Cumulative cash flows:} PE funds in Preqin dataset scaled to fund commitment.}
+	\label{fig:preqin_cashflows}
+\end{figure}
+
 The public market factors that enter our SDF draw on the US dataset of the recently popularized $q^5$ investment factor model sourced from \url{http://global-q.org/factors.html} \citep{HXZ15,hou2021augmented}. 
 Their five-factor model includes the market excess return (MKT), a size factor (ME), an investment factor (IA), a return on equity factor (ROE), and an expected growth factor (EG).
+The maximum date in the  $q^5$ investment factor dataset is 2024-12-31.
 
-\textcolor{orange}{q-factor maximum data 2024-12-31}
+
 
 \subsection{Model and estimator specifications}
 \label{sec:model_selection}
