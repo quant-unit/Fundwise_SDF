@@ -270,22 +270,22 @@ if (sys.nframe() == 0L) {
 
 scenarios <- c(
     "fw_no_cv", "fw_cv", "ew_no_cv", "ew_cv",
+    "fw_vintage_sweep", "ew_vintage_sweep",
+    "fw_vintage_sweep_NC50", "ew_vintage_sweep_NC50",
+    # Fama French
     "ff3_fw_no_cv_alpha", "ff3_ew_no_cv_alpha",
     "ff3_fw_cv_alpha", "ff3_ew_cv_alpha",
     "ff3_fw_no_cv_ALL", "ff3_ew_no_cv_ALL",
     "ff3_fw_cv_ALL", "ff3_ew_cv_ALL",
     "ff3_fw_cv_ALL_3f", "ff3_ew_cv_ALL_3f",
     "ff3_fw_no_cv_ALL_3f", "ff3_ew_no_cv_ALL_3f",
-    "fw_vintage_sweep", "ew_vintage_sweep",
-    "fw_vintage_sweep_NC50", "ew_vintage_sweep_NC50"
+    "ff3_fw_no_cv", "ff3_ew_no_cv",
+    "ff3_fw_cv", "ff3_ew_cv"
 )
+scenarios <- c("ff3_fw_no_cv", "ff3_ew_no_cv", "ff3_fw_cv", "ff3_ew_cv")
 
-data.out.folder <- "results/data_out_2026_02_27_pitchbook"
-
-scenarios <- c(
-  "pitchbook_fw_vintage_sweep_NC50", "pitchbook_ew_vintage_sweep_NC50",
-  "pitchbook_fw_vintage_sweep", "pitchbook_ew_vintage_sweep"
-)
+#data.out.folder <- "results/data_out_2026_02_27_pitchbook"
+#scenarios <- c("pitchbook_fw_vintage_sweep_NC50", "pitchbook_ew_vintage_sweep_NC50", "pitchbook_fw_vintage_sweep", "pitchbook_ew_vintage_sweep")
 
 results <- run_empirical_study(
     scenario_ids = scenarios,

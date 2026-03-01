@@ -30,6 +30,7 @@ table(df.xl$region)
 table(df.xl$asset_class[!duplicated(df.xl$Fund.ID)])
 table(df.xl$asset_class_segment[!duplicated(df.xl$Fund.ID)])
 table(df.xl$Vintage[!duplicated(df.xl$Fund.ID)])
+table(df.xl$asset_class[!duplicated(df.xl$FundID)], df.xl$Vintage[!duplicated(df.xl$FundID)])
 
 # data cutoff to understand larger errors at time-series end
 max(df.xl$date)

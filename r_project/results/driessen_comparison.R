@@ -12,6 +12,8 @@ getwd()
 
 # folder for cross-validation
 base_folder <- "results/data_out_2026_02_26/"
+f_1f_ew_folder <- file.path(base_folder, "cache_ff3_factors_preqin_MKT_EW_VYP")
+f_1f_fw_folder <- file.path(base_folder, "cache_ff3_factors_preqin_MKT_FW_VYP")
 f_2f_ew_folder <- file.path(base_folder, "cache_ff3_factors_preqin_alpha_Alpha_EW_VYP")
 f_2f_fw_folder <- file.path(base_folder, "cache_ff3_factors_preqin_alpha_Alpha_FW_VYP")
 # three-factor model: MKT + SMB + HML
@@ -61,6 +63,8 @@ load_and_prep <- function(folder_path, model_name, w_val) {
 
 # Load all files
 data_all <- bind_rows(
+    load_and_prep(f_1f_ew_folder, "1-Factor", "EW"),
+    load_and_prep(f_1f_fw_folder, "1-Factor", "FW"),
     load_and_prep(f_2f_ew_folder, "2-Factor", "EW"),
     load_and_prep(f_2f_fw_folder, "2-Factor", "FW"),
     load_and_prep(f_3f_ew_folder, "3-Factor", "EW"),
@@ -119,90 +123,97 @@ fmt_est <- function(val, se) {
     c(sprintf("%.3f", val), sprintf("(%.3f)", se))
 }
 
-# Make LaTeX table
-latex_out <- c()
-latex_out <- c(latex_out, "\\begin{table}[ht]")
-latex_out <- c(latex_out, "\\centering")
-latex_out <- c(latex_out, "\\caption{Estimation Results: 2-, 3-, and 4-Factor Models}")
-latex_out <- c(latex_out, "\\label{tab:driessen_comparison_empirical}")
-latex_out <- c(latex_out, "\\resizebox{\\textwidth}{!}{")
-latex_out <- c(latex_out, "\\begin{tabular}{l cccc c cccc}")
-latex_out <- c(latex_out, "\\hline\\hline")
+# Make LaTeX table generation a reusable function to support split tables
+generate_table <- function(types_to_include, out_path, caption, label) {
+    latex_out <- c()
+    latex_out <- c(latex_out, "\\begin{table}[ht]")
+    latex_out <- c(latex_out, "\\centering")
+    latex_out <- c(latex_out, paste0("\\caption{", caption, "}"))
+    latex_out <- c(latex_out, paste0("\\label{", label, "}"))
+    latex_out <- c(latex_out, "\\resizebox{\\textwidth}{!}{")
+    latex_out <- c(latex_out, "\\begin{tabular}{l cccc c cccc}")
+    latex_out <- c(latex_out, "\\hline\\hline")
 
-# Header
-latex_out <- c(latex_out, "& \\multicolumn{4}{c}{Equal-Weighted (EW)} && \\multicolumn{4}{c}{Fund-Weighted (FW)} \\\\ \\cline{2-5} \\cline{7-10}")
-latex_out <- c(latex_out, "Model & $\\alpha$ & MKT & SMB & HML && $\\alpha$ & MKT & SMB & HML \\\\ \\hline")
+    # Header
+    latex_out <- c(latex_out, "& \\multicolumn{4}{c}{Equal-Weighted (EW)} && \\multicolumn{4}{c}{Fund-Weighted (FW)} \\\\ \\cline{2-5} \\cline{7-10}")
+    latex_out <- c(latex_out, "Model & $\\alpha$ & MKT & SMB & HML && $\\alpha$ & MKT & SMB & HML \\\\ \\hline")
 
-# Body
-for (ty in target_types) {
-    ty_label <- switch(ty,
-        "BO" = "Buyout (BO)",
-        "VC" = "Venture Capital (VC)",
-        "PE" = "Private Equity (PE)",
-        "RE" = "Real Estate (RE)",
-        ty
-    )
-    latex_out <- c(latex_out, paste0("\\multicolumn{10}{l}{\\textbf{", ty_label, "}} \\\\"))
+    # Body
+    for (ty in types_to_include) {
+        ty_label <- switch(ty,
+            "BO" = "Buyout (BO)",
+            "VC" = "Venture Capital (VC)",
+            "PE" = "Private Equity (PE)",
+            "RE" = "Real Estate (RE)",
+            ty
+        )
+        latex_out <- c(latex_out, paste0("\\multicolumn{10}{l}{\\textbf{", ty_label, "}} \\\\"))
 
-    for (mod in c("2-Factor", "3-Factor", "4-Factor")) {
-        for (res_type in c("Asymp.", "CV")) {
-            row_ew <- data_final %>% filter(Type == ty, Model == mod, ResultType == res_type, Weighting == "EW")
-            row_fw <- data_final %>% filter(Type == ty, Model == mod, ResultType == res_type, Weighting == "FW")
+        for (mod in c("1-Factor", "2-Factor", "3-Factor", "4-Factor")) {
+            for (res_type in c("Asymp.", "CV")) {
+                row_ew <- data_final %>% filter(Type == ty, Model == mod, ResultType == res_type, Weighting == "EW")
+                row_fw <- data_final %>% filter(Type == ty, Model == mod, ResultType == res_type, Weighting == "FW")
 
-            if (nrow(row_ew) == 0 && nrow(row_fw) == 0) {
-                next
-            }
-
-            facs <- c("Alpha", "MKT", "SMB", "HML")
-            est_cols <- c(paste(mod, paste0("(", res_type, ")")))
-            se_cols <- c("")
-
-            for (w_filter in c("EW", "FW")) {
-                if (w_filter == "FW") {
-                    est_cols <- c(est_cols, "")
-                    se_cols <- c(se_cols, "")
+                if (nrow(row_ew) == 0 && nrow(row_fw) == 0) {
+                    next
                 }
 
-                row_data <- if (w_filter == "EW") row_ew else row_fw
-                for (fac in facs) {
-                    if (mod == "2-Factor" && fac %in% c("SMB", "HML")) {
-                        est_cols <- c(est_cols, "")
-                        se_cols <- c(se_cols, "")
-                    } else if (mod == "3-Factor" && fac == "Alpha") {
-                        est_cols <- c(est_cols, "")
-                        se_cols <- c(se_cols, "")
-                    } else if (nrow(row_data) > 0) {
-                        val <- row_data[[fac]][1]
-                        se_val <- row_data[[paste0("SE.", fac)]][1]
-                        fmt <- fmt_est(val, se_val)
-                        est_cols <- c(est_cols, fmt[1])
-                        se_cols <- c(se_cols, fmt[2])
-                    } else {
+                facs <- c("Alpha", "MKT", "SMB", "HML")
+                est_cols <- c(paste(mod, paste0("(", res_type, ")")))
+                se_cols <- c("")
+
+                for (w_filter in c("EW", "FW")) {
+                    if (w_filter == "FW") {
                         est_cols <- c(est_cols, "")
                         se_cols <- c(se_cols, "")
                     }
-                }
-            }
 
-            latex_out <- c(latex_out, paste0(paste(est_cols, collapse = " & "), " \\\\"))
-            if (mod == "4-Factor" && res_type == "CV" && ty != tail(target_types, 1)) {
-                latex_out <- c(latex_out, paste0(paste(se_cols, collapse = " & "), " \\\\[0.15cm]"))
-            } else {
-                latex_out <- c(latex_out, paste0(paste(se_cols, collapse = " & "), " \\\\"))
+                    row_data <- if (w_filter == "EW") row_ew else row_fw
+                    for (fac in facs) {
+                        if (mod == "1-Factor" && fac %in% c("Alpha", "SMB", "HML")) {
+                            est_cols <- c(est_cols, "")
+                            se_cols <- c(se_cols, "")
+                        } else if (mod == "2-Factor" && fac %in% c("SMB", "HML")) {
+                            est_cols <- c(est_cols, "")
+                            se_cols <- c(se_cols, "")
+                        } else if (mod == "3-Factor" && fac == "Alpha") {
+                            est_cols <- c(est_cols, "")
+                            se_cols <- c(se_cols, "")
+                        } else if (nrow(row_data) > 0) {
+                            val <- row_data[[fac]][1]
+                            se_val <- row_data[[paste0("SE.", fac)]][1]
+                            fmt <- fmt_est(val, se_val)
+                            est_cols <- c(est_cols, fmt[1])
+                            se_cols <- c(se_cols, fmt[2])
+                        } else {
+                            est_cols <- c(est_cols, "")
+                            se_cols <- c(se_cols, "")
+                        }
+                    }
+                }
+
+                latex_out <- c(latex_out, paste0(paste(est_cols, collapse = " & "), " \\\\"))
+                if (mod == "4-Factor" && res_type == "CV" && ty != tail(types_to_include, 1)) {
+                    latex_out <- c(latex_out, paste0(paste(se_cols, collapse = " & "), " \\\\[0.15cm]"))
+                } else {
+                    latex_out <- c(latex_out, paste0(paste(se_cols, collapse = " & "), " \\\\"))
+                }
             }
         }
     }
+
+    latex_out <- c(latex_out, "\\hline")
+    latex_out <- c(latex_out, "\\end{tabular}")
+    latex_out <- c(latex_out, "}")
+    latex_out <- c(latex_out, "\\par")
+    latex_out <- c(latex_out, "\\vspace{1ex}")
+    latex_out <- c(latex_out, "\\raggedright \\footnotesize \\textit{Note:} This table presents the estimation results of the single-factor (MKT), 2-factor ($\\alpha$, MKT), Fama-French 3-factor (MKT, SMB, HML), and 4-factor ($\\alpha$, MKT, SMB, HML) models. Cash flows are discounted to horizon 0. Both asymptotic (Asymp.) full-sample estimates and cross-validation (CV) means across hold-out sets are reported. Standard errors (or standard deviations of the estimates for CV) are reported in parentheses below the estimates. The estimation uses Equal-Weighted (EW) and Fund-Size-Weighted (FW) cash flows. The upper bound for $\\alpha$ was constrained to 0.02.")
+    latex_out <- c(latex_out, "\\end{table}")
+
+    writeLines(latex_out, out_path)
+    cat("Table successfully written to", out_path, "\n")
 }
 
-latex_out <- c(latex_out, "\\hline")
-latex_out <- c(latex_out, "\\end{tabular}")
-latex_out <- c(latex_out, "}")
-latex_out <- c(latex_out, "\\par")
-latex_out <- c(latex_out, "\\vspace{1ex}")
-latex_out <- c(latex_out, "\\raggedright \\footnotesize \\textit{Note:} This table presents the estimation results of the 2-factor ($\\alpha$, MKT), Fama-French 3-factor (MKT, SMB, HML), and 4-factor ($\\alpha$, MKT, SMB, HML) models for different asset classes. Cash flows are discounted to horizon 0. Both asymptotic (Asymp.) full-sample estimates and cross-validation (CV) means across hold-out sets are reported. Standard errors (or standard deviations of the estimates for CV) are reported in parentheses below the estimates. The estimation uses Equal-Weighted (EW) and Fund-Size-Weighted (FW) cash flows. The upper bound for $\\alpha$ was constrained to 0.02.")
-latex_out <- c(latex_out, "\\end{table}")
-
-# Write to file
-out_path <- "results/driessen_comparison.tex"
-writeLines(latex_out, out_path)
-cat("Table successfully written to", out_path, "\n")
+# Generate separated tables
+generate_table(c("BO", "VC"), "results/driessen_comparison_BO_VC.tex", "Estimation Results: 1-, 2-, 3-, and 4-Factor Models for Buyout and Venture Capital", "tab:driessen_comparison_bo_vc")
+generate_table(c("PE"), "results/driessen_comparison_PE.tex", "Estimation Results: 1-, 2-, 3-, and 4-Factor Models for Private Equity", "tab:driessen_comparison_pe")

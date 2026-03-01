@@ -198,7 +198,7 @@ scenarios:
     public_filename: "ff3_factors"
     weighting: "FW"
     do_cross_validation: false
-    factors_to_use: ""
+    factors_to_use: "MKT"
     active: true
 
   ff3_ew_no_cv:
@@ -206,9 +206,25 @@ scenarios:
     public_filename: "ff3_factors"
     weighting: "EW"
     do_cross_validation: false
-    factors_to_use: ""
+    factors_to_use: "MKT"
     active: true
 
+  ff3_fw_cv:
+    description: "FF3 data, fund-weighted VYP, no CV (MKT-only)"
+    public_filename: "ff3_factors"
+    weighting: "FW"
+    do_cross_validation: true
+    factors_to_use: "MKT"
+    active: true
+
+  ff3_ew_cv:
+    description: "FF3 data, equal-weighted VYP, no CV (MKT-only)"
+    public_filename: "ff3_factors"
+    weighting: "EW"
+    do_cross_validation: true
+    factors_to_use: "MKT"
+    active: true
+    
   # --------------------------------------------------------------------------
   # Two-Factor: MKT + SMB
   # --------------------------------------------------------------------------
