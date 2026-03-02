@@ -85,15 +85,23 @@
 
 
 \begin{frame}{Motivation: Autocorrelation Function (ACF) by Fund Type}
+	
 \begin{center}
-\includegraphics[width=0.96\linewidth]{figures/motivating_acf_buyout_vc.pdf}
+\includegraphics[width=0.9\linewidth]{figures/motivating_acf_buyout_vc.pdf}
 \end{center}
+
+\small Fund Net Asset Values (NAVs) are stale, i.e., not as frequently updated as public market valuations.
 \end{frame}
 
 \begin{frame}{Motivation: \cite{D79} Regression on Lagged Returns}
 \begin{center}
-\includegraphics[width=0.96\linewidth]{figures/motivating_dimson_side_by_side.pdf}
+\includegraphics[width=0.85\linewidth]{figures/motivating_dimson_side_by_side.pdf}
 \end{center}
+
+{\small 
+\cite{D79} regressions are designed for autocorrelated return time series. \\
+\textcolor{red}{If fund valuations are manipulated or not updated for a long time, cash flows are more trustworthy!}
+}
 \end{frame}
 
 
@@ -109,14 +117,14 @@ Pricing residual at inception $t_{0,i}$:
 \[
 \epsilon_i^{\text{DLP}}(\theta)=\sum_{t=0}^T \Psi_{t}(\theta)\,CF_{i,t}
 \]
-Linear Stochastic Discount Factor (SDF):
+Stochastic Discount Factor (SDF):
 {\tiny
 \[
 \Psi_{t}(\alpha, \beta) =
 \frac{1}{
 	\prod_{s=t_{0,i}+1}^{t}
 	\left( 
-	1 + R_{\textbf{riskfree}, s} + \alpha + \beta R_{\text{MKT}, s}
+	1 + R_{\textbf{riskfree}, s} + \alpha + \beta R_{\textbf{MKT}, s}
 	\right)
 } 
 \]
@@ -162,7 +170,7 @@ Nonlinear least-mean-distance:
 	\begin{itemize}
 		\item NPV-only discounting (fund inception) is theoretically unbiased.
 		\item NFV: Adding \textcolor{cyan}{compounding} \textcolor{blue}{horizons $>0$} introduces a \textbf{bias term}. \\
-		$\to$ Definition ``Horizon": We average over all dates up to \textcolor{blue}{$\max (\mathcal{T})$}.
+		$\to$ Definition ``Horizon'': We average over all dates up to \textcolor{blue}{$\max (\mathcal{T})$}.
 		\item \textbf{Spoiler:} Finite-sample performance can improve when averaging across future dates.
 	\end{itemize}
 	
@@ -179,7 +187,7 @@ Nonlinear least-mean-distance:
 		\item 15 equally-sized deals per fund. 
 		\item 5 year initial investment period per fund.
 		\item 10 year maximum holding period per deal.
-		\item 20 vintages years from 1986 to 2005 using this macro environment.
+		\item 20 vintage years from 1986 to 2005 using this macro environment.
 		\item Monthly returns: $R_i = \alpha + R_{\textbf{riskfree}} + \beta_{\textbf{MKT}} R_{\textbf{MKT}} + \beta_{2} R_{2} + \dots + e_i$ (with i.i.d.\ $e_i$)
   	\end{itemize}
   \item \textbf{Main focus on horizon choice:} size of \textcolor{cyan}{compounding} \textcolor{blue}{horizon set $\mathcal{T}$}.
@@ -206,14 +214,14 @@ Nonlinear least-mean-distance:
 \textbf{Takeaway:} Increasing funds per vintage is more powerful for bias/variance reduction than only extending the time span.
 \end{frame}
 
-\begin{frame}[t]{Simulation 3: Two-Factor q-Factor Models}
+\begin{frame}[t]{Simulation: 3.\ Two-Factor q-Factor Models}
 	\begin{center}
 		\includegraphics[width=0.8\linewidth]{figures/bias_comparison4zoom.pdf}
 	\end{center}
 	
 	\textbf{Takeaway:} For horizon 0, second-factor estimate is $\approx 1$ instead of $0.5$. \\
 	\vspace{0.3em}
-	\footnotesize Remark: q-factor model from \cite{hou2021augmented} is competitor to \cite{FF15}.
+	\footnotesize Remark: q-factor model from \cite{hou2021augmented} is a competitor to \cite{FF15}.
 \end{frame}
 
 \begin{frame}{Simulation: Synthesis}
@@ -222,7 +230,7 @@ Nonlinear least-mean-distance:
   \item Increase number of funds per vintage (if possible).
   \item Use simple SDF models given limited amount of PE data.
   \item \textcolor{cyan}{Compounding} \textcolor{blue}{horizon choice (size of $\mathcal{T}$)} is a control for finite-sample bias. \\
-  $\to$ \textcolor{blue}{$\mathcal{T}$-averaging horizons} from 10 to 20 years yields best results in our examples. \\
+  $\to$ \textcolor{blue}{$\mathcal{T}$-averaging horizons} from 10 to 20 years yield best results in our examples. \\
   $\to$ Not overly precise control!
 \end{enumerate}
 
@@ -230,11 +238,11 @@ Nonlinear least-mean-distance:
 \textbf{Interpretation:} practical estimator quality is dominated by finite-sample bias-variance tradeoffs.
 \end{frame}
 
-\begin{frame}{Empirical: Preqin PE Data \& $q^5$ Public Factors}
+\begin{frame}{Empirical: Preqin Data \& $q^5$ Public Factors}
 \begin{itemize}
-  \item Preqin Data: 3005 PE funds, vintages 1983--2021. \\
-  Question: Can we include funds from very recent vintages?
-  \item Factors: $q^5$ family; focus on MKT and simple two-factor extensions.
+  \item Preqin Data: 1450 Buyout (BO) and 1241 Venture Capital (VC) funds.
+  \item Vintage years: 1982--2021. (Can we include funds from very recent vintages?)
+  \item $q^5$ Factors: focus on simple $MKT$ and $\alpha$ models.
    \item Primary unit for estimation: vintage-year portfolios (equal- and value-weighted).
   \item \textcolor{cyan}{Compounding} \textcolor{blue}{horizon} selection:
    \begin{itemize}
@@ -244,43 +252,49 @@ Nonlinear least-mean-distance:
   \item Benchmark for comparison: 
   \begin{itemize}
 	\item NAV-based naive/Dimson market-exposure estimates from the motivation section.
-	\item Empirical results for Buyout and Venture Capital funds from \cite{DLP12}
+	\item Empirical results for Buyout and Venture Capital funds from \cite{DLP12}.
   \end{itemize}
 \end{itemize}
 
 \end{frame}
 
 \begin{frame}{Empirical: 1.\ Vintage Cutoffs for Single-Factor Model}
+\vspace{-2em}
 	\begin{center}
-		\includegraphics[width=1\linewidth]{figures/max_vintage_PE_MKT_combined_NC.pdf}
+		%\includegraphics[width=1\linewidth]{figures/max_vintage_PE_MKT_combined_NC.pdf}
+		\includegraphics[width=0.5\linewidth]{figures_bovc/max_vintage_BO_MKT_combined_NC.pdf}
+		\includegraphics[width=0.5\linewidth]{figures_bovc/max_vintage_VC_MKT_combined_NC.pdf}
 	\end{center}
 	
-	\textbf{Reading:} including newer vintages tends to increase estimated market exposure, but totally depending on final NAV $\to$ Use vintage 2010 cutoff in subsequent analysis.
+	\textbf{Reading:} including newer vintages tends to increase estimated market exposure, but is heavily dependent on final NAV $\to$ Use vintage 2010 cutoff in subsequent analysis.
 	
 \end{frame}
 
 \begin{frame}{Empirical: 2.\ Single-Factor $MKT$ Model}
+\vspace{-2em}
 \begin{center}
  %\includegraphics[width=0.9\linewidth]{figures/empirical_PE_MKT_larger.pdf}
 \includegraphics[width=0.5\linewidth]{figures_bovc/empirical_BO_MKT.pdf}
 \includegraphics[width=0.5\linewidth]{figures_bovc/empirical_VC_MKT.pdf}
 \end{center}
 
-\textbf{Singe-factor models:} Dimson beta as lower bound approximation for 15-year horizon.
-	
+\textbf{Single-factor models:} \textcolor{orange}{\cite{D79} $\beta_{\textbf{MKT}}$} aligns with our 15-year horizon estimate.
+
+\vspace{1em}
 \footnotesize We use empirical vintages until 2010.
 \end{frame}
 
 \begin{frame}[t]{Empirical: 3.\ Two-Factor $\alpha + MKT$ Model}
-	
+\vspace{-1.5em}
 \begin{center}
 %\includegraphics[width=0.95\linewidth]{figures/empirical_PE_Alpha.pdf}
 \includegraphics[width=0.45\linewidth]{figures_bovc/empirical_BO_Alpha.pdf}
 \includegraphics[width=0.45\linewidth]{figures_bovc/empirical_VC_Alpha.pdf}
 \end{center}
 
-\textbf{Two-factor model:} The estimates for  $\alpha$ and $\beta$ seem unreliable.
+\textbf{Two-factor models:} Results between our estimator and \textcolor{orange}{\cite{D79}} differ more. 
 
+\vspace{1em}
 \footnotesize We use empirical vintages until 2010.
 \end{frame}
 
@@ -332,26 +346,36 @@ BO & $\alpha$ + MKT + SMB + HML & -0.97 (0.70) & $1.71^{***}$ (0.65) & -0.92 (0.
 
 
 \begin{frame}{Conclusion}
-\textcolor{gray}{\emph{Private markets are connected to public market volatility.}}
-\vspace{1em}
 
-\textbf{Main results}
+
+\textbf{Simulation results}
 \begin{itemize}
  	 \item Our approach can better control finite-sample bias than \cite{DLP12} \\ via our newly introduced future \textcolor{cyan}{compounding} \textcolor{blue}{horizons}.
-	\item Our approach yields empirical $\beta_{\text{MKT}}$ estimates similar to \cite{D79}.
-	\item Given amount of \textbf{currently available} private market data: \\
-Cash-flow based estimation results are close to NAV-return-based estimation results.
 \end{itemize}
 
 \vspace{1em}
 
-\textbf{Additional topics (for cash-flow-based inference)}
+\textbf{Empirical results} (for pre-2011 vintages)
 \begin{itemize}
-	\item Use dependence-aware cross validation instead of asymptotic standard errors.
-    \item Outlook: Multi-factor models must be stabilized (e.g.\ by machine-learning techniques).
+	\item \textbf{$MKT$-only model:} Our approach yields $\beta_{\textbf{MKT}}$ estimates close to \cite{D79}.
+	\item \textbf{$\alpha+MKT$ model:}
+	\begin{itemize}
+		\item For BO funds, we find $\beta_{\textbf{MKT}}$ between 0 and 0.5, and annualized $\alpha \approx +10\%$.
+		\item For VC funds, we find $\beta_{\textbf{MKT}}$ around 2.0, and annualized $\alpha \approx -10\%$.
+	\end{itemize}
 \end{itemize}
-\end{frame}
 
+\vspace{1em}
+
+\textbf{Additional topics} (for cash-flow-based inference)
+\begin{itemize}
+	\item We use cross-validation in addition to asymptotic standard errors.
+    \item Outlook: Multi-factor models should be stabilized (e.g.\ by machine-learning techniques).
+\end{itemize}
+
+\centering
+\Large Questions and Discussion
+\end{frame}
 
 
 
@@ -368,10 +392,24 @@ Cash-flow based estimation results are close to NAV-return-based estimation resu
 
 
 
+
+
+
+
+
 % Appendix
 
+\iffalse
 
 
+\appendix
+
+
+\begin{frame}{Questions and Discussion}	
+	\vspace{0.6em}
+	\centering
+	\Large Questions and Discussion
+\end{frame}
 
 
 
@@ -472,19 +510,6 @@ VC Global & 5 & 5 & 5 \\
 	
 \end{frame}
 
-\begin{frame}{Conclusion: Main Takeaways}
-	\begin{enumerate}
-		\item Start with parsimonious SDFs (MKT-first), then add complexity cautiously.
-		\item Finite-sample design choices can dominate asymptotic elegance.
-		\item Treat asymptotic significance alone as insufficient in sparse PE samples.
-		\item Data architecture (portfolio formation, horizon design) is part of identification.
-		
-	\end{enumerate}
-	
-	\vspace{0.6em}
-	\centering
-	\Large Questions and Discussion
-\end{frame}
 
 \begin{frame}{Estimator: Starting Point \cite{DLP12}}
 	\small
@@ -553,7 +578,7 @@ VC Global & 5 & 5 & 5 \\
 		\includegraphics[width=0.95\linewidth]{figures/empirical_PE_all_factors.pdf}
 	\end{center}
 	
-	\textbf{Two-factor models:} Apply machine-learning methods to form ``stronger learner."
+	\textbf{Two-factor models:} Apply machine-learning methods to form ``stronger learner.''
 	
 	\footnotesize We use empirical vintages until 2010.
 \end{frame}
@@ -619,6 +644,10 @@ VC Global & 5 & 5 & 5 \\
 	\end{columns}
 	
 \end{frame}
+
+
+
+\fi
 
 
 

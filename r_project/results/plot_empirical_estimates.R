@@ -81,6 +81,7 @@ plot_empirical_estimates <- function(
     main.linewidth = 0.8,
     abline.linewidth = 0.7,
     cex = 1.0,
+    weighting_filter = c("EW", "FW"),
     exclude_cv = FALSE) {
     # -------------------------------------------------------------------------
     # Define file paths for the 4 CSV sources
@@ -160,6 +161,12 @@ plot_empirical_estimates <- function(
         ))
     }
 
+    # Optionally filter by weighting
+    if (!is.null(weighting_filter)) {
+        plot_data <- plot_data %>%
+            filter(weighting %in% weighting_filter)
+    }
+
     # Optionally exclude cross-validation lines
     if (exclude_cv) {
         plot_data <- plot_data %>%
@@ -201,9 +208,9 @@ plot_empirical_estimates <- function(
             axis.ticks = element_line(color = "grey40", linewidth = 0.3),
             axis.line = element_blank(),
             legend.position = "bottom",
-            legend.title = element_text(face = "bold", size = 9 * cex),
-            legend.text = element_text(size = 8 * cex),
-            legend.key.size = unit(0.8 * cex, "cm"),
+            legend.title = element_text(face = "bold", size = (if (!is.null(weighting_filter) && length(weighting_filter) == 1) 6 else 9) * cex),
+            legend.text = element_text(size = (if (!is.null(weighting_filter) && length(weighting_filter) == 1) 5 else 8) * cex),
+            legend.key.size = unit((if (!is.null(weighting_filter) && length(weighting_filter) == 1) 0.5 else 0.8) * cex, "cm"),
             legend.background = element_rect(fill = "white", color = NA),
             legend.margin = margin(t = 5),
             plot.title = element_text(
@@ -366,7 +373,7 @@ plot_empirical_estimates <- function(
                         expand = c(0.02, 0)
                     ) +
                     labs(
-                        title = cf,
+                        title = paste0(fund_type, " - ", cf),
                         x = "Horizon (Years)",
                         y = if (first_coef_plot) expression(beta["Second"]) else NULL
                     ) +
@@ -838,7 +845,8 @@ plot_max_vintage_cutoff <- function(
     h.colors.second = c("black", "black"),
     main.linewidth = 0.7,
     abline.linewidth = 0.7,
-    cex = 1) {
+    cex = 1,
+    weighting_filter = c("EW", "FW")) {
     # -------------------------------------------------------------------------
     # 1. Load data from all vintage × weighting combinations
     # -------------------------------------------------------------------------
@@ -860,6 +868,7 @@ plot_max_vintage_cutoff <- function(
             df <- read.csv(csv_path, stringsAsFactors = FALSE)
             df$vintage <- v
             df$weighting <- w
+            df$method <- "Asymptotic"
             all_rows[[length(all_rows) + 1L]] <- df
         }
     }
@@ -868,6 +877,10 @@ plot_max_vintage_cutoff <- function(
 
     if (nrow(all_data) == 0) {
         stop("No data could be loaded from the specified directory.")
+    }
+
+    if (!is.null(weighting_filter)) {
+        all_data <- all_data %>% filter(weighting %in% weighting_filter)
     }
 
     # -------------------------------------------------------------------------
@@ -913,9 +926,9 @@ plot_max_vintage_cutoff <- function(
             axis.ticks = element_line(color = "grey40", linewidth = 0.3),
             axis.line = element_blank(),
             legend.position = "bottom",
-            legend.title = element_text(face = "bold", size = 9),
-            legend.text = element_text(size = 8),
-            legend.key.size = unit(0.8, "cm"),
+            legend.title = element_text(face = "bold", size = (if (!is.null(weighting_filter) && length(weighting_filter) == 1) 6 else 9)),
+            legend.text = element_text(size = (if (!is.null(weighting_filter) && length(weighting_filter) == 1) 5 else 8)),
+            legend.key.size = unit((if (!is.null(weighting_filter) && length(weighting_filter) == 1) 0.5 else 0.8), "cm"),
             legend.background = element_rect(fill = "white", color = NA),
             legend.margin = margin(t = 5),
             plot.title = element_text(
@@ -1008,7 +1021,7 @@ plot_max_vintage_cutoff <- function(
     for (i in seq_along(column_factors)) {
         cf <- column_factors[i]
 
-        for (w in c("EW", "FW")) {
+        for (w in weighting_filter) {
             if (cf == "MKT") {
                 mkt_df <- plot_data %>%
                     filter(Factor == "MKT", weighting == w)
@@ -1017,7 +1030,7 @@ plot_max_vintage_cutoff <- function(
                     filter(Factor == cf, weighting == w)
             }
 
-            title_text <- paste0(w, ": MKT")
+            title_text <- paste0(fund_type, " - ", w, ": MKT")
 
             ylim_mkt <- NULL
             if (!is.null(y.max.mkt) || !is.null(y.min.mkt)) {
@@ -1060,19 +1073,19 @@ plot_max_vintage_cutoff <- function(
             cf <- column_factors[i]
 
             if (cf == "MKT") {
-                # Blank spacer for each of the 2 sub-panels (EW + FW)
-                for (w in c("EW", "FW")) {
+                # Blank spacer for each sub-panel based on weighting
+                for (w in weighting_filter) {
                     second_plots[[length(second_plots) + 1L]] <-
                         ggplot() +
                         theme_void() +
                         theme(plot.margin = margin(5, 5, 5, 5))
                 }
             } else {
-                for (w in c("EW", "FW")) {
+                for (w in weighting_filter) {
                     coef_df <- plot_data %>%
                         filter(Factor == cf, weighting == w)
 
-                    title_text <- paste0(w, ": ", cf)
+                    title_text <- paste0(fund_type, " - ", w, ": ", cf)
 
                     # Per-factor y-limits
                     ylim_vec <- NULL
@@ -1490,7 +1503,8 @@ plot_max_vintage_cutoff_combined_mkt <- function(
     h.colors.mkt = c("black", "black"),
     main.linewidth = 0.7,
     abline.linewidth = 0.7,
-    cex = 1.0) {
+    cex = 1.0,
+    weighting_filter = c("EW", "FW")) {
     all_rows <- list()
     for (v in vintages) {
         for (i in seq_along(nc_tags)) {
@@ -1508,12 +1522,17 @@ plot_max_vintage_cutoff_combined_mkt <- function(
                 df$weighting <- w
                 df$nc_tag <- nt
                 df$nc_label <- nl
+                df$method <- "Asymptotic"
                 all_rows[[length(all_rows) + 1L]] <- df
             }
         }
     }
     all_data <- bind_rows(all_rows)
     if (nrow(all_data) == 0) stop("No data could be loaded from the specified directory.")
+
+    if (!is.null(weighting_filter)) {
+        all_data <- all_data %>% filter(weighting %in% weighting_filter)
+    }
 
     plot_data <- all_data %>% filter(Type == fund_type)
     if (nrow(plot_data) == 0) stop("No data found for fund type.")
@@ -1538,9 +1557,9 @@ plot_max_vintage_cutoff_combined_mkt <- function(
             axis.ticks = element_line(color = "grey40", linewidth = 0.3),
             axis.line = element_blank(),
             legend.position = "bottom",
-            legend.title = element_text(face = "bold", size = 9 * cex),
-            legend.text = element_text(size = 8 * cex),
-            legend.key.size = unit(0.8 * cex, "cm"),
+            legend.title = element_text(face = "bold", size = (if (!is.null(weighting_filter) && length(weighting_filter) == 1) 6 else 9) * cex),
+            legend.text = element_text(size = (if (!is.null(weighting_filter) && length(weighting_filter) == 1) 5 else 8) * cex),
+            legend.key.size = unit((if (!is.null(weighting_filter) && length(weighting_filter) == 1) 0.5 else 0.8) * cex, "cm"),
             legend.background = element_rect(fill = "white", color = NA),
             legend.margin = margin(t = 5),
             plot.title = element_text(face = "bold", size = 10 * cex, hjust = 0.5, margin = margin(b = 5)),
@@ -1589,11 +1608,11 @@ plot_max_vintage_cutoff_combined_mkt <- function(
     for (i in seq_along(nc_tags)) {
         nt <- nc_tags[i]
         nl <- nc_labels[i]
-        for (w in c("EW", "FW")) {
+        for (w in weighting_filter) {
             mkt_df <- plot_data %>%
                 filter(Factor == "MKT", weighting == w, nc_tag == nt)
 
-            title_text <- paste0(nl, " (", w, ")")
+            title_text <- paste0(fund_type, ": ", nl, " (", w, ")")
             ylim_mkt <- NULL
             if (!is.null(y.max.mkt) || !is.null(y.min.mkt)) {
                 ylim_mkt <- c(if (is.null(y.min.mkt)) NA else y.min.mkt, if (is.null(y.max.mkt)) NA else y.max.mkt)
@@ -1802,7 +1821,140 @@ plot_max_vintage_cutoff(
 )
 
 
-### Buyout (BO) and Venture Capital (VC)
+### Paper: Buyout (BO) and Venture Capital (VC)
+
+file.folder <- "data_out_2026_02_26"
+out.folder <- "figures_bovc_paper"
+
+# BO: Two-factor model with only Alpha
+plot_empirical_estimates(
+  data_dir = file.folder,
+  fund_type = "BO",
+  factors = c("Alpha"),
+  export_pdf = TRUE,
+  export_csv = TRUE,
+  export_latex = TRUE,
+  height = 5,
+  width = 6,
+  y.max.mkt = 2.5, y.min.mkt = -0.5,
+  y.lim.second = list(Alpha = c(-0.02, 0.02)),
+  main.linewidth = 1,
+  cex = 0.8,
+  #h.lines.mkt = c(0.647399009343063),
+  #h.lines.second = c(1.0194438416743136^(1 / 3) - 1), # alpha quarterly
+  #abline.linewidth = 1.5,
+  #h.colors.mkt = c("orange"), h.colors.second = c("orange"),
+  exclude_cv = FALSE,
+  weighting_filter = c("FW", "EW"),
+  output_file = paste0(out.folder, "/empirical_BO_Alpha")
+)
+
+# BO: Single-factor model with MKT only
+plot_empirical_estimates(
+  data_dir = file.folder,
+  fund_type = "BO",
+  factors = c("MKT"),
+  export_pdf = TRUE,
+  export_csv = TRUE,
+  export_latex = TRUE,
+  height = 4, 
+  width = 6,
+  y.max.mkt = 2.5, y.min.mkt = -0.5,
+  main.linewidth = 1,
+  cex = 0.8,
+  #h.lines.mkt = c(0.769855673660812),
+  #abline.linewidth = 1.5,
+  #h.colors.mkt = c("orange"),
+  #exclude_cv = TRUE,
+  weighting_filter = c("FW", "EW"),
+  # y.lim.second = list(Alpha = c(-0.01, 0.01)),
+  output_file = paste0(out.folder, "/empirical_BO_MKT")
+)
+
+# BO Combined MKT Max vintage-year cutoff analysis (100% NAV and 50% NAV-discount)
+plot_max_vintage_cutoff_combined_mkt(
+  data_dir = file.folder,
+  fund_type = "BO",
+  vintages = 2011:2021,
+  nc_tags = c("", "_NC50"),
+  nc_labels = c("100% NAV as Cashflow", "50% NAV-discount sample"),
+  export_pdf = TRUE,
+  export_svg = TRUE,
+  export_csv = TRUE,
+  width = 7,
+  height = 4,
+  y.max.mkt = 2.5, y.min.mkt = 0,
+  main.linewidth = 0.8,
+  weighting_filter = c("FW"),
+  output_file = paste0(out.folder, "/max_vintage_BO_MKT_combined_NC")
+)
+
+# VC: Two-factor model with only Alpha
+plot_empirical_estimates(
+  data_dir = file.folder,
+  fund_type = "VC",
+  factors = c("Alpha"),
+  export_pdf = TRUE,
+  export_csv = TRUE,
+  export_latex = TRUE,
+  height = 5, 
+  width = 6,
+  y.max.mkt = 2.5, y.min.mkt = -0.5,
+  y.lim.second = list(Alpha = c(-0.02, 0.02)),
+  main.linewidth = 1,
+  cex = 0.8,
+  #h.lines.mkt = c(0.97551979450791),
+  #h.lines.second = c((1 - 0.00390550172544275)^(1 / 3) - 1), # alpha quarterly
+  #abline.linewidth = 1.5,
+  #h.colors.mkt = c("orange"), h.colors.second = c("orange"),
+  #exclude_cv = TRUE,
+  weighting_filter = c("FW", "EW"),
+  output_file = paste0(out.folder, "/empirical_VC_Alpha")
+)
+
+# VC: Single-factor model with MKT only
+plot_empirical_estimates(
+  data_dir = file.folder,
+  fund_type = "VC",
+  factors = c("MKT"),
+  export_pdf = TRUE,
+  export_csv = TRUE,
+  export_latex = TRUE,
+  height = 4, 
+  width = 6,
+  y.max.mkt = 2.5, y.min.mkt = -0.5,
+  main.linewidth = 1,
+  cex = 0.8,
+  #h.lines.mkt = c(0.925920685301403),
+  #abline.linewidth = 1.5,
+  #h.colors.mkt = c("orange"),
+  #exclude_cv = TRUE,
+  weighting_filter = c("FW", "EW"),
+  # y.lim.second = list(Alpha = c(-0.01, 0.01)),
+  output_file = paste0(out.folder, "/empirical_VC_MKT")
+)
+
+# VC Combined MKT Max vintage-year cutoff analysis (100% NAV and 50% NAV-discount)
+plot_max_vintage_cutoff_combined_mkt(
+  data_dir = file.folder,
+  fund_type = "VC",
+  vintages = 2011:2021,
+  nc_tags = c("", "_NC50"),
+  nc_labels = c("100% NAV as Cashflow", "50% NAV-discount sample"),
+  export_pdf = TRUE,
+  export_svg = TRUE,
+  export_csv = TRUE,
+  width = 7,
+  height = 4,
+  y.max.mkt = 2.5, y.min.mkt = 0,
+  main.linewidth = 0.8,
+  weighting_filter = c("FW"),
+  output_file = paste0(out.folder, "/max_vintage_VC_MKT_combined_NC")
+)
+
+
+
+### Presentation: Buyout (BO) and Venture Capital (VC)
 
 file.folder <- "data_out_2026_02_26"
 out.folder <- "figures_bovc"
@@ -1825,6 +1977,7 @@ plot_empirical_estimates(
     abline.linewidth = 1.5,
     h.colors.mkt = c("orange"), h.colors.second = c("orange"),
     exclude_cv = TRUE,
+    weighting_filter = c("FW", "EW"),
     output_file = paste0(out.folder, "/empirical_BO_Alpha")
 )
 
@@ -1844,6 +1997,7 @@ plot_empirical_estimates(
     abline.linewidth = 1.5,
     h.colors.mkt = c("orange"),
     exclude_cv = TRUE,
+    weighting_filter = c("FW", "EW"),
     # y.lim.second = list(Alpha = c(-0.01, 0.01)),
     output_file = paste0(out.folder, "/empirical_BO_MKT")
 )
@@ -1858,11 +2012,11 @@ plot_max_vintage_cutoff_combined_mkt(
     export_pdf = TRUE,
     export_svg = TRUE,
     export_csv = TRUE,
-    width = 14,
+    width = 7,
     height = 4,
     y.max.mkt = 2.5, y.min.mkt = 0,
     main.linewidth = 0.8,
-    exclude_cv = TRUE,
+    weighting_filter = c("FW"),
     output_file = paste0(out.folder, "/max_vintage_BO_MKT_combined_NC")
 )
 
@@ -1880,10 +2034,11 @@ plot_empirical_estimates(
     main.linewidth = 1.5,
     cex = 1,
     h.lines.mkt = c(0.97551979450791),
-    h.lines.second = c((1 -0.00390550172544275)^(1 / 3) - 1), # alpha quarterly
+    h.lines.second = c((1 - 0.00390550172544275)^(1 / 3) - 1), # alpha quarterly
     abline.linewidth = 1.5,
     h.colors.mkt = c("orange"), h.colors.second = c("orange"),
     exclude_cv = TRUE,
+    weighting_filter = c("FW", "EW"),
     output_file = paste0(out.folder, "/empirical_VC_Alpha")
 )
 
@@ -1903,6 +2058,7 @@ plot_empirical_estimates(
     abline.linewidth = 1.5,
     h.colors.mkt = c("orange"),
     exclude_cv = TRUE,
+    weighting_filter = c("FW", "EW"),
     # y.lim.second = list(Alpha = c(-0.01, 0.01)),
     output_file = paste0(out.folder, "/empirical_VC_MKT")
 )
@@ -1917,11 +2073,11 @@ plot_max_vintage_cutoff_combined_mkt(
     export_pdf = TRUE,
     export_svg = TRUE,
     export_csv = TRUE,
-    width = 14,
+    width = 7,
     height = 4,
     y.max.mkt = 2.5, y.min.mkt = 0,
     main.linewidth = 0.8,
-    exclude_cv = TRUE,
+    weighting_filter = c("FW"),
     output_file = paste0(out.folder, "/max_vintage_VC_MKT_combined_NC")
 )
 
@@ -1989,4 +2145,3 @@ plot_max_vintage_cutoff_combined_mkt(
     y.max.mkt = 2.5, y.min.mkt = 0,
     output_file = paste0(out.folder, "/max_vintage_PE_MKT_combined_NC")
 )
-
