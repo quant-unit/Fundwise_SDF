@@ -70,13 +70,18 @@ plot_empirical_estimates <- function(
     y.lim.second = NULL,
     x.max = NULL,
     x.min = NULL,
-    v.lines = NULL,
-    h.lines = NULL,
-    v.colors = c("black", "black"),
-    h.colors = c("black", "black"),
+    v.lines.mkt = NULL,
+    h.lines.mkt = NULL,
+    v.colors.mkt = c("black", "black"),
+    h.colors.mkt = c("black", "black"),
+    v.lines.second = NULL,
+    h.lines.second = NULL,
+    v.colors.second = c("black", "black"),
+    h.colors.second = c("black", "black"),
     main.linewidth = 0.8,
     abline.linewidth = 0.7,
-    cex = 1.0) {
+    cex = 1.0,
+    exclude_cv = FALSE) {
     # -------------------------------------------------------------------------
     # Define file paths for the 4 CSV sources
     # -------------------------------------------------------------------------
@@ -155,6 +160,12 @@ plot_empirical_estimates <- function(
         ))
     }
 
+    # Optionally exclude cross-validation lines
+    if (exclude_cv) {
+        plot_data <- plot_data %>%
+            filter(method != "Cross-Validation")
+    }
+
     # Convert max.month to numeric and compute horizon in years
     plot_data$max.month <- as.numeric(plot_data$max.month)
     plot_data$horizon_years <- plot_data$max.month / 12
@@ -190,8 +201,8 @@ plot_empirical_estimates <- function(
             axis.ticks = element_line(color = "grey40", linewidth = 0.3),
             axis.line = element_blank(),
             legend.position = "bottom",
-            legend.title = element_text(face = "bold", size = 10 * cex),
-            legend.text = element_text(size = 9 * cex),
+            legend.title = element_text(face = "bold", size = 9 * cex),
+            legend.text = element_text(size = 8 * cex),
             legend.key.size = unit(0.8 * cex, "cm"),
             legend.background = element_rect(fill = "white", color = NA),
             legend.margin = margin(t = 5),
@@ -293,18 +304,18 @@ plot_empirical_estimates <- function(
                 }
             } +
             {
-                if (!is.null(v.lines)) {
-                    lapply(seq_along(v.lines), function(idx) {
-                        geom_vline(xintercept = v.lines[idx], color = v.colors[min(idx, length(v.colors))], linetype = "dotted", linewidth = abline.linewidth)
+                if (!is.null(v.lines.mkt)) {
+                    lapply(seq_along(v.lines.mkt), function(idx) {
+                        geom_vline(xintercept = v.lines.mkt[idx], color = v.colors.mkt[min(idx, length(v.colors.mkt))], linetype = "dotted", linewidth = abline.linewidth)
                     })
                 } else {
                     NULL
                 }
             } +
             {
-                if (!is.null(h.lines)) {
-                    lapply(seq_along(h.lines), function(idx) {
-                        geom_hline(yintercept = h.lines[idx], color = h.colors[min(idx, length(h.colors))], linetype = "dotted", linewidth = abline.linewidth)
+                if (!is.null(h.lines.mkt)) {
+                    lapply(seq_along(h.lines.mkt), function(idx) {
+                        geom_hline(yintercept = h.lines.mkt[idx], color = h.colors.mkt[min(idx, length(h.colors.mkt))], linetype = "dotted", linewidth = abline.linewidth)
                     })
                 } else {
                     NULL
@@ -379,18 +390,18 @@ plot_empirical_estimates <- function(
                         }
                     } +
                     {
-                        if (!is.null(v.lines)) {
-                            lapply(seq_along(v.lines), function(idx) {
-                                geom_vline(xintercept = v.lines[idx], color = v.colors[min(idx, length(v.colors))], linetype = "dotted", linewidth = abline.linewidth)
+                        if (!is.null(v.lines.second)) {
+                            lapply(seq_along(v.lines.second), function(idx) {
+                                geom_vline(xintercept = v.lines.second[idx], color = v.colors.second[min(idx, length(v.colors.second))], linetype = "dotted", linewidth = abline.linewidth)
                             })
                         } else {
                             NULL
                         }
                     } +
                     {
-                        if (!is.null(h.lines)) {
-                            lapply(seq_along(h.lines), function(idx) {
-                                geom_hline(yintercept = h.lines[idx], color = h.colors[min(idx, length(h.colors))], linetype = "dotted", linewidth = abline.linewidth)
+                        if (!is.null(h.lines.second)) {
+                            lapply(seq_along(h.lines.second), function(idx) {
+                                geom_hline(yintercept = h.lines.second[idx], color = h.colors.second[min(idx, length(h.colors.second))], linetype = "dotted", linewidth = abline.linewidth)
                             })
                         } else {
                             NULL
@@ -817,10 +828,14 @@ plot_max_vintage_cutoff <- function(
     y.lim.second = NULL,
     x.max = NULL,
     x.min = NULL,
-    v.lines = NULL,
-    h.lines = NULL,
-    v.colors = c("black", "black"),
-    h.colors = c("black", "black"),
+    v.lines.mkt = NULL,
+    h.lines.mkt = NULL,
+    v.colors.mkt = c("black", "black"),
+    h.colors.mkt = c("black", "black"),
+    v.lines.second = NULL,
+    h.lines.second = NULL,
+    v.colors.second = c("black", "black"),
+    h.colors.second = c("black", "black"),
     main.linewidth = 0.7,
     abline.linewidth = 0.7,
     cex = 1) {
@@ -898,8 +913,8 @@ plot_max_vintage_cutoff <- function(
             axis.ticks = element_line(color = "grey40", linewidth = 0.3),
             axis.line = element_blank(),
             legend.position = "bottom",
-            legend.title = element_text(face = "bold", size = 10),
-            legend.text = element_text(size = 9),
+            legend.title = element_text(face = "bold", size = 9),
+            legend.text = element_text(size = 8),
             legend.key.size = unit(0.8, "cm"),
             legend.background = element_rect(fill = "white", color = NA),
             legend.margin = margin(t = 5),
@@ -919,7 +934,9 @@ plot_max_vintage_cutoff <- function(
     # 5. Helper: build a single panel (one factor-coefficient × one weighting)
     # -------------------------------------------------------------------------
     .build_panel <- function(df, y_col, title, show_x, show_y_label,
-                             y_label, ylim_vec = NULL) {
+                             y_label, ylim_vec = NULL,
+                             v.lines_vec = NULL, v.colors_vec = NULL,
+                             h.lines_vec = NULL, h.colors_vec = NULL) {
         p <- ggplot(df, aes(
             x     = horizon_years,
             y     = .data[[y_col]],
@@ -943,18 +960,18 @@ plot_max_vintage_cutoff <- function(
                 y     = if (show_y_label) y_label else NULL
             ) +
             {
-                if (!is.null(v.lines)) {
-                    lapply(seq_along(v.lines), function(idx) {
-                        geom_vline(xintercept = v.lines[idx], color = v.colors[min(idx, length(v.colors))], linetype = "dotted", linewidth = abline.linewidth)
+                if (!is.null(v.lines_vec)) {
+                    lapply(seq_along(v.lines_vec), function(idx) {
+                        geom_vline(xintercept = v.lines_vec[idx], color = v.colors_vec[min(idx, length(v.colors_vec))], linetype = "dotted", linewidth = abline.linewidth)
                     })
                 } else {
                     NULL
                 }
             } +
             {
-                if (!is.null(h.lines)) {
-                    lapply(seq_along(h.lines), function(idx) {
-                        geom_hline(yintercept = h.lines[idx], color = h.colors[min(idx, length(h.colors))], linetype = "dotted", linewidth = abline.linewidth)
+                if (!is.null(h.lines_vec)) {
+                    lapply(seq_along(h.lines_vec), function(idx) {
+                        geom_hline(yintercept = h.lines_vec[idx], color = h.colors_vec[min(idx, length(h.colors_vec))], linetype = "dotted", linewidth = abline.linewidth)
                     })
                 } else {
                     NULL
@@ -1021,7 +1038,11 @@ plot_max_vintage_cutoff <- function(
                 show_x        = show_x,
                 show_y_label  = show_y,
                 y_label       = expression(beta[MKT]),
-                ylim_vec      = ylim_mkt
+                ylim_vec      = ylim_mkt,
+                v.lines_vec   = v.lines.mkt,
+                v.colors_vec  = v.colors.mkt,
+                h.lines_vec   = h.lines.mkt,
+                h.colors_vec  = h.colors.mkt
             )
 
             mkt_plots[[length(mkt_plots) + 1L]] <- p
@@ -1072,7 +1093,11 @@ plot_max_vintage_cutoff <- function(
                         show_x        = TRUE,
                         show_y_label  = show_y,
                         y_label       = expression(beta["Second"]),
-                        ylim_vec      = ylim_vec
+                        ylim_vec      = ylim_vec,
+                        v.lines_vec   = v.lines.second,
+                        v.colors_vec  = v.colors.second,
+                        h.lines_vec   = h.lines.second,
+                        h.colors_vec  = h.colors.second
                     )
 
                     second_plots[[length(second_plots) + 1L]] <- p
@@ -1459,10 +1484,10 @@ plot_max_vintage_cutoff_combined_mkt <- function(
     y.min.mkt = NULL,
     x.max = NULL,
     x.min = NULL,
-    v.lines = NULL,
-    h.lines = NULL,
-    v.colors = c("black", "black"),
-    h.colors = c("black", "black"),
+    v.lines.mkt = NULL,
+    h.lines.mkt = NULL,
+    v.colors.mkt = c("black", "black"),
+    h.colors.mkt = c("black", "black"),
     main.linewidth = 0.7,
     abline.linewidth = 0.7,
     cex = 1.0) {
@@ -1513,8 +1538,8 @@ plot_max_vintage_cutoff_combined_mkt <- function(
             axis.ticks = element_line(color = "grey40", linewidth = 0.3),
             axis.line = element_blank(),
             legend.position = "bottom",
-            legend.title = element_text(face = "bold", size = 10 * cex),
-            legend.text = element_text(size = 9 * cex),
+            legend.title = element_text(face = "bold", size = 9 * cex),
+            legend.text = element_text(size = 8 * cex),
             legend.key.size = unit(0.8 * cex, "cm"),
             legend.background = element_rect(fill = "white", color = NA),
             legend.margin = margin(t = 5),
@@ -1522,7 +1547,9 @@ plot_max_vintage_cutoff_combined_mkt <- function(
             plot.margin = margin(5, 5, 5, 5)
         )
 
-    .build_panel <- function(df, y_col, title, show_y_label, y_label, ylim_vec = NULL) {
+    .build_panel <- function(df, y_col, title, show_y_label, y_label, ylim_vec = NULL,
+                             v.lines_vec = NULL, v.colors_vec = NULL,
+                             h.lines_vec = NULL, h.colors_vec = NULL) {
         p <- ggplot(df, aes(x = horizon_years, y = .data[[y_col]], color = vintage, group = vintage)) +
             geom_line(linewidth = main.linewidth, alpha = 0.85) +
             geom_point(size = 1.5 * cex, alpha = 0.85) +
@@ -1530,18 +1557,18 @@ plot_max_vintage_cutoff_combined_mkt <- function(
             scale_x_continuous(breaks = seq(0, max(df$horizon_years, na.rm = TRUE), by = 5), expand = c(0.02, 0)) +
             labs(title = title, x = "Horizon (Years)", y = if (show_y_label) y_label else NULL) +
             {
-                if (!is.null(v.lines)) {
-                    lapply(seq_along(v.lines), function(idx) {
-                        geom_vline(xintercept = v.lines[idx], color = v.colors[min(idx, length(v.colors))], linetype = "dotted", linewidth = abline.linewidth)
+                if (!is.null(v.lines_vec)) {
+                    lapply(seq_along(v.lines_vec), function(idx) {
+                        geom_vline(xintercept = v.lines_vec[idx], color = v.colors_vec[min(idx, length(v.colors_vec))], linetype = "dotted", linewidth = abline.linewidth)
                     })
                 } else {
                     NULL
                 }
             } +
             {
-                if (!is.null(h.lines)) {
-                    lapply(seq_along(h.lines), function(idx) {
-                        geom_hline(yintercept = h.lines[idx], color = h.colors[min(idx, length(h.colors))], linetype = "dotted", linewidth = abline.linewidth)
+                if (!is.null(h.lines_vec)) {
+                    lapply(seq_along(h.lines_vec), function(idx) {
+                        geom_hline(yintercept = h.lines_vec[idx], color = h.colors_vec[min(idx, length(h.colors_vec))], linetype = "dotted", linewidth = abline.linewidth)
                     })
                 } else {
                     NULL
@@ -1575,7 +1602,9 @@ plot_max_vintage_cutoff_combined_mkt <- function(
 
             p <- .build_panel(
                 df = mkt_df, y_col = "MKT", title = title_text,
-                show_y_label = show_y, y_label = expression(beta[MKT]), ylim_vec = ylim_mkt
+                show_y_label = show_y, y_label = expression(beta[MKT]), ylim_vec = ylim_mkt,
+                v.lines_vec = v.lines.mkt, v.colors_vec = v.colors.mkt,
+                h.lines_vec = h.lines.mkt, h.colors_vec = h.colors.mkt
             )
             mkt_plots[[length(mkt_plots) + 1L]] <- p
         }
@@ -1657,16 +1686,16 @@ plot_empirical_estimates(
 
 # # Two-factor model with only Alpha
 plot_empirical_estimates(
-  data_dir = file.folder,
-  fund_type = "PE",
-  factors = c("Alpha"),
-  export_pdf = TRUE,
-  export_csv = TRUE,
-  export_latex = TRUE,
-  y.max.mkt = 1.5, y.min.mkt = -0.25,
-  y.lim.second = list(Alpha = c(-0.005, 0.01)),
-  main.linewidth = 1.5,
-  output_file = paste0(out.folder, "/empirical_PE_Alpha")
+    data_dir = file.folder,
+    fund_type = "PE",
+    factors = c("Alpha"),
+    export_pdf = TRUE,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    y.max.mkt = 1.5, y.min.mkt = -0.25,
+    y.lim.second = list(Alpha = c(-0.005, 0.01)),
+    main.linewidth = 1.5,
+    output_file = paste0(out.folder, "/empirical_PE_Alpha")
 )
 
 # Single-factor model with MKT only
@@ -1780,104 +1809,120 @@ out.folder <- "figures_bovc"
 
 # BO: Two-factor model with only Alpha
 plot_empirical_estimates(
-  data_dir = file.folder,
-  fund_type = "BO",
-  factors = c("Alpha"),
-  export_pdf = TRUE,
-  export_csv = TRUE,
-  export_latex = TRUE,
-  width = 7,
-  y.max.mkt = 2.5, y.min.mkt =-0.5,
-  y.lim.second = list(Alpha = c(-0.02, 0.02)),
-  main.linewidth = 1.5,
-  cex = 0.9,
-  h.lines = c(0.647399009343063), # alpha quarterly 0.0194438416743136
-  output_file = paste0(out.folder, "/empirical_BO_Alpha")
+    data_dir = file.folder,
+    fund_type = "BO",
+    factors = c("Alpha"),
+    export_pdf = TRUE,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    width = 7,
+    y.max.mkt = 2.5, y.min.mkt = -0.5,
+    y.lim.second = list(Alpha = c(-0.02, 0.02)),
+    main.linewidth = 1.5,
+    cex = 1,
+    h.lines.mkt = c(0.647399009343063),
+    h.lines.second = c(1.0194438416743136^(1 / 3) - 1), # alpha quarterly
+    abline.linewidth = 1.5,
+    h.colors.mkt = c("orange"), h.colors.second = c("orange"),
+    exclude_cv = TRUE,
+    output_file = paste0(out.folder, "/empirical_BO_Alpha")
 )
 
 # BO: Single-factor model with MKT only
 plot_empirical_estimates(
-  data_dir = file.folder,
-  fund_type = "BO",
-  factors = c("MKT"),
-  export_pdf = TRUE,
-  export_csv = TRUE,
-  export_latex = TRUE,
-  height = 4, width = 7,
-  y.max.mkt = 2.5, y.min.mkt = -0.5,
-  main.linewidth = 1.5,
-  cex = 0.9,
-  h.lines = c(0.769855673660812),
-  # y.lim.second = list(Alpha = c(-0.01, 0.01)),
-  output_file = paste0(out.folder, "/empirical_BO_MKT")
+    data_dir = file.folder,
+    fund_type = "BO",
+    factors = c("MKT"),
+    export_pdf = TRUE,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    height = 4, width = 7,
+    y.max.mkt = 2.5, y.min.mkt = -0.5,
+    main.linewidth = 1.5,
+    cex = 1,
+    h.lines.mkt = c(0.769855673660812),
+    abline.linewidth = 1.5,
+    h.colors.mkt = c("orange"),
+    exclude_cv = TRUE,
+    # y.lim.second = list(Alpha = c(-0.01, 0.01)),
+    output_file = paste0(out.folder, "/empirical_BO_MKT")
 )
 
 # BO Combined MKT Max vintage-year cutoff analysis (100% NAV and 50% NAV-discount)
 plot_max_vintage_cutoff_combined_mkt(
-  data_dir = file.folder,
-  fund_type = "BO",
-  vintages = 2011:2021,
-  nc_tags = c("", "_NC50"),
-  nc_labels = c("100% NAV as Cashflow", "50% NAV-discount sample"),
-  export_pdf = TRUE,
-  export_svg = TRUE,
-  export_csv = TRUE,
-  width = 14,
-  height = 4,
-  y.max.mkt = 2.5, y.min.mkt = 0,
-  main.linewidth = 0.8,
-  output_file = paste0(out.folder, "/max_vintage_BO_MKT_combined_NC")
+    data_dir = file.folder,
+    fund_type = "BO",
+    vintages = 2011:2021,
+    nc_tags = c("", "_NC50"),
+    nc_labels = c("100% NAV as Cashflow", "50% NAV-discount sample"),
+    export_pdf = TRUE,
+    export_svg = TRUE,
+    export_csv = TRUE,
+    width = 14,
+    height = 4,
+    y.max.mkt = 2.5, y.min.mkt = 0,
+    main.linewidth = 0.8,
+    exclude_cv = TRUE,
+    output_file = paste0(out.folder, "/max_vintage_BO_MKT_combined_NC")
 )
 
 # VC: Two-factor model with only Alpha
 plot_empirical_estimates(
-  data_dir = file.folder,
-  fund_type = "VC",
-  factors = c("Alpha"),
-  export_pdf = TRUE,
-  export_csv = TRUE,
-  export_latex = TRUE,
-  width = 7,
-  y.max.mkt = 2.5, y.min.mkt = -0.5,
-  y.lim.second = list(Alpha = c(-0.02, 0.02)),
-  main.linewidth = 1.5,
-  cex = 0.9,
-  h.lines = c(0.97551979450791), # alpha quarterly -0.00390550172544275
-  output_file = paste0(out.folder, "/empirical_VC_Alpha")
+    data_dir = file.folder,
+    fund_type = "VC",
+    factors = c("Alpha"),
+    export_pdf = TRUE,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    width = 7,
+    y.max.mkt = 2.5, y.min.mkt = -0.5,
+    y.lim.second = list(Alpha = c(-0.02, 0.02)),
+    main.linewidth = 1.5,
+    cex = 1,
+    h.lines.mkt = c(0.97551979450791),
+    h.lines.second = c((1 -0.00390550172544275)^(1 / 3) - 1), # alpha quarterly
+    abline.linewidth = 1.5,
+    h.colors.mkt = c("orange"), h.colors.second = c("orange"),
+    exclude_cv = TRUE,
+    output_file = paste0(out.folder, "/empirical_VC_Alpha")
 )
 
 # VC: Single-factor model with MKT only
 plot_empirical_estimates(
-  data_dir = file.folder,
-  fund_type = "VC",
-  factors = c("MKT"),
-  export_pdf = TRUE,
-  export_csv = TRUE,
-  export_latex = TRUE,
-  height = 4, width = 7,
-  y.max.mkt = 2.5, y.min.mkt = -0.5,
-  main.linewidth = 1.5,
-  cex = 0.9,
-  hlines = c(0.925920685301403),
-  # y.lim.second = list(Alpha = c(-0.01, 0.01)),
-  output_file = paste0(out.folder, "/empirical_VC_MKT")
+    data_dir = file.folder,
+    fund_type = "VC",
+    factors = c("MKT"),
+    export_pdf = TRUE,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    height = 4, width = 7,
+    y.max.mkt = 2.5, y.min.mkt = -0.5,
+    main.linewidth = 1.5,
+    cex = 1,
+    h.lines.mkt = c(0.925920685301403),
+    abline.linewidth = 1.5,
+    h.colors.mkt = c("orange"),
+    exclude_cv = TRUE,
+    # y.lim.second = list(Alpha = c(-0.01, 0.01)),
+    output_file = paste0(out.folder, "/empirical_VC_MKT")
 )
 
 # VC Combined MKT Max vintage-year cutoff analysis (100% NAV and 50% NAV-discount)
 plot_max_vintage_cutoff_combined_mkt(
-  data_dir = file.folder,
-  fund_type = "VC",
-  vintages = 2011:2021,
-  nc_tags = c("", "_NC50"),
-  nc_labels = c("100% NAV as Cashflow", "50% NAV-discount sample"),
-  export_pdf = TRUE,
-  export_svg = TRUE,
-  export_csv = TRUE,
-  width = 14,
-  height = 4,
-  y.max.mkt = 2.5, y.min.mkt = 0,
-  main.linewidth = 0.8,
-  output_file = paste0(out.folder, "/max_vintage_VC_MKT_combined_NC")
+    data_dir = file.folder,
+    fund_type = "VC",
+    vintages = 2011:2021,
+    nc_tags = c("", "_NC50"),
+    nc_labels = c("100% NAV as Cashflow", "50% NAV-discount sample"),
+    export_pdf = TRUE,
+    export_svg = TRUE,
+    export_csv = TRUE,
+    width = 14,
+    height = 4,
+    y.max.mkt = 2.5, y.min.mkt = 0,
+    main.linewidth = 0.8,
+    exclude_cv = TRUE,
+    output_file = paste0(out.folder, "/max_vintage_VC_MKT_combined_NC")
 )
 
 
@@ -1898,10 +1943,10 @@ plot_empirical_estimates(
     width = 8,
     y.max.mkt = 1.5, y.min.mkt = -0.1,
     # y.lim.second = list(Alpha = c(-0.01, 0.01)),
-    v.lines = c(0, 15),
-    h.lines = c(0, 0.8),
-    v.colors = c("blue", "orange"),
-    h.colors = c("gray", "red"),
+    v.lines.mkt = c(0, 15),
+    h.lines.mkt = c(0, 0.8),
+    v.colors.mkt = c("blue", "orange"),
+    h.colors.mkt = c("gray", "red"),
     main.linewidth = 2,
     abline.linewidth = 1.5,
     cex = 1,
@@ -1944,3 +1989,4 @@ plot_max_vintage_cutoff_combined_mkt(
     y.max.mkt = 2.5, y.min.mkt = 0,
     output_file = paste0(out.folder, "/max_vintage_PE_MKT_combined_NC")
 )
+

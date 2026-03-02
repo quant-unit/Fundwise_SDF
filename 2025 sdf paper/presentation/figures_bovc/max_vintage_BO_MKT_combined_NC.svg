@@ -900,41 +900,41 @@
 <text x='993.32' y='225.27' text-anchor='middle' style='font-size: 9.00px;fill: #333333; font-family: "Times";' textLength='9.00px' lengthAdjust='spacingAndGlyphs'>30</text>
 <text x='887.72' y='236.73' text-anchor='middle' style='font-size: 10.00px; font-weight: bold; font-family: "Times";' textLength='68.03px' lengthAdjust='spacingAndGlyphs'>Horizon (Years)</text>
 <text x='887.72' y='17.22' text-anchor='middle' style='font-size: 10.00px; font-weight: bold; font-family: "Times";' textLength='139.36px' lengthAdjust='spacingAndGlyphs'>50% NAV-discount sample (FW)</text>
-<rect x='196.79' y='249.88' width='644.53' height='27.66' style='stroke-width: 1.07; stroke: none; fill: #FFFFFF;' />
-<text x='196.79' y='269.58' style='font-size: 10.00px; font-weight: bold; font-family: "Times";' textLength='76.86px' lengthAdjust='spacingAndGlyphs'>Max Vintage Year</text>
-<line x1='281.40' y1='266.20' x2='299.54' y2='266.20' style='stroke-width: 1.71; stroke: #30123B; stroke-opacity: 0.85; stroke-linecap: butt;' />
-<circle cx='290.47' cy='266.20' r='1.95' style='stroke-width: 0.71; stroke: #30123B; stroke-opacity: 0.85; fill: #30123B; fill-opacity: 0.85;' />
-<line x1='332.71' y1='266.20' x2='350.85' y2='266.20' style='stroke-width: 1.71; stroke: #455BCD; stroke-opacity: 0.85; stroke-linecap: butt;' />
-<circle cx='341.78' cy='266.20' r='1.95' style='stroke-width: 0.71; stroke: #455BCD; stroke-opacity: 0.85; fill: #455BCD; fill-opacity: 0.85;' />
-<line x1='384.35' y1='266.20' x2='402.49' y2='266.20' style='stroke-width: 1.71; stroke: #3E9BFE; stroke-opacity: 0.85; stroke-linecap: butt;' />
-<circle cx='393.42' cy='266.20' r='1.95' style='stroke-width: 0.71; stroke: #3E9BFE; stroke-opacity: 0.85; fill: #3E9BFE; fill-opacity: 0.85;' />
-<line x1='435.98' y1='266.20' x2='454.12' y2='266.20' style='stroke-width: 1.71; stroke: #18D6CB; stroke-opacity: 0.85; stroke-linecap: butt;' />
-<circle cx='445.05' cy='266.20' r='1.95' style='stroke-width: 0.71; stroke: #18D6CB; stroke-opacity: 0.85; fill: #18D6CB; fill-opacity: 0.85;' />
-<line x1='487.62' y1='266.20' x2='505.76' y2='266.20' style='stroke-width: 1.71; stroke: #46F884; stroke-opacity: 0.85; stroke-linecap: butt;' />
-<circle cx='496.69' cy='266.20' r='1.95' style='stroke-width: 0.71; stroke: #46F884; stroke-opacity: 0.85; fill: #46F884; fill-opacity: 0.85;' />
-<line x1='539.25' y1='266.20' x2='557.40' y2='266.20' style='stroke-width: 1.71; stroke: #A2FC3C; stroke-opacity: 0.85; stroke-linecap: butt;' />
-<circle cx='548.32' cy='266.20' r='1.95' style='stroke-width: 0.71; stroke: #A2FC3C; stroke-opacity: 0.85; fill: #A2FC3C; fill-opacity: 0.85;' />
-<line x1='590.89' y1='266.20' x2='609.03' y2='266.20' style='stroke-width: 1.71; stroke: #E1DD37; stroke-opacity: 0.85; stroke-linecap: butt;' />
-<circle cx='599.96' cy='266.20' r='1.95' style='stroke-width: 0.71; stroke: #E1DD37; stroke-opacity: 0.85; fill: #E1DD37; fill-opacity: 0.85;' />
-<line x1='642.53' y1='266.20' x2='660.67' y2='266.20' style='stroke-width: 1.71; stroke: #FEA632; stroke-opacity: 0.85; stroke-linecap: butt;' />
-<circle cx='651.60' cy='266.20' r='1.95' style='stroke-width: 0.71; stroke: #FEA632; stroke-opacity: 0.85; fill: #FEA632; fill-opacity: 0.85;' />
-<line x1='694.16' y1='266.20' x2='712.30' y2='266.20' style='stroke-width: 1.71; stroke: #F05B12; stroke-opacity: 0.85; stroke-linecap: butt;' />
-<circle cx='703.23' cy='266.20' r='1.95' style='stroke-width: 0.71; stroke: #F05B12; stroke-opacity: 0.85; fill: #F05B12; fill-opacity: 0.85;' />
-<line x1='745.80' y1='266.20' x2='763.94' y2='266.20' style='stroke-width: 1.71; stroke: #C42503; stroke-opacity: 0.85; stroke-linecap: butt;' />
-<circle cx='754.87' cy='266.20' r='1.95' style='stroke-width: 0.71; stroke: #C42503; stroke-opacity: 0.85; fill: #C42503; fill-opacity: 0.85;' />
-<line x1='797.43' y1='266.20' x2='815.58' y2='266.20' style='stroke-width: 1.71; stroke: #7A0403; stroke-opacity: 0.85; stroke-linecap: butt;' />
-<circle cx='806.50' cy='266.20' r='1.95' style='stroke-width: 0.71; stroke: #7A0403; stroke-opacity: 0.85; fill: #7A0403; fill-opacity: 0.85;' />
-<text x='307.29' y='269.18' style='font-size: 9.00px; font-family: "Times";' textLength='17.67px' lengthAdjust='spacingAndGlyphs'>2011</text>
-<text x='358.60' y='269.18' style='font-size: 9.00px; font-family: "Times";' textLength='18.00px' lengthAdjust='spacingAndGlyphs'>2012</text>
-<text x='410.23' y='269.18' style='font-size: 9.00px; font-family: "Times";' textLength='18.00px' lengthAdjust='spacingAndGlyphs'>2013</text>
-<text x='461.87' y='269.18' style='font-size: 9.00px; font-family: "Times";' textLength='18.00px' lengthAdjust='spacingAndGlyphs'>2014</text>
-<text x='513.51' y='269.18' style='font-size: 9.00px; font-family: "Times";' textLength='18.00px' lengthAdjust='spacingAndGlyphs'>2015</text>
-<text x='565.14' y='269.18' style='font-size: 9.00px; font-family: "Times";' textLength='18.00px' lengthAdjust='spacingAndGlyphs'>2016</text>
-<text x='616.78' y='269.18' style='font-size: 9.00px; font-family: "Times";' textLength='18.00px' lengthAdjust='spacingAndGlyphs'>2017</text>
-<text x='668.41' y='269.18' style='font-size: 9.00px; font-family: "Times";' textLength='18.00px' lengthAdjust='spacingAndGlyphs'>2018</text>
-<text x='720.05' y='269.18' style='font-size: 9.00px; font-family: "Times";' textLength='18.00px' lengthAdjust='spacingAndGlyphs'>2019</text>
-<text x='771.69' y='269.18' style='font-size: 9.00px; font-family: "Times";' textLength='18.00px' lengthAdjust='spacingAndGlyphs'>2020</text>
-<text x='823.32' y='269.18' style='font-size: 9.00px; font-family: "Times";' textLength='18.00px' lengthAdjust='spacingAndGlyphs'>2021</text>
+<rect x='211.61' y='249.88' width='614.89' height='27.66' style='stroke-width: 1.07; stroke: none; fill: #FFFFFF;' />
+<text x='211.61' y='269.24' style='font-size: 9.00px; font-weight: bold; font-family: "Times";' textLength='69.19px' lengthAdjust='spacingAndGlyphs'>Max Vintage Year</text>
+<line x1='288.55' y1='266.20' x2='306.69' y2='266.20' style='stroke-width: 1.71; stroke: #30123B; stroke-opacity: 0.85; stroke-linecap: butt;' />
+<circle cx='297.62' cy='266.20' r='1.95' style='stroke-width: 0.71; stroke: #30123B; stroke-opacity: 0.85; fill: #30123B; fill-opacity: 0.85;' />
+<line x1='337.89' y1='266.20' x2='356.03' y2='266.20' style='stroke-width: 1.71; stroke: #455BCD; stroke-opacity: 0.85; stroke-linecap: butt;' />
+<circle cx='346.96' cy='266.20' r='1.95' style='stroke-width: 0.71; stroke: #455BCD; stroke-opacity: 0.85; fill: #455BCD; fill-opacity: 0.85;' />
+<line x1='387.52' y1='266.20' x2='405.67' y2='266.20' style='stroke-width: 1.71; stroke: #3E9BFE; stroke-opacity: 0.85; stroke-linecap: butt;' />
+<circle cx='396.60' cy='266.20' r='1.95' style='stroke-width: 0.71; stroke: #3E9BFE; stroke-opacity: 0.85; fill: #3E9BFE; fill-opacity: 0.85;' />
+<line x1='437.16' y1='266.20' x2='455.30' y2='266.20' style='stroke-width: 1.71; stroke: #18D6CB; stroke-opacity: 0.85; stroke-linecap: butt;' />
+<circle cx='446.23' cy='266.20' r='1.95' style='stroke-width: 0.71; stroke: #18D6CB; stroke-opacity: 0.85; fill: #18D6CB; fill-opacity: 0.85;' />
+<line x1='486.80' y1='266.20' x2='504.94' y2='266.20' style='stroke-width: 1.71; stroke: #46F884; stroke-opacity: 0.85; stroke-linecap: butt;' />
+<circle cx='495.87' cy='266.20' r='1.95' style='stroke-width: 0.71; stroke: #46F884; stroke-opacity: 0.85; fill: #46F884; fill-opacity: 0.85;' />
+<line x1='536.43' y1='266.20' x2='554.57' y2='266.20' style='stroke-width: 1.71; stroke: #A2FC3C; stroke-opacity: 0.85; stroke-linecap: butt;' />
+<circle cx='545.50' cy='266.20' r='1.95' style='stroke-width: 0.71; stroke: #A2FC3C; stroke-opacity: 0.85; fill: #A2FC3C; fill-opacity: 0.85;' />
+<line x1='586.07' y1='266.20' x2='604.21' y2='266.20' style='stroke-width: 1.71; stroke: #E1DD37; stroke-opacity: 0.85; stroke-linecap: butt;' />
+<circle cx='595.14' cy='266.20' r='1.95' style='stroke-width: 0.71; stroke: #E1DD37; stroke-opacity: 0.85; fill: #E1DD37; fill-opacity: 0.85;' />
+<line x1='635.71' y1='266.20' x2='653.85' y2='266.20' style='stroke-width: 1.71; stroke: #FEA632; stroke-opacity: 0.85; stroke-linecap: butt;' />
+<circle cx='644.78' cy='266.20' r='1.95' style='stroke-width: 0.71; stroke: #FEA632; stroke-opacity: 0.85; fill: #FEA632; fill-opacity: 0.85;' />
+<line x1='685.34' y1='266.20' x2='703.48' y2='266.20' style='stroke-width: 1.71; stroke: #F05B12; stroke-opacity: 0.85; stroke-linecap: butt;' />
+<circle cx='694.41' cy='266.20' r='1.95' style='stroke-width: 0.71; stroke: #F05B12; stroke-opacity: 0.85; fill: #F05B12; fill-opacity: 0.85;' />
+<line x1='734.98' y1='266.20' x2='753.12' y2='266.20' style='stroke-width: 1.71; stroke: #C42503; stroke-opacity: 0.85; stroke-linecap: butt;' />
+<circle cx='744.05' cy='266.20' r='1.95' style='stroke-width: 0.71; stroke: #C42503; stroke-opacity: 0.85; fill: #C42503; fill-opacity: 0.85;' />
+<line x1='784.61' y1='266.20' x2='802.76' y2='266.20' style='stroke-width: 1.71; stroke: #7A0403; stroke-opacity: 0.85; stroke-linecap: butt;' />
+<circle cx='793.68' cy='266.20' r='1.95' style='stroke-width: 0.71; stroke: #7A0403; stroke-opacity: 0.85; fill: #7A0403; fill-opacity: 0.85;' />
+<text x='314.44' y='268.85' style='font-size: 8.00px; font-family: "Times";' textLength='15.70px' lengthAdjust='spacingAndGlyphs'>2011</text>
+<text x='363.78' y='268.85' style='font-size: 8.00px; font-family: "Times";' textLength='16.00px' lengthAdjust='spacingAndGlyphs'>2012</text>
+<text x='413.41' y='268.85' style='font-size: 8.00px; font-family: "Times";' textLength='16.00px' lengthAdjust='spacingAndGlyphs'>2013</text>
+<text x='463.05' y='268.85' style='font-size: 8.00px; font-family: "Times";' textLength='16.00px' lengthAdjust='spacingAndGlyphs'>2014</text>
+<text x='512.69' y='268.85' style='font-size: 8.00px; font-family: "Times";' textLength='16.00px' lengthAdjust='spacingAndGlyphs'>2015</text>
+<text x='562.32' y='268.85' style='font-size: 8.00px; font-family: "Times";' textLength='16.00px' lengthAdjust='spacingAndGlyphs'>2016</text>
+<text x='611.96' y='268.85' style='font-size: 8.00px; font-family: "Times";' textLength='16.00px' lengthAdjust='spacingAndGlyphs'>2017</text>
+<text x='661.59' y='268.85' style='font-size: 8.00px; font-family: "Times";' textLength='16.00px' lengthAdjust='spacingAndGlyphs'>2018</text>
+<text x='711.23' y='268.85' style='font-size: 8.00px; font-family: "Times";' textLength='16.00px' lengthAdjust='spacingAndGlyphs'>2019</text>
+<text x='760.87' y='268.85' style='font-size: 8.00px; font-family: "Times";' textLength='16.00px' lengthAdjust='spacingAndGlyphs'>2020</text>
+<text x='810.50' y='268.85' style='font-size: 8.00px; font-family: "Times";' textLength='16.00px' lengthAdjust='spacingAndGlyphs'>2021</text>
 </g>
 </g>
 </svg>
