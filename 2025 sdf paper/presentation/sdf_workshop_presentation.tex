@@ -93,57 +93,82 @@
 	\scriptsize Data: Preqin quarterly index levels and q5 monthly $R_{MKT}$ aggregated to quarters (overlap through 2022Q4).
 \end{frame}
 
-\begin{frame}{Estimator: Starting Point \cite{DLP12}}
+
+
+\begin{frame}[t]{Estimator: From \cite{DLP12} to Our Generalization}
 \small
-For each fund $i$, \cite{DLP12} imposes a zero-NPV pricing condition at inception date $t_{0,i}$:
+\begin{columns}[T]
+\begin{column}{0.47\textwidth}
+\textbf{\cite{DLP12} (special case)}
+
+\medskip
+Pricing residual at inception $t_{0,i}$:
 \[
 \epsilon_i^{\text{DLP}}(\theta)=\sum_{t=0}^T \Psi_{t}(\theta)\,CF_{i,t}
 \]
 
 Cross-sectional estimator:
 \[
-\hat\theta_{\text{DLP}}=\arg\min_{\theta\in\Theta}\frac{1}{n}\sum_{i=1}^n\left(\epsilon_i^{\text{DLP}}(\theta)\right)^2
+\hat\theta_{\text{DLP}}=\arg\min_{\theta\in\Theta}\frac{1}{n}\sum_{i=1}^n\!\left(\epsilon_i^{\text{DLP}}\right)^2
 \]
 
-\textcolor{orange}{combine to one combined slide}
+\end{column}
+\hfill
+\vrule{}
+\hfill
+\begin{column}{0.47\textwidth}
+\textbf{Our generalization}
 
-\vspace{1.5em}
-\textbf{We propose generalization} that nests the \cite{DLP12} estimator as special case. \\
-\vspace{3.5em}
-
-{\small Variables: $i$ fund/portfolio index, $t$ cash-flow time, $CF_{i,t}$ net cash flow, $\theta$ parameter vector, $\Theta$ parameter space, $n$ number of units, sample end date $T$.} \\
-\textbf{Important:} $\Psi_{t}(\theta)$ Stochastic Discount Factor (SDF) from $t$ to time $t_{0,i}$ (=fund inception date).
-\end{frame}
-
-\begin{frame}{Estimator: Our generalization}
-For fund $i$ and discounting date $\tau$:
+\medskip
+Pricing residual at \emph{any} date $\tau$:
 \[
-\epsilon_{\tau,i}(\theta)=\sum_{t=0}^T \frac{\Psi_{t}(\theta)}{\Psi_{\tau}(\theta)} CF_{i,t}
+\epsilon_{\tau,i}(\theta)=\sum_{t=0}^T \frac{\Psi_{t}(\theta)}{\textcolor{cyan}{\Psi_{\tau}(\theta)} }\,CF_{i,t}
 \]
 
-Average over selected compounding dates $\mathcal{T}_i$ (\textcolor{blue}{compounding horizons}):
+Average over \textcolor{cyan}{compounding} \textcolor{blue}{horizons $\mathcal{T}_i$}:
 \[
-\bar\epsilon_i(\theta)=\frac{1}{|\mathcal{T}_i|}\sum_{\tau\in\mathcal{T}_i}\epsilon_{\tau,i}(\theta)
+\bar\epsilon_i(\theta)=\frac{1}{\textcolor{blue}{ |\mathcal{T}_i|}}\sum_{\tau \in \textcolor{blue}{\mathcal{T}_i}}\epsilon_{\tau,i}(\theta)
 \]
 
-Estimate parameters by nonlinear least-mean-distance:
+Nonlinear least-mean-distance:
 \[
-\hat\theta=\arg\min_{\theta\in\Theta}\left(\frac{1}{n}\sum_{i=1}^n L(\bar\epsilon_i(\theta))\right),\quad L(x)=x^2
+\hat\theta=\arg\min_{\theta\in\Theta}\frac{1}{n}\sum_{i=1}^n L\!\left(\bar\epsilon_i(\theta)\right)
 \]
-\vspace{0.25em}
-\tiny Variables: $i$ fund/portfolio index, $t$ cash-flow time, $\tau$ compounding date, $CF_{i,t}$ net cash flow, $\frac{\Psi_{t}(\theta)}{\Psi_{\tau}(\theta)}$ SDF ratio, $\theta$ parameter vector, $\mathcal{T}_i$ compounding-date set, $L$ loss function.
+
+
+\end{column}
+\end{columns}
+
+\vspace{0.3em}
+{\tiny \textbf{Variables:} $i$: fund index, $t$: cash-flow time, $\tau$: compounding date, $CF_{i,t}$: net cash flow, $\Psi_t(\theta)$: SDF, $\frac{\Psi_t}{\Psi_\tau}$: SDF ratio, $\theta\!\in\!\Theta$: parameters, $\mathcal{T}_i$: compounding-date set, $L$: loss function, $n$: number of units. \textbf{Nesting:}\ set $\mathcal{T}_i=\{t_{0,i}\}$ and $L(x)=x^2$ $\;\Longrightarrow\;$ recovers \cite{DLP12}.}
+
 \end{frame}
 
 \begin{frame}[t]{Estimator: Net Present Value (NPV) vs Net Future Value (NFV)}
 \begin{itemize}
   \item NPV-only discounting (fund inception) is theoretically unbiased.
-  \item NFV: Adding \textcolor{blue}{compounding horizons $>0$} introduces a \textbf{bias term}.
+  \item NFV: Adding \textcolor{cyan}{compounding} \textcolor{blue}{horizons $>0$} introduces a \textbf{bias term}. \\
+  $\to$ Definition ``Horizon": We average over all dates up to \textcolor{blue}{$\max (\mathcal{T})$}.
   \item \textbf{Spoiler:} Finite-sample performance can improve when averaging across future dates.
 \end{itemize}
 
 \begin{center}
-\includegraphics[width=0.63\linewidth]{figures/npvs3.pdf}
+%\includegraphics[width=1\linewidth]{images/NPV1.png}
+\includegraphics[width=0.64\linewidth]{figures/npvs3.pdf}
 \end{center}
+\end{frame}
+
+\begin{frame}[t]{Estimator: Net Present Value (NPV) vs Net Future Value (NFV)}
+	\begin{itemize}
+		\item NPV-only discounting (fund inception) is theoretically unbiased.
+		\item NFV: Adding \textcolor{cyan}{compounding} \textcolor{blue}{horizons $>0$} introduces a \textbf{bias term}. \\
+		$\to$ Definition ``Horizon": We average over all dates up to \textcolor{blue}{$\max (\mathcal{T})$}.
+		\item \textbf{Spoiler:} Finite-sample performance can improve when averaging across future dates.
+	\end{itemize}
+	
+	\begin{center}
+		\includegraphics[width=1\linewidth]{images/NPV2.png}
+	\end{center}
 \end{frame}
 
 \begin{frame}{Simulation: What Is Tested?}
@@ -157,14 +182,10 @@ Estimate parameters by nonlinear least-mean-distance:
 		\item 20 vintages years from 1986 to 2005 using this macro environment.
 		\item Monthly returns: $R_i = \alpha + R_{\textbf{riskfree}} + \beta_{\textbf{MKT}} R_{\textbf{MKT}} + \beta_{2} R_{2} + \dots + e_i$ (with i.i.d.\ $e_i$)
   	\end{itemize}
-  \item \textbf{Main focus on horizon choice:} size of \textcolor{blue}{compounding horizon set $\mathcal{T}$}.
+  \item \textbf{Main focus on horizon choice:} size of \textcolor{cyan}{compounding} \textcolor{blue}{horizon set $\mathcal{T}$}.
   \item \textbf{Compare units:} individual funds vs vintage-year portfolios (VYP).
   \item \textbf{Compare sample geometry:} more vintages ($V$) vs larger within-vintage size ($n/V$).
-  \item \textbf{Compare SDF model forms:} 
-   	\begin{itemize}
-  		\item Exponential affine vs simple linear SDF.
-		\item Single-factor vs multi-factor models.
-  	\end{itemize}
+  \item \textbf{Compare SDF model forms:} Single-factor vs multi-factor models.
 \end{itemize}
 \end{frame}
 
@@ -174,41 +195,35 @@ Estimate parameters by nonlinear least-mean-distance:
 \end{center}
 
 \textbf{Takeaway:} Vintage-year portfolios reduce bias and variance versus single-fund estimation.
-\footnotesize Horizon on x-axis corresponds to $\mathcal{T}$-averaging in all charts. Horizon 0 is base case \cite{DLP12}.
+\footnotesize Horizon on x-axis corresponds to \textcolor{blue}{$\max (\mathcal{T})$} in all charts. Horizon 0 is base case \cite{DLP12}.
 \end{frame}
 
 \begin{frame}{Simulation: 2.\ More Vintages or More Funds per Vintage?}
 \begin{center}
-\includegraphics[width=0.8\linewidth]{figures/bias_comparison3.pdf}
+\includegraphics[width=0.8\linewidth]{figures/bias_comparison3focused.pdf}
 \end{center}
 
 \textbf{Takeaway:} Increasing funds per vintage is more powerful for bias/variance reduction than only extending the time span.
 \end{frame}
 
-\begin{frame}[t]{Simulation: 3.\ Exponential Affine vs Linear SDF}
-\begin{center}
-\includegraphics[width=0.8\linewidth]{figures/bias_comparison5.pdf}
-\end{center}
-
-\textbf{Takeaway:} No robust finite-sample superiority of exponential affine SDF in this setting. \\
-\footnotesize SDF model comparison: \cite{KN16} vs \cite{DLP12}
-\end{frame}
-
-\begin{frame}[t]{Simulation 4: Two-Factor q-Factor Models}
+\begin{frame}[t]{Simulation 3: Two-Factor q-Factor Models}
 	\begin{center}
-		\includegraphics[width=0.8\linewidth]{figures/bias_comparison4.pdf}
+		\includegraphics[width=0.8\linewidth]{figures/bias_comparison4zoom.pdf}
 	\end{center}
 	
-	\textbf{Takeaway:} Multivariate identification is fragile. Estimate $\approx 1$ instead of $0.5$ for 2nd factors.
-	\footnotesize q-factor model from \cite{hou2021augmented} is competitor to \cite{FF15}.
+	\textbf{Takeaway:} For horizon 0, second-factor estimate is $\approx 1$ instead of $0.5$. \\
+	\vspace{0.3em}
+	\footnotesize Remark: q-factor model from \cite{hou2021augmented} is competitor to \cite{FF15}.
 \end{frame}
 
 \begin{frame}{Simulation: Synthesis}
 \begin{enumerate}
   \item Use portfolio formation to stabilize estimation.
   \item Increase number of funds per vintage (if possible).
-  \item Use simple SDF models given limited amount of PE data (avoid multi-factor models).
-  \item \textcolor{blue}{Compounding horizon choice (size of $\mathcal{T}$)} is a control for finite-sample bias.
+  \item Use simple SDF models given limited amount of PE data.
+  \item \textcolor{cyan}{Compounding} \textcolor{blue}{horizon choice (size of $\mathcal{T}$)} is a control for finite-sample bias. \\
+  $\to$ \textcolor{blue}{$\mathcal{T}$-averaging horizons} from 10 to 20 years yields best results in our examples. \\
+  $\to$ Not overly precise control!
 \end{enumerate}
 
 \vspace{0.4em}
@@ -220,8 +235,12 @@ Estimate parameters by nonlinear least-mean-distance:
   \item Preqin Data: 3005 PE funds, vintages 1983--2021.
   \item Primary unit for estimation: vintage-year portfolios (equal- and value-weighted).
   \item Factors: $q^5$ family; focus on MKT and simple two-factor extensions.
-  \item \textcolor{blue}{Compounding horizon} selected from simulation guidance: 15-year baseline.
-  \item Benchmark for comparison: NAV-based naive/Dimson market-exposure estimates from the motivation section.
+  \item \textcolor{cyan}{Compounding} \textcolor{blue}{horizon} selected from simulation guidance: $\approx$ 15-year baseline.
+  \item Benchmark for comparison: 
+  \begin{itemize}
+	\item NAV-based naive/Dimson market-exposure estimates from the motivation section.
+	\item Empirical results for Buyout and Venture Capital funds from \cite{DLP12}
+  \end{itemize}
 \end{itemize}
 
 \end{frame}
@@ -255,6 +274,12 @@ Estimate parameters by nonlinear least-mean-distance:
 \footnotesize We use empirical vintages until 2010.
 \end{frame}
 
+
+\begin{frame}[t]{Empirical: 4.\ Results from \cite{DLP12}}
+
+TODO: add small table with Driessen et al. 2012 empirical results for BO and VC.
+
+\end{frame}
 
 \begin{frame}[t]{Empirical: Synthesis}
 	
@@ -318,12 +343,13 @@ Estimate parameters by nonlinear least-mean-distance:
 
 \textbf{Main results}
 \begin{itemize}
- 	 \item Our approach can better control finite-sample bias than \cite{DLP12}.
+ 	 \item Our approach can better control finite-sample bias than \cite{DLP12} \\ via our newly introduced future \textcolor{cyan}{compounding} \textcolor{blue}{horizons}.
 	\item Our approach yields empirical $\beta_{\text{MKT}}$ estimates similar to \cite{D79}.
 	\item Given amount of \textbf{currently available} private market data: \\
 Cash-flow based estimation results are close to NAV-return-based estimation results.
-    \item Portfolio formation and \textcolor{blue}{compounding horizons} are key for cash-flow-based inference.
 \end{itemize}
+
+\vspace{1em}
 
 \textbf{Additional topics (for cash-flow-based inference)}
 \begin{itemize}
@@ -344,7 +370,15 @@ Cash-flow based estimation results are close to NAV-return-based estimation resu
 \end{frame}
 
 
+
+
+
+
 % Appendix
+
+
+
+
 
 
 % Dimson with intercept (= Alpha + MKT)
@@ -458,9 +492,53 @@ VC Global & 5 & 5 & 5 \\
 	\Large Questions and Discussion
 \end{frame}
 
+\begin{frame}{Estimator: Starting Point \cite{DLP12}}
+	\small
+	For each fund $i$, \cite{DLP12} imposes a zero-NPV pricing condition at inception date $t_{0,i}$:
+	\[
+	\epsilon_i^{\text{DLP}}(\theta)=\sum_{t=0}^T \Psi_{t}(\theta)\,CF_{i,t}
+	\]
+	
+	Cross-sectional estimator:
+	\[
+	\hat\theta_{\text{DLP}}=\arg\min_{\theta\in\Theta}\frac{1}{n}\sum_{i=1}^n\left(\epsilon_i^{\text{DLP}}(\theta)\right)^2
+	\]
+	
+	\vspace{1.5em}
+	\textbf{We propose generalization} that nests the \cite{DLP12} estimator as special case. \\
+	\vspace{3.5em}
+	
+	{\small Variables: $i$ fund/portfolio index, $t$ cash-flow time, $CF_{i,t}$ net cash flow, $\theta$ parameter vector, $\Theta$ parameter space, $n$ number of units, sample end date $T$.} \\
+	\textbf{Important:} $\Psi_{t}(\theta)$ Stochastic Discount Factor (SDF) from $t$ to time $t_{0,i}$ (=fund inception date).
+\end{frame}
 
+\begin{frame}{Estimator: Our generalization}
+	For fund $i$ and discounting date $\tau$:
+	\[
+	\epsilon_{\tau,i}(\theta)=\sum_{t=0}^T \frac{\Psi_{t}(\theta)}{\Psi_{\tau}(\theta)} CF_{i,t}
+	\]
+	
+	Average over selected compounding dates $\mathcal{T}_i$ (\textcolor{blue}{compounding horizons}):
+	\[
+	\bar\epsilon_i(\theta)=\frac{1}{|\mathcal{T}_i|}\sum_{\tau\in\mathcal{T}_i}\epsilon_{\tau,i}(\theta)
+	\]
+	
+	Estimate parameters by nonlinear least-mean-distance:
+	\[
+	\hat\theta=\arg\min_{\theta\in\Theta}\left(\frac{1}{n}\sum_{i=1}^n L(\bar\epsilon_i(\theta))\right),\quad L(x)=x^2
+	\]
+	\vspace{0.25em}
+	\tiny Variables: $i$ fund/portfolio index, $t$ cash-flow time, $\tau$ compounding date, $CF_{i,t}$ net cash flow, $\frac{\Psi_{t}(\theta)}{\Psi_{\tau}(\theta)}$ SDF ratio, $\theta$ parameter vector, $\mathcal{T}_i$ compounding-date set, $L$ loss function.
+\end{frame}
 
-
+\begin{frame}[t]{Simulation: 4.\ Exponential Affine vs Linear SDF}
+	\begin{center}
+		\includegraphics[width=0.8\linewidth]{figures/bias_comparison5.pdf}
+	\end{center}
+	
+	\textbf{Takeaway:} No robust finite-sample superiority of exponential affine SDF in this setting. \\
+	\footnotesize SDF model comparison: \cite{KN16} vs \cite{DLP12}
+\end{frame}
 
 
 \end{document}

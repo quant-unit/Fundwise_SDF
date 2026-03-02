@@ -387,7 +387,7 @@ scenarios:
       no_funds: 40
     estimation:
       factors_to_use: "Alpha"
-      max_months: [0, 1, 2, 30, 60, 90, 120, 150, 180, 210, 240]
+      max_months: [0, 1, 2, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: true
     data_folder: auto
   
@@ -516,6 +516,7 @@ scenarios:
       min_vin: 1967
     estimation:
       factors_to_use: "Alpha"
+      max_months: [0, 1, 2, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: true
     data_folder: auto
   
@@ -525,6 +526,7 @@ scenarios:
       min_vin: 1967
     estimation:
       factors_to_use: "Alpha"
+      max_months: [0, 1, 2, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: true
     data_folder: auto
   
@@ -534,6 +536,7 @@ scenarios:
       max_vin: 1995
     estimation:
       factors_to_use: "Alpha"
+      max_months: [0, 1, 2, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: true
     data_folder: auto
   
@@ -543,7 +546,7 @@ scenarios:
       min_vin: 1996
     estimation:
       factors_to_use: "Alpha"
-      max_months: [0, 1, 2, 30, 60, 90, 120, 150, 180, 210, 240]
+      max_months: [0, 1, 2, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: true
     data_folder: auto
     

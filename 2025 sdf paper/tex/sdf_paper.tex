@@ -127,7 +127,7 @@ Instead, we demonstrate that by generalizing the estimator to average pricing er
 In the empirical application of our new estimator, we evaluate simple linear and exponential affine SDF models utilizing the well-known Preqin cash flow database across a grid of compounding horizons.
 While evaluating multi-factor models proves unreasonable given high estimator variance, our single-factor market models yield stable and economically meaningful estimates. 
 At a bias-minimizing 15-year horizon upon seasoned vintage years, we estimate a market beta of 0.84 and 0.73 for equal- and value-weighted Private Equity portfolios, respectively. 
-Crucially, while our rigorous asymptotic inference framework yields conservative standard errors, $hv$-block cross-validation confirms that these market beta estimates remain highly statistically significant. 
+While our rigorous asymptotic inference framework yields conservative standard errors, $hv$-block cross-validation confirms that these market beta estimates remain highly statistically significant. 
 We document that the inherent estimator variance limiting multi-factor approaches can only be partially overcome by forming portfolios with a larger number of cross-sectional units per vintage year, highlighting a fundamental data constraint in modern private market asset pricing.
 
 The paper is structured as follows. 
@@ -141,22 +141,25 @@ Appendix \ref{sec:dlp_results_comparison} compares our simulation and empirical 
 \subsection{Related Literature}
 \label{sec:literature}
 
-For private equity funds, performance evaluation under the SDF framework remains an active research topic \citep{DLP12, KN16, KN24, giommetti2021risk, GN18, boyer2023discount, K22} alongside an expanding list of applications across other private asset classes.
+For private equity funds, performance evaluation under the SDF framework remains an active research topic \citep{DLP12, KN16, KN24, giommetti2021risk, GN18, boyer2023discount,korteweg2024private} alongside an expanding list of applications across other private asset classes.
 Specifically, the \cite{DLP12} estimator is heavily utilized to price human capital contracts, venture capital, real estate and private equity funds \citep{kroencke2013return,kim2015estimation,farrelly2019risk,lee2019new,zhao2020master,TP24}, while the \cite{KN16} approach has found broad application spanning private equity, infrastructure, real estate investment trusts, collateralized loan obligations, impact funds and private debt \citep{giommetti2021risk,andonov2021institutional,riddiough2022private,boyer2023discount,cordell2023clo,erel2024risk,jeffers2024risk,KN24}.
 Previously, SDF performance evaluation was already applied for public stock markets by, e.g., \cite{FFJT02} and for hedge fund returns by \cite{LXZ16}.
 
-Within the private equity literature, approaches can be broadly classified into parametric and semiparametric methods.
+Within the private equity literature, SDF-based approaches can be broadly classified into parametric and semiparametric methods.
 Parametric models, such as those proposed by \cite{FNP12} and \cite{ACGP18}, explicitly specify the return dynamics and the underlying data generating process of private equity investments. 
 While these methods can uncover latent factors or deal-level dynamics, they typically rely on strong distributional assumptions (e.g., log-normality) that may not fully capture the irregular and skewed nature of PE cash flows.
 
 Consequently, semiparametric approaches have gained prominence, starting with the seminal cross-sectional GMM framework of \cite{DLP12}. 
 They estimate a linear factor model that minimizes the squared pricing errors of PE vintage year portfolios, explicitly evaluating cash flows at fund inception.
 Building on this, \cite{KN16} introduced the Generalized Public Market Equivalent (GPME) framework, shifting the estimation of the SDF to public market data while evaluating PE cash flows in a second step. 
-Crucially, \cite{KN16} were the first to apply a spatial heteroskedasticity and autocorrelation consistent (SHAC) covariance matrix estimator \citep{C99} to account for the economic distance (cash flow overlap) between PE funds, moving beyond simple cross-sectional bootstrapping.
-Further complementing this cash flow dimension, a strand of literature models the informational frictions and smoothing inherent in reported Net Asset Values (NAVs) \citep{BGK19, JLRS20, BGG20}. Moreover, \cite{NSS23} leverage a similar generalized framework to evaluate private firms using credit market equivalents.
+Importantly, \cite{KN16} were the first to apply a spatial heteroskedasticity and autocorrelation consistent (SHAC) covariance matrix estimator \citep{C99} to account for the economic distance (cash flow overlap) between PE funds, moving beyond simple cross-sectional bootstrapping.
+
+Further complementing this cash flow dimension, a strand of literature models the informational frictions and smoothing inherent in reported Net Asset Values (NAVs) \citep{BGK19, JLRS20, BGG20}. 
+Additionally, \cite{HSS23} leverage a similar generalized framework to evaluate private firms using credit market equivalents.
+Finally, for comprehensive methodological and empirical overviews of risk and return assessment in private equity, we refer to \cite{K19,korteweg2023risk}, who also discuss the popular \cite{D79} regression that employs lagged returns to correct for stale valuations.
 
 Our paper's unified LMD framework contributes to this semiparametric literature by formally nesting both the \cite{DLP12} and \cite{KN16} approaches while supplying the rigorous increasing-domain asymptotic inference missing in earlier work (drawing on the spatial theory of \cite{PP97}, \cite{KS11}, and \cite{JP12}). 
-Furthermore, while \cite{GSW20} highlighted that NPV-based measures are biased relative to per-period returns, we explicitly formalize this discrepancy as a ``Timing Risk Premium'', a concept linked to recent findings on discount-rate risk in secondary markets \citep{boyer2023discount}.
+While \cite{GSW20} highlighted that NPV-based measures are biased relative to per-period returns, we explicitly formalize this discrepancy as a ``Timing Risk Premium'', a concept linked to recent findings on discount-rate risk in secondary markets \citep{boyer2023discount}.
 
 \section{Methodology}
 \label{sec:spatial_sdf_methodology}
@@ -278,7 +281,7 @@ First we apply the Law of Iterated Expectations (the so-called ``tower property"
 	\mathbb{E} \left[ \mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}} \delta_{i,j} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right] \mid \mathcal{F}_{\tau} \right]
 \end{equation}
 
-Since $\tau \leq t_{i,j}^{\mathrm{Inv}}$, it holds that $\mathcal{F}_{\tau} \subseteq \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$. Furthermore, the term $\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}}$ is fully known at time $t_{i,j}^{\mathrm{Inv}}$, so it can be pulled out of this inner expectation to receive
+Since $\tau \leq t_{i,j}^{\mathrm{Inv}}$, it holds that $\mathcal{F}_{\tau} \subseteq \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$. In addition, the term $\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}}$ is fully known at time $t_{i,j}^{\mathrm{Inv}}$, so it can be pulled out of this inner expectation to receive
 
 \begin{equation}
 	\label{eq:zero_deal_expectation}
@@ -858,7 +861,7 @@ Under the null hypothesis, $W$ is chi-squared distributed with $q$ degrees of fr
 
 However, given the limited amount of available private equity data (typically the oldest vintages start in the 1980s), asymptotic characterizations of ${\Sigma}$ and $\mathrm{SE}(\hat{\theta})$ are of limited importance. 
 In empirical applications, the small sample behavior of an estimation method for private equity data is more relevant than its asymptotic theory.
-Moreover, the standard asymptotic distribution associated with an estimator is generally not valid for post-model-selection inference, i.e., if a model selection procedure is applied to find the best model from a collection of competitors \citep{LP05}.
+The standard asymptotic distribution associated with an estimator is generally not valid for post-model-selection inference, i.e., if a model selection procedure is applied to find the best model from a collection of competitors \citep{LP05}.
 
 
 
@@ -913,7 +916,7 @@ That said, having FoFs exposed to different market environments (i.e., different
 
 Second, the \cite{DLP12} asymptotic theory is based on infill asymptotics: 
 they fix the number of vintage year portfolios $n$ and let the number of underlying funds per portfolio $n_i \to \infty$. 
-As discussed in Section~\ref{sec:asymptotic_framework}, this conditions inference on the observed macro environment since no new vintage years enter the estimation. Moreover, since each portfolio constitutes a moment condition from the GMM perspective, standard GMM theory requires $n$ to remain fixed \citep{HP06,NW09}. 
+As discussed in Section~\ref{sec:asymptotic_framework}, this conditions inference on the observed macro environment since no new vintage years enter the estimation. Since each portfolio constitutes a moment condition from the GMM perspective, standard GMM theory requires $n$ to remain fixed \citep{HP06,NW09}. 
 In contrast, our increasing domain framework lets the number of vintage years $V \to \infty$ while bounding the number of funds per vintage, enabling inference that reflects cross-vintage variation in economic conditions.
 
 Further, \cite{DLP12} discount all fund cash flows exclusively to the fund inception date, corresponding to $\mathcal{T}_i = \{\min_j t_{i,j}^{\mathrm{Inv}}\}$ in our notation.
@@ -1151,7 +1154,7 @@ Under the simple linear SDF and a 15-year Horizon (maximum month 180), the mean 
 The superiority of the portfolio approach is especially striking when evaluating the entire Horizon curve in Figure \ref{fig:simulation_funds_vs_vyps}.
 Estimates for individual funds are highly unstable, exhibiting severe upward bias at short Horizons ($\hat{\beta}_{\mathrm{MKT}} \approx 1.5$) and deteriorating to negative values at long Horizons.
 In contrast, vintage year portfolios yield substantially more stable estimates that remain within a narrow, economically plausible range around the true value of 1.0.
-Furthermore, the portfolio approach consistently achieves a lower standard deviation across all simulated Horizons, confirming that grouping funds effectively mitigates idiosyncratic noise.
+The portfolio approach consistently achieves a lower standard deviation across all simulated Horizons, confirming that grouping funds effectively mitigates idiosyncratic noise.
 
 This trade-off between bias/variance reduction and sample size has important implications.
 While forming vintage year portfolios substantially improves the accuracy of the estimates, it dramatically reduces the number of cross-sectional units, thereby weakening the relevance of asymptotic approximations.
@@ -1220,11 +1223,11 @@ The simple linear model actually appears slightly better behaved.
 \paragraph{Two-factor models ($q^5$ factors):}
 
 Figure~\ref{fig:sim_q_factors} reports simulation results for two-factor models that pair MKT with each of the four non-market $q^5$ factors (ME, IA, ROE, EG), with true loadings $\beta_{\mathrm{MKT}}=1$ and $\beta_{\mathrm{2nd}}=0.5$.
-A common pattern emerges across all four specifications: the second-factor loading is substantially overestimated at short Horizons and attenuated toward --- or beyond --- the true value at long Horizons, while the market factor absorbs a compensating bias in the opposite direction.
+A common pattern emerges across all four specifications: the second-factor loading is substantially overestimated at short Horizons and attenuated toward (or beyond) the true value at long Horizons, while the market factor absorbs a compensating bias in the opposite direction.
 Estimation variance is markedly larger than in the single-factor case, reflecting the collinearity between correlated factors in a limited cross-section of vintage year portfolios.
 Table~\ref{tab:sim_q5_summary} summarizes the key estimates at the shortest Horizon and at 15 years, which is approximately the bias-minimizing Horizon for most models; we highlight the most notable factor-specific features below.
 
-The ME model is the only specification in which $\hat{\beta}_{\mathrm{2nd}}$ undergoes a sign change (at roughly 17.5~years), declining from $0.86$ to $-0.02$ over the full Horizon range --- a severe attenuation that would qualitatively alter economic conclusions.
+The ME model is the only specification in which $\hat{\beta}_{\mathrm{2nd}}$ undergoes a sign change (at roughly 17.5~years), declining from $0.86$ to $-0.02$ over the full Horizon range, a severe attenuation that would qualitatively alter economic conclusions.
 For the IA model, the second-factor bias is large at short Horizons ($\hat{\beta}_{\mathrm{IA}} \approx 1.06$ vs.\ truth $0.5$) but both loadings converge close to their true values near the 17.5-year Horizon ($\hat{\beta}_{\mathrm{MKT}}=0.97$, $\hat{\beta}_{\mathrm{IA}}=0.52$).
 The EG model exhibits the largest overall estimation variance ($\sigma(\hat{\beta}_{\mathrm{EG}}) \approx 2.0$ at the shortest Horizon) but achieves a reasonably accurate joint estimate around 15--17.5~years ($\hat{\beta}_{\mathrm{MKT}}=0.91$--$1.02$, $\hat{\beta}_{\mathrm{EG}}=0.47$--$0.56$).
 The ROE model is the exception: both loadings remain persistently biased at all Horizons, with $\hat{\beta}_{\mathrm{MKT}}$ never exceeding $0.91$ and $\hat{\beta}_{\mathrm{ROE}}$ never falling below $0.62$.
@@ -1252,7 +1255,7 @@ These results suggest that empirical researchers should exercise caution when in
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.9\textwidth]{simulation/bias_comparison4}
+	\includegraphics[width=0.9\textwidth]{simulation/bias_comparison4zoom}
 	\caption{\textbf{Simulation ($q^5$ factors):} Two-factor models using VYP.}
 	\label{fig:sim_q_factors}
 \end{figure}
@@ -1277,7 +1280,7 @@ We further analyze this puzzling result from a theoretical perspective in Append
 To conclude, our simulation study rationalizes two key practices from the \cite{DLP12} paper: (i) vintage-year portfolio formation helps to improve estimator precision, and (ii) increasing the number of funds per vintage seems more effective in controlling estimator variance than increasing the number of vintages (for i.i.d.\ error terms). 
 Our second finding provides an empirical rationale for the choice of \cite{DLP12} to employ infill asymptotics that let the number of underlying funds per vintage tend to infinity.
 However, our correctly specified scenarios cannot support the assumption of \cite{KN16} that (iii) the exponential affine SDF is superior to the simple linear SDF in a multi-period framework; in fact, their finite-sample bias and variance profiles are remarkably similar.
-Moreover, our simulation study suggests that (iv) averaging pricing errors over multiple dates substantially reduces the severe short-Horizon bias inherent to the original procedure of \cite{DLP12}, which discounts all cash flows exclusively to the fund inception date.
+Our simulation study also suggests that (iv) averaging pricing errors over multiple dates substantially reduces the severe short-Horizon bias inherent to the original procedure of \cite{DLP12}, which discounts all cash flows exclusively to the fund inception date.
 Ultimately, selecting a set of compounding dates $\mathcal{T}$ that spans a significant portion of the fund lifecycle appears to decrease finite-sample bias (and to a lesser extent, variance) more effectively than all other measures combined.
 Appendix \ref{sec:appendix_bias_variance} explains the theoretical foundation of this observation, illustrating how our biased estimator (cf.\ Eq.\ \ref{eq:alpha_decomp}) achieves superior finite-sample properties by exploiting the bias--variance tradeoff.
 
@@ -1364,7 +1367,7 @@ Therefore, drawing on both the simulation evidence and the cross-validation resu
 \begin{table}[htbp]
 	\centering
 	\footnotesize
-	\caption{Empirical Estimates: PE --- Single-Factor (MKT) Model}
+	\caption{Empirical Estimates: PE: Single-Factor (MKT) Model}
 	\label{tab:empirical_pe_mkt}
 	\begin{tabular}{l *{5}{r} *{5}{r}}
 		\toprule
@@ -1432,7 +1435,7 @@ These findings corroborate the simulation-based recommendation to focus on singl
 \begin{table}[htbp]
 	\centering
 	\footnotesize
-	\caption{Empirical Estimates: PE --- MKT + Alpha Model}
+	\caption{Empirical Estimates: PE: MKT + Alpha Model}
 	\label{tab:empirical_pe_alpha}
 	\begin{tabular}{l *{5}{r} *{5}{r}}
 		\toprule
@@ -1480,7 +1483,7 @@ These findings corroborate the simulation-based recommendation to focus on singl
 \begin{table}[htbp]
 	\centering
 	\footnotesize
-	\caption{Empirical Estimates: PE --- MKT + EG Model}
+	\caption{Empirical Estimates: PE: MKT + EG Model}
 	\label{tab:empirical_pe_eg}
 	\begin{tabular}{l *{5}{r} *{5}{r}}
 		\toprule
@@ -1528,7 +1531,7 @@ These findings corroborate the simulation-based recommendation to focus on singl
 \begin{table}[htbp]
 	\centering
 	\footnotesize
-	\caption{Empirical Estimates: PE --- MKT + IA Model}
+	\caption{Empirical Estimates: PE: MKT + IA Model}
 	\label{tab:empirical_pe_ia}
 	\begin{tabular}{l *{5}{r} *{5}{r}}
 		\toprule
@@ -1576,7 +1579,7 @@ These findings corroborate the simulation-based recommendation to focus on singl
 \begin{table}[htbp]
 	\centering
 	\footnotesize
-	\caption{Empirical Estimates: PE --- MKT + ME Model}
+	\caption{Empirical Estimates: PE: MKT + ME Model}
 	\label{tab:empirical_pe_me}
 	\begin{tabular}{l *{5}{r} *{5}{r}}
 		\toprule
@@ -1624,7 +1627,7 @@ These findings corroborate the simulation-based recommendation to focus on singl
 \begin{table}[htbp]
 	\centering
 	\footnotesize
-	\caption{Empirical Estimates: PE --- MKT + ROE Model}
+	\caption{Empirical Estimates: PE: MKT + ROE Model}
 	\label{tab:empirical_pe_roe}
 	\begin{tabular}{l *{5}{r} *{5}{r}}
 		\toprule
@@ -1689,7 +1692,7 @@ These findings corroborate the simulation-based recommendation to focus on singl
 Our generalized Least-Mean-Distance framework provides a flexible theoretical foundation for estimating Stochastic Discount Factor (SDF) models using non-traded cash flows.
 However, our Monte Carlo simulations reveal that semiparametric estimators in this setting face severe finite-sample challenges. 
 Specifically, we demonstrate that the foundational \cite{DLP12} estimator exhibits substantially greater bias and variance than previously recognized, particularly concerning the estimation of abnormal performance ($\alpha$). 
-Crucially, our framework shows that this finite-sample bias can be dramatically mitigated by averaging pricing errors across multiple future dates spanning the fund lifecycle, while estimator variance is most effectively controlled by increasing the number of cross-sectional units ($n$).
+Our framework shows that this finite-sample bias can be dramatically mitigated by averaging pricing errors across multiple future dates spanning the fund lifecycle, while estimator variance is most effectively controlled by increasing the number of cross-sectional units ($n$).
 
 In the data-sparse private equity domain, where estimation relies on a limited cross-section of vintage-year portfolios, asymptotic approximations prove unreliable. 
 We therefore strongly advocate for the use of robust resampling or cross-validation techniques tailored to overlapping cash flow dependencies. 
@@ -1798,7 +1801,7 @@ Hence the asymptotic bias of the average pricing error is entirely determined by
 	\right)
 \end{equation}
 
-The crucial observation is that this covariance is exactly zero when $\tau \leq t_{i,j}^{\mathrm{Inv}}$ (Case~A from Section~\ref{sec:asset_pricing_pooled}).
+The key observation is that this covariance is exactly zero when $\tau \leq t_{i,j}^{\mathrm{Inv}}$ (Case~A from Section~\ref{sec:asset_pricing_pooled}).
 When $\tau \leq t_{i,j}^{\mathrm{Inv}}$, iterated expectations through $\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$ give
 \begin{equation}
 	\mathrm{Cov}\!\left(
@@ -1972,7 +1975,7 @@ The most effective modification is shortening the maximum deal holding period fr
 Combining this holding-period restriction with deterministic investment timing (S9) yields a similar beta estimate ($\hat{\beta}=0.88$) and alpha bias ($0.32\%$), with the deterministic timing contributing only a modest additional effect.
 By limiting the compounding duration, both scenarios restrict the geometric growth of idiosyncratic errors, reducing the frequency of degenerate alpha estimates and partially restoring the accuracy of the market beta.
 However, even the most favorable holding-period scenario (S8) still exhibits substantially more beta attenuation ($\hat{\beta}=0.91$ vs.\ $0.98$) and alpha bias ($0.30\%$ vs.\ $0.05\%$) than the \cite{DLP12} benchmark.
-Furthermore, tightening the alpha upper bound $\bar{\alpha}$ dramatically affects results: at $\bar{\alpha}=0.5\%$ (S6), 32\% of draws hit the bound, and beta is close to the benchmark ($\hat{\beta}=0.87$) --- but at the cost of artificially constraining the alpha search space.
+Tightening the alpha upper bound $\bar{\alpha}$ dramatically affects results: at $\bar{\alpha}=0.5\%$ (S6), 32\% of draws hit the bound, and beta is close to the benchmark ($\hat{\beta}=0.87$), but at the cost of artificially constraining the alpha search space.
 This sensitivity reveals a fundamental tension in the two-factor model: the alpha term absorbs residual nonlinearity that the linear SDF cannot capture, and bounding it arbitrarily distorts the beta estimate.
 
 Overall, the large remaining discrepancy between our simulation results and those of \cite{DLP12}, even after adopting their shifted lognormal errors and simulated market returns, suggests that the favorable small-sample properties reported in \cite{DLP12} may be overly optimistic when the alpha upper bound is set more liberally ($\bar{\alpha}=2\%$/month in our default configuration vs.\ $\bar{\alpha}=1\%$/month in \cite{DLP12}).

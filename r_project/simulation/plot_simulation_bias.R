@@ -533,6 +533,8 @@ plot_single_scenario_bias <- function(bias_file, scenario_id) {
 file <- "simulation/data_out_2026_new/bias_analysis/2026-02-19_190341_bias_by_scenario_horizon.csv"
 file <- "simulation/data_out_2026_new/bias_analysis/2026-02-22_162216_bias_by_scenario_horizon.csv"
 file <- "simulation/data_out_2026_new/bias_analysis/2026-02-24_185813_bias_by_scenario_horizon.csv"
+file <- "simulation/data_out_2026_new/bias_analysis/2026-03-02_113958_bias_by_scenario_horizon.csv"
+
 print(getwd())
 max.mkt <- 1.5 #  1.25
 max.second <- 0.005
@@ -596,4 +598,30 @@ plot_simulation_bias(
     y.min.second = min.second,
 )
 
+# For Presentation
+
+plot_simulation_bias(
+  scenarios = c("base_case_ME", "base_case_IA", "base_case_ROE", "base_case_EG"),
+  bias_file = file,
+  export_pdf = TRUE,
+  export_svg = TRUE,
+  height = 7,
+  output_file = "simulation/figures/bias_comparison4zoom",
+  y.max.mkt = max.mkt,
+  y.min.mkt = min.mkt,
+  y.max.second = 1.5,
+  y.min.second = 0
+)
+plot_simulation_bias(
+  scenarios = c("base_case_zero_alpha", "big_n_v_40funds_alpha", "big_v_10funds_1967_alpha", "big_v_20funds_1967_alpha"),
+  bias_file = file,
+  export_pdf = TRUE,
+  export_svg = TRUE,
+  height = 7,
+  output_file = "simulation/figures/bias_comparison3focused",
+  y.max.mkt = max.mkt,
+  y.max.second = max.second,
+  y.min.mkt = min.mkt,
+  y.min.second = min.second
+)
 
