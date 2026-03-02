@@ -52,7 +52,7 @@
 	
 	\vspace{0.6em}
 	\begin{itemize}
-		\item Goal: recover latent market exposure from non-traded PE cash flow data.
+		\item Goal: recover latent market exposure from PE cash flow data.
 		\item Plan: naive approach first, then semiparametric SDF estimation.
 	\end{itemize}
 	
@@ -106,7 +106,18 @@ Pricing residual at inception $t_{0,i}$:
 \[
 \epsilon_i^{\text{DLP}}(\theta)=\sum_{t=0}^T \Psi_{t}(\theta)\,CF_{i,t}
 \]
-
+Linear Stochastic Discount Factor (SDF):
+{\tiny
+\[
+\Psi_{t}(\alpha, \beta) =
+\frac{1}{
+	\prod_{s=t_{0,i}+1}^{t}
+	\left( 
+	1 + R_{\textbf{riskfree}, s} + \alpha + \beta R_{\text{MKT}, s}
+	\right)
+} 
+\]
+}
 Cross-sectional estimator:
 \[
 \hat\theta_{\text{DLP}}=\arg\min_{\theta\in\Theta}\frac{1}{n}\sum_{i=1}^n\!\left(\epsilon_i^{\text{DLP}}\right)^2
@@ -142,20 +153,6 @@ Nonlinear least-mean-distance:
 \vspace{0.3em}
 {\tiny \textbf{Variables:} $i$: fund index, $t$: cash-flow time, $\tau$: compounding date, $CF_{i,t}$: net cash flow, $\Psi_t(\theta)$: SDF, $\frac{\Psi_t}{\Psi_\tau}$: SDF ratio, $\theta\!\in\!\Theta$: parameters, $\mathcal{T}_i$: compounding-date set, $L$: loss function, $n$: number of units. \textbf{Nesting:}\ set $\mathcal{T}_i=\{t_{0,i}\}$ and $L(x)=x^2$ $\;\Longrightarrow\;$ recovers \cite{DLP12}.}
 
-\end{frame}
-
-\begin{frame}[t]{Estimator: Net Present Value (NPV) vs Net Future Value (NFV)}
-\begin{itemize}
-  \item NPV-only discounting (fund inception) is theoretically unbiased.
-  \item NFV: Adding \textcolor{cyan}{compounding} \textcolor{blue}{horizons $>0$} introduces a \textbf{bias term}. \\
-  $\to$ Definition ``Horizon": We average over all dates up to \textcolor{blue}{$\max (\mathcal{T})$}.
-  \item \textbf{Spoiler:} Finite-sample performance can improve when averaging across future dates.
-\end{itemize}
-
-\begin{center}
-%\includegraphics[width=1\linewidth]{images/NPV1.png}
-\includegraphics[width=0.64\linewidth]{figures/npvs3.pdf}
-\end{center}
 \end{frame}
 
 \begin{frame}[t]{Estimator: Net Present Value (NPV) vs Net Future Value (NFV)}
@@ -232,10 +229,15 @@ Nonlinear least-mean-distance:
 
 \begin{frame}{Empirical: Preqin PE Data \& $q^5$ Public Factors}
 \begin{itemize}
-  \item Preqin Data: 3005 PE funds, vintages 1983--2021.
-  \item Primary unit for estimation: vintage-year portfolios (equal- and value-weighted).
+  \item Preqin Data: 3005 PE funds, vintages 1983--2021. \\
+  Question: Can we include funds from very recent vintages?
   \item Factors: $q^5$ family; focus on MKT and simple two-factor extensions.
-  \item \textcolor{cyan}{Compounding} \textcolor{blue}{horizon} selected from simulation guidance: $\approx$ 15-year baseline.
+   \item Primary unit for estimation: vintage-year portfolios (equal- and value-weighted).
+  \item \textcolor{cyan}{Compounding} \textcolor{blue}{horizon} selection:
+   \begin{itemize}
+    \item Asset-pricing theory consistent with \cite{DLP12}: 0-year horizon.
+  	\item Our simulation guidance: $\approx$ 15-year horizon.
+  \end{itemize}
   \item Benchmark for comparison: 
   \begin{itemize}
 	\item NAV-based naive/Dimson market-exposure estimates from the motivation section.
@@ -254,30 +256,71 @@ Nonlinear least-mean-distance:
 	
 \end{frame}
 
-\begin{frame}{Empirical: 2.\ Single-Factor MKT Model}
+\begin{frame}{Empirical: 2.\ Single-Factor $MKT$ Model}
 \begin{center}
-\includegraphics[width=0.9\linewidth]{figures/empirical_PE_MKT_larger.pdf}
+ %\includegraphics[width=0.9\linewidth]{figures/empirical_PE_MKT_larger.pdf}
+\includegraphics[width=0.5\linewidth]{figures_bovc/empirical_BO_MKT.pdf}
+\includegraphics[width=0.5\linewidth]{figures_bovc/empirical_VC_MKT.pdf}
 \end{center}
 
-\textbf{Singe-factor models:} Dimson beta as lower bound approximation.
+\textbf{Singe-factor models:} Dimson beta as lower bound approximation for 15-year horizon.
 	
 \footnotesize We use empirical vintages until 2010.
 \end{frame}
 
-\begin{frame}[t]{Empirical: 3.\ Two-Factor Models}
+\begin{frame}[t]{Empirical: 3.\ Two-Factor $\alpha + MKT$ Model}
+	
 \begin{center}
-\includegraphics[width=0.95\linewidth]{figures/empirical_PE_all_factors.pdf}
+%\includegraphics[width=0.95\linewidth]{figures/empirical_PE_Alpha.pdf}
+\includegraphics[width=0.45\linewidth]{figures_bovc/empirical_BO_Alpha.pdf}
+\includegraphics[width=0.45\linewidth]{figures_bovc/empirical_VC_Alpha.pdf}
 \end{center}
 
-\textbf{Two-factor models:} Apply machine-learning methods to form ``stronger learner."
+\textbf{Two-factor model:} The estimates for  $\alpha$ and $\beta$ seem unreliable.
 
 \footnotesize We use empirical vintages until 2010.
 \end{frame}
 
 
-\begin{frame}[t]{Empirical: 4.\ Results from \cite{DLP12}}
+\begin{frame}[t]{Empirical: 4.\ Results Reported by \cite{DLP12}}
+	
+For VC funds, \cite{DLP12} report an annualized $\alpha$ of 
+\vspace{0.25em}
+\begin{itemize}
+	\item -12.3\% \hspace{0.5em} in the $\alpha+MKT$ model,
+	\item -8.5\% \hspace{1em} in the $\alpha+MKT+SMB+HML$ model.
+\end{itemize}
 
-TODO: add small table with Driessen et al. 2012 empirical results for BO and VC.
+\vspace{0.5em}
+
+For BO funds, \cite{DLP12} report an annualized $\alpha$ of 
+\vspace{0.25em}
+\begin{itemize}
+	\item -4.8\% \hspace{1em} in the $\alpha+MKT$ model,
+	\item -11.0\% \hspace{0.6em} in the $\alpha+MKT+SMB+HML$ model.
+\end{itemize}
+
+
+\vspace{0.25em}
+
+{\small
+\begin{center}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llcccc}
+\toprule
+Type & Model & $\alpha$ (monthly) & $\beta_{MKT}$ & $\beta_{SMB}$ & $\beta_{HML}$ \\
+\midrule
+VC & $\alpha$ + MKT & $-1.09^{***}$ (0.21) & $2.73^{***}$ (0.55) & -- & -- \\
+VC & $\alpha$ + MKT + SMB + HML & $-0.74^{*}$ (0.41) & $2.37^{***}$ (0.55) & 0.94 (0.65) & -0.24 (0.67) \\
+BO & $\alpha$ + MKT & -0.41 (0.58) & $1.31^{**}$ (0.66) & -- & -- \\
+BO & $\alpha$ + MKT + SMB + HML & -0.97 (0.70) & $1.71^{***}$ (0.65) & -0.92 (0.65) & 1.43 (1.17) \\
+\bottomrule
+\end{tabular}
+\end{center}
+}
+
+\vspace{0.25em}
+\tiny Source: \cite{DLP12}, Table 5, Panel A (net-of-fee cash flows). Standard errors in parentheses are bootstrap SEs; stars follow the original significance notation. Based on \cite{FF15} factors.
 
 \end{frame}
 
@@ -539,6 +582,33 @@ VC Global & 5 & 5 & 5 \\
 	\textbf{Takeaway:} No robust finite-sample superiority of exponential affine SDF in this setting. \\
 	\footnotesize SDF model comparison: \cite{KN16} vs \cite{DLP12}
 \end{frame}
+
+\begin{frame}[t]{Estimator: Net Present Value (NPV) vs Net Future Value (NFV)}
+	\begin{itemize}
+		\item NPV-only discounting (fund inception) is theoretically unbiased.
+		\item NFV: Adding \textcolor{cyan}{compounding} \textcolor{blue}{horizons $>0$} introduces a \textbf{bias term}. \\
+		$\to$ Definition ``Horizon": We average over all dates up to \textcolor{blue}{$\max (\mathcal{T})$}.
+		\item \textbf{Spoiler:} Finite-sample performance can improve when averaging across future dates.
+	\end{itemize}
+	
+	\begin{center}
+		%\includegraphics[width=1\linewidth]{images/NPV1.png}
+		\includegraphics[width=0.64\linewidth]{figures/npvs3.pdf}
+	\end{center}
+\end{frame}
+
+\begin{frame}[t]{Empirical: 3b.\ Two-Factor Models}
+	\begin{center}
+		\includegraphics[width=0.95\linewidth]{figures/empirical_PE_all_factors.pdf}
+	\end{center}
+	
+	\textbf{Two-factor models:} Apply machine-learning methods to form ``stronger learner."
+	
+	\footnotesize We use empirical vintages until 2010.
+\end{frame}
+
+
+
 
 
 \end{document}

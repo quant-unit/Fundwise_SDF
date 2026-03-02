@@ -101,7 +101,12 @@ The `make.vintage.summary` function analyzes the temporal distribution of the fu
 
 ```{r vintage_summary}
 make.vintage.summary <- function(asset.class = "Private Equity") {
-    df <- df.xl[df.xl$ASSET.CLASS == asset.class, ]
+  
+    if (asset.class == "Buyout") {
+          df <- df.xl[df.xl$STRATEGY == asset.class, ]
+    } else {
+          df <- df.xl[df.xl$ASSET.CLASS == asset.class, ]
+    }
     df <- df[!duplicated(df$FUND.ID), ]
 
     # Create the frequency table
@@ -137,6 +142,9 @@ make.vintage.summary <- function(asset.class = "Private Equity") {
     print(msg)
 }
 make.vintage.summary("Private Equity")
+make.vintage.summary("Buyout")
+make.vintage.summary("Venture Capital")
+
 ```
 
 # Core Methodology: Cash Flow Construction

@@ -278,7 +278,7 @@ plot_empirical_estimates <- function(
                 expand = c(0.02, 0)
             ) +
             labs(
-                title = if (cf == "MKT") "MKT (Single Factor)" else paste0("MKT (", cf, " Model)"),
+                title = if (cf == "MKT") paste0(fund_type, " - MKT (Single Factor)") else paste0(fund_type, " - MKT (", cf, " Model)"),
                 x = if (has_second_factor && !single_factor_only) NULL else "Horizon (Years)",
                 y = if (i == 1) expression(beta[MKT]) else NULL
             ) +
@@ -1641,7 +1641,7 @@ file.folder <- "results/data_out_2026-emp-max-vin-2019"
 file.folder <- "data_out_2026_02_26"
 out.folder <- "figures"
 
-# # Two-factor model with all factors
+# # Two-factor models with all factors
 plot_empirical_estimates(
     data_dir = file.folder,
     fund_type = "PE",
@@ -1653,6 +1653,20 @@ plot_empirical_estimates(
     y.lim.second = list(Alpha = c(-0.01, 0.01)),
     main.linewidth = 1,
     output_file = paste0(out.folder, "/empirical_PE_all_factors")
+)
+
+# # Two-factor model with only Alpha
+plot_empirical_estimates(
+  data_dir = file.folder,
+  fund_type = "PE",
+  factors = c("Alpha"),
+  export_pdf = TRUE,
+  export_csv = TRUE,
+  export_latex = TRUE,
+  y.max.mkt = 1.5, y.min.mkt = -0.25,
+  y.lim.second = list(Alpha = c(-0.005, 0.01)),
+  main.linewidth = 1.5,
+  output_file = paste0(out.folder, "/empirical_PE_Alpha")
 )
 
 # Single-factor model with MKT only
@@ -1758,6 +1772,109 @@ plot_max_vintage_cutoff(
     output_file = paste0(out.folder, "/max_vintage_PE_NC50_all_factors")
 )
 
+
+### Buyout (BO) and Venture Capital (VC)
+
+file.folder <- "data_out_2026_02_26"
+out.folder <- "figures_bovc"
+
+# BO: Two-factor model with only Alpha
+plot_empirical_estimates(
+  data_dir = file.folder,
+  fund_type = "BO",
+  factors = c("Alpha"),
+  export_pdf = TRUE,
+  export_csv = TRUE,
+  export_latex = TRUE,
+  width = 7,
+  y.max.mkt = 2.5, y.min.mkt =-0.5,
+  y.lim.second = list(Alpha = c(-0.02, 0.02)),
+  main.linewidth = 1.5,
+  cex = 0.9,
+  output_file = paste0(out.folder, "/empirical_BO_Alpha")
+)
+
+# BO: Single-factor model with MKT only
+plot_empirical_estimates(
+  data_dir = file.folder,
+  fund_type = "BO",
+  factors = c("MKT"),
+  export_pdf = TRUE,
+  export_csv = TRUE,
+  export_latex = TRUE,
+  height = 4, width = 7,
+  y.max.mkt = 2.5, y.min.mkt = -0.5,
+  main.linewidth = 1.5,
+  cex = 0.9,
+  # y.lim.second = list(Alpha = c(-0.01, 0.01)),
+  output_file = paste0(out.folder, "/empirical_BO_MKT")
+)
+
+# BO Combined MKT Max vintage-year cutoff analysis (100% NAV and 50% NAV-discount)
+plot_max_vintage_cutoff_combined_mkt(
+  data_dir = file.folder,
+  fund_type = "BO",
+  vintages = 2011:2021,
+  nc_tags = c("", "_NC50"),
+  nc_labels = c("100% NAV as Cashflow", "50% NAV-discount sample"),
+  export_pdf = TRUE,
+  export_svg = TRUE,
+  export_csv = TRUE,
+  width = 14,
+  height = 4,
+  y.max.mkt = 2.5, y.min.mkt = 0,
+  main.linewidth = 0.8,
+  output_file = paste0(out.folder, "/max_vintage_BO_MKT_combined_NC")
+)
+
+# VC: Two-factor model with only Alpha
+plot_empirical_estimates(
+  data_dir = file.folder,
+  fund_type = "VC",
+  factors = c("Alpha"),
+  export_pdf = TRUE,
+  export_csv = TRUE,
+  export_latex = TRUE,
+  width = 7,
+  y.max.mkt = 2.5, y.min.mkt = -0.5,
+  y.lim.second = list(Alpha = c(-0.02, 0.02)),
+  main.linewidth = 1.5,
+  cex = 0.9,
+  output_file = paste0(out.folder, "/empirical_VC_Alpha")
+)
+
+# VC: Single-factor model with MKT only
+plot_empirical_estimates(
+  data_dir = file.folder,
+  fund_type = "VC",
+  factors = c("MKT"),
+  export_pdf = TRUE,
+  export_csv = TRUE,
+  export_latex = TRUE,
+  height = 4, width = 7,
+  y.max.mkt = 2.5, y.min.mkt = -0.5,
+  main.linewidth = 1.5,
+  cex = 0.9,
+  # y.lim.second = list(Alpha = c(-0.01, 0.01)),
+  output_file = paste0(out.folder, "/empirical_VC_MKT")
+)
+
+# VC Combined MKT Max vintage-year cutoff analysis (100% NAV and 50% NAV-discount)
+plot_max_vintage_cutoff_combined_mkt(
+  data_dir = file.folder,
+  fund_type = "VC",
+  vintages = 2011:2021,
+  nc_tags = c("", "_NC50"),
+  nc_labels = c("100% NAV as Cashflow", "50% NAV-discount sample"),
+  export_pdf = TRUE,
+  export_svg = TRUE,
+  export_csv = TRUE,
+  width = 14,
+  height = 4,
+  y.max.mkt = 2.5, y.min.mkt = 0,
+  main.linewidth = 0.8,
+  output_file = paste0(out.folder, "/max_vintage_VC_MKT_combined_NC")
+)
 
 
 ### PRESENTATION
