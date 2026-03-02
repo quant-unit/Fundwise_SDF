@@ -1791,6 +1791,7 @@ plot_empirical_estimates(
   y.lim.second = list(Alpha = c(-0.02, 0.02)),
   main.linewidth = 1.5,
   cex = 0.9,
+  h.lines = c(0.647399009343063), # alpha quarterly 0.0194438416743136
   output_file = paste0(out.folder, "/empirical_BO_Alpha")
 )
 
@@ -1806,6 +1807,7 @@ plot_empirical_estimates(
   y.max.mkt = 2.5, y.min.mkt = -0.5,
   main.linewidth = 1.5,
   cex = 0.9,
+  h.lines = c(0.769855673660812),
   # y.lim.second = list(Alpha = c(-0.01, 0.01)),
   output_file = paste0(out.folder, "/empirical_BO_MKT")
 )
@@ -1840,6 +1842,7 @@ plot_empirical_estimates(
   y.lim.second = list(Alpha = c(-0.02, 0.02)),
   main.linewidth = 1.5,
   cex = 0.9,
+  h.lines = c(0.97551979450791), # alpha quarterly -0.00390550172544275
   output_file = paste0(out.folder, "/empirical_VC_Alpha")
 )
 
@@ -1855,6 +1858,7 @@ plot_empirical_estimates(
   y.max.mkt = 2.5, y.min.mkt = -0.5,
   main.linewidth = 1.5,
   cex = 0.9,
+  hlines = c(0.925920685301403),
   # y.lim.second = list(Alpha = c(-0.01, 0.01)),
   output_file = paste0(out.folder, "/empirical_VC_MKT")
 )

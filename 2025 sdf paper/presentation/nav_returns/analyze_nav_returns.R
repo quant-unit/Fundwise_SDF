@@ -383,29 +383,34 @@ dimson_alpha_all <- lag_lookup %>%
   ungroup() %>%
   select(series, alpha_q)
 
-acf_global <- nav_returns %>%
-  filter(series == "PE Global") %>%
-  arrange(date)
+build_acf_panel <- function(df_ret, series_name, lag_max, bar_color) {
+  d <- df_ret %>%
+    filter(series == series_name) %>%
+    arrange(date)
+  acf_obj <- acf(d$nav_ret, lag.max = lag_max, plot = FALSE)
+  acf_plot_df <- tibble(
+    lag = 1:lag_max,
+    acf = as.numeric(acf_obj$acf)[2:(lag_max + 1)]
+  )
+  acf_crit <- 1.96 / sqrt(nrow(d))
 
-acf_obj <- acf(acf_global$nav_ret, lag.max = max_lag, plot = FALSE)
-acf_plot_df <- tibble(
-  lag = 1:max_lag,
-  acf = as.numeric(acf_obj$acf)[2:(max_lag + 1)]
-)
-acf_crit <- 1.96 / sqrt(nrow(acf_global))
+  ggplot(acf_plot_df, aes(x = lag, y = acf)) +
+    geom_col(fill = bar_color, width = 0.6) +
+    geom_hline(yintercept = 0, color = "grey35", linewidth = 0.3) +
+    geom_hline(yintercept = c(-acf_crit, acf_crit), linetype = "dashed", color = "firebrick") +
+    scale_x_continuous(breaks = 1:lag_max) +
+    labs(
+      title = paste0("ACF of ", series_name, " Quarterly NAV Returns"),
+      subtitle = sprintf("Dashed lines: +/- 1.96/sqrt(N), N = %d", nrow(d)),
+      x = "Lag (quarters)",
+      y = "Autocorrelation"
+    ) +
+    theme_minimal(base_size = 11)
+}
 
-p_acf <- ggplot(acf_plot_df, aes(x = lag, y = acf)) +
-  geom_col(fill = "#1f78b4", width = 0.6) +
-  geom_hline(yintercept = 0, color = "grey35", linewidth = 0.3) +
-  geom_hline(yintercept = c(-acf_crit, acf_crit), linetype = "dashed", color = "firebrick") +
-  scale_x_continuous(breaks = 1:max_lag) +
-  labs(
-    title = "ACF of PE Global Quarterly NAV Returns",
-    subtitle = sprintf("Dashed lines: +/- 1.96/sqrt(N), N = %d", nrow(acf_global)),
-    x = "Lag (quarters)",
-    y = "Autocorrelation"
-  ) +
-  theme_minimal(base_size = 11)
+p_acf <- build_acf_panel(nav_returns, "PE Global", max_lag, "#1f78b4")
+p_acf_bo <- build_acf_panel(nav_returns, "Buyout Global", max_lag, "#1f78b4")
+p_acf_vc <- build_acf_panel(nav_returns, "VC Global", max_lag, "#6baed6")
 
 beta_plot_df <- dimson_summary %>%
   left_join(dimson_alpha_all, by = "series") %>%
@@ -482,6 +487,73 @@ p_beta_no_intercept <- ggplot(beta_plot_df_no_intercept, aes(x = series_label, y
 
 combined_plot_no_intercept <- p_acf + p_beta_no_intercept + plot_layout(widths = c(1, 1.2))
 
+beta_plot_side_no_intercept <- dimson_summary_no_intercept %>%
+  mutate(series_label = paste0(series, " (L=", dimson_lags, ")")) %>%
+  select(series_label, beta_naive, beta_dimson) %>%
+  pivot_longer(cols = c(beta_naive, beta_dimson), names_to = "method", values_to = "beta") %>%
+  mutate(method = recode(
+    method,
+    beta_naive = "Naive OLS (lag 0)",
+    beta_dimson = "Dimson sum(beta_0...beta_L)"
+  ))
+
+p_beta_side_no_intercept <- ggplot(beta_plot_side_no_intercept, aes(x = series_label, y = beta, fill = method)) +
+  geom_col(position = position_dodge(width = 0.75), width = 0.65) +
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.2)) +
+  coord_flip() +
+  scale_fill_manual(values = c("Naive OLS (lag 0)" = "#33a02c", "Dimson sum(beta_0...beta_L)" = "#ff7f00")) +
+  labs(
+    title = "MKT-Only (No Intercept)",
+    subtitle = "Target: R_PE - R_F",
+    x = NULL,
+    y = "Estimated beta",
+    fill = NULL
+  ) +
+  theme_minimal(base_size = 10) +
+  theme(legend.position = "bottom")
+
+beta_plot_side_intercept <- dimson_summary %>%
+  left_join(dimson_alpha_all, by = "series") %>%
+  mutate(series_label = paste0(series, " (L=", dimson_lags, ")")) %>%
+  select(series_label, beta_naive, beta_dimson) %>%
+  pivot_longer(cols = c(beta_naive, beta_dimson), names_to = "method", values_to = "beta") %>%
+  mutate(method = recode(
+    method,
+    beta_naive = "Naive OLS (lag 0)",
+    beta_dimson = "Dimson sum(beta_0...beta_L)"
+  ))
+
+beta_side_intercept_label_expr <- dimson_summary %>%
+  left_join(dimson_alpha_all, by = "series") %>%
+  mutate(
+    series_label = paste0(series, " (L=", dimson_lags, ")"),
+    alpha_pct = ifelse(is.finite(alpha_q), sprintf("%.3f%%", 100 * alpha_q), "NA"),
+    label_expr = paste0("atop('", series_label, "', alpha[q]=='", alpha_pct, "')")
+  ) %>%
+  select(series_label, label_expr)
+
+p_beta_side_intercept <- ggplot(beta_plot_side_intercept, aes(x = series_label, y = beta, fill = method)) +
+  geom_col(position = position_dodge(width = 0.75), width = 0.65) +
+  scale_x_discrete(
+    labels = function(x) {
+      parse(text = beta_side_intercept_label_expr$label_expr[match(x, beta_side_intercept_label_expr$series_label)])
+    }
+  ) +
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, by = 0.2)) +
+  coord_flip() +
+  scale_fill_manual(values = c("Naive OLS (lag 0)" = "#b2df8a", "Dimson sum(beta_0...beta_L)" = "#fb9a99")) +
+  labs(
+    title = "MKT + Alpha (With Intercept)",
+    subtitle = "Target: R_PE - R_F; labels include quarterly alpha",
+    x = NULL,
+    y = "Estimated beta",
+    fill = NULL
+  ) +
+  theme_minimal(base_size = 10) +
+  theme(legend.position = "bottom")
+
+dimson_side_by_side <- p_beta_side_no_intercept + p_beta_side_intercept + plot_layout(widths = c(1, 1))
+
 twofactor_plot_df <- bind_rows(
   dimson_alpha_mkt_summary %>%
     transmute(
@@ -530,6 +602,10 @@ plot_path <- file.path(fig_dir, "motivating_nav_acf_dimson.pdf")
 ggsave(plot_path, combined_plot, width = 12, height = 5.8)
 plot_no_intercept_path <- file.path(fig_dir, "motivating_nav_acf_dimson_no_intercept.pdf")
 ggsave(plot_no_intercept_path, combined_plot_no_intercept, width = 12, height = 5.8)
+plot_acf_bo_vc_path <- file.path(fig_dir, "motivating_acf_buyout_vc.pdf")
+ggsave(plot_acf_bo_vc_path, p_acf_bo + p_acf_vc + plot_layout(widths = c(1, 1)), width = 12, height = 5.8)
+plot_dimson_side_path <- file.path(fig_dir, "motivating_dimson_side_by_side.pdf")
+ggsave(plot_dimson_side_path, dimson_side_by_side, width = 12, height = 5.8)
 plot_twofactor_path <- file.path(fig_dir, "dimson_alpha_mkt_fundtypes_square.pdf")
 ggsave(plot_twofactor_path, p_twofactor, width = 7, height = 7)
 
@@ -589,4 +665,6 @@ cat(sprintf("- %s\n", file.path(out_dir, "dimson_alpha_mkt_fundtypes_summary.csv
 cat(sprintf("- %s\n", file.path(out_dir, "analysis_report.txt")))
 cat(sprintf("- %s\n", plot_path))
 cat(sprintf("- %s\n", plot_no_intercept_path))
+cat(sprintf("- %s\n", plot_acf_bo_vc_path))
+cat(sprintf("- %s\n", plot_dimson_side_path))
 cat(sprintf("- %s\n", plot_twofactor_path))
