@@ -93,9 +93,9 @@ The authors alone are responsible for the content and writing of the paper.
 	This paper introduces a unified semiparametric framework for estimating stochastic discount factors (SDF) on non-traded cash flow streams, generalizing the popular approaches of \cite{DLP12} and \cite{KN16}. 
 	Our nonlinear least-mean-distance estimator is accompanied by a spatial asymptotic inference framework that accounts for the near-epoch dependence of overlapping private equity funds. 
 	Using Monte Carlo simulations, we demonstrate that finite-sample bias can be substantially mitigated by averaging pricing errors over extended compounding horizons, exploiting a Timing Risk Premium, and by aggressively aggregating cross-sectional data into seasoned vintage-year portfolios. 
-	Empirically, we analyze a comprehensive private equity dataset and reveal two critical data constraints: 
-	First, including recent, unseasoned vintages severely inflates market beta estimates to 1.05 and 1.12 (for equal- and value-weighted portfolios, respectively) due to an outsized mechanical reliance on reported net asset values. 
-	When constraining the sample to heavily seasoned funds at a bias-minimizing 15-year horizon, we estimate an attenuated market beta of 0.84 and 0.73, respectively.
+	Empirically, we analyze a comprehensive private equity dataset covering Buyout (BO) and Venture Capital (VC) funds and reveal two critical data constraints: 
+	First, including recent, unseasoned vintages severely inflates market beta estimates due to an outsized mechanical reliance on reported net asset values. 
+	When constraining the sample to heavily seasoned funds at a bias-minimizing 15-year horizon, we estimate an attenuated market beta of 0.79 and 0.80 for equal- and value-weighted Buyout portfolios, respectively, and 1.26 and 1.05 for Venture Capital.
 	Second, multi-factor models and abnormal performance ($\alpha$) intercepts prove fundamentally fragile due to severe finite-sample noise. 
 	Consequently, we conclude that semiparametric SDF evaluation should currently be restricted to single-factor market models until substantially more seasoned, cross-sectional private market data becomes available.
 }
@@ -125,18 +125,19 @@ While this bias can be mitigated by increasing the cross-sectional sample size, 
 Instead, we demonstrate that by generalizing the estimator to average pricing errors over multiple, non-optimal discounting dates, researchers can deliberately introduce a Timing Risk Premium that effectively offsets this finite-sample bias, dramatically improving the estimates in small samples (in our simulation study).
 
 In the empirical application of our new estimator, we evaluate simple linear and exponential affine SDF models utilizing the well-known Preqin cash flow database across a grid of compounding horizons.
-While evaluating multi-factor models proves unreasonable given high estimator variance, our single-factor market models yield stable and economically meaningful estimates. 
-At a bias-minimizing 15-year horizon upon seasoned vintage years, we estimate a market beta of 0.84 and 0.73 for equal- and value-weighted Private Equity portfolios, respectively. 
+While evaluating multi-factor models proves unreasonable given high estimator variance, our single-factor market models yield stable and economically meaningful estimates for both Buyout and Venture Capital funds. 
+At a bias-minimizing 15-year horizon upon seasoned vintage years, we estimate a market beta of 0.79 and 0.80 for equal- and value-weighted Buyout portfolios, and 1.26 and 1.05 for Venture Capital, respectively. 
 While our rigorous asymptotic inference framework yields conservative standard errors, $hv$-block cross-validation confirms that these market beta estimates remain highly statistically significant. 
 We document that the inherent estimator variance limiting multi-factor approaches can only be partially overcome by forming portfolios with a larger number of cross-sectional units per vintage year, highlighting a fundamental data constraint in modern private market asset pricing.
 
 The paper is structured as follows. 
 Section \ref{sec:literature} reviews the related literature.
 Section \ref{sec:spatial_sdf_methodology} introduces our semiparametric LMD estimator and its corresponding asymptotic inference framework.
-Section \ref{sec:empirical_application} applies the method to estimate $q^5$-investment-factor SDFs for private equity fund data using simulated and real-world cash flows.
+Section \ref{sec:empirical_application} applies the method to estimate $q^5$-investment-factor SDFs for private equity fund data using simulated and real-world cash flows, with Buyout and Venture Capital results presented in Section~\ref{sec:empirical_results_bovc}.
 Section \ref{sec:conclusion} concludes.
 Appendix \ref{sec:appendix_bias_variance} analyzes the bias--variance tradeoff in the context of our SDF estimation problem.
 Appendix \ref{sec:dlp_results_comparison} compares our simulation and empirical results to their \cite{DLP12} counterparts.
+Appendix \ref{sec:empirical_results_pe} replicates the empirical analysis for aggregate Private Equity funds.
 
 \subsection{Related Literature}
 \label{sec:literature}
@@ -1166,7 +1167,7 @@ To assess our estimator's bias and variance, we simulate 1000 test scenarios for
 \paragraph{Cross-sectional unit $i$:}
 
 As anticipated in Subsection \ref{sec:asymptotic_framework}, vintage year portfolios demonstrate lower bias and variance than individual funds.
-Under the simple linear SDF and a 15-year Horizon (maximum month 180), the mean (standard deviation) of the coefficient estimate $\hat{\beta}_{\mathrm{MKT}}$ is 0.966 (0.188) for vintage year portfolios, compared to 0.876 (0.353) for individual funds. 
+Under the simple linear SDF and a 15-year Horizon (maximum month 180), the mean (standard deviation) of the coefficient estimate $\hat{\beta}_{\mathrm{MKT}}$ is 0.966 (0.188) for vintage year portfolios, compared to 0.887 (0.359) for individual funds. 
 The superiority of the portfolio approach is especially striking when evaluating the entire Horizon curve in Figure \ref{fig:simulation_funds_vs_vyps}.
 Estimates for individual funds are highly unstable, exhibiting severe upward bias at short Horizons ($\hat{\beta}_{\mathrm{MKT}} \approx 1.5$) and deteriorating to negative values at long Horizons.
 In contrast, vintage year portfolios yield substantially more stable estimates that remain within a narrow, economically plausible range around the true value of 1.0.
@@ -1224,7 +1225,7 @@ For the two-factor (MKT+Alpha) model at this same 12.5-year Horizon, both functi
 In the two-factor case, the market beta bias is actually minimized later, around the 20-year Horizon ($\hat{\beta}_{\mathrm{MKT}} \approx 0.97$, $\hat{\alpha} \approx -0.0002$).
 
 However, a salient difference emerges at extremely short compounding Horizons.
-At a 1-month Horizon (resembling an NPV-only discounting framework), the exponential affine formulation deteriorates much more severely in both models, manifesting a larger upward bias (e.g., in the single-factor case, $\hat{\beta}_{\mathrm{MKT}} = 1.21$ vs.\ $1.13$) and elevated variance ($0.43$ vs.\ $0.27$) compared to the linear model.
+At a 1-month Horizon (resembling an NPV-only discounting framework), the exponential affine formulation deteriorates much more severely in both models, manifesting a larger upward bias (e.g., in the single-factor case, $\hat{\beta}_{\mathrm{MKT}} = 1.21$ vs.\ $1.13$) and elevated variance ($0.39$ vs.\ $0.27$) compared to the linear model.
 Overall, the perceived superiority of exponential affine SDFs \citep{GM07,BMP08} does not translate into empirical finite-sample advantages in our framework.
 The simple linear model actually appears slightly better behaved.
 
@@ -1244,8 +1245,8 @@ Estimation variance is markedly larger than in the single-factor case, reflectin
 Table~\ref{tab:sim_q5_summary} summarizes the key estimates at the shortest Horizon and at 15 years, which is approximately the bias-minimizing Horizon for most models; we highlight the most notable factor-specific features below.
 
 The ME model is the only specification in which $\hat{\beta}_{\mathrm{2nd}}$ undergoes a sign change (at roughly 17.5~years), declining from $0.86$ to $-0.02$ over the full Horizon range, a severe attenuation that would qualitatively alter economic conclusions.
-For the IA model, the second-factor bias is large at short Horizons ($\hat{\beta}_{\mathrm{IA}} \approx 1.06$ vs.\ truth $0.5$) but both loadings converge close to their true values near the 17.5-year Horizon ($\hat{\beta}_{\mathrm{MKT}}=0.97$, $\hat{\beta}_{\mathrm{IA}}=0.52$).
-The EG model exhibits the largest overall estimation variance ($\sigma(\hat{\beta}_{\mathrm{EG}}) \approx 2.0$ at the shortest Horizon) but achieves a reasonably accurate joint estimate around 15--17.5~years ($\hat{\beta}_{\mathrm{MKT}}=0.91$--$1.02$, $\hat{\beta}_{\mathrm{EG}}=0.47$--$0.56$).
+The IA model exhibits a large second-factor bias at short Horizons ($\hat{\beta}_{\mathrm{IA}} \approx 1.06$ vs.\ truth $0.5$) but both loadings converge close to their true values near the 17.5-year Horizon ($\hat{\beta}_{\mathrm{MKT}}=0.97$, $\hat{\beta}_{\mathrm{IA}}=0.52$).
+The EG model exhibits the largest overall estimation variance ($\sigma(\hat{\beta}_{\mathrm{EG}}) \approx 1.5$ at the shortest Horizon) but achieves a reasonably accurate joint estimate around 15--17.5~years ($\hat{\beta}_{\mathrm{MKT}}=0.91$--$1.02$, $\hat{\beta}_{\mathrm{EG}}=0.47$--$0.56$).
 The ROE model is the exception: both loadings remain persistently biased at all Horizons, with $\hat{\beta}_{\mathrm{MKT}}$ never exceeding $0.91$ and $\hat{\beta}_{\mathrm{ROE}}$ never falling below $0.62$.
 These results suggest that empirical researchers should exercise caution when interpreting two-factor SDF estimates for private equity, and that the bias-minimizing Horizon is model-dependent, typically falling in the 12.5--17.5-year range.
 
@@ -1258,10 +1259,10 @@ These results suggest that empirical researchers should exercise caution when in
 		\cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7} \cmidrule(lr){8-9}
 		Model & 0\,yr & 15\,yr & 0\,yr & 15\,yr & 0\,yr & 15\,yr & 0\,yr & 15\,yr \\
 		\midrule
-		ME\,+\,MKT  & 1.15 &  0.97  &  0.86  & 0.59 & 0.28 & 0.21 &  0.46  &  0.40  \\
-		IA\,+\,MKT  & 0.97 &  0.92  &  1.06  & 0.64 & 0.34 & 0.30 &  0.80  &  0.53  \\
-		ROE\,+\,MKT & 0.84 &  0.83  &  1.04  & 0.69 & 0.43 & 0.49 &  0.72  &  0.49  \\
-		EG\,+\,MKT  & 0.87 &  0.91  &  1.04  & 0.56 & 0.65 & 0.45 &  2.00  &  0.31  \\
+		ME\,+\,MKT  & 1.15 &  0.97  &  0.87  & 0.59 & 0.28 & 0.21 &  0.46  &  0.40  \\
+		IA\,+\,MKT  & 0.97 &  0.92  &  1.06  & 0.64 & 0.34 & 0.30 &  0.74  &  0.53  \\
+		ROE\,+\,MKT & 0.88 &  0.83  &  0.98  & 0.69 & 0.43 & 0.49 &  0.61  &  0.49  \\
+		EG\,+\,MKT  & 0.87 &  0.91  &  0.99  & 0.56 & 0.61 & 0.45 &  1.53  &  0.31  \\
 		\bottomrule
 		\multicolumn{9}{l}{\footnotesize True values: $\beta_{\mathrm{MKT}}=1$, $\beta_{\mathrm{2nd}}=0.5$.}
 	\end{tabular}
@@ -1315,8 +1316,8 @@ Appendix \ref{sec:appendix_bias_variance} explains the theoretical foundation of
 
 Following the conclusions from the simulation study, we use the Preqin data from Section \ref{sec:data} and form vintage-year portfolios (VYPs) to estimate simple linear SDF models for the Buyout (BO) and Venture Capital (VC) sub-samples individually.
 For each model specification, we report both asymptotic standard errors (SE$_A$) and $hv$-block cross-validation standard errors (SE$_{CV}$).
-We focus the presentation on PE (i.e., mainly Buyout and Growth) as our primary fund type and report both equal-weighted (EW) and value-weighted (FW) estimates across a grid of compounding Horizons.
-Throughout this subsection, $t_A$ and $t_{CV}$ denote the $t$-ratios based on asymptotic and cross-validation standard errors, respectively\footnote{All R code and data are available in an online repository: \url{https://github.com/quant-unit/Fundwise_SDF/tree/master/r_project}.}.
+We analyze BO and VC as two distinct asset classes with fundamentally different risk profiles and report both equal-weighted (EW) and value-weighted (FW) estimates across a grid of compounding Horizons.
+Throughout this section, $t_A$ and $t_{CV}$ denote the $t$-ratios based on asymptotic and cross-validation standard errors, respectively\footnote{All R code and data are available in an online repository: \url{https://github.com/quant-unit/Fundwise_SDF/tree/master/r_project}.}.
 
 
 
@@ -1324,12 +1325,12 @@ Throughout this subsection, $t_A$ and $t_{CV}$ denote the $t$-ratios based on as
 \subsection{The impact of unseasoned funds and reported NAVs}
 \label{sec:empirical_vintage_cutoffs_bovc}
 
-Figure~\ref{fig:max_vintage_BOVC_MKT} reproduces the vintage-year cutoff sensitivity analysis from Section~\ref{sec:empirical_vintage_cutoffs} separately for BO and VC.
+Figure~\ref{fig:max_vintage_BOVC_MKT} presents the vintage-year cutoff sensitivity analysis separately for BO and VC (an analogous analysis for aggregate PE is reported in Appendix~\ref{sec:empirical_vintage_cutoffs}).
 The same upward-drift pattern documented for PE is clearly present in both sub-samples: as more recent, unseasoned vintages are included, the estimated market beta increases monotonically.
 For BO under equal weighting, $\hat{\beta}_{\mathrm{MKT}}$ rises from approximately 0.87 with a 2011 vintage cutoff to roughly 1.05 with the full sample (2021); the value-weighted estimates show an analogous but slightly more pronounced increase.
 For VC, the drift is even more severe in absolute terms due to the higher baseline beta: the EW estimate climbs from approximately 1.35 (2011 cutoff) through 1.85 with the full sample.
 As with PE, discounting all final NAVs by 50\% eliminates the upward trend and confirms that the drift is attributable to the outsized mechanical reliance on subjectively reported Net Asset Values for young funds.
-These findings reinforce the sample restriction to the 2010 maximum vintage year applied throughout the remainder of this appendix.
+These findings reinforce the sample restriction to the 2010 maximum vintage year applied throughout the remainder of this section.
 
 \begin{figure}[htbp]
 	\centering
@@ -1353,7 +1354,7 @@ Tables~\ref{tab:empirical_bo_mkt}--\ref{tab:empirical_vc_mkt} and Figure~\ref{fi
 As expected from the broader PE results, the market beta declines with the compounding Horizon for both asset classes.
 
 For BO, the estimates are close to their PE counterparts: under EW, $\hat{\beta}_{\mathrm{MKT}}$ ranges from approximately 1.19--1.23 at short Horizons (0--5~years) and decreases to 0.62 at 25--30~years; under FW, the corresponding range is 1.15--1.19 down to 0.60.
-The familiar divergence between asymptotic and cross-validation inference persists: asymptotic $t$-ratios ($t_A$) are moderate at short Horizons (e.g., 1.59 under EW at 0~years) and decline further at longer Horizons, while the cross-validation $t$-ratios remain strongly significant throughout ($t_{CV}$ ranging from 4.38 to 11.46 under EW and from 2.67 to 7.14 under FW).
+The divergence between asymptotic and cross-validation inference persists: asymptotic $t$-ratios ($t_A$) are moderate at short Horizons (e.g., 1.59 under EW at 0~years) and decline further at longer Horizons, while the cross-validation $t$-ratios remain strongly significant throughout ($t_{CV}$ ranging from 4.38 to 11.46 under EW and from 2.67 to 7.14 under FW).
 
 For VC, the market beta is substantially higher across all Horizons, consistent with venture capital's greater sensitivity to systematic risk.
 Under EW, $\hat{\beta}_{\mathrm{MKT}}$ reaches approximately 1.95--2.00 at 2.5--5~years and converges toward 1.01--1.14 beyond 25~years; under FW, the corresponding range is 1.69--1.70 down to 0.79--0.88.
@@ -1444,7 +1445,7 @@ The converged long-horizon estimates (BO $\approx 0.62$, VC $\approx 1.0$--$1.1$
 \label{sec:empirical_alpha_bovc}
 
 Tables~\ref{tab:empirical_bo_alpha}--\ref{tab:empirical_vc_alpha} and Figure~\ref{fig:empirical_BOVC_Alpha} present the two-factor MKT~+~$\alpha$ model for BO and VC.
-The results mirror the pathological behavior observed for PE in Section~\ref{sec:empirical_multi}: once an unconstrained alpha intercept is introduced, the estimation destabilizes and the MKT loading collapses.
+The results show the pathological behavior anticipated by the simulation study: once an unconstrained alpha intercept is introduced, the estimation destabilizes and the MKT loading collapses.
 
 For BO, the alpha term absorbs the bulk of the explanatory power at short Horizons: under EW, $\hat{\alpha}$ starts at 0.009 per month and declines toward 0.002 at long Horizons, while the MKT coefficient drops to 0.14--0.38; under FW, $\hat{\alpha}$ ranges from 0.007 to 0.011 per month and the MKT loading oscillates between small positive and negative values, reaching as low as $-0.22$ at 20~years.
 The asymptotic standard errors are highly erratic, with several entries at or very near zero (indicating near-degenerate regions of the objective function) interspersed with values exceeding 10.
@@ -1456,7 +1457,7 @@ However, as the Horizon increases beyond 5~years, the MKT loading rises steadily
 This reversal is unique to VC and likely reflects the extreme idiosyncratic risk inherent to early-stage ventures: at long Horizons, the optimizer increasingly attributes the high compounded returns of surviving VC funds to market co-movement rather than alpha, while the negative alpha compensates for selection effects among the funds that underperformed.
 Under FW, the instability is somewhat attenuated ($\hat{\alpha}$ remains close to zero at short Horizons; $\hat{\beta}_{\mathrm{MKT}} \approx 1.69$), but the overall fragility persists, with asymptotic standard errors exceeding 6--13 across most Horizons.
 
-In summary, the BO and VC two-factor results provide direct, asset-class-specific corroboration of the conclusion drawn for PE: single-factor MKT models are the only statistically robust specification for private equity SDF estimation given the limited cross-section of vintage-year portfolios currently available.
+The BO and VC two-factor results therefore corroborate the conclusion drawn for PE: single-factor MKT models are currently the only statistically robust specification for private equity SDF estimation given the limited cross-section of vintage-year portfolios.
 
 \begin{figure}[htbp]
 	\centering
@@ -1579,6 +1580,32 @@ In summary, the BO and VC two-factor results provide direct, asset-class-specifi
 \subsection{Two-factor $q^5$-factor models}
 \label{sec:empirical_q_factors_bovc}
 
+We now pair MKT with each of the four non-market $q^5$ factors (ME, IA, ROE, EG) in two-factor specifications estimated separately for BO and VC.
+Because the detailed estimation tables contain extensive Horizon-by-Horizon results, we do not reproduce them here and instead summarize the key patterns visible in Figures~\ref{fig:empirical_BO_q_factors} and~\ref{fig:empirical_VC_q_factors}; the full tables are available in the accompanying online repository.
+
+\paragraph{Buyout.}
+Figure~\ref{fig:empirical_BO_q_factors} shows a uniform pattern across the four non-market factors.
+At short Horizons (0--5~years), the second-factor loadings are positive and economically large: the ME loading reaches approximately 1.5--1.7 under EW (with cross-validation $t_{CV}$ ratios of 3.2--4.1), the IA loading starts near 1.2 under EW ($t_{CV} \approx 1.5$), ROE near 0.8 ($t_{CV} \approx 1.0$), and EG near 0.6 ($t_{CV} \approx 1.4$).
+As the Horizon increases, however, all four second-factor loadings decay toward zero and frequently change sign beyond 10--15~years.
+The ME factor retains a moderate positive loading even at long Horizons under FW ($\hat{\beta}_{\mathrm{ME}} \approx 1.5$, $t_{CV} \approx 2.2$), but under EW the loading drops below 1.0 after 17.5~years.
+The EG, IA, and ROE loadings all fluctuate around zero at intermediate and long Horizons, with cross-validation $t$-ratios well below conventional significance levels.
+The MKT loading in these two-factor models remains similar to its single-factor counterpart (ranging from roughly 0.95 at short Horizons to 0.55--0.70 at long Horizons), showing that a second factor does not materially alter the market risk assessment.
+The asymptotic standard errors are erratic throughout, often exceeding 10 and occasionally reaching triple-digit values, which highlights the unreliability of asymptotic inference in this setting.
+
+\paragraph{Venture Capital.}
+Figure~\ref{fig:empirical_VC_q_factors} displays qualitatively analogous but more extreme patterns, consistent with the higher idiosyncratic risk inherent to early-stage ventures.
+At short Horizons, the second-factor loadings are strikingly large: the IA loading reaches $4.3$ under EW at the 0-year Horizon ($t_{CV} \approx 1.4$) and $4.0$ under FW, the ROE loading starts at $2.4$ (EW) and $2.0$ (FW), the EG loading at approximately $2.0$ (EW) and $2.9$ (FW), while the ME factor is the exception with a subdued loading near $0.4$--$0.5$.
+All four second-factor loadings undergo dramatic sign reversals as the Horizon extends.
+The IA loading, for instance, turns negative beyond 10~years and eventually reaches $-1.5$ to $-1.9$ at long Horizons with strongly significant cross-validation $t$-ratios ($t_{CV}$ exceeding $-15$).
+Similarly, EG and ROE produce large negative loadings at long Horizons ($\hat{\beta}_{\mathrm{EG}} \approx -0.9$, $\hat{\beta}_{\mathrm{ROE}} \approx -1.2$ under EW at 30~years).
+These sign reversals echo the behavior documented in the simulation study (Section~\ref{sec:simulation_study}), where two-factor models exhibited severe attenuation and sign changes in the second-factor loading across Horizons.
+The MKT loading in the VC two-factor models varies substantially across specifications: in the IA model it stabilizes around 1.4--1.5 at intermediate Horizons, while in the ROE and EG models it ranges from 0.5 to 2.0 depending on the Horizon and weighting scheme.
+
+\paragraph{Summary.}
+The $q^5$-factor results for BO and VC confirm the fragility of multi-factor SDF estimation documented in the preceding MKT~+~$\alpha$ analysis.
+While some second-factor loadings attain statistical significance at isolated Horizons (particularly ME for BO and short-Horizon IA for VC), none of the four non-market factors produces a stable, economically interpretable loading across the full Horizon spectrum.
+The pervasive sign reversals and the extreme sensitivity of point estimates to the compounding Horizon indicate that these results are driven by finite-sample noise rather than genuine systematic risk exposures.
+We conclude that the $q^5$-factor two-factor models do not improve upon the single-factor MKT benchmark for either asset class.
 
 \begin{figure}[H]
 	\centering
@@ -1596,6 +1623,44 @@ In summary, the BO and VC two-factor results provide direct, asset-class-specifi
 \end{figure}
 
 
+\subsection{Interpretation}
+\label{sec:empirical_interpretation}
+
+The empirical results for Buyout and Venture Capital funds demonstrate consistent model reliability across both asset classes and weighting schemes.
+
+\paragraph{Single-factor MKT models are the only robust specification.}
+The single-factor market model produces economically plausible and statistically significant estimates for both BO and VC.
+For Buyout, the market beta ranges from approximately 1.19 at the shortest Horizon to 0.62 at long Horizons under equal weighting, with cross-validation $t$-ratios consistently exceeding 4.0.
+For Venture Capital, the corresponding range is 1.85--2.00 down to 1.01--1.14, reflecting the substantially higher systematic risk exposure of early-stage investments.
+The cross-validation significance is strong and stable across the entire Horizon spectrum, even as asymptotic standard errors fluctuate erratically.
+The divergence between asymptotic and cross-validation inference mirrors the simulation finding that, with the limited cross-section of vintage-year portfolios, the asymptotic approximation is unreliable and overly conservative.
+
+\paragraph{Multi-factor models are fragile.}
+Both the MKT~+~$\alpha$ and the $q^5$-factor two-factor models collapse as soon as a second parameter is introduced.
+In the MKT~+~$\alpha$ specification, the alpha intercept absorbs explanatory power from MKT, producing collapsed or negative market betas and erratic standard errors.
+The $q^5$-factor models exhibit a pervasive pattern of sign reversals: second-factor loadings are consistently overestimated at short Horizons and attenuate toward or beyond zero at long Horizons, exactly as predicted by the simulation study in Section~\ref{sec:simulation_study}.
+This fragility is not confined to a single factor or asset class; it appears across all eight specifications (four factors $\times$ two asset classes), ruling out the chance that an individual $q^5$ factor might robustly augment the market model.
+
+\paragraph{BO--VC decomposition.}
+Analyzing Buyout and Venture Capital separately provides a more informative test of model stability than reporting aggregate PE results alone.
+BO and VC represent fundamentally different investment strategies: Buyout targets mature companies with leveraged balance sheets and stable cash flows, while Venture Capital finances early-stage firms with highly uncertain, option-like payoff profiles.
+Despite these differences, both sub-samples exhibit the same diagnostic pattern: robust single-factor significance, alpha-induced destabilization, and second-factor fragility.
+The fact that this pattern appears across two asset classes with different risk characteristics suggests that the multi-factor instability is a finite-sample identification problem, not an artifact of pooling heterogeneous fund types.
+
+\paragraph{Reconciliation with the simulation study.}
+The empirical results mirror the simulation predictions from Section~\ref{sec:simulation_study}.
+First, the bias-minimizing Horizon at which the single-factor estimates stabilize (approximately 15--20~years) aligns with the 12.5--15-year optimum identified in simulation.
+Second, the sign reversals and large estimation variance observed in the empirical $q^5$-factor models replicate the pathological behavior documented in the two-factor simulation experiments, where the second-factor loading underwent severe attenuation and occasionally changed sign across Horizons.
+Third, the divergence between asymptotic and cross-validation inference in the data is consistent with the simulation finding that asymptotic standard errors systematically overstate true parameter uncertainty in small samples.
+These results show that the finite-sample challenges identified by our simulation study appear directly in empirical estimation with real-world private market data.
+
+\paragraph{Implications for empirical practice.}
+Our findings yield a clear recommendation for applied researchers and practitioners.
+Semiparametric SDF estimation for private equity cash flows should be restricted to single-factor market models estimated on seasoned, vintage-year portfolios at an extended compounding Horizon of approximately 15~years.
+Multi-factor models and alpha intercepts, while theoretically appealing, cannot be reliably estimated with the cross-sectional sample sizes currently available in private equity databases.
+Only a substantial expansion of the available data, either through longer time series of fully seasoned funds or through larger cross-sections within each vintage year, would provide the statistical power necessary to disentangle multiple systematic risk exposures from finite-sample noise.
+
+
 \section{Conclusion}
 \label{sec:conclusion}
 
@@ -1607,7 +1672,7 @@ Our framework shows that this finite-sample bias can be dramatically mitigated b
 In the data-sparse private equity domain, where estimation relies on a limited cross-section of vintage-year portfolios, asymptotic approximations prove unreliable. 
 We therefore strongly advocate for the use of robust resampling or cross-validation techniques tailored to overlapping cash flow dependencies. 
 While relying on individual fund data yields smaller asymptotic standard errors, our simulations indicate that this approach exacerbates finite-sample bias and estimation noise, rendering it an unsuitable remedy. 
-Given that virtually all multi-factor models in our empirical analysis fail to yield consistently significant parameter estimates under either asymptotic or cross-validation inference, we conclude that standard SDF estimators should be restricted to single-factor MKT specifications (without $\alpha$ terms) until significantly broader cross-sections of private equity data become available. 
+Given that virtually all multi-factor models in our empirical analysis fail to yield consistently significant parameter estimates under either asymptotic or cross-validation inference, and this fragility is replicated independently for both Buyout and Venture Capital funds despite their markedly different risk profiles, we conclude that standard SDF estimators should be restricted to single-factor MKT specifications (without $\alpha$ terms) until significantly broader cross-sections of private equity data become available. 
 Researchers must exercise caution even then, ensuring that data-driven model selection (e.g., via $hv$-block cross-validation) does not yield economically implausible outcomes.
 
 Expanding the SDF framework to robustly accommodate multiple risk factors requires imposing additional economic or statistical structure. 
@@ -2067,9 +2132,9 @@ Therefore, until substantially more granular and independent cross-sectional dat
 \label{sec:empirical_results_pe}
 
 
-This appendix replicates the empirical analysis from Section~\ref{sec:empirical_results_bovc} for PE funds.
-As for PE, we form vintage-year portfolios (VYPs), report both asymptotic (SE$_A$) and $hv$-block cross-validation (SE$_{CV}$) standard errors, and conservatively restrict the sample to a maximum vintage-year cutoff of 2010.
-The available model specifications for BO and VC comprise the single market-factor model and the two-factor MKT~+~$\alpha$ model.
+This appendix replicates the empirical analysis from Section~\ref{sec:empirical_results_bovc} for aggregate Private Equity (PE) funds.
+We form vintage-year portfolios (VYPs), report both asymptotic (SE$_A$) and $hv$-block cross-validation (SE$_{CV}$) standard errors, and conservatively restrict the sample to a maximum vintage-year cutoff of 2010.
+The available model specifications for PE comprise the single market-factor model, the two-factor MKT~+~$\alpha$ model, and the $q^5$-factor two-factor models.
 
 We use the Preqin cash flow data set as of 14th April 2022, which is well known in the academic private equity literature \citep{HJK14,brown2015different,KN16,ACGP18}.
 To keep the empirical analysis clear and concise, we filter the dataset for Private Equity (PE) funds.

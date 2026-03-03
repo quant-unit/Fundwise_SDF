@@ -540,6 +540,6 @@ if (sys.nframe() == 0L) {
     # scenarios <- c("base_case_cross_sectional_zero_alpha", "base_case_cross_sectional")
     results <- run_simulation_study(
         scenario_ids = scenarios,
-        generate_data = FALSE, estimate = TRUE, analyze = FALSE
+        generate_data = FALSE, estimate = TRUE, analyze = TRUE
     )
 }

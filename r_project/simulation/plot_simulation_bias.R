@@ -58,6 +58,8 @@ plot_simulation_bias <- function(
     # Read and prepare data
     # -------------------------------------------------------------------------
     bias_data <- read.csv(bias_file, stringsAsFactors = FALSE)
+    
+    bias_data <- bias_data[bias_data$max_month != 1, ]
 
     # Filter to selected scenarios
     plot_data <- bias_data %>%
@@ -534,6 +536,7 @@ file <- "simulation/data_out_2026_new/bias_analysis/2026-02-19_190341_bias_by_sc
 file <- "simulation/data_out_2026_new/bias_analysis/2026-02-22_162216_bias_by_scenario_horizon.csv"
 file <- "simulation/data_out_2026_new/bias_analysis/2026-02-24_185813_bias_by_scenario_horizon.csv"
 file <- "simulation/data_out_2026_new/bias_analysis/2026-03-02_113958_bias_by_scenario_horizon.csv"
+file <- "simulation/data_out_2026_new/bias_analysis/2026-03-03_190312_bias_by_scenario_horizon.csv"
 
 print(getwd())
 max.mkt <- 1.5 #  1.25
@@ -548,9 +551,9 @@ plot_simulation_bias(
     height = 7,
     output_file = "simulation/figures/bias_comparison1",
     y.max.mkt = 2,
-    y.max.second = max.second,
+    y.max.second = max.second * 4,
     y.min.mkt = 0,
-    y.min.second = min.second,
+    y.min.second = min.second * 2,
 )
 plot_simulation_bias(
     scenarios = c("big_n_v_40funds", "big_v_10funds_1967", "big_v_20funds_1967", "small_v_1986_1995", "small_v_1996_2005"),

@@ -74,7 +74,7 @@ scenarios:
       weighting: "EW"
       factors_to_use: "Alpha"
       no_partitions: 10
-      max_months: [0, 1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
+      max_months: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: false  # Run partitions separately
     data_folder: auto
     
