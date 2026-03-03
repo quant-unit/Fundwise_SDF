@@ -1835,7 +1835,7 @@ plot_empirical_estimates(
   export_csv = TRUE,
   export_latex = TRUE,
   height = 5,
-  width = 6,
+  width = 5,
   y.max.mkt = 2.5, y.min.mkt = -0.5,
   y.lim.second = list(Alpha = c(-0.02, 0.02)),
   main.linewidth = 1,
@@ -1847,6 +1847,29 @@ plot_empirical_estimates(
   exclude_cv = FALSE,
   weighting_filter = c("FW", "EW"),
   output_file = paste0(out.folder, "/empirical_BO_Alpha")
+)
+
+# BO: Two-factor model with q^5 factors
+plot_empirical_estimates(
+  data_dir = file.folder,
+  fund_type = "BO",
+  factors = c("EG", "IA", "ME", "ROE"),
+  export_pdf = TRUE,
+  export_csv = TRUE,
+  export_latex = TRUE,
+  height = 5,
+  width = 14,
+  y.max.mkt = 2.5, y.min.mkt = -0.5,
+  y.lim.second = list(Alpha = c(-0.02, 0.02)),
+  main.linewidth = 1,
+  cex = 0.8,
+  #h.lines.mkt = c(0.647399009343063),
+  #h.lines.second = c(1.0194438416743136^(1 / 3) - 1), # alpha quarterly
+  #abline.linewidth = 1.5,
+  #h.colors.mkt = c("orange"), h.colors.second = c("orange"),
+  exclude_cv = FALSE,
+  weighting_filter = c("FW", "EW"),
+  output_file = paste0(out.folder, "/empirical_BO_Multi")
 )
 
 # BO: Single-factor model with MKT only
@@ -1898,7 +1921,7 @@ plot_empirical_estimates(
   export_csv = TRUE,
   export_latex = TRUE,
   height = 5, 
-  width = 6,
+  width = 5,
   y.max.mkt = 2.5, y.min.mkt = -0.5,
   y.lim.second = list(Alpha = c(-0.02, 0.02)),
   main.linewidth = 1,
@@ -1910,6 +1933,29 @@ plot_empirical_estimates(
   #exclude_cv = TRUE,
   weighting_filter = c("FW", "EW"),
   output_file = paste0(out.folder, "/empirical_VC_Alpha")
+)
+
+# BO: Two-factor model with q^5 factors
+plot_empirical_estimates(
+  data_dir = file.folder,
+  fund_type = "VC",
+  factors = c("EG", "IA", "ME", "ROE"),
+  export_pdf = TRUE,
+  export_csv = TRUE,
+  export_latex = TRUE,
+  height = 5,
+  width = 14,
+  y.max.mkt = 2.5, y.min.mkt = -0.5,
+  y.lim.second = list(Alpha = c(-0.02, 0.02)),
+  main.linewidth = 1,
+  cex = 0.8,
+  #h.lines.mkt = c(0.647399009343063),
+  #h.lines.second = c(1.0194438416743136^(1 / 3) - 1), # alpha quarterly
+  #abline.linewidth = 1.5,
+  #h.colors.mkt = c("orange"), h.colors.second = c("orange"),
+  exclude_cv = FALSE,
+  weighting_filter = c("FW", "EW"),
+  output_file = paste0(out.folder, "/empirical_VC_Multi")
 )
 
 # VC: Single-factor model with MKT only

@@ -101,11 +101,10 @@ The `make.vintage.summary` function analyzes the temporal distribution of the fu
 
 ```{r vintage_summary}
 make.vintage.summary <- function(asset.class = "Private Equity") {
-  
     if (asset.class == "Buyout") {
-          df <- df.xl[df.xl$STRATEGY == asset.class, ]
+        df <- df.xl[df.xl$STRATEGY == asset.class, ]
     } else {
-          df <- df.xl[df.xl$ASSET.CLASS == asset.class, ]
+        df <- df.xl[df.xl$ASSET.CLASS == asset.class, ]
     }
     df <- df[!duplicated(df$FUND.ID), ]
 
@@ -144,7 +143,6 @@ make.vintage.summary <- function(asset.class = "Private Equity") {
 make.vintage.summary("Private Equity")
 make.vintage.summary("Buyout")
 make.vintage.summary("Venture Capital")
-
 ```
 
 # Core Methodology: Cash Flow Construction
@@ -341,17 +339,17 @@ library(dplyr)
 # Use all Private Equity vintages available in the dataset
 
 # Helper function to process the cashflow data into percentage of commitment proxy
-process_plot_data <- function(df, weight_label) {
-    df.pe <- df[df$type == "PE", ]
+process_plot_data <- function(df, weight_label, fund_type) {
+    df.subset <- df[df$type == fund_type, ]
 
-    df.pe$Date <- as.Date(df.pe$Date)
-    df.pe$Year <- as.numeric(format(df.pe$Date, "%Y"))
-    df.pe$Age <- df.pe$Year - as.numeric(as.character(df.pe$Vintage))
+    df.subset$Date <- as.Date(df.subset$Date)
+    df.subset$Year <- as.numeric(format(df.subset$Date, "%Y"))
+    df.subset$Age <- df.subset$Year - as.numeric(as.character(df.subset$Vintage))
 
     # Filter up to year 20 (t+20)
-    df.pe <- df.pe[df.pe$Age >= 0 & df.pe$Age <= 20, ]
+    df.subset <- df.subset[df.subset$Age >= 0 & df.subset$Age <= 20, ]
 
-    agg <- aggregate(cbind(CF, CON) ~ Vintage + Age, data = df.pe, sum, na.rm = TRUE)
+    agg <- aggregate(cbind(CF, CON) ~ Vintage + Age, data = df.subset, sum, na.rm = TRUE)
     agg <- agg[order(agg$Vintage, agg$Age), ]
 
     # Calculate cumulative net cashflows and cumulative contributions
@@ -369,37 +367,39 @@ process_plot_data <- function(df, weight_label) {
     return(agg)
 }
 
-agg.fw <- process_plot_data(df.out.fw, "Fund-size weighted")
-agg.ew <- process_plot_data(df.out.ew, "Equal weighted")
+for (f_type in c("PE", "BO", "VC")) {
+    agg.fw <- process_plot_data(df.out.fw, "Fund-size weighted", f_type)
+    agg.ew <- process_plot_data(df.out.ew, "Equal weighted", f_type)
 
-# Combine for side-by-side plotting
-agg.all <- rbind(agg.fw, agg.ew)
-agg.all$Vintage <- as.factor(agg.all$Vintage)
-agg.all$Weighting <- factor(agg.all$Weighting, levels = c("Fund-size weighted", "Equal weighted"))
+    # Combine for side-by-side plotting
+    agg.all <- rbind(agg.fw, agg.ew)
+    agg.all$Vintage <- as.factor(agg.all$Vintage)
+    agg.all$Weighting <- factor(agg.all$Weighting, levels = c("Fund-size weighted", "Equal weighted"))
 
-# Create faceted plot
-p_jcurve <- ggplot(agg.all, aes(x = Age, y = CumCF_Pct, color = Vintage)) +
-    geom_line(linewidth = 1) +
-    facet_wrap(~Weighting) +
-    scale_y_continuous(labels = scales::percent) +
-    scale_x_continuous(breaks = 0:20, labels = c("Inception", paste0("t+", 1:20))) +
-    theme_minimal() +
-    theme(
-        axis.text.x = element_text(angle = 45, hjust = 1, size = 9),
-        legend.position = "right",
-        strip.text = element_text(size = 11, face = "bold"),
-        panel.grid.minor = element_blank()
-    ) +
-    scale_color_viridis_d(option = "plasma", end = 0.9) +
-    labs(
-        title = "Cumulative net cash flows since inception (all available PE vintages in Preqin dataset)",
-        y = "",
-        x = "",
-        color = "Vintage"
-    )
+    # Create faceted plot
+    p_jcurve <- ggplot(agg.all, aes(x = Age, y = CumCF_Pct, color = Vintage)) +
+        geom_line(linewidth = 1) +
+        facet_wrap(~Weighting) +
+        scale_y_continuous(labels = scales::percent) +
+        scale_x_continuous(breaks = 0:20, labels = c("Inception", paste0("t+", 1:20))) +
+        theme_minimal() +
+        theme(
+            axis.text.x = element_text(angle = 45, hjust = 1, size = 9),
+            legend.position = "right",
+            strip.text = element_text(size = 11, face = "bold"),
+            panel.grid.minor = element_blank()
+        ) +
+        scale_color_viridis_d(option = "plasma", end = 0.9) +
+        labs(
+            title = paste0("Cumulative net cash flows since inception (all available ", f_type, " vintages in Preqin dataset)"),
+            y = "",
+            x = "",
+            color = "Vintage"
+        )
 
-print(p_jcurve)
+    print(p_jcurve)
 
-# Export the plot as PDF
-ggsave("cumcashflowsPE.pdf", p_jcurve, width = 10, height = 5)
+    # Export the plot as PDF
+    ggsave(paste0("cumcashflows", f_type, ".pdf"), p_jcurve, width = 10, height = 5)
+}
 ```
