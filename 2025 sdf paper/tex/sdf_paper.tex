@@ -1014,38 +1014,16 @@ Table \ref{tab:comparison} summarizes the most prominent distinctions between th
 
 We use the Preqin cash flow data set as of 14th April 2022, which is well known in the academic private equity literature \citep{HJK14,brown2015different,KN16,ACGP18}.
 To keep the empirical analysis clear and concise, we filter the dataset for Buyout (BO) and Venture Capital (VC) funds.
-
-
-The Buyout (BO) sample contains 1450 distinct funds spreading over 36 vintage years.
-The vintage year distribution is as follows: 1985 (2), 1986 (3), 1987 (5), 1988 (6), 1990 (2), 1991 (3), 1992 (6), 1993 (5), 1994 (16), 1995 (13), 1996 (15), 1997 (18), 1998 (45), 1999 (31), 2000 (42), 2001 (27), 2002 (21), 2003 (30), 2004 (35), 2005 (69), 2006 (83), 2007 (85), 2008 (75), 2009 (34), 2010 (44), 2011 (55), 2012 (60), 2013 (61), 2014 (72), 2015 (72), 2016 (91), 2017 (62), 2018 (72), 2019 (94), 2020 (57), 2021 (38).
-The region distribution is as follows: Africa (7), Asia (42), Australasia (32), Europe (353), Latin America \& Caribbean (22), Middle East (7), North America (986).
-The strategy distribution is as follows: Buyout (1449).
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.9\textwidth]{empirical/cumcashflowsBO.pdf}
-	\caption{\textbf{Cumulative cash flows:} J-curves by vintage year for BO funds in Preqin dataset scaled by fund commitment.}
-	\label{fig:preqin_cashflows_bo}
-\end{figure}
-
-The Venture Capital (VC) sample contains 1241 distinct funds spreading over 38 vintage years.
-The vintage year distribution is as follows: 1982 (1), 1985 (4), 1986 (4), 1987 (2), 1988 (1), 1989 (1), 1990 (7), 1991 (3), 1992 (7), 1993 (6), 1994 (6), 1995 (8), 1996 (15), 1997 (16), 1998 (30), 1999 (45), 2000 (79), 2001 (50), 2002 (36), 2003 (20), 2004 (38), 2005 (43), 2006 (51), 2007 (66), 2008 (57), 2009 (25), 2010 (27), 2011 (34), 2012 (34), 2013 (39), 2014 (40), 2015 (50), 2016 (52), 2017 (70), 2018 (65), 2019 (84), 2020 (68), 2021 (56).
-The region distribution is as follows: Africa (2), Asia (54), Australasia (10), Europe (150), Latin America \& Caribbean (3), Middle East (29), North America (992).
-The strategy distribution is as follows: Early Stage (348), Early Stage: Seed (66), Early Stage: Start-up (42), Expansion / Late Stage (153), Venture (General) (600), Venture Debt (31).
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.9\textwidth]{empirical/cumcashflowsVC.pdf}
-	\caption{\textbf{Cumulative cash flows:} J-curves by vintage year for VC funds in Preqin dataset scaled by fund commitment.}
-	\label{fig:preqin_cashflows_vc}
-\end{figure}
+We only keep funds with fund currency US Dollar (USD) and region equal to North America.
 
 
 For this subset of BO and VC funds, we extract all (i) equal-weighted and (ii) value-weighted (or fund-size-weighted) cash flow series.
-For non-liquidated funds, we treat the latest net asset value as final cash flow.
+In the overall dataset, the minimum vintage year is 1982, and the maximum is 2021.
 We explicitly refrain from excluding the most recent vintage years.
-Thus, the minimum vintage year is 1982, and the maximum is 2021.
-
+Section \ref{sec:empirical_vintage_cutoffs_bovc} assess the impact of unseasoned fund NAVs on our empirical estimation results.
+On this basis, we decide how many recent vintage years we want to remove to reduce reliance of unrealized NAVs.
+For the vintage years, we keep, all liquidated and non-liquidated funds enter our estimation.
+For non-liquidated funds, we treat the latest net asset value as final cash flow.
 
 
 The public market factors that enter our SDF draw on the US dataset of the recently popularized $q^5$ investment factor model sourced from \url{http://global-q.org/factors.html} \citep{HXZ15,hou2021augmented}. 
@@ -1319,7 +1297,31 @@ For each model specification, we report both asymptotic standard errors (SE$_A$)
 We analyze BO and VC as two distinct asset classes with fundamentally different risk profiles and report both equal-weighted (EW) and value-weighted (FW) estimates across a grid of compounding Horizons.
 Throughout this section, $t_A$ and $t_{CV}$ denote the $t$-ratios based on asymptotic and cross-validation standard errors, respectively\footnote{All R code and data are available in an online repository: \url{https://github.com/quant-unit/Fundwise_SDF/tree/master/r_project}.}.
 
+\paragraph{Summary BO data.}
+The Buyout (BO) sample contains 1450 distinct funds spreading over 36 vintage years.
+The vintage year distribution is as follows: 1985 (2), 1986 (3), 1987 (5), 1988 (6), 1990 (2), 1991 (3), 1992 (6), 1993 (5), 1994 (16), 1995 (13), 1996 (15), 1997 (18), 1998 (45), 1999 (31), 2000 (42), 2001 (27), 2002 (21), 2003 (30), 2004 (35), 2005 (69), 2006 (83), 2007 (85), 2008 (75), 2009 (34), 2010 (44), 2011 (55), 2012 (60), 2013 (61), 2014 (72), 2015 (72), 2016 (91), 2017 (62), 2018 (72), 2019 (94), 2020 (57), 2021 (38).
+The region distribution is as follows: Africa (7), Asia (42), Australasia (32), Europe (353), Latin America \& Caribbean (22), Middle East (7), North America (986).
+The strategy distribution is as follows: Buyout (1449).
 
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.9\textwidth]{empirical/cumcashflowsBO.pdf}
+	\caption{\textbf{Cumulative cash flows:} J-curves by vintage year for BO funds in Preqin dataset scaled by fund commitment.}
+	\label{fig:preqin_cashflows_bo}
+\end{figure}
+
+\paragraph{Summary VC data.}
+The Venture Capital (VC) sample contains 1241 distinct funds spreading over 38 vintage years.
+The vintage year distribution is as follows: 1982 (1), 1985 (4), 1986 (4), 1987 (2), 1988 (1), 1989 (1), 1990 (7), 1991 (3), 1992 (7), 1993 (6), 1994 (6), 1995 (8), 1996 (15), 1997 (16), 1998 (30), 1999 (45), 2000 (79), 2001 (50), 2002 (36), 2003 (20), 2004 (38), 2005 (43), 2006 (51), 2007 (66), 2008 (57), 2009 (25), 2010 (27), 2011 (34), 2012 (34), 2013 (39), 2014 (40), 2015 (50), 2016 (52), 2017 (70), 2018 (65), 2019 (84), 2020 (68), 2021 (56).
+The region distribution is as follows: Africa (2), Asia (54), Australasia (10), Europe (150), Latin America \& Caribbean (3), Middle East (29), North America (992).
+The strategy distribution is as follows: Early Stage (348), Early Stage: Seed (66), Early Stage: Start-up (42), Expansion / Late Stage (153), Venture (General) (600), Venture Debt (31).
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.9\textwidth]{empirical/cumcashflowsVC.pdf}
+	\caption{\textbf{Cumulative cash flows:} J-curves by vintage year for VC funds in Preqin dataset scaled by fund commitment.}
+	\label{fig:preqin_cashflows_vc}
+\end{figure}
 
 
 \subsection{The impact of unseasoned funds and reported NAVs}

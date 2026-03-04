@@ -68,6 +68,111 @@ scenarios:
     factors_to_use: ""
     active: true
 
+  # --------------------------------------------------------------------------
+  # Regional Scenarios (Europe & North America)
+  # --------------------------------------------------------------------------
+  fw_no_cv_europe:
+    description: "Fund-weighted VYP, no CV, Europe"
+    weighting: "FW"
+    region: "Europe"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+
+  fw_cv_europe:
+    description: "Fund-weighted VYP, CV, Europe"
+    weighting: "FW"
+    region: "Europe"
+    do_cross_validation: true
+    factors_to_use: ""
+    active: true
+
+  ew_no_cv_europe:
+    description: "Equal-weighted VYP, no CV, Europe"
+    weighting: "EW"
+    region: "Europe"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+
+  ew_cv_europe:
+    description: "Equal-weighted VYP, CV, Europe"
+    weighting: "EW"
+    region: "Europe"
+    do_cross_validation: true
+    factors_to_use: ""
+    active: true
+
+  fw_no_cv_north_america:
+    description: "Fund-weighted VYP, no CV, North America"
+    weighting: "FW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+
+  fw_cv_north_america:
+    description: "Fund-weighted VYP, CV, North America"
+    weighting: "FW"
+    region: "North America"
+    do_cross_validation: true
+    factors_to_use: ""
+    active: true
+
+  ew_no_cv_north_america:
+    description: "Equal-weighted VYP, no CV, North America"
+    weighting: "EW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+
+  ew_cv_north_america:
+    description: "Equal-weighted VYP, CV, North America"
+    weighting: "EW"
+    region: "North America"
+    do_cross_validation: true
+    factors_to_use: ""
+    active: true
+  
+  fw_vintage_sweep_north_america:
+    description: "FW VYP, no CV, max vintage 2011–2021"
+    weighting: "FW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    max_vintages: [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+    active: false
+
+  ew_vintage_sweep_north_america:
+    description: "EW VYP, no CV, max vintage 2011–2021"
+    weighting: "EW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    max_vintages: [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+    active: false
+
+  fw_vintage_sweep_north_america_NC50:
+    description: "FW VYP, no CV, max vintage 2011–2021, 50% final NAV discout"
+    weighting: "FW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    max_vintages: [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+    active: false
+    final_nav_discount: 50
+
+  ew_vintage_sweep_north_america_NC50:
+    description: "EW VYP, no CV, max vintage 2011–2021, 50% final NAV discout"
+    weighting: "EW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    max_vintages: [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+    active: false
+    final_nav_discount: 50
+
 # ============================================================================
 # TWO-FACTOR MODELS (Market Beta + Second Factor)
 # ============================================================================

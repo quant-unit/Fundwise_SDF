@@ -265,7 +265,6 @@ if (sys.nframe() == 0L) {
     cat("Available scenarios:\n\n")
     list_empirical_scenarios(active_only = TRUE)
 
-    data.out.folder <- "results/data_out_2026_02_26"
 }
 
 scenarios <- c(
@@ -282,10 +281,16 @@ scenarios <- c(
     "ff3_fw_no_cv", "ff3_ew_no_cv",
     "ff3_fw_cv", "ff3_ew_cv"
 )
-scenarios <- c("ff3_fw_no_cv", "ff3_ew_no_cv", "ff3_fw_cv", "ff3_ew_cv")
+# scenarios <- c("pitchbook_fw_vintage_sweep_NC50", "pitchbook_ew_vintage_sweep_NC50", "pitchbook_fw_vintage_sweep", "pitchbook_ew_vintage_sweep")
+scenarios <- c(
+    # "fw_no_cv", "fw_cv", "ew_no_cv", "ew_cv",
+    "fw_no_cv_north_america", "fw_cv_north_america", "ew_no_cv_north_america", "ew_cv_north_america",
+    # "fw_no_cv_europe", "fw_cv_europe", "ew_no_cv_europe", "ew_cv_europe"
+  "fw_vintage_sweep_north_america", "ew_vintage_sweep_north_america", "fw_vintage_sweep_north_america_NC50", "ew_vintage_sweep_north_america_NC50"
+)
 
-#data.out.folder <- "results/data_out_2026_02_27_pitchbook"
-#scenarios <- c("pitchbook_fw_vintage_sweep_NC50", "pitchbook_ew_vintage_sweep_NC50", "pitchbook_fw_vintage_sweep", "pitchbook_ew_vintage_sweep")
+# data.out.folder <- "results/data_out_2026_02_27_pitchbook"
+data.out.folder <- "results/data_out_2026_03_04"
 
 results <- run_empirical_study(
     scenario_ids = scenarios,

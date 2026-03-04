@@ -11,7 +11,7 @@
 
 <meta name="author" content="Christian Tausch" />
 
-<meta name="date" content="2026-03-03" />
+<meta name="date" content="2026-03-04" />
 
 <title>Documentation of Preqin Data Preparation</title>
 
@@ -1624,7 +1624,7 @@ display: none;
 <h1 class="title toc-ignore">Documentation of Preqin Data
 Preparation</h1>
 <h4 class="author">Christian Tausch</h4>
-<h4 class="date">2026-03-03</h4>
+<h4 class="date">2026-03-04</h4>
 
 </div>
 
@@ -1746,6 +1746,14 @@ table(df.xl$PRIMARY.GEOGRAPHIC.FOCUS)</code></pre>
 ##                              47                              94 
 ##                     West Europe 
 ##                            7353</code></pre>
+<pre class="r"><code>table(df.xl$REGION)</code></pre>
+<pre><code>## 
+##                    Africa                      Asia               Australasia 
+##                      1206                     11122                      1888 
+##                    Europe Latin America &amp; Caribbean               Middle East 
+##                     50642                      1899                      1601 
+##             North America 
+##                    245706</code></pre>
 <pre class="r"><code>colnames(df.xl)</code></pre>
 <pre><code>##  [1] &quot;FUND.ID&quot;                    &quot;NAME&quot;                      
 ##  [3] &quot;ASSET.CLASS&quot;                &quot;FUND.MANAGER&quot;              
@@ -1925,7 +1933,7 @@ helps in understanding the coverage of the dataset.</p>
 }
 make.strategy.summary()</code></pre>
 <pre><code>## % latex table generated in R 4.3.1 by xtable 1.8-4 package
-## % Tue Mar  3 18:09:37 2026
+## % Wed Mar  4 12:21:38 2026
 ## \begin{table}[ht]
 ## \centering
 ## \begin{tabular}{llr}
@@ -2001,12 +2009,20 @@ make.strategy.summary()</code></pre>
 distribution of the funds for a specific asset class (defaulting to
 Private Equity). It reports the number of distinct funds and separation
 across vintage years and regions.</p>
-<pre class="r"><code>make.vintage.summary &lt;- function(asset.class = &quot;Private Equity&quot;) {
+<pre class="r"><code>make.vintage.summary &lt;- function(asset.class = &quot;Private Equity&quot;, region = NA) {
     if (asset.class == &quot;Buyout&quot;) {
         df &lt;- df.xl[df.xl$STRATEGY == asset.class, ]
     } else {
         df &lt;- df.xl[df.xl$ASSET.CLASS == asset.class, ]
     }
+
+    if (!is.na(region)) {
+        df &lt;- df[df$REGION == region, ]
+        if (region == &quot;North America&quot;) {
+            df &lt;- df[!is.na(df$FUND.CURRENCY) &amp; df$FUND.CURRENCY == &quot;USD&quot;, ]
+        }
+    }
+
     df &lt;- df[!duplicated(df$FUND.ID), ]
 
     # Create the frequency table
@@ -2016,8 +2032,13 @@ across vintage years and regions.</p>
     # names(tbl) gets the years, and tbl itself contains the counts
     output_string &lt;- paste(paste0(names(tbl), &quot; (&quot;, tbl, &quot;)&quot;), collapse = &quot;, &quot;)
 
+    asset.class.region &lt;- asset.class
+    if (!is.na(region)) {
+        asset.class.region &lt;- paste0(asset.class, &quot; (&quot;, region, &quot;)&quot;)
+    }
+
     msg &lt;- paste0(
-        &quot;The &quot;, asset.class, &quot; sample contains &quot;, length(unique(df$FUND.ID)),
+        &quot;The &quot;, asset.class.region, &quot; sample contains &quot;, length(unique(df$FUND.ID)),
         &quot; distinct funds spreading over &quot;, length(tbl), &quot; vintage years.&quot;
     )
     # cat(paste(strwrap(msg, width = 80), collapse = &quot;\n&quot;), &quot;\n\n&quot;)
@@ -2028,7 +2049,11 @@ across vintage years and regions.</p>
     print(msg)
 
     # Region split
-    tbl &lt;- table(df$REGION)
+    if (!is.na(region)) {
+        tbl &lt;- table(df$PRIMARY.GEOGRAPHIC.FOCUS)
+    } else {
+        tbl &lt;- table(df$REGION)
+    }
     output_string &lt;- paste(paste0(names(tbl), &quot; (&quot;, tbl, &quot;)&quot;), collapse = &quot;, &quot;)
     msg &lt;- paste0(&quot;The region distribution is as follows: &quot;, output_string, &quot;.&quot;)
     # cat(paste(strwrap(msg, width = 80), collapse = &quot;\n&quot;), &quot;\n&quot;)
@@ -2040,22 +2065,43 @@ across vintage years and regions.</p>
     msg &lt;- paste0(&quot;The strategy distribution is as follows: &quot;, output_string, &quot;.&quot;)
     # cat(paste(strwrap(msg, width = 80), collapse = &quot;\n&quot;), &quot;\n&quot;)
     print(msg)
+
+    # Currency split
+    tbl &lt;- table(df$FUND.CURRENCY)
+    output_string &lt;- paste(paste0(names(tbl), &quot; (&quot;, tbl, &quot;)&quot;), collapse = &quot;, &quot;)
+    msg &lt;- paste0(&quot;The fund currency distribution is as follows: &quot;, output_string, &quot;.&quot;)
+    print(msg)
 }
 make.vintage.summary(&quot;Private Equity&quot;)</code></pre>
 <pre><code>## [1] &quot;The Private Equity sample contains 3005 distinct funds spreading over 37 vintage years.&quot;
 ## [1] &quot;The vintage year distribution is as follows: 1983 (1), 1985 (2), 1986 (4), 1987 (5), 1988 (7), 1990 (2), 1991 (4), 1992 (9), 1993 (13), 1994 (20), 1995 (16), 1996 (20), 1997 (24), 1998 (59), 1999 (46), 2000 (72), 2001 (51), 2002 (41), 2003 (45), 2004 (64), 2005 (117), 2006 (154), 2007 (176), 2008 (183), 2009 (83), 2010 (92), 2011 (146), 2012 (136), 2013 (142), 2014 (182), 2015 (152), 2016 (186), 2017 (143), 2018 (157), 2019 (190), 2020 (140), 2021 (120).&quot;
 ## [1] &quot;The region distribution is as follows: Africa (21), Asia (173), Australasia (41), Europe (749), Latin America &amp; Caribbean (34), Middle East (17), North America (1968).&quot;
-## [1] &quot;The strategy distribution is as follows: Balanced (71), Buyout (1449), Co-Investment (108), Co-Investment Multi-Manager (67), Direct Secondaries (34), Fund of Funds (696), Growth (386), Secondaries (174), Turnaround (19).&quot;</code></pre>
+## [1] &quot;The strategy distribution is as follows: Balanced (71), Buyout (1449), Co-Investment (108), Co-Investment Multi-Manager (67), Direct Secondaries (34), Fund of Funds (696), Growth (386), Secondaries (174), Turnaround (19).&quot;
+## [1] &quot;The fund currency distribution is as follows: AUD (32), BRL (4), CAD (35), CHF (2), DKK (2), EUR (448), GBP (131), INR (2), JPY (6), KRW (2), MXN (1), NOK (18), NZD (10), PLN (1), RMB (18), SEK (11), USD (2268), ZAR (7).&quot;</code></pre>
 <pre class="r"><code>make.vintage.summary(&quot;Buyout&quot;)</code></pre>
 <pre><code>## [1] &quot;The Buyout sample contains 1450 distinct funds spreading over 36 vintage years.&quot;
 ## [1] &quot;The vintage year distribution is as follows: 1985 (2), 1986 (3), 1987 (5), 1988 (6), 1990 (2), 1991 (3), 1992 (6), 1993 (5), 1994 (16), 1995 (13), 1996 (15), 1997 (18), 1998 (45), 1999 (31), 2000 (42), 2001 (27), 2002 (21), 2003 (30), 2004 (35), 2005 (69), 2006 (83), 2007 (85), 2008 (75), 2009 (34), 2010 (44), 2011 (55), 2012 (60), 2013 (61), 2014 (72), 2015 (72), 2016 (91), 2017 (62), 2018 (72), 2019 (94), 2020 (57), 2021 (38).&quot;
 ## [1] &quot;The region distribution is as follows: Africa (7), Asia (42), Australasia (32), Europe (353), Latin America &amp; Caribbean (22), Middle East (7), North America (986).&quot;
-## [1] &quot;The strategy distribution is as follows: Buyout (1449).&quot;</code></pre>
+## [1] &quot;The strategy distribution is as follows: Buyout (1449).&quot;
+## [1] &quot;The fund currency distribution is as follows: AUD (26), BRL (1), CAD (19), DKK (2), EUR (253), GBP (86), JPY (2), MXN (1), NOK (3), NZD (6), PLN (1), SEK (4), USD (1038), ZAR (5).&quot;</code></pre>
 <pre class="r"><code>make.vintage.summary(&quot;Venture Capital&quot;)</code></pre>
 <pre><code>## [1] &quot;The Venture Capital sample contains 1241 distinct funds spreading over 38 vintage years.&quot;
 ## [1] &quot;The vintage year distribution is as follows: 1982 (1), 1985 (4), 1986 (4), 1987 (2), 1988 (1), 1989 (1), 1990 (7), 1991 (3), 1992 (7), 1993 (6), 1994 (6), 1995 (8), 1996 (15), 1997 (16), 1998 (30), 1999 (45), 2000 (79), 2001 (50), 2002 (36), 2003 (20), 2004 (38), 2005 (43), 2006 (51), 2007 (66), 2008 (57), 2009 (25), 2010 (27), 2011 (34), 2012 (34), 2013 (39), 2014 (40), 2015 (50), 2016 (52), 2017 (70), 2018 (65), 2019 (84), 2020 (68), 2021 (56).&quot;
 ## [1] &quot;The region distribution is as follows: Africa (2), Asia (54), Australasia (10), Europe (150), Latin America &amp; Caribbean (3), Middle East (29), North America (992).&quot;
-## [1] &quot;The strategy distribution is as follows: Early Stage (348), Early Stage: Seed (66), Early Stage: Start-up (42), Expansion / Late Stage (153), Venture (General) (600), Venture Debt (31).&quot;</code></pre>
+## [1] &quot;The strategy distribution is as follows: Early Stage (348), Early Stage: Seed (66), Early Stage: Start-up (42), Expansion / Late Stage (153), Venture (General) (600), Venture Debt (31).&quot;
+## [1] &quot;The fund currency distribution is as follows: AUD (8), BRL (1), CAD (16), CHF (1), DKK (4), EUR (104), GBP (22), INR (2), JPY (2), KRW (3), NOK (3), NZD (1), RMB (2), SEK (2), USD (1066), ZAR (1).&quot;</code></pre>
+<pre class="r"><code>make.vintage.summary(&quot;Buyout&quot;, &quot;North America&quot;)</code></pre>
+<pre><code>## [1] &quot;The Buyout (North America) sample contains 933 distinct funds spreading over 36 vintage years.&quot;
+## [1] &quot;The vintage year distribution is as follows: 1985 (2), 1986 (3), 1987 (5), 1988 (6), 1990 (2), 1991 (3), 1992 (6), 1993 (5), 1994 (14), 1995 (11), 1996 (13), 1997 (14), 1998 (32), 1999 (27), 2000 (34), 2001 (21), 2002 (14), 2003 (21), 2004 (24), 2005 (44), 2006 (50), 2007 (49), 2008 (45), 2009 (19), 2010 (31), 2011 (25), 2012 (39), 2013 (36), 2014 (44), 2015 (35), 2016 (57), 2017 (35), 2018 (45), 2019 (65), 2020 (34), 2021 (23).&quot;
+## [1] &quot;The region distribution is as follows: Americas (4), Asia (16), Canada (1), Central and East Europe (2), Europe (6), Japan (1), Midwest (2), North America (461), South America (2), Southeast (1), Southwest (1), US (433), West Europe (1).&quot;
+## [1] &quot;The strategy distribution is as follows: Buyout (933).&quot;
+## [1] &quot;The fund currency distribution is as follows: USD (933).&quot;</code></pre>
+<pre class="r"><code>make.vintage.summary(&quot;Venture Capital&quot;, &quot;North America&quot;)</code></pre>
+<pre><code>## [1] &quot;The Venture Capital (North America) sample contains 968 distinct funds spreading over 38 vintage years.&quot;
+## [1] &quot;The vintage year distribution is as follows: 1982 (1), 1985 (3), 1986 (4), 1987 (2), 1988 (1), 1989 (1), 1990 (4), 1991 (1), 1992 (7), 1993 (6), 1994 (6), 1995 (8), 1996 (14), 1997 (16), 1998 (28), 1999 (44), 2000 (70), 2001 (45), 2002 (28), 2003 (18), 2004 (31), 2005 (34), 2006 (44), 2007 (48), 2008 (38), 2009 (18), 2010 (18), 2011 (23), 2012 (21), 2013 (32), 2014 (33), 2015 (37), 2016 (40), 2017 (50), 2018 (52), 2019 (64), 2020 (45), 2021 (33).&quot;
+## [1] &quot;The region distribution is as follows: Asia (10), Australasia (1), Canada (1), China (10), Europe (3), India (2), Mexico (1), Midwest (2), North America (267), Northeast (2), Southwest (1), Thailand (1), US (664), West (1).&quot;
+## [1] &quot;The strategy distribution is as follows: Early Stage (274), Early Stage: Seed (47), Early Stage: Start-up (26), Expansion / Late Stage (127), Venture (General) (472), Venture Debt (22).&quot;
+## [1] &quot;The fund currency distribution is as follows: USD (968).&quot;</code></pre>
 </div>
 </div>
 <div id="core-methodology-cash-flow-construction" class="section level1">
@@ -2105,7 +2151,10 @@ Year Portfolios (VYP) by averaging metadata-matched cash flows.</p>
     }
 
     if (!is.na(region.filter)) {
-        df &lt;- df[df$PRIMARY.GEOGRAPHIC.FOCUS %in% region.filter, ]
+        df &lt;- df[df$REGION %in% region.filter, ]
+        if (region.filter == &quot;North America&quot;) {
+            df &lt;- df[!is.na(df$FUND.CURRENCY) &amp; df$FUND.CURRENCY == &quot;USD&quot;, ]
+        }
     }
 
     df &lt;- df[, col.to.keep]
@@ -2187,9 +2236,9 @@ Year Portfolios (VYP) by averaging metadata-matched cash flows.</p>
 
     return(df)
 }
-df &lt;- make.preqin.df(acs.filter = &quot;Private Equity&quot;)
+df &lt;- make.preqin.df(acs.filter = &quot;Private Equity&quot;, region.filter = &quot;North America&quot;)
 length(df$Fund.ID[!duplicated(df$Fund.ID)])</code></pre>
-<pre><code>## [1] 3004</code></pre>
+<pre><code>## [1] 1886</code></pre>
 </div>
 <div id="execution-and-output" class="section level1">
 <h1>Execution and Output</h1>
@@ -2242,7 +2291,59 @@ make.preqin.csv &lt;- function(fund.size.weighting, vin.year.pfs, region.filter,
     invisible(df.out)
 }
 # Execute for various configurations
-df.out &lt;- make.preqin.csv(TRUE, TRUE, NA)</code></pre>
+df.out &lt;- make.preqin.csv(TRUE, TRUE, &quot;North America&quot;)</code></pre>
+<pre><code>## [1] &quot;Infrastructure&quot;
+## [1] &quot;Natural Resources&quot;
+## [1] &quot;Private Debt&quot;
+## [1] &quot;Private Equity&quot;
+## [1] &quot;Real Estate&quot;
+## [1] &quot;Venture Capital&quot;
+## [1] &quot;Mezzanine&quot;
+## [1] &quot;Special Situations&quot; &quot;Distressed Debt&quot;   
+## [1] &quot;Buyout&quot;
+## [1] &quot;Growth&quot; &quot;Buyout&quot;
+## [1] &quot;Fund of Funds&quot;
+## [1] &quot;Secondaries&quot;</code></pre>
+<pre class="r"><code>df.out &lt;- make.preqin.csv(FALSE, TRUE, &quot;North America&quot;)</code></pre>
+<pre><code>## [1] &quot;Infrastructure&quot;
+## [1] &quot;Natural Resources&quot;
+## [1] &quot;Private Debt&quot;
+## [1] &quot;Private Equity&quot;
+## [1] &quot;Real Estate&quot;
+## [1] &quot;Venture Capital&quot;
+## [1] &quot;Mezzanine&quot;
+## [1] &quot;Special Situations&quot; &quot;Distressed Debt&quot;   
+## [1] &quot;Buyout&quot;
+## [1] &quot;Growth&quot; &quot;Buyout&quot;
+## [1] &quot;Fund of Funds&quot;
+## [1] &quot;Secondaries&quot;</code></pre>
+<pre class="r"><code>df.out &lt;- make.preqin.csv(TRUE, TRUE, &quot;North America&quot;, 0.5) # 50% final NAV discount</code></pre>
+<pre><code>## [1] &quot;Infrastructure&quot;
+## [1] &quot;Natural Resources&quot;
+## [1] &quot;Private Debt&quot;
+## [1] &quot;Private Equity&quot;
+## [1] &quot;Real Estate&quot;
+## [1] &quot;Venture Capital&quot;
+## [1] &quot;Mezzanine&quot;
+## [1] &quot;Special Situations&quot; &quot;Distressed Debt&quot;   
+## [1] &quot;Buyout&quot;
+## [1] &quot;Growth&quot; &quot;Buyout&quot;
+## [1] &quot;Fund of Funds&quot;
+## [1] &quot;Secondaries&quot;</code></pre>
+<pre class="r"><code>df.out &lt;- make.preqin.csv(FALSE, TRUE, &quot;North America&quot;, 0.5) # 50% final NAV discount</code></pre>
+<pre><code>## [1] &quot;Infrastructure&quot;
+## [1] &quot;Natural Resources&quot;
+## [1] &quot;Private Debt&quot;
+## [1] &quot;Private Equity&quot;
+## [1] &quot;Real Estate&quot;
+## [1] &quot;Venture Capital&quot;
+## [1] &quot;Mezzanine&quot;
+## [1] &quot;Special Situations&quot; &quot;Distressed Debt&quot;   
+## [1] &quot;Buyout&quot;
+## [1] &quot;Growth&quot; &quot;Buyout&quot;
+## [1] &quot;Fund of Funds&quot;
+## [1] &quot;Secondaries&quot;</code></pre>
+<pre class="r"><code>df.out &lt;- make.preqin.csv(TRUE, TRUE, NA)</code></pre>
 <pre><code>## [1] &quot;Infrastructure&quot;
 ## [1] &quot;Natural Resources&quot;
 ## [1] &quot;Private Debt&quot;
@@ -2294,32 +2395,6 @@ df.out &lt;- make.preqin.csv(TRUE, TRUE, NA)</code></pre>
 ## [1] &quot;Growth&quot; &quot;Buyout&quot;
 ## [1] &quot;Fund of Funds&quot;
 ## [1] &quot;Secondaries&quot;</code></pre>
-<pre class="r"><code>df.out &lt;- make.preqin.csv(TRUE, TRUE, &quot;Europe&quot;)</code></pre>
-<pre><code>## [1] &quot;Infrastructure&quot;
-## [1] &quot;Natural Resources&quot;
-## [1] &quot;Private Debt&quot;
-## [1] &quot;Private Equity&quot;
-## [1] &quot;Real Estate&quot;
-## [1] &quot;Venture Capital&quot;
-## [1] &quot;Mezzanine&quot;
-## [1] &quot;Special Situations&quot; &quot;Distressed Debt&quot;   
-## [1] &quot;Buyout&quot;
-## [1] &quot;Growth&quot; &quot;Buyout&quot;
-## [1] &quot;Fund of Funds&quot;
-## [1] &quot;Secondaries&quot;</code></pre>
-<pre class="r"><code>df.out &lt;- make.preqin.csv(FALSE, TRUE, &quot;Europe&quot;)</code></pre>
-<pre><code>## [1] &quot;Infrastructure&quot;
-## [1] &quot;Natural Resources&quot;
-## [1] &quot;Private Debt&quot;
-## [1] &quot;Private Equity&quot;
-## [1] &quot;Real Estate&quot;
-## [1] &quot;Venture Capital&quot;
-## [1] &quot;Mezzanine&quot;
-## [1] &quot;Special Situations&quot; &quot;Distressed Debt&quot;   
-## [1] &quot;Buyout&quot;
-## [1] &quot;Growth&quot; &quot;Buyout&quot;
-## [1] &quot;Fund of Funds&quot;
-## [1] &quot;Secondaries&quot;</code></pre>
 <pre class="r"><code>df.out &lt;- make.preqin.csv(TRUE, TRUE, NA, 0.5) # 50% final NAV discount</code></pre>
 <pre><code>## [1] &quot;Infrastructure&quot;
 ## [1] &quot;Natural Resources&quot;
@@ -2346,23 +2421,49 @@ df.out &lt;- make.preqin.csv(TRUE, TRUE, NA)</code></pre>
 ## [1] &quot;Growth&quot; &quot;Buyout&quot;
 ## [1] &quot;Fund of Funds&quot;
 ## [1] &quot;Secondaries&quot;</code></pre>
+<pre class="r"><code>df.out &lt;- make.preqin.csv(TRUE, TRUE, &quot;Europe&quot;)</code></pre>
+<pre><code>## [1] &quot;Infrastructure&quot;
+## [1] &quot;Natural Resources&quot;
+## [1] &quot;Private Debt&quot;
+## [1] &quot;Private Equity&quot;
+## [1] &quot;Real Estate&quot;
+## [1] &quot;Venture Capital&quot;
+## [1] &quot;Mezzanine&quot;
+## [1] &quot;Special Situations&quot; &quot;Distressed Debt&quot;   
+## [1] &quot;Buyout&quot;
+## [1] &quot;Growth&quot; &quot;Buyout&quot;
+## [1] &quot;Fund of Funds&quot;
+## [1] &quot;Secondaries&quot;</code></pre>
+<pre class="r"><code>df.out &lt;- make.preqin.csv(FALSE, TRUE, &quot;Europe&quot;)</code></pre>
+<pre><code>## [1] &quot;Infrastructure&quot;
+## [1] &quot;Natural Resources&quot;
+## [1] &quot;Private Debt&quot;
+## [1] &quot;Private Equity&quot;
+## [1] &quot;Real Estate&quot;
+## [1] &quot;Venture Capital&quot;
+## [1] &quot;Mezzanine&quot;
+## [1] &quot;Special Situations&quot; &quot;Distressed Debt&quot;   
+## [1] &quot;Buyout&quot;
+## [1] &quot;Growth&quot; &quot;Buyout&quot;
+## [1] &quot;Fund of Funds&quot;
+## [1] &quot;Secondaries&quot;</code></pre>
 <pre class="r"><code>summary(df.out)</code></pre>
-<pre><code>##       Date                              CF                 NAV        
-##  Min.   :1982-12-31 00:00:00.00   Min.   :-1.000000   Min.   :0.0000  
-##  1st Qu.:2003-12-31 00:00:00.00   1st Qu.:-0.007290   1st Qu.:0.1144  
-##  Median :2011-03-31 00:00:00.00   Median : 0.002772   Median :0.3481  
-##  Mean   :2009-11-22 17:12:17.21   Mean   : 0.013259   Mean   :0.4104  
-##  3rd Qu.:2016-09-30 00:00:00.00   3rd Qu.: 0.029266   3rd Qu.:0.6304  
-##  Max.   :2022-03-31 00:00:00.00   Max.   : 2.638653   Max.   :7.0521  
-##       CON                 DIS                 type              Vintage    
-##  Min.   :-1.000000   Min.   :-0.1193366   Length:18991       Min.   :1982  
-##  1st Qu.:-0.031279   1st Qu.: 0.0003324   Class :character   1st Qu.:1995  
-##  Median :-0.001984   Median : 0.0108276   Mode  :character   Median :2001  
-##  Mean   :-0.022342   Mean   : 0.0267542                      Mean   :2001  
-##  3rd Qu.: 0.000000   3rd Qu.: 0.0343327                      3rd Qu.:2008  
-##  Max.   : 0.134854   Max.   : 1.7964583                      Max.   :2021  
+<pre><code>##       Date                              CF                NAV        
+##  Min.   :1985-09-30 00:00:00.00   Min.   :-1.00000   Min.   :0.0000  
+##  1st Qu.:2007-09-30 00:00:00.00   1st Qu.:-0.01747   1st Qu.:0.1466  
+##  Median :2013-09-30 00:00:00.00   Median : 0.00000   Median :0.3980  
+##  Mean   :2012-05-03 10:41:46.74   Mean   : 0.02444   Mean   :0.4413  
+##  3rd Qu.:2017-12-31 00:00:00.00   3rd Qu.: 0.03106   3rd Qu.:0.6598  
+##  Max.   :2021-12-31 00:00:00.00   Max.   : 3.14005   Max.   :3.9754  
+##       CON                 DIS                type              Vintage    
+##  Min.   :-1.248500   Min.   :-0.163137   Length:9803        Min.   :1985  
+##  1st Qu.:-0.036163   1st Qu.: 0.000000   Class :character   1st Qu.:1999  
+##  Median :-0.003431   Median : 0.005991   Mode  :character   Median :2006  
+##  Mean   :-0.026915   Mean   : 0.027312                      Mean   :2005  
+##  3rd Qu.: 0.000000   3rd Qu.: 0.032447                      3rd Qu.:2011  
+##  Max.   : 0.138825   Max.   : 2.306969                      Max.   :2021  
 ##    Fund.ID         
-##  Length:18991      
+##  Length:9803       
 ##  Class :character  
 ##  Mode  :character  
 ##                    

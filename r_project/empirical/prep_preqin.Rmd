@@ -48,6 +48,7 @@ sheet <- "Preqin_Export"
 df.xl <- data.frame(readxl::read_excel(path = path, sheet = sheet, guess_max = 100000))
 if ("GEOGRAPHIC.FOCUS" %in% colnames(df.xl)) df.xl$PRIMARY.GEOGRAPHIC.FOCUS <- df.xl$GEOGRAPHIC.FOCUS
 table(df.xl$PRIMARY.GEOGRAPHIC.FOCUS)
+table(df.xl$REGION)
 colnames(df.xl)
 
 # Exclude too recent vintages
@@ -100,12 +101,20 @@ make.strategy.summary()
 The `make.vintage.summary` function analyzes the temporal distribution of the funds for a specific asset class (defaulting to Private Equity). It reports the number of distinct funds and separation across vintage years and regions.
 
 ```{r vintage_summary}
-make.vintage.summary <- function(asset.class = "Private Equity") {
+make.vintage.summary <- function(asset.class = "Private Equity", region = NA) {
     if (asset.class == "Buyout") {
         df <- df.xl[df.xl$STRATEGY == asset.class, ]
     } else {
         df <- df.xl[df.xl$ASSET.CLASS == asset.class, ]
     }
+
+    if (!is.na(region)) {
+        df <- df[df$REGION == region, ]
+        if (region == "North America") {
+            df <- df[!is.na(df$FUND.CURRENCY) & df$FUND.CURRENCY == "USD", ]
+        }
+    }
+
     df <- df[!duplicated(df$FUND.ID), ]
 
     # Create the frequency table
@@ -115,8 +124,13 @@ make.vintage.summary <- function(asset.class = "Private Equity") {
     # names(tbl) gets the years, and tbl itself contains the counts
     output_string <- paste(paste0(names(tbl), " (", tbl, ")"), collapse = ", ")
 
+    asset.class.region <- asset.class
+    if (!is.na(region)) {
+        asset.class.region <- paste0(asset.class, " (", region, ")")
+    }
+
     msg <- paste0(
-        "The ", asset.class, " sample contains ", length(unique(df$FUND.ID)),
+        "The ", asset.class.region, " sample contains ", length(unique(df$FUND.ID)),
         " distinct funds spreading over ", length(tbl), " vintage years."
     )
     # cat(paste(strwrap(msg, width = 80), collapse = "\n"), "\n\n")
@@ -127,7 +141,11 @@ make.vintage.summary <- function(asset.class = "Private Equity") {
     print(msg)
 
     # Region split
-    tbl <- table(df$REGION)
+    if (!is.na(region)) {
+        tbl <- table(df$PRIMARY.GEOGRAPHIC.FOCUS)
+    } else {
+        tbl <- table(df$REGION)
+    }
     output_string <- paste(paste0(names(tbl), " (", tbl, ")"), collapse = ", ")
     msg <- paste0("The region distribution is as follows: ", output_string, ".")
     # cat(paste(strwrap(msg, width = 80), collapse = "\n"), "\n")
@@ -139,10 +157,18 @@ make.vintage.summary <- function(asset.class = "Private Equity") {
     msg <- paste0("The strategy distribution is as follows: ", output_string, ".")
     # cat(paste(strwrap(msg, width = 80), collapse = "\n"), "\n")
     print(msg)
+
+    # Currency split
+    tbl <- table(df$FUND.CURRENCY)
+    output_string <- paste(paste0(names(tbl), " (", tbl, ")"), collapse = ", ")
+    msg <- paste0("The fund currency distribution is as follows: ", output_string, ".")
+    print(msg)
 }
 make.vintage.summary("Private Equity")
 make.vintage.summary("Buyout")
 make.vintage.summary("Venture Capital")
+make.vintage.summary("Buyout", "North America")
+make.vintage.summary("Venture Capital", "North America")
 ```
 
 # Core Methodology: Cash Flow Construction
@@ -184,7 +210,10 @@ make.preqin.df <- function(
     }
 
     if (!is.na(region.filter)) {
-        df <- df[df$PRIMARY.GEOGRAPHIC.FOCUS %in% region.filter, ]
+        df <- df[df$REGION %in% region.filter, ]
+        if (region.filter == "North America") {
+            df <- df[!is.na(df$FUND.CURRENCY) & df$FUND.CURRENCY == "USD", ]
+        }
     }
 
     df <- df[, col.to.keep]
@@ -266,7 +295,7 @@ make.preqin.df <- function(
 
     return(df)
 }
-df <- make.preqin.df(acs.filter = "Private Equity")
+df <- make.preqin.df(acs.filter = "Private Equity", region.filter = "North America")
 length(df$Fund.ID[!duplicated(df$Fund.ID)])
 ```
 
@@ -319,14 +348,22 @@ make.preqin.csv <- function(fund.size.weighting, vin.year.pfs, region.filter, fi
     invisible(df.out)
 }
 # Execute for various configurations
+df.out <- make.preqin.csv(TRUE, TRUE, "North America")
+df.out <- make.preqin.csv(FALSE, TRUE, "North America")
+df.out <- make.preqin.csv(TRUE, TRUE, "North America", 0.5) # 50% final NAV discount
+df.out <- make.preqin.csv(FALSE, TRUE, "North America", 0.5) # 50% final NAV discount
+
 df.out <- make.preqin.csv(TRUE, TRUE, NA)
 df.out <- make.preqin.csv(FALSE, TRUE, NA)
 df.out.fw <- make.preqin.csv(TRUE, FALSE, NA)
 df.out.ew <- make.preqin.csv(FALSE, FALSE, NA)
-df.out <- make.preqin.csv(TRUE, TRUE, "Europe")
-df.out <- make.preqin.csv(FALSE, TRUE, "Europe")
 df.out <- make.preqin.csv(TRUE, TRUE, NA, 0.5) # 50% final NAV discount
 df.out <- make.preqin.csv(FALSE, TRUE, NA, 0.5) # 50% final NAV discount
+
+df.out <- make.preqin.csv(TRUE, TRUE, "Europe")
+df.out <- make.preqin.csv(FALSE, TRUE, "Europe")
+
+
 
 summary(df.out)
 ```

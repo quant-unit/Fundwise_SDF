@@ -240,3 +240,17 @@ suffix <- paste0("FW_VYP_NC50_max_vin_", 2020)
 source(here("results/analyze_result.R"))
 suffix <- paste0("FW_VYP_NC50_max_vin_", 2021)
 source(here("results/analyze_result.R"))
+
+# 5. Preqin North America results ----
+
+data.out.folder <- "results/data_out_2026_03_03"
+
+prefix <- "q_factors_preqin_"
+suffix <- "EW_VYP_North America"
+
+source(here("results/analyze_result.R"))
+
+prefix <- "q_factors_preqin_"
+suffix <- "FW_VYP_North America"
+
+source(here("results/analyze_result.R"))

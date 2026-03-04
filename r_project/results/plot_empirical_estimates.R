@@ -82,31 +82,34 @@ plot_empirical_estimates <- function(
     abline.linewidth = 0.7,
     cex = 1.0,
     weighting_filter = c("EW", "FW"),
-    exclude_cv = FALSE) {
+    exclude_cv = FALSE,
+    region = NULL) {
     # -------------------------------------------------------------------------
     # Define file paths for the 4 CSV sources
     # -------------------------------------------------------------------------
+    region_tag <- if (!is.null(region) && region != "") paste0("_", region) else ""
+
     csv_sources <- list(
         list(
-            path = file.path(data_dir, paste0("cache_q_factors_", data_source, "_EW_VYP"), "0_asymptotic_inference_summary.csv"),
+            path = file.path(data_dir, paste0("cache_q_factors_", data_source, "_EW_VYP", region_tag), "0_asymptotic_inference_summary.csv"),
             label = "EW Asymptotic",
             weighting = "EW",
             method = "Asymptotic"
         ),
         list(
-            path = file.path(data_dir, paste0("cache_q_factors_", data_source, "_EW_VYP"), "0_cross_validation_summary.csv"),
+            path = file.path(data_dir, paste0("cache_q_factors_", data_source, "_EW_VYP", region_tag), "0_cross_validation_summary.csv"),
             label = "EW Cross-Validation",
             weighting = "EW",
             method = "Cross-Validation"
         ),
         list(
-            path = file.path(data_dir, paste0("cache_q_factors_", data_source, "_FW_VYP"), "0_asymptotic_inference_summary.csv"),
+            path = file.path(data_dir, paste0("cache_q_factors_", data_source, "_FW_VYP", region_tag), "0_asymptotic_inference_summary.csv"),
             label = "FW Asymptotic",
             weighting = "FW",
             method = "Asymptotic"
         ),
         list(
-            path = file.path(data_dir, paste0("cache_q_factors_", data_source, "_FW_VYP"), "0_cross_validation_summary.csv"),
+            path = file.path(data_dir, paste0("cache_q_factors_", data_source, "_FW_VYP", region_tag), "0_cross_validation_summary.csv"),
             label = "FW Cross-Validation",
             weighting = "FW",
             method = "Cross-Validation"
@@ -846,17 +849,19 @@ plot_max_vintage_cutoff <- function(
     main.linewidth = 0.7,
     abline.linewidth = 0.7,
     cex = 1,
-    weighting_filter = c("EW", "FW")) {
+    weighting_filter = c("EW", "FW"),
+    region = NULL) {
     # -------------------------------------------------------------------------
     # 1. Load data from all vintage × weighting combinations
     # -------------------------------------------------------------------------
+    region_tag <- if (!is.null(region) && region != "") paste0("_", region) else ""
     all_rows <- list()
 
     for (v in vintages) {
         for (w in c("EW", "FW")) {
             folder <- file.path(
                 data_dir,
-                paste0("cache_q_factors_", data_source, "_", w, "_VYP", nc_tag, "_max_vin_", v)
+                paste0("cache_q_factors_", data_source, "_", w, "_VYP", nc_tag, region_tag, "_max_vin_", v)
             )
             csv_path <- file.path(folder, "0_asymptotic_inference_summary.csv")
 
@@ -1504,14 +1509,16 @@ plot_max_vintage_cutoff_combined_mkt <- function(
     main.linewidth = 0.7,
     abline.linewidth = 0.7,
     cex = 1.0,
-    weighting_filter = c("EW", "FW")) {
+    weighting_filter = c("EW", "FW"),
+    region = NULL) {
+    region_tag <- if (!is.null(region) && region != "") paste0("_", region) else ""
     all_rows <- list()
     for (v in vintages) {
         for (i in seq_along(nc_tags)) {
             nt <- nc_tags[i]
             nl <- nc_labels[i]
             for (w in c("EW", "FW")) {
-                folder <- file.path(data_dir, paste0("cache_q_factors_", data_source, "_", w, "_VYP", nt, "_max_vin_", v))
+                folder <- file.path(data_dir, paste0("cache_q_factors_", data_source, "_", w, "_VYP", nt, region_tag, "_max_vin_", v))
                 csv_path <- file.path(folder, "0_asymptotic_inference_summary.csv")
                 if (!file.exists(csv_path)) {
                     warning(paste("File not found (skipped):", csv_path))
@@ -1682,7 +1689,7 @@ plot_max_vintage_cutoff_combined_mkt <- function(
 # Example Usage (uncomment to run)
 # ============================================================================
 
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+try(setwd(dirname(rstudioapi::getActiveDocumentContext()$path)), silent = TRUE)
 getwd()
 
 file.folder <- "results/data_out_2026-emp-max-vin-2019"
@@ -1828,174 +1835,174 @@ out.folder <- "figures_bovc_paper"
 
 # BO: Two-factor model with only Alpha
 plot_empirical_estimates(
-  data_dir = file.folder,
-  fund_type = "BO",
-  factors = c("Alpha"),
-  export_pdf = TRUE,
-  export_csv = TRUE,
-  export_latex = TRUE,
-  height = 5,
-  width = 5,
-  y.max.mkt = 2.5, y.min.mkt = -0.5,
-  y.lim.second = list(Alpha = c(-0.02, 0.02)),
-  main.linewidth = 1,
-  cex = 0.8,
-  #h.lines.mkt = c(0.647399009343063),
-  #h.lines.second = c(1.0194438416743136^(1 / 3) - 1), # alpha quarterly
-  #abline.linewidth = 1.5,
-  #h.colors.mkt = c("orange"), h.colors.second = c("orange"),
-  exclude_cv = FALSE,
-  weighting_filter = c("FW", "EW"),
-  output_file = paste0(out.folder, "/empirical_BO_Alpha")
+    data_dir = file.folder,
+    fund_type = "BO",
+    factors = c("Alpha"),
+    export_pdf = TRUE,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    height = 5,
+    width = 5,
+    y.max.mkt = 2.5, y.min.mkt = -0.5,
+    y.lim.second = list(Alpha = c(-0.02, 0.02)),
+    main.linewidth = 1,
+    cex = 0.8,
+    # h.lines.mkt = c(0.647399009343063),
+    # h.lines.second = c(1.0194438416743136^(1 / 3) - 1), # alpha quarterly
+    # abline.linewidth = 1.5,
+    # h.colors.mkt = c("orange"), h.colors.second = c("orange"),
+    exclude_cv = FALSE,
+    weighting_filter = c("FW", "EW"),
+    output_file = paste0(out.folder, "/empirical_BO_Alpha")
 )
 
 # BO: Two-factor model with q^5 factors
 plot_empirical_estimates(
-  data_dir = file.folder,
-  fund_type = "BO",
-  factors = c("EG", "IA", "ME", "ROE"),
-  export_pdf = TRUE,
-  export_csv = TRUE,
-  export_latex = TRUE,
-  height = 5,
-  width = 14,
-  y.max.mkt = 2.5, y.min.mkt = -0.5,
-  y.lim.second = list(Alpha = c(-0.02, 0.02)),
-  main.linewidth = 1,
-  cex = 0.8,
-  #h.lines.mkt = c(0.647399009343063),
-  #h.lines.second = c(1.0194438416743136^(1 / 3) - 1), # alpha quarterly
-  #abline.linewidth = 1.5,
-  #h.colors.mkt = c("orange"), h.colors.second = c("orange"),
-  exclude_cv = FALSE,
-  weighting_filter = c("FW", "EW"),
-  output_file = paste0(out.folder, "/empirical_BO_Multi")
+    data_dir = file.folder,
+    fund_type = "BO",
+    factors = c("EG", "IA", "ME", "ROE"),
+    export_pdf = TRUE,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    height = 5,
+    width = 14,
+    y.max.mkt = 2.5, y.min.mkt = -0.5,
+    y.lim.second = list(Alpha = c(-0.02, 0.02)),
+    main.linewidth = 1,
+    cex = 0.8,
+    # h.lines.mkt = c(0.647399009343063),
+    # h.lines.second = c(1.0194438416743136^(1 / 3) - 1), # alpha quarterly
+    # abline.linewidth = 1.5,
+    # h.colors.mkt = c("orange"), h.colors.second = c("orange"),
+    exclude_cv = FALSE,
+    weighting_filter = c("FW", "EW"),
+    output_file = paste0(out.folder, "/empirical_BO_Multi")
 )
 
 # BO: Single-factor model with MKT only
 plot_empirical_estimates(
-  data_dir = file.folder,
-  fund_type = "BO",
-  factors = c("MKT"),
-  export_pdf = TRUE,
-  export_csv = TRUE,
-  export_latex = TRUE,
-  height = 4, 
-  width = 6,
-  y.max.mkt = 2.5, y.min.mkt = -0.5,
-  main.linewidth = 1,
-  cex = 0.8,
-  #h.lines.mkt = c(0.769855673660812),
-  #abline.linewidth = 1.5,
-  #h.colors.mkt = c("orange"),
-  #exclude_cv = TRUE,
-  weighting_filter = c("FW", "EW"),
-  # y.lim.second = list(Alpha = c(-0.01, 0.01)),
-  output_file = paste0(out.folder, "/empirical_BO_MKT")
+    data_dir = file.folder,
+    fund_type = "BO",
+    factors = c("MKT"),
+    export_pdf = TRUE,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    height = 4,
+    width = 6,
+    y.max.mkt = 2.5, y.min.mkt = -0.5,
+    main.linewidth = 1,
+    cex = 0.8,
+    # h.lines.mkt = c(0.769855673660812),
+    # abline.linewidth = 1.5,
+    # h.colors.mkt = c("orange"),
+    # exclude_cv = TRUE,
+    weighting_filter = c("FW", "EW"),
+    # y.lim.second = list(Alpha = c(-0.01, 0.01)),
+    output_file = paste0(out.folder, "/empirical_BO_MKT")
 )
 
 # BO Combined MKT Max vintage-year cutoff analysis (100% NAV and 50% NAV-discount)
 plot_max_vintage_cutoff_combined_mkt(
-  data_dir = file.folder,
-  fund_type = "BO",
-  vintages = 2011:2021,
-  nc_tags = c("", "_NC50"),
-  nc_labels = c("100% NAV as Cashflow", "50% NAV-discount sample"),
-  export_pdf = TRUE,
-  export_svg = TRUE,
-  export_csv = TRUE,
-  width = 7,
-  height = 4,
-  y.max.mkt = 2.5, y.min.mkt = 0,
-  main.linewidth = 0.8,
-  weighting_filter = c("FW"),
-  output_file = paste0(out.folder, "/max_vintage_BO_MKT_combined_NC")
+    data_dir = file.folder,
+    fund_type = "BO",
+    vintages = 2011:2021,
+    nc_tags = c("", "_NC50"),
+    nc_labels = c("100% NAV as Cashflow", "50% NAV-discount sample"),
+    export_pdf = TRUE,
+    export_svg = TRUE,
+    export_csv = TRUE,
+    width = 7,
+    height = 4,
+    y.max.mkt = 2.5, y.min.mkt = 0,
+    main.linewidth = 0.8,
+    weighting_filter = c("FW"),
+    output_file = paste0(out.folder, "/max_vintage_BO_MKT_combined_NC")
 )
 
 # VC: Two-factor model with only Alpha
 plot_empirical_estimates(
-  data_dir = file.folder,
-  fund_type = "VC",
-  factors = c("Alpha"),
-  export_pdf = TRUE,
-  export_csv = TRUE,
-  export_latex = TRUE,
-  height = 5, 
-  width = 5,
-  y.max.mkt = 2.5, y.min.mkt = -0.5,
-  y.lim.second = list(Alpha = c(-0.02, 0.02)),
-  main.linewidth = 1,
-  cex = 0.8,
-  #h.lines.mkt = c(0.97551979450791),
-  #h.lines.second = c((1 - 0.00390550172544275)^(1 / 3) - 1), # alpha quarterly
-  #abline.linewidth = 1.5,
-  #h.colors.mkt = c("orange"), h.colors.second = c("orange"),
-  #exclude_cv = TRUE,
-  weighting_filter = c("FW", "EW"),
-  output_file = paste0(out.folder, "/empirical_VC_Alpha")
+    data_dir = file.folder,
+    fund_type = "VC",
+    factors = c("Alpha"),
+    export_pdf = TRUE,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    height = 5,
+    width = 5,
+    y.max.mkt = 2.5, y.min.mkt = -0.5,
+    y.lim.second = list(Alpha = c(-0.02, 0.02)),
+    main.linewidth = 1,
+    cex = 0.8,
+    # h.lines.mkt = c(0.97551979450791),
+    # h.lines.second = c((1 - 0.00390550172544275)^(1 / 3) - 1), # alpha quarterly
+    # abline.linewidth = 1.5,
+    # h.colors.mkt = c("orange"), h.colors.second = c("orange"),
+    # exclude_cv = TRUE,
+    weighting_filter = c("FW", "EW"),
+    output_file = paste0(out.folder, "/empirical_VC_Alpha")
 )
 
 # BO: Two-factor model with q^5 factors
 plot_empirical_estimates(
-  data_dir = file.folder,
-  fund_type = "VC",
-  factors = c("EG", "IA", "ME", "ROE"),
-  export_pdf = TRUE,
-  export_csv = TRUE,
-  export_latex = TRUE,
-  height = 5,
-  width = 14,
-  y.max.mkt = 2.5, y.min.mkt = -0.5,
-  y.lim.second = list(Alpha = c(-0.02, 0.02)),
-  main.linewidth = 1,
-  cex = 0.8,
-  #h.lines.mkt = c(0.647399009343063),
-  #h.lines.second = c(1.0194438416743136^(1 / 3) - 1), # alpha quarterly
-  #abline.linewidth = 1.5,
-  #h.colors.mkt = c("orange"), h.colors.second = c("orange"),
-  exclude_cv = FALSE,
-  weighting_filter = c("FW", "EW"),
-  output_file = paste0(out.folder, "/empirical_VC_Multi")
+    data_dir = file.folder,
+    fund_type = "VC",
+    factors = c("EG", "IA", "ME", "ROE"),
+    export_pdf = TRUE,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    height = 5,
+    width = 14,
+    y.max.mkt = 2.5, y.min.mkt = -0.5,
+    y.lim.second = list(Alpha = c(-0.02, 0.02)),
+    main.linewidth = 1,
+    cex = 0.8,
+    # h.lines.mkt = c(0.647399009343063),
+    # h.lines.second = c(1.0194438416743136^(1 / 3) - 1), # alpha quarterly
+    # abline.linewidth = 1.5,
+    # h.colors.mkt = c("orange"), h.colors.second = c("orange"),
+    exclude_cv = FALSE,
+    weighting_filter = c("FW", "EW"),
+    output_file = paste0(out.folder, "/empirical_VC_Multi")
 )
 
 # VC: Single-factor model with MKT only
 plot_empirical_estimates(
-  data_dir = file.folder,
-  fund_type = "VC",
-  factors = c("MKT"),
-  export_pdf = TRUE,
-  export_csv = TRUE,
-  export_latex = TRUE,
-  height = 4, 
-  width = 6,
-  y.max.mkt = 2.5, y.min.mkt = -0.5,
-  main.linewidth = 1,
-  cex = 0.8,
-  #h.lines.mkt = c(0.925920685301403),
-  #abline.linewidth = 1.5,
-  #h.colors.mkt = c("orange"),
-  #exclude_cv = TRUE,
-  weighting_filter = c("FW", "EW"),
-  # y.lim.second = list(Alpha = c(-0.01, 0.01)),
-  output_file = paste0(out.folder, "/empirical_VC_MKT")
+    data_dir = file.folder,
+    fund_type = "VC",
+    factors = c("MKT"),
+    export_pdf = TRUE,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    height = 4,
+    width = 6,
+    y.max.mkt = 2.5, y.min.mkt = -0.5,
+    main.linewidth = 1,
+    cex = 0.8,
+    # h.lines.mkt = c(0.925920685301403),
+    # abline.linewidth = 1.5,
+    # h.colors.mkt = c("orange"),
+    # exclude_cv = TRUE,
+    weighting_filter = c("FW", "EW"),
+    # y.lim.second = list(Alpha = c(-0.01, 0.01)),
+    output_file = paste0(out.folder, "/empirical_VC_MKT")
 )
 
 # VC Combined MKT Max vintage-year cutoff analysis (100% NAV and 50% NAV-discount)
 plot_max_vintage_cutoff_combined_mkt(
-  data_dir = file.folder,
-  fund_type = "VC",
-  vintages = 2011:2021,
-  nc_tags = c("", "_NC50"),
-  nc_labels = c("100% NAV as Cashflow", "50% NAV-discount sample"),
-  export_pdf = TRUE,
-  export_svg = TRUE,
-  export_csv = TRUE,
-  width = 7,
-  height = 4,
-  y.max.mkt = 2.5, y.min.mkt = 0,
-  main.linewidth = 0.8,
-  weighting_filter = c("FW"),
-  output_file = paste0(out.folder, "/max_vintage_VC_MKT_combined_NC")
+    data_dir = file.folder,
+    fund_type = "VC",
+    vintages = 2011:2021,
+    nc_tags = c("", "_NC50"),
+    nc_labels = c("100% NAV as Cashflow", "50% NAV-discount sample"),
+    export_pdf = TRUE,
+    export_svg = TRUE,
+    export_csv = TRUE,
+    width = 7,
+    height = 4,
+    y.max.mkt = 2.5, y.min.mkt = 0,
+    main.linewidth = 0.8,
+    weighting_filter = c("FW"),
+    output_file = paste0(out.folder, "/max_vintage_VC_MKT_combined_NC")
 )
 
 
@@ -2191,3 +2198,190 @@ plot_max_vintage_cutoff_combined_mkt(
     y.max.mkt = 2.5, y.min.mkt = 0,
     output_file = paste0(out.folder, "/max_vintage_PE_MKT_combined_NC")
 )
+
+
+### Preqin - North America
+### Paper: Buyout (BO) and Venture Capital (VC)
+
+file.folder <- "data_out_2026_03_03"
+out.folder <- "figures_bovc_us" # North America Results
+
+# BO: Two-factor model with only Alpha
+plot_empirical_estimates(
+    data_dir = file.folder,
+    fund_type = "BO",
+    factors = c("Alpha"),
+    export_pdf = TRUE,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    height = 5,
+    width = 5,
+    y.max.mkt = 2.5, y.min.mkt = -0.5,
+    y.lim.second = list(Alpha = c(-0.02, 0.02)),
+    main.linewidth = 1,
+    cex = 0.8,
+    # h.lines.mkt = c(0.647399009343063),
+    # h.lines.second = c(1.0194438416743136^(1 / 3) - 1), # alpha quarterly
+    # abline.linewidth = 1.5,
+    # h.colors.mkt = c("orange"), h.colors.second = c("orange"),
+    exclude_cv = FALSE,
+    weighting_filter = c("FW", "EW"),
+    region = "North America",
+    output_file = paste0(out.folder, "/empirical_BO_US_Alpha")
+)
+
+# BO: Two-factor model with q^5 factors
+plot_empirical_estimates(
+    data_dir = file.folder,
+    fund_type = "BO",
+    factors = c("EG", "IA", "ME", "ROE"),
+    export_pdf = TRUE,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    height = 5,
+    width = 14,
+    y.max.mkt = 2.5, y.min.mkt = -0.5,
+    y.lim.second = list(Alpha = c(-0.02, 0.02)),
+    main.linewidth = 1,
+    cex = 0.8,
+    # h.lines.mkt = c(0.647399009343063),
+    # h.lines.second = c(1.0194438416743136^(1 / 3) - 1), # alpha quarterly
+    # abline.linewidth = 1.5,
+    # h.colors.mkt = c("orange"), h.colors.second = c("orange"),
+    exclude_cv = FALSE,
+    weighting_filter = c("FW", "EW"),
+    region = "North America",
+    output_file = paste0(out.folder, "/empirical_BO_US_Multi")
+)
+
+# BO: Single-factor model with MKT only
+plot_empirical_estimates(
+    data_dir = file.folder,
+    fund_type = "BO",
+    factors = c("MKT"),
+    export_pdf = TRUE,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    height = 4,
+    width = 6,
+    y.max.mkt = 2.5, y.min.mkt = -0.5,
+    main.linewidth = 1,
+    cex = 0.8,
+    # h.lines.mkt = c(0.769855673660812),
+    # abline.linewidth = 1.5,
+    # h.colors.mkt = c("orange"),
+    # exclude_cv = TRUE,
+    weighting_filter = c("FW", "EW"),
+    # y.lim.second = list(Alpha = c(-0.01, 0.01)),
+    region = "North America",
+    output_file = paste0(out.folder, "/empirical_BO_US_MKT")
+)
+
+# BO Combined MKT Max vintage-year cutoff analysis (100% NAV and 50% NAV-discount)
+# plot_max_vintage_cutoff_combined_mkt(
+#     data_dir = file.folder,
+#     fund_type = "BO",
+#     vintages = 2011:2021,
+#     nc_tags = c("", "_NC50"),
+#     nc_labels = c("100% NAV as Cashflow", "50% NAV-discount sample"),
+#     export_pdf = TRUE,
+#     export_svg = TRUE,
+#     export_csv = TRUE,
+#     width = 7,
+#     height = 4,
+#     y.max.mkt = 2.5, y.min.mkt = 0,
+#     main.linewidth = 0.8,
+#     weighting_filter = c("FW"),
+#     region = "North America",
+#     output_file = paste0(out.folder, "/max_vintage_BO_US_MKT_combined_NC")
+# )
+
+# VC: Two-factor model with only Alpha
+plot_empirical_estimates(
+    data_dir = file.folder,
+    fund_type = "VC",
+    factors = c("Alpha"),
+    export_pdf = TRUE,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    height = 5,
+    width = 5,
+    y.max.mkt = 2.5, y.min.mkt = -0.5,
+    y.lim.second = list(Alpha = c(-0.02, 0.02)),
+    main.linewidth = 1,
+    cex = 0.8,
+    # h.lines.mkt = c(0.97551979450791),
+    # h.lines.second = c((1 - 0.00390550172544275)^(1 / 3) - 1), # alpha quarterly
+    # abline.linewidth = 1.5,
+    # h.colors.mkt = c("orange"), h.colors.second = c("orange"),
+    # exclude_cv = TRUE,
+    weighting_filter = c("FW", "EW"),
+    region = "North America",
+    output_file = paste0(out.folder, "/empirical_VC_US_Alpha")
+)
+
+# BO: Two-factor model with q^5 factors
+plot_empirical_estimates(
+    data_dir = file.folder,
+    fund_type = "VC",
+    factors = c("EG", "IA", "ME", "ROE"),
+    export_pdf = TRUE,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    height = 5,
+    width = 14,
+    y.max.mkt = 2.5, y.min.mkt = -0.5,
+    y.lim.second = list(Alpha = c(-0.02, 0.02)),
+    main.linewidth = 1,
+    cex = 0.8,
+    # h.lines.mkt = c(0.647399009343063),
+    # h.lines.second = c(1.0194438416743136^(1 / 3) - 1), # alpha quarterly
+    # abline.linewidth = 1.5,
+    # h.colors.mkt = c("orange"), h.colors.second = c("orange"),
+    exclude_cv = FALSE,
+    weighting_filter = c("FW", "EW"),
+    region = "North America",
+    output_file = paste0(out.folder, "/empirical_VC_US_Multi")
+)
+
+# VC: Single-factor model with MKT only
+plot_empirical_estimates(
+    data_dir = file.folder,
+    fund_type = "VC",
+    factors = c("MKT"),
+    export_pdf = TRUE,
+    export_csv = TRUE,
+    export_latex = TRUE,
+    height = 4,
+    width = 6,
+    y.max.mkt = 2.5, y.min.mkt = -0.5,
+    main.linewidth = 1,
+    cex = 0.8,
+    # h.lines.mkt = c(0.925920685301403),
+    # abline.linewidth = 1.5,
+    # h.colors.mkt = c("orange"),
+    # exclude_cv = TRUE,
+    weighting_filter = c("FW", "EW"),
+    # y.lim.second = list(Alpha = c(-0.01, 0.01)),
+    region = "North America",
+    output_file = paste0(out.folder, "/empirical_VC_US_MKT")
+)
+
+# VC Combined MKT Max vintage-year cutoff analysis (100% NAV and 50% NAV-discount)
+# plot_max_vintage_cutoff_combined_mkt(
+#     data_dir = file.folder,
+#     fund_type = "VC",
+#     vintages = 2011:2021,
+#     nc_tags = c("", "_NC50"),
+#     nc_labels = c("100% NAV as Cashflow", "50% NAV-discount sample"),
+#     export_pdf = TRUE,
+#     export_svg = TRUE,
+#     export_csv = TRUE,
+#     width = 7,
+#     height = 4,
+#     y.max.mkt = 2.5, y.min.mkt = 0,
+#     main.linewidth = 0.8,
+#     weighting_filter = c("FW"),
+#     region = "North America",
+#     output_file = paste0(out.folder, "/max_vintage_VC_US_MKT_combined_NC")
+# )

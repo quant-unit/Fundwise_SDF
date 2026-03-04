@@ -293,6 +293,11 @@ empirical_scenario_to_params <- function(scenario) {
         weighting <- paste0(weighting, "_VYP")
     }
 
+    # Append region to weighting string if provided
+    if (!is.null(scenario$region) && scenario$region != "") {
+        weighting <- paste0(weighting, "_", scenario$region)
+    }
+
     params <- list(
         private_source = scenario$private_source,
         public_filename = scenario$public_filename,
