@@ -16,6 +16,9 @@ script_path_raw <- sub("^--file=", "", script_flag[1])
 script_path_raw <- gsub("~\\+~", " ", script_path_raw)
 script_path <- normalizePath(script_path_raw, mustWork = FALSE)
 script_dir <- dirname(script_path)
+if (sys.nframe() == 0L && interactive()) {
+  try(script_dir <- dirname(rstudioapi::getActiveDocumentContext()$path), silent = TRUE)
+}
 project_root <- normalizePath(file.path(script_dir, "..", "..", ".."), mustWork = FALSE)
 
 cashflow_path <- file.path(script_dir, "preqin_cashflows_EW_VYP_NAV.csv")
@@ -162,7 +165,7 @@ cf_cum <- cf_pe %>%
   group_by(Fund.ID) %>%
   arrange(age_q, .by_group = TRUE) %>%
   mutate(
-    cum_contrib = cumsum(-CON),      # paid-in capital shown as positive
+    cum_contrib = cumsum(-CON), # paid-in capital shown as positive
     cum_distri = cumsum(DIS)
   ) %>%
   ungroup()
@@ -205,8 +208,8 @@ p_right <- ggplot(cf_path, aes(x = age_years, y = value, color = series, linetyp
   ) +
   theme_prof
 
-combined <- (p_left_top / p_left_bottom) | p_right
-combined <- combined + plot_layout(widths = c(1.05, 0.95), heights = c(1, 1))
+combined <- p_right | (p_left_top / p_left_bottom)
+combined <- combined + plot_layout(widths = c(0.95, 1.05), heights = c(1, 1))
 
 ggsave(out_fig, combined, width = 12, height = 6.3)
 cat(sprintf("Wrote figure: %s\n", out_fig))

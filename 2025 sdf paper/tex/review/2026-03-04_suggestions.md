@@ -377,8 +377,8 @@ At the end of current §A.3 ("Reconciliation"), add one sentence pointing forwar
 | 1.2 | Add "two estimands" Remark + expand Appendix A | **P1** | Medium | ✅ Done |
 | 1.3 | Tone down KN nesting language | **P1** | Low | ✅ Done |
 | 1.4 | Moderate claim strength throughout | **P1** | Low | ✅ Done |
-| 2.1 | Restrict to NA/USD sample | **P2** | Medium | ☐ |
-| 2.2 | Expand NAV discount grid + liquidated subsample | **P2** | Medium | ☐ |
+| 2.1 | Restrict to NA/USD sample | **P2** | Medium | ✅ Done |
+| 2.2 | Expand NAV discount grid | **P2** | Medium | ✅ Done |
 | 2.3 | SHAC bandwidth sensitivity table | **P2** | Low | ☐ |
 | 2.4 | Formal MSE decomposition in Appendix A | **P2** | Medium | ✅ Done |
 | 2.5 | Finance payoff in conclusion | **P2** | Low | ☐ |

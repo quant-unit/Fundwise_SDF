@@ -1686,6 +1686,220 @@ plot_max_vintage_cutoff_combined_mkt <- function(
 }
 
 # ============================================================================
+# Plot NAV Discounts Combined Market Analysis
+# ============================================================================
+
+#' Plot Empirical Estimates Across Different NAV Discounts
+#'
+#' Creates a multi-panel chart comparing estimated coefficients across different
+#' NAV discount specifications. For each weighting filter, a panel shows lines—
+#' one per NAV discount—over horizons.
+plot_nav_discounts_combined_mkt <- function(
+    data_dir,
+    data_source = "preqin",
+    fund_type = "PE",
+    vintages = 2010,
+    nc_tags = c("_NC0", "_NC25", "_NC50", "_NC75"),
+    nc_labels = c("0% NAV as Cashflow", "25% NAV-discount sample", "50% NAV-discount sample", "75% NAV-discount sample"),
+    export_svg = FALSE,
+    export_png = FALSE,
+    export_pdf = FALSE,
+    export_csv = FALSE,
+    output_file = "nav_discount_combined_plot",
+    width = 14,
+    height = 4,
+    png_dpi = 300,
+    y.max.mkt = NULL,
+    y.min.mkt = NULL,
+    x.max = NULL,
+    x.min = NULL,
+    v.lines.mkt = NULL,
+    h.lines.mkt = NULL,
+    v.colors.mkt = c("black", "black"),
+    h.colors.mkt = c("black", "black"),
+    main.linewidth = 0.7,
+    abline.linewidth = 0.7,
+    cex = 1.0,
+    weighting_filter = c("EW", "FW"),
+    region = NULL) {
+    region_tag <- if (!is.null(region) && region != "") paste0("_", region) else ""
+    all_rows <- list()
+    for (i in seq_along(nc_tags)) {
+        nt <- nc_tags[i]
+        nl <- nc_labels[i]
+        for (w in c("EW", "FW")) {
+            folder <- file.path(data_dir, paste0("cache_q_factors_", data_source, "_", w, "_VYP", region_tag, nt))
+            if (!is.null(vintages)) {
+                # If vintages is specified, it just adds the parameter to the plot object, but doesn't change path
+                v <- vintages[1]
+            } else {
+                v <- NA
+            }
+            csv_path <- file.path(folder, "0_asymptotic_inference_summary.csv")
+            if (!file.exists(csv_path)) {
+                warning(paste("File not found (skipped):", csv_path))
+                next
+            }
+            df <- read.csv(csv_path, stringsAsFactors = FALSE)
+            df$vintage <- v
+            df$weighting <- w
+            df$nc_tag <- nt
+            df$nc_label <- nl
+            df$method <- "Asymptotic"
+            all_rows[[length(all_rows) + 1L]] <- df
+        }
+    }
+    all_data <- bind_rows(all_rows)
+    if (nrow(all_data) == 0) stop("No data could be loaded from the specified directory.")
+
+    if (!is.null(weighting_filter)) {
+        all_data <- all_data %>% filter(weighting %in% weighting_filter)
+    }
+
+    plot_data <- all_data %>% filter(Type == fund_type)
+    if (nrow(plot_data) == 0) stop("No data found for fund type.")
+
+    plot_data$max.month <- as.numeric(plot_data$max.month)
+    plot_data$horizon_years <- plot_data$max.month / 12
+    # Ensure factor order follows the input vector for nc_labels
+    plot_data$nc_label <- factor(plot_data$nc_label, levels = unique(nc_labels))
+
+    if (!is.null(x.min)) plot_data <- plot_data %>% filter(max.month >= x.min)
+    if (!is.null(x.max)) plot_data <- plot_data %>% filter(max.month <= x.max)
+
+    theme_publication <- theme_minimal(base_size = 11 * cex, base_family = "serif") +
+        theme(
+            panel.grid.major = element_line(color = "grey85", linewidth = 0.3),
+            panel.grid.minor = element_blank(),
+            panel.border = element_rect(color = "grey40", fill = NA, linewidth = 0.5),
+            panel.background = element_rect(fill = "white"),
+            strip.text = element_text(face = "bold", size = 10 * cex, margin = margin(b = 5, t = 5)),
+            strip.background = element_rect(fill = "grey95", color = "grey40", linewidth = 0.5),
+            axis.title = element_text(face = "bold", size = 10 * cex),
+            axis.text = element_text(size = 9 * cex, color = "grey20"),
+            axis.ticks = element_line(color = "grey40", linewidth = 0.3),
+            axis.line = element_blank(),
+            legend.position = "bottom",
+            legend.title = element_text(face = "bold", size = (if (!is.null(weighting_filter) && length(weighting_filter) == 1) 6 else 9) * cex),
+            legend.text = element_text(size = (if (!is.null(weighting_filter) && length(weighting_filter) == 1) 5 else 8) * cex),
+            legend.key.size = unit((if (!is.null(weighting_filter) && length(weighting_filter) == 1) 0.5 else 0.8) * cex, "cm"),
+            legend.background = element_rect(fill = "white", color = NA),
+            legend.margin = margin(t = 5),
+            plot.title = element_text(face = "bold", size = 10 * cex, hjust = 0.5, margin = margin(b = 5)),
+            plot.margin = margin(5, 5, 5, 5)
+        )
+
+    .build_panel <- function(df, y_col, title, show_y_label, y_label, ylim_vec = NULL,
+                             v.lines_vec = NULL, v.colors_vec = NULL,
+                             h.lines_vec = NULL, h.colors_vec = NULL) {
+        p <- ggplot(df, aes(x = horizon_years, y = .data[[y_col]], color = nc_label, group = nc_label)) +
+            geom_line(linewidth = main.linewidth, alpha = 0.85) +
+            geom_point(size = 1.5 * cex, alpha = 0.85) +
+            scale_color_viridis_d(option = "plasma", name = "NAV Treatment", guide = guide_legend(nrow = 1)) +
+            scale_x_continuous(breaks = seq(0, max(c(0, df$horizon_years), na.rm = TRUE), by = 5), expand = c(0.02, 0)) +
+            labs(title = title, x = "Horizon (Years)", y = if (show_y_label) y_label else NULL) +
+            {
+                if (!is.null(v.lines_vec)) {
+                    lapply(seq_along(v.lines_vec), function(idx) {
+                        geom_vline(xintercept = v.lines_vec[idx], color = v.colors_vec[min(idx, length(v.colors_vec))], linetype = "dotted", linewidth = abline.linewidth)
+                    })
+                } else {
+                    NULL
+                }
+            } +
+            {
+                if (!is.null(h.lines_vec)) {
+                    lapply(seq_along(h.lines_vec), function(idx) {
+                        geom_hline(yintercept = h.lines_vec[idx], color = h.colors_vec[min(idx, length(h.colors_vec))], linetype = "dotted", linewidth = abline.linewidth)
+                    })
+                } else {
+                    NULL
+                }
+            } +
+            theme_publication +
+            theme(
+                legend.position = "none",
+                axis.title.y = if (!show_y_label) element_blank() else element_text(face = "bold", size = 10 * cex)
+            )
+        if (!is.null(ylim_vec)) {
+            p <- p + coord_cartesian(ylim = ylim_vec)
+        }
+        p
+    }
+
+    mkt_plots <- list()
+    for (i in seq_along(weighting_filter)) {
+        w <- weighting_filter[i]
+
+        mkt_df <- plot_data %>%
+            filter(Factor == "MKT", weighting == w)
+
+        title_text <- paste0(fund_type, ": NAV Discounts (", w, ")")
+        ylim_mkt <- NULL
+        if (!is.null(y.max.mkt) || !is.null(y.min.mkt)) {
+            ylim_mkt <- c(if (is.null(y.min.mkt)) NA else y.min.mkt, if (is.null(y.max.mkt)) NA else y.max.mkt)
+        }
+        show_y <- (i == 1)
+
+        p <- .build_panel(
+            df = mkt_df, y_col = "MKT", title = title_text,
+            show_y_label = show_y, y_label = expression(beta[MKT]), ylim_vec = ylim_mkt,
+            v.lines_vec = v.lines.mkt, v.colors_vec = v.colors.mkt,
+            h.lines_vec = h.lines.mkt, h.colors_vec = h.colors.mkt
+        )
+        mkt_plots[[length(mkt_plots) + 1L]] <- p
+    }
+
+    combined_plot <- Reduce(`|`, mkt_plots) +
+        plot_layout(guides = "collect") &
+        theme(legend.position = "bottom")
+
+    any_export <- export_svg || export_png || export_pdf || export_csv
+    if (any_export) {
+        base_file <- sub("\\.(svg|png|pdf)$", "", output_file, ignore.case = TRUE)
+        output_dir_path <- dirname(base_file)
+        if (!dir.exists(output_dir_path) && output_dir_path != "." && output_dir_path != "") {
+            dir.create(output_dir_path, recursive = TRUE)
+        }
+        if (export_svg) {
+            svg_file <- paste0(base_file, ".svg")
+            tryCatch(
+                {
+                    ggsave(filename = svg_file, plot = combined_plot, width = width, height = height, device = "svg")
+                    message(paste("SVG exported to:", svg_file))
+                },
+                error = function(e) {
+                    warning("SVG export failed. Falling back to PDF.")
+                    pdf_file <- paste0(base_file, ".pdf")
+                    ggsave(filename = pdf_file, plot = combined_plot, width = width, height = height, device = "pdf")
+                    message(paste("PDF exported to:", pdf_file))
+                }
+            )
+        }
+        if (export_png) {
+            png_file <- paste0(base_file, ".png")
+            ggsave(filename = png_file, plot = combined_plot, width = width, height = height, device = "png", dpi = png_dpi, bg = "white")
+            message(paste("PNG exported to:", png_file))
+        }
+        if (export_pdf) {
+            pdf_file <- paste0(base_file, ".pdf")
+            ggsave(filename = pdf_file, plot = combined_plot, width = width, height = height, device = "pdf")
+            message(paste("PDF exported to:", pdf_file))
+        }
+        if (export_csv) {
+            csv_export <- all_data %>% filter(Type == fund_type)
+            csv_file <- paste0(base_file, "_data.csv")
+            write.csv(csv_export, file = csv_file, row.names = FALSE)
+            message(paste("Data CSV exported to:", csv_file))
+        }
+        invisible(combined_plot)
+    } else {
+        print(combined_plot)
+        invisible(combined_plot)
+    }
+}
+
+# ============================================================================
 # Example Usage (uncomment to run)
 # ============================================================================
 
@@ -2386,26 +2600,43 @@ plot_max_vintage_cutoff_combined_mkt(
     output_file = paste0(out.folder, "/max_vintage_VC_US_MKT_combined_NC")
 )
 
-# NAV Discounts
+# Analyze Different NAV Discounts
 
 file.folder <- "data_out_2026_03_05"
 out.folder <- "figures_bovc_us" # North America Results
 
-plot_max_vintage_cutoff_combined_mkt(
+plot_nav_discounts_combined_mkt(
+    data_dir = file.folder,
+    fund_type = "VC",
+    vintages = 2010,
+    nc_tags = c("", "_NC75", "_NC50", "_NC25", "_NC0"),
+    nc_labels = c("NAV as Cashflow", "25% NAV-discount", "50% NAV-discount", "75% NAV-discount", "100% NAV-discount"),
+    export_pdf = TRUE,
+    export_svg = TRUE,
+    export_csv = TRUE,
+    width = 14,
+    height = 4,
+    y.max.mkt = 2.1, y.min.mkt = 0,
+    main.linewidth = 0.8,
+    weighting_filter = c("FW", "EW"),
+    region = "North America",
+    output_file = paste0(out.folder, "/nav_disc_VC_US_MKT_combined_NC")
+)
+
+plot_nav_discounts_combined_mkt(
   data_dir = file.folder,
-  fund_type = "VC",
+  fund_type = "BO",
   vintages = 2010,
-  nc_tags = c("_NC0","_NC25", "_NC50", "_NC75"),
-  nc_labels = c("0% NAV as Cashflow", "25% NAV-discount sample", "50% NAV-discount sample", "50% NAV-discount sample"),
+  nc_tags = c("", "_NC75", "_NC50", "_NC25", "_NC0"),
+  nc_labels = c("NAV as Cashflow", "25% NAV-discount", "50% NAV-discount", "75% NAV-discount", "100% NAV-discount"),
   export_pdf = TRUE,
   export_svg = TRUE,
   export_csv = TRUE,
-  width = 7,
+  width = 14,
   height = 4,
-  y.max.mkt = 3, y.min.mkt = 0,
+  y.max.mkt = 2.1, y.min.mkt = 0,
   main.linewidth = 0.8,
-  weighting_filter = c("FW"),
+  weighting_filter = c("FW", "EW"),
   region = "North America",
-  output_file = paste0(out.folder, "/nav_disc_VC_US_MKT_combined_NC")
+  output_file = paste0(out.folder, "/nav_disc_BO_US_MKT_combined_NC")
 )
-

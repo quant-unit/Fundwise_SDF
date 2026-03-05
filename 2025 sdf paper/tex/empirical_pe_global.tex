@@ -1,0 +1,405 @@
+\subsection{Empirical results for PE fund data}
+\label{sec:empirical_results_pe}
+
+
+This appendix replicates the empirical analysis from Section~\ref{sec:empirical_results_bovc} for aggregate Private Equity (PE) funds.
+We form vintage-year portfolios (VYPs), report both asymptotic (SE$_A$) and $hv$-block cross-validation fold dispersions (SD$_{CV}$), and conservatively restrict the sample to a maximum vintage-year cutoff of 2010.
+The available model specifications for PE comprise the single market-factor model, the two-factor MKT~+~$\alpha$ model, and the $q^5$-factor two-factor models.
+
+We use the Preqin cash flow data set as of 14th April 2022, which is well known in the academic private equity literature \citep{HJK14,brown2015different,KN16,ACGP18}.
+To keep the empirical analysis clear and concise, we filter the dataset for Private Equity (PE) funds.
+
+The Private Equity sample contains 3005 distinct funds spreading over 37 vintage years (cf.\ Figure \ref{fig:preqin_cashflows_pe}).
+The vintage year distribution is as follows: 1983 (1), 1985 (2), 1986 (4), 1987 (5), 1988 (7), 1990 (2), 1991 (4), 1992 (9), 1993 (13), 1994 (20), 1995 (16), 1996 (20), 1997 (24), 1998 (59), 1999 (46), 2000 (72), 2001 (51), 2002 (41), 2003 (45), 2004 (64), 2005 (117), 2006 (154), 2007 (176), 2008 (183), 2009 (83), 2010 (92), 2011 (146), 2012 (136), 2013 (142), 2014 (182), 2015 (152), 2016 (186), 2017 (143), 2018 (157), 2019 (190), 2020 (140), 2021 (120).
+The region distribution is as follows: Africa (21), Asia (173), Australasia (41), Europe (749), Latin America \& Caribbean (34), Middle East (17), North America (1968).
+The strategy distribution is as follows: Balanced (71), Buyout (1449), Co-Investment (108), Co-Investment Multi-Manager (67), Direct Secondaries (34), Fund of Funds (696), Growth (386), Secondaries (174), Turnaround (19).
+
+For this subset of Private Equity funds, we extract all (i) equal-weighted and (ii) value-weighted (or fund-size-weighted) cash flow series.
+For non-liquidated funds, we treat the latest net asset value as final cash flow.
+We explicitly refrain from excluding the most recent vintage years.
+Thus, the minimum vintage year is 1983, and the maximum is 2021.
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.9\textwidth]{empirical/cumcashflowsPE.pdf}
+	\caption{\textbf{Cumulative cash flows:} J-curves by vintage year for PE funds in Preqin dataset scaled by fund commitment.}
+	\label{fig:preqin_cashflows_pe}
+\end{figure}
+
+
+\subsubsection{The impact of unseasoned funds and reported NAVs}
+\label{sec:empirical_vintage_cutoffs}
+
+A critical design choice in empirical private equity research is the selection of the maximum vintage year to include in the estimation sample.
+In this section, we analyze how altering the maximum vintage year cutoff influences the parameter estimates and demonstrate the profound impact of unseasoned funds on the estimation outcome.
+Concretely, we compare yearly cutoff-vintages from 2011 to 2021.
+We focus on asymptotic estimates for this analysis.
+
+Figure \ref{fig:max_vintage_PE_MKT} shows the estimating market beta for the single-factor model across different vintage cutoffs, comparing the standard results (NAV at face value, two left charts) with a scenario where all final NAVs are artificially discounted by 50\% (two right charts).
+Under the standard specification, we observe a severe upward drift in the market beta as we include more recent, unseasoned vintages.
+For equal-weighted (EW) portfolios, $\hat{\beta}_{\mathrm{MKT}}$ rises from approximately 0.87 with a 2011 cutoff, climbing to 1.05 with the full sample (2021).
+Similarly, value-weighted (FW) estimates increase steadily from 0.79 to 1.12.
+
+The 50\%-NAV-discount scenario indicates that this upward drift is an artifact of the reported NAVs, not a fundamental change in true private equity risk profiles. 
+When we artificially halve the final NAVs, the market beta drops significantly across all cutoffs (e.g., dropping to 0.71 for the EW 2011 cutoff) and the upward trend for recent vintages flattens out entirely (reaching only 0.76 for EW 2016).
+For recent vintage years, actual cash distributions are extremely sparse, meaning the reported ending Net Asset Value constitutes the vast majority of the ``value'' returned to investors. 
+Because the generalized SDF estimation framework relies on mathematically treating this final value as a terminal cash distribution, the entire estimation for young funds hinges predominantly on a subjective accounting metric.
+Treating these reported NAVs as equivalent to actual cash distributions introduces two severe issues.
+First, reported NAVs are well known to be subject to smoothing and manipulation by fund managers (GPs), meaning they do not necessarily reflect true liquidatable risk-equivalent values.
+Second, and even more importantly from an econometric perspective, representing the bulk of a fund's value as a single terminal ``cash flow'' forces a considerable reliance on the SDF realization in the last period of our dataset.
+Because this final SDF realization is disproportionately overweighted, the optimizer is mathematically forced to assign a higher market exposure to justify those high reported NAV ``payoffs'' given the historical realized market path. 
+In other words, the market beta is mechanically inflating to simply absorb the size of the reported NAVs.
+Indeed, reading the two left charts of Figure \ref{fig:max_vintage_PE_MKT} alongside the two charts on the right confirms exactly that: limiting the magnitude of the final unspent NAV removes its distortion of the estimated market co-movement.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.88\textwidth]{empirical/max_vintage_PE_MKT_combined_NC}
+	\caption{\textbf{Sensitivity analysis ($MKT$ factor):} Single-factor model for PE using VYP with different vintage-year cutoffs (asymptotic estimates). The two left charts show the standard baseline (full NAV as final cash flow), while the two right charts apply a 50\% discount to all final NAVs, which we treat as final distribution cash flow.}
+	\label{fig:max_vintage_PE_MKT}
+\end{figure}
+
+
+The primary conclusion drawn from this cutoff analysis is a warning regarding data selection in generalized non-traded cash flow estimations:
+to obtain reliable estimates of true economic factor exposures and alpha for private markets, an empirical sample must practically be restricted to mature, heavily seasoned vintage years where the vast majority of original investments have been realized sequentially as actual cash flows. 
+Including recent, unseasoned vintages in the estimation sample injects massive sensitivity into point estimates and artificially distorts the perceived risk profile due to an outsized mechanic reliance on subjectively reported NAVs.
+
+Thus, moving forward into our main empirical evaluations of the single-factor and multi-factor SDF models (cf.\ Sections \ref{sec:empirical_single} and \ref{sec:empirical_multi}), we conservatively restrict our sample to a maximum vintage-year cutoff of 2010 to ensure our estimates reflect real economic cash-flow risk rather than accounting heuristics.
+
+
+\subsubsection{Single market-factor models}
+\label{sec:empirical_single}
+
+Table~\ref{tab:empirical_pe_mkt} and Figure~\ref{fig:empirical_MKT} report the single-factor MKT model for PE across Horizons from 0.1 to 30 years, using the conservatively restricted sample with a maximum vintage-year cutoff of 2010.
+The market beta estimate broadly declines with the compounding Horizon: under equal weighting (EW), $\hat{\beta}_{\mathrm{MKT}}$ ranges from approximately $1.23$--$1.27$ at short Horizons (0--5~years) and decreases to approximately $0.67$ at 25--30~years; under value weighting (FW), the corresponding range is $1.08$--$1.12$ down to $0.56$.
+The elevated estimates at short Horizons likely reflect the finite-sample bias documented in the simulation study, whereby the estimator overestimates market exposure when few discounting dates are used.
+Estimates stabilize beyond approximately 20~years, consistent with the MSE-minimizing Horizons identified in Section~\ref{sec:simulation_study}.
+
+A striking feature of the results is the divergence between asymptotic inference and cross-validation stability diagnostics.
+Both asymptotic and cross-validation ratios are lower for this restricted 2010-cutoff sample.
+Asymptotic $t$-ratios ($t_A$) fall slightly below significance thresholds at short Horizons (e.g. 1.58 under EW and 1.10 under FW) and drop further at longer Horizons. 
+In contrast, cross-validation stability ratios ($\mathrm{SR}_{CV}$) continue to be large, ranging from 4.90 to 21.51 under EW and from 2.98 to 6.38 under FW, indicating robust parameter stability for the single-factor MKT model.
+Given the small number of cross-sectional units (vintage-year portfolios) available for estimation, the asymptotic approximation appears unreliable, and we regard the $hv$-block cross-validation stability diagnostics as more informative about model reliability.
+Therefore, drawing on both the simulation evidence and the cross-validation diagnostics, we focus on single MKT factor models for the remainder of the empirical analysis, even when their asymptotic $t$-ratios fall below conventional thresholds.
+
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.9\textwidth]{empirical/empirical_PE_MKT}
+	\caption{\textbf{Empirical ($MKT$ factor):} Single-factor model for PE using VYP and maximum vintage year 2010.}
+	\label{fig:empirical_MKT}
+\end{figure}
+
+
+
+
+% Auto-generated by plot_empirical_estimates.R
+
+\begin{table}[htbp]
+	\centering
+	\footnotesize
+	\caption{Empirical Estimates: PE: Single-Factor (MKT) Model}
+	\label{tab:empirical_pe_mkt}
+	\begin{tabular}{l *{5}{r} *{5}{r}}
+		\toprule
+		& \multicolumn{5}{c}{Equal-Weighted (EW)} & \multicolumn{5}{c}{Value-Weighted (FW)} \\
+		\cmidrule(lr){2-6} \cmidrule(lr){7-11}
+		Horizon & $\hat{\beta}$ & SE$_A$ & SD$_{CV}$ & $t_A$ & $\mathrm{SR}_{CV}$ & $\hat{\beta}$ & SE$_A$ & SD$_{CV}$ & $t_A$ & $\mathrm{SR}_{CV}$ \\
+		\midrule
+		0 yr & 1.269 & 0.801 & 0.065 & 1.58 & 19.48 & 1.128 & 1.024 & 0.171 & 1.10 & 6.19 \\
+		0.1 yr & 1.266 & 0.801 & 0.059 & 1.58 & 21.51 & 1.124 & 1.024 & 0.166 & 1.10 & 6.38 \\
+		2.5 yr & 1.229 & 0.794 & 0.070 & 1.55 & 17.59 & 1.109 & 1.024 & 0.196 & 1.08 & 5.33 \\
+		5 yr & 1.247 & 0.797 & 0.082 & 1.56 & 15.07 & 1.088 & 1.092 & 0.210 & 1.00 & 4.88 \\
+		10 yr & 1.084 & 1.389 & 0.127 & 0.78 & 8.51 & 0.917 & 1.872 & 0.218 & 0.49 & 3.99 \\
+		12.5 yr & 0.933 & 1.895 & 0.169 & 0.49 & 5.57 & 0.806 & 1.698 & 0.227 & 0.47 & 3.43 \\
+		15 yr & 0.839 & 1.670 & 0.171 & 0.50 & 4.90 & 0.734 & 1.703 & 0.219 & 0.43 & 3.22 \\
+		17.5 yr & 0.747 & 1.485 & 0.134 & 0.50 & 5.40 & 0.660 & 1.576 & 0.208 & 0.42 & 3.08 \\
+		20 yr & 0.688 & 1.776 & 0.105 & 0.39 & 6.20 & 0.597 & 1.445 & 0.189 & 0.41 & 3.04 \\
+		22.5 yr & 0.668 & 1.716 & 0.093 & 0.39 & 6.64 & 0.571 & 1.397 & 0.181 & 0.41 & 3.01 \\
+		25 yr & 0.668 & 1.716 & 0.093 & 0.39 & 6.60 & 0.564 & 1.385 & 0.180 & 0.41 & 2.99 \\
+		27.5 yr & 0.669 & 1.718 & 0.094 & 0.39 & 6.55 & 0.564 & 1.385 & 0.181 & 0.41 & 2.98 \\
+		30 yr & 0.669 & 1.718 & 0.094 & 0.39 & 6.55 & 0.564 & 1.385 & 0.181 & 0.41 & 2.98 \\
+		\bottomrule
+	\end{tabular}
+	\par\vspace{2pt}
+	{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = stability ratio (estimate / fold dispersion). Significance markers based on $t_A$: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+\end{table}
+
+
+
+
+
+
+
+\subsubsection{Two-factor models}
+\label{sec:empirical_multi}
+
+We now examine two-factor models for PE that pair the MKT factor with either an Alpha intercept or one of the four non-market $q^5$ factors, again using the conservatively restricted sample with a maximum vintage-year cutoff of 2010 (Tables~\ref{tab:empirical_pe_alpha}--\ref{tab:empirical_pe_roe} and Figure~\ref{fig:empirical}).
+
+\textit{MKT + Alpha} (Table~\ref{tab:empirical_pe_alpha}):
+Adding an $\alpha$ term tends to decrease the MKT loading relative to the single-factor model at most Horizons, especially under FW: under EW, $\hat{\beta}_{\mathrm{MKT}}$ ranges from $0.53$ to $1.00$; under FW, from $-0.22$ to $0.09$.
+The Alpha coefficient is significantly positive at short Horizons for EW ($\hat{\beta}_{\alpha} \approx 0.004$--$0.006$ per month) and reaches $0.010$ per month under FW at short Horizons.
+Across the board, the alphas maintain a positive or negligible value and do not dip far into the negatives at long Horizons as seen with larger, unseasoned samples.
+While a few isolated asymptotic $t$-ratios are significant (e.g., EW at 2.5~years: $t_A = 9.03$ for MKT, $t_A = 12.17$ for Alpha), the asymptotic standard errors are highly erratic across Horizons (SE$_A$ ranging from 0.05 to over 11), precluding a reliable asymptotic inference for the two-factor model.
+
+\textit{Non-market $q^5$ factors} (Tables~\ref{tab:empirical_pe_eg}--\ref{tab:empirical_pe_roe}): 
+A common pattern emerges across all four specifications (EG, IA, ME, ROE): the second-factor loading is positive at short Horizons and generally declines as the Horizon increases, while the MKT loading absorbs a compensating adjustment.
+None of the second-factor coefficients are asymptotically significant at any Horizon, and the asymptotic standard errors are again extremely large and unstable.
+Among the $q^5$ factors, ME stands out with particularly large positive loading estimates under FW at short Horizons ($\hat{\beta}_{\mathrm{ME}} \approx 1.7$--$2.1$) that remain positive and CV-significant even at long Horizons.
+In contrast, the EG, IA, and ROE loadings generally become negative or trend tightly toward zero beyond 10~years and remain insignificant under both weighting schemes.
+
+Overall, the two-factor models for PE are fragile: estimates are highly Horizon-dependent, asymptotic inference is unreliable, and no second factor consistently adds explanatory power beyond MKT.
+These findings corroborate the simulation-based recommendation to focus on single-factor MKT models given the limited cross-section of vintage-year portfolios currently available, avoiding over-interpretation of the non-market $q^5$ factor exposures.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.9\textwidth]{empirical/empirical_PE_all_factors}
+	\caption{\textbf{Empirical ($q^5$ factors):} Two-factor models for PE using VYP and maximum vintage year 2010.}
+	\label{fig:empirical}
+\end{figure}
+
+
+
+
+% Auto-generated by plot_empirical_estimates.R
+
+\begin{table}[htbp]
+	\centering
+	\footnotesize
+	\caption{Empirical Estimates: PE: MKT + Alpha Model}
+	\label{tab:empirical_pe_alpha}
+	\begin{tabular}{l *{5}{r} *{5}{r}}
+		\toprule
+		& \multicolumn{5}{c}{Equal-Weighted (EW)} & \multicolumn{5}{c}{Value-Weighted (FW)} \\
+		\cmidrule(lr){2-6} \cmidrule(lr){7-11}
+		Horizon & $\hat{\beta}$ & SE$_A$ & SD$_{CV}$ & $t_A$ & $\mathrm{SR}_{CV}$ & $\hat{\beta}$ & SE$_A$ & SD$_{CV}$ & $t_A$ & $\mathrm{SR}_{CV}$ \\
+		\midrule
+		\multicolumn{11}{l}{\textit{Panel A: Market Factor ($\beta_{MKT}$)}} \\
+		\addlinespace[2pt]
+		0 yr & 1.005 & 0.646 & 0.374 & 1.56 & 1.97 & -0.101 & 11.574 & 0.637 & -0.01 & -0.22 \\
+		0.1 yr & 1.005 & 0.609 & 0.002 & 1.65 & 405.43 & -0.083 & 11.272 & 0.637 & -0.01 & -0.18 \\
+		2.5 yr & 0.535$^{***}$ & 0.059 & 0.199 & 9.03 & 2.95 & -0.027 & 0.279 & 0.611 & -0.10 & -0.09 \\
+		5 yr & 1.004 & 3.250 & 0.004 & 0.31 & 279.59 & 0.003 & 2.608 & 0.581 & 0.00 & 0.05 \\
+		10 yr & 0.675$^{***}$ & 0.065 & 0.270 & 10.30 & 2.98 & 0.098 & 4.417 & 0.573 & 0.02 & 0.38 \\
+		12.5 yr & 1.000 & 1.134 & 0.268 & 0.88 & 2.87 & -0.029 & 0.082 & 0.570 & -0.36 & 0.24 \\
+		15 yr & 0.998 & 0.917 & 0.284 & 1.09 & 2.94 & -0.079 & 3.171 & 0.630 & -0.02 & 0.17 \\
+		17.5 yr & 0.726$^{***}$ & 0.042 & 0.321 & 17.32 & 2.41 & -0.085 & 2.777 & 0.690 & -0.03 & 0.18 \\
+		20 yr & 0.792 & 0.877 & 0.386 & 0.90 & 2.03 & -0.177 & 2.756 & 0.716 & -0.06 & 0.13 \\
+		22.5 yr & 0.849 & 0.978 & 0.416 & 0.87 & 2.03 & -0.224 & 2.228 & 0.723 & -0.10 & 0.10 \\
+		25 yr & 0.873 & 1.298 & 0.425 & 0.67 & 2.01 & -0.163 & 2.849 & 0.720 & -0.06 & 0.11 \\
+		27.5 yr & 0.877 & 1.449 & 0.423 & 0.61 & 2.03 & -0.157 & 2.860 & 0.719 & -0.05 & 0.11 \\
+		30 yr & 0.877 & 1.449 & 0.423 & 0.61 & 2.03 & -0.157 & 2.860 & 0.719 & -0.05 & 0.11 \\
+		\addlinespace[4pt]
+		\multicolumn{11}{l}{\textit{Panel B: Alpha ($\beta_{Alpha}$)}} \\
+		\addlinespace[2pt]
+		0 yr & 0.004$^{***}$ & 0.001 & 0.003 & 4.49 & 1.99 & 0.010 & 0.069 & 0.005 & 0.15 & 1.88 \\
+		0.1 yr & 0.004$^{***}$ & 0.001 & 0.001 & 4.44 & 3.07 & 0.010 & 0.067 & 0.005 & 0.15 & 1.86 \\
+		2.5 yr & 0.006$^{***}$ & 0.000 & 0.002 & 12.17 & 2.91 & 0.009$^{***}$ & 0.001 & 0.005 & 7.98 & 1.78 \\
+		5 yr & 0.003 & 0.022 & 0.001 & 0.13 & 2.18 & 0.008 & 0.005 & 0.004 & 1.79 & 1.66 \\
+		10 yr & 0.003$^{***}$ & 0.001 & 0.003 & 3.71 & 0.86 & 0.006 & 0.038 & 0.004 & 0.17 & 1.16 \\
+		12.5 yr & -0.000 & 0.058 & 0.002 & -0.00 & 0.63 & 0.007$^{***}$ & 0.001 & 0.004 & 12.91 & 1.19 \\
+		15 yr & -0.001 & 0.054 & 0.003 & -0.02 & 0.11 & 0.007 & 0.044 & 0.005 & 0.15 & 1.04 \\
+		17.5 yr & 0.000 & 0.001 & 0.003 & 0.26 & -0.00 & 0.006 & 0.043 & 0.005 & 0.14 & 0.85 \\
+		20 yr & -0.001 & 0.069 & 0.004 & -0.01 & -0.22 & 0.006 & 0.042 & 0.005 & 0.15 & 0.84 \\
+		22.5 yr & -0.002 & 0.172 & 0.004 & -0.01 & -0.42 & 0.007 & 0.038 & 0.005 & 0.18 & 0.86 \\
+		25 yr & -0.002 & 0.278 & 0.004 & -0.01 & -0.45 & 0.006 & 0.044 & 0.005 & 0.14 & 0.86 \\
+		27.5 yr & -0.002 & 0.305 & 0.004 & -0.01 & -0.45 & 0.006 & 0.045 & 0.005 & 0.14 & 0.85 \\
+		30 yr & -0.002 & 0.305 & 0.004 & -0.01 & -0.45 & 0.006 & 0.045 & 0.005 & 0.14 & 0.85 \\
+		\bottomrule
+	\end{tabular}
+	\par\vspace{2pt}
+	{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = stability ratio (estimate / fold dispersion). Significance markers based on $t_A$: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+\end{table}
+
+\begin{table}[htbp]
+	\centering
+	\footnotesize
+	\caption{Empirical Estimates: PE: MKT + EG Model}
+	\label{tab:empirical_pe_eg}
+	\begin{tabular}{l *{5}{r} *{5}{r}}
+		\toprule
+		& \multicolumn{5}{c}{Equal-Weighted (EW)} & \multicolumn{5}{c}{Value-Weighted (FW)} \\
+		\cmidrule(lr){2-6} \cmidrule(lr){7-11}
+		Horizon & $\hat{\beta}$ & SE$_A$ & SD$_{CV}$ & $t_A$ & $\mathrm{SR}_{CV}$ & $\hat{\beta}$ & SE$_A$ & SD$_{CV}$ & $t_A$ & $\mathrm{SR}_{CV}$ \\
+		\midrule
+		\multicolumn{11}{l}{\textit{Panel A: Market Factor ($\beta_{MKT}$)}} \\
+		\addlinespace[2pt]
+		0 yr & 0.938 & 1.150 & 0.159 & 0.82 & 5.79 & 0.817 & 0.914 & 0.275 & 0.89 & 3.08 \\
+		0.1 yr & 0.946 & 1.136 & 0.151 & 0.83 & 6.17 & 0.832 & 0.899 & 0.263 & 0.93 & 3.30 \\
+		2.5 yr & 0.958 & 3.006 & 0.176 & 0.32 & 5.61 & 0.899 & 1.932 & 0.251 & 0.47 & 3.70 \\
+		5 yr & 0.979 & 7.615 & 0.178 & 0.13 & 5.58 & 0.904 & 3.275 & 0.279 & 0.28 & 3.27 \\
+		10 yr & 0.984 & 1.564 & 0.229 & 0.63 & 4.34 & 0.963 & 10.821 & 0.335 & 0.09 & 2.75 \\
+		12.5 yr & 0.957 & 7.530 & 0.254 & 0.13 & 3.73 & 0.970 & 3.729 & 0.344 & 0.26 & 2.52 \\
+		15 yr & 0.979 & 3.802 & 0.233 & 0.26 & 4.07 & 0.959 & 3.665 & 0.382 & 0.26 & 2.11 \\
+		17.5 yr & 0.956 & 2.424 & 0.218 & 0.39 & 4.27 & 0.870 & 3.184 & 0.426 & 0.27 & 1.73 \\
+		20 yr & 0.944 & 5.827 & 0.240 & 0.16 & 3.98 & 0.732 & 1.710 & 0.485 & 0.43 & 1.29 \\
+		22.5 yr & 0.903 & 7.869 & 0.274 & 0.11 & 3.42 & 0.643 & 1.500 & 0.513 & 0.43 & 1.12 \\
+		25 yr & 0.881 & 6.835 & 0.288 & 0.13 & 3.20 & 0.621 & 1.464 & 0.519 & 0.42 & 1.08 \\
+		27.5 yr & 0.878 & 6.699 & 0.289 & 0.13 & 3.19 & 0.620 & 1.463 & 0.520 & 0.42 & 1.08 \\
+		30 yr & 0.878 & 6.699 & 0.289 & 0.13 & 3.19 & 0.620 & 1.463 & 0.520 & 0.42 & 1.08 \\
+		\addlinespace[4pt]
+		\multicolumn{11}{l}{\textit{Panel B: EG ($\beta_{EG}$)}} \\
+		\addlinespace[2pt]
+		0 yr & 0.529 & 0.817 & 0.255 & 0.65 & 2.06 & 0.884 & 0.641 & 0.705 & 1.38 & 0.97 \\
+		0.1 yr & 0.534 & 0.804 & 0.244 & 0.66 & 2.16 & 0.851 & 0.650 & 0.674 & 1.31 & 0.95 \\
+		2.5 yr & 0.405 & 2.207 & 0.242 & 0.18 & 1.50 & 0.544 & 1.592 & 0.491 & 0.34 & 0.72 \\
+		5 yr & 0.316 & 6.126 & 0.228 & 0.05 & 1.31 & 0.342 & 2.517 & 0.449 & 0.14 & 0.52 \\
+		10 yr & 0.102 & 2.331 & 0.278 & 0.04 & 0.41 & -0.058 & 7.056 & 0.429 & -0.01 & -0.01 \\
+		12.5 yr & -0.024 & 43.324 & 0.304 & -0.00 & 0.09 & -0.178 & 1.871 & 0.420 & -0.10 & -0.10 \\
+		15 yr & -0.132 & 18.057 & 0.332 & -0.01 & -0.17 & -0.224 & 2.411 & 0.432 & -0.09 & -0.10 \\
+		17.5 yr & -0.200 & 5.327 & 0.378 & -0.04 & -0.34 & -0.206 & 2.521 & 0.444 & -0.08 & -0.07 \\
+		20 yr & -0.256 & 12.839 & 0.257 & -0.02 & -1.07 & -0.142 & 1.690 & 0.463 & -0.08 & 0.05 \\
+		22.5 yr & -0.251 & 19.465 & 0.239 & -0.01 & -1.31 & -0.082 & 1.688 & 0.482 & -0.05 & 0.13 \\
+		25 yr & -0.234 & 17.656 & 0.253 & -0.01 & -1.18 & -0.065 & 1.697 & 0.484 & -0.04 & 0.15 \\
+		27.5 yr & -0.231 & 17.398 & 0.255 & -0.01 & -1.16 & -0.065 & 1.697 & 0.484 & -0.04 & 0.15 \\
+		30 yr & -0.231 & 17.398 & 0.255 & -0.01 & -1.16 & -0.065 & 1.697 & 0.484 & -0.04 & 0.15 \\
+		\bottomrule
+	\end{tabular}
+	\par\vspace{2pt}
+	{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = stability ratio (estimate / fold dispersion). Significance markers based on $t_A$: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+\end{table}
+
+\begin{table}[htbp]
+	\centering
+	\footnotesize
+	\caption{Empirical Estimates: PE: MKT + IA Model}
+	\label{tab:empirical_pe_ia}
+	\begin{tabular}{l *{5}{r} *{5}{r}}
+		\toprule
+		& \multicolumn{5}{c}{Equal-Weighted (EW)} & \multicolumn{5}{c}{Value-Weighted (FW)} \\
+		\cmidrule(lr){2-6} \cmidrule(lr){7-11}
+		Horizon & $\hat{\beta}$ & SE$_A$ & SD$_{CV}$ & $t_A$ & $\mathrm{SR}_{CV}$ & $\hat{\beta}$ & SE$_A$ & SD$_{CV}$ & $t_A$ & $\mathrm{SR}_{CV}$ \\
+		\midrule
+		\multicolumn{11}{l}{\textit{Panel A: Market Factor ($\beta_{MKT}$)}} \\
+		\addlinespace[2pt]
+		0 yr & 1.109$^{*}$ & 0.511 & 0.152 & 2.17 & 7.13 & 1.003$^{*}$ & 0.480 & 0.324 & 2.09 & 2.97 \\
+		0.1 yr & 1.129 & 0.680 & 0.141 & 1.66 & 7.91 & 1.015$^{*}$ & 0.419 & 0.291 & 2.42 & 3.34 \\
+		2.5 yr & 1.125 & 13.744 & 0.164 & 0.08 & 7.08 & 1.043 & 1.077 & 0.280 & 0.97 & 3.72 \\
+		5 yr & 1.129 & 6.348 & 0.144 & 0.18 & 7.97 & 1.003 & 1.637 & 0.311 & 0.61 & 3.25 \\
+		10 yr & 1.046 & 4.873 & 0.171 & 0.21 & 6.26 & 0.922 & 10.419 & 0.354 & 0.09 & 2.55 \\
+		12.5 yr & 0.965 & 3.147 & 0.195 & 0.31 & 5.05 & 0.890 & 4.476 & 0.372 & 0.20 & 2.22 \\
+		15 yr & 0.926 & 2.916 & 0.191 & 0.32 & 4.84 & 0.858 & 3.737 & 0.404 & 0.23 & 1.87 \\
+		17.5 yr & 0.837 & 59.964 & 0.203 & 0.01 & 4.16 & 0.724 & 1.949 & 0.421 & 0.37 & 1.57 \\
+		20 yr & 0.776 & 9.304 & 0.225 & 0.08 & 3.61 & 0.565 & 1.393 & 0.441 & 0.41 & 1.27 \\
+		22.5 yr & 0.741 & 7.745 & 0.247 & 0.10 & 3.27 & 0.503 & 1.248 & 0.447 & 0.40 & 1.19 \\
+		25 yr & 0.730 & 8.066 & 0.241 & 0.09 & 3.31 & 0.492 & 1.224 & 0.448 & 0.40 & 1.17 \\
+		27.5 yr & 0.728 & 8.224 & 0.237 & 0.09 & 3.34 & 0.491 & 1.222 & 0.449 & 0.40 & 1.17 \\
+		30 yr & 0.728 & 8.224 & 0.237 & 0.09 & 3.34 & 0.491 & 1.222 & 0.449 & 0.40 & 1.17 \\
+		\addlinespace[4pt]
+		\multicolumn{11}{l}{\textit{Panel B: IA ($\beta_{IA}$)}} \\
+		\addlinespace[2pt]
+		0 yr & 0.995 & 0.880 & 0.382 & 1.13 & 2.42 & 1.632 & 1.371 & 1.230 & 1.19 & 0.99 \\
+		0.1 yr & 0.940 & 1.302 & 0.378 & 0.72 & 2.27 & 1.396 & 1.320 & 1.055 & 1.06 & 0.91 \\
+		2.5 yr & 0.597 & 30.513 & 0.459 & 0.02 & 1.03 & 0.789 & 2.613 & 0.852 & 0.30 & 0.50 \\
+		5 yr & 0.433 & 14.003 & 0.430 & 0.03 & 0.86 & 0.500 & 3.850 & 0.841 & 0.13 & 0.30 \\
+		10 yr & 0.108 & 23.281 & 0.515 & 0.00 & 0.23 & -0.016 & 19.073 & 0.850 & -0.00 & 0.04 \\
+		12.5 yr & -0.088 & 9.703 & 0.551 & -0.01 & -0.03 & -0.232 & 4.226 & 0.827 & -0.05 & -0.02 \\
+		15 yr & -0.217 & 7.182 & 0.616 & -0.03 & -0.11 & -0.300 & 3.166 & 0.852 & -0.09 & 0.03 \\
+		17.5 yr & -0.230 & 126.784 & 0.710 & -0.00 & -0.08 & -0.153 & 2.453 & 0.875 & -0.06 & 0.15 \\
+		20 yr & -0.247 & 20.104 & 0.787 & -0.01 & -0.14 & 0.085 & 2.476 & 0.896 & 0.03 & 0.31 \\
+		22.5 yr & -0.237 & 17.037 & 0.828 & -0.01 & -0.18 & 0.206 & 2.526 & 0.897 & 0.08 & 0.36 \\
+		25 yr & -0.214 & 18.185 & 0.817 & -0.01 & -0.18 & 0.230 & 2.535 & 0.894 & 0.09 & 0.37 \\
+		27.5 yr & -0.209 & 18.621 & 0.815 & -0.01 & -0.18 & 0.232 & 2.536 & 0.893 & 0.09 & 0.38 \\
+		30 yr & -0.209 & 18.621 & 0.815 & -0.01 & -0.18 & 0.232 & 2.536 & 0.893 & 0.09 & 0.38 \\
+		\bottomrule
+	\end{tabular}
+	\par\vspace{2pt}
+	{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = stability ratio (estimate / fold dispersion). Significance markers based on $t_A$: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+\end{table}
+
+\begin{table}[htbp]
+	\centering
+	\footnotesize
+	\caption{Empirical Estimates: PE: MKT + ME Model}
+	\label{tab:empirical_pe_me}
+	\begin{tabular}{l *{5}{r} *{5}{r}}
+		\toprule
+		& \multicolumn{5}{c}{Equal-Weighted (EW)} & \multicolumn{5}{c}{Value-Weighted (FW)} \\
+		\cmidrule(lr){2-6} \cmidrule(lr){7-11}
+		Horizon & $\hat{\beta}$ & SE$_A$ & SD$_{CV}$ & $t_A$ & $\mathrm{SR}_{CV}$ & $\hat{\beta}$ & SE$_A$ & SD$_{CV}$ & $t_A$ & $\mathrm{SR}_{CV}$ \\
+		\midrule
+		\multicolumn{11}{l}{\textit{Panel A: Market Factor ($\beta_{MKT}$)}} \\
+		\addlinespace[2pt]
+		0 yr & 1.280 & 0.899 & 0.085 & 1.42 & 15.19 & 0.947 & 3.390 & 0.140 & 0.28 & 6.48 \\
+		0.1 yr & 1.281 & 0.912 & 0.079 & 1.40 & 16.41 & 0.945 & 3.456 & 0.140 & 0.27 & 6.51 \\
+		2.5 yr & 1.302 & 0.873 & 0.115 & 1.49 & 11.34 & 1.041 & 1.774 & 0.192 & 0.59 & 5.23 \\
+		5 yr & 1.292 & 2.154 & 0.100 & 0.60 & 12.91 & 1.071 & 1.667 & 0.218 & 0.64 & 4.82 \\
+		10 yr & 1.100 & 8.666 & 0.132 & 0.13 & 8.39 & 0.896 & 3.839 & 0.230 & 0.23 & 3.95 \\
+		12.5 yr & 0.997 & 7.176 & 0.150 & 0.14 & 6.67 & 0.837 & 6.832 & 0.244 & 0.12 & 3.57 \\
+		15 yr & 0.895 & 2.173 & 0.150 & 0.41 & 5.87 & 0.770 & 7.482 & 0.255 & 0.10 & 3.21 \\
+		17.5 yr & 0.770 & 2.072 & 0.120 & 0.37 & 6.20 & 0.670 & 4.191 & 0.259 & 0.16 & 2.78 \\
+		20 yr & 0.695 & 1.740 & 0.114 & 0.40 & 5.85 & 0.606 & 3.588 & 0.241 & 0.17 & 2.65 \\
+		22.5 yr & 0.671 & 2.018 & 0.116 & 0.33 & 5.49 & 0.601 & 2.598 & 0.231 & 0.23 & 2.70 \\
+		25 yr & 0.669 & 1.982 & 0.123 & 0.34 & 5.14 & 0.600 & 2.600 & 0.230 & 0.23 & 2.67 \\
+		27.5 yr & 0.669 & 1.980 & 0.124 & 0.34 & 5.11 & 0.600 & 2.150 & 0.231 & 0.28 & 2.66 \\
+		30 yr & 0.669 & 1.980 & 0.124 & 0.34 & 5.11 & 0.600 & 2.150 & 0.231 & 0.28 & 2.66 \\
+		\addlinespace[4pt]
+		\multicolumn{11}{l}{\textit{Panel B: ME ($\beta_{ME}$)}} \\
+		\addlinespace[2pt]
+		0 yr & 0.900 & 5.002 & 0.375 & 0.18 & 1.76 & 1.794 & 10.281 & 0.432 & 0.17 & 4.15 \\
+		0.1 yr & 0.824 & 4.778 & 0.413 & 0.17 & 1.36 & 1.766 & 10.532 & 0.708 & 0.17 & 2.27 \\
+		2.5 yr & 0.924 & 7.566 & 0.289 & 0.12 & 2.53 & 2.120 & 4.776 & 0.538 & 0.44 & 3.81 \\
+		5 yr & 0.994 & 14.402 & 0.227 & 0.07 & 3.67 & 2.042 & 5.068 & 0.587 & 0.40 & 3.59 \\
+		10 yr & 1.015 & 16.368 & 0.246 & 0.06 & 3.75 & 1.610 & 13.506 & 0.649 & 0.12 & 2.91 \\
+		12.5 yr & 1.040 & 6.372 & 0.316 & 0.16 & 3.11 & 1.647 & 16.615 & 0.728 & 0.10 & 2.69 \\
+		15 yr & 0.837 & 4.392 & 0.489 & 0.19 & 1.51 & 1.597 & 2.591 & 0.757 & 0.62 & 2.55 \\
+		17.5 yr & 0.602 & 4.727 & 0.759 & 0.13 & 0.66 & 1.488 & 1.672 & 0.745 & 0.89 & 2.37 \\
+		20 yr & 0.274 & 3.077 & 0.792 & 0.09 & 0.15 & 1.415 & 1.253 & 0.661 & 1.13 & 2.35 \\
+		22.5 yr & 0.060 & 2.449 & 0.719 & 0.02 & -0.24 & 1.363 & 0.955 & 0.574 & 1.43 & 2.51 \\
+		25 yr & 0.018 & 2.389 & 0.729 & 0.01 & -0.28 & 1.332 & 0.954 & 0.550 & 1.40 & 2.50 \\
+		27.5 yr & 0.014 & 2.384 & 0.729 & 0.01 & -0.28 & 1.326 & 0.759 & 0.549 & 1.75 & 2.48 \\
+		30 yr & 0.014 & 2.384 & 0.729 & 0.01 & -0.28 & 1.326 & 0.759 & 0.549 & 1.75 & 2.48 \\
+		\bottomrule
+	\end{tabular}
+	\par\vspace{2pt}
+	{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = stability ratio (estimate / fold dispersion). Significance markers based on $t_A$: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+\end{table}
+
+\begin{table}[htbp]
+	\centering
+	\footnotesize
+	\caption{Empirical Estimates: PE: MKT + ROE Model}
+	\label{tab:empirical_pe_roe}
+	\begin{tabular}{l *{5}{r} *{5}{r}}
+		\toprule
+		& \multicolumn{5}{c}{Equal-Weighted (EW)} & \multicolumn{5}{c}{Value-Weighted (FW)} \\
+		\cmidrule(lr){2-6} \cmidrule(lr){7-11}
+		Horizon & $\hat{\beta}$ & SE$_A$ & SD$_{CV}$ & $t_A$ & $\mathrm{SR}_{CV}$ & $\hat{\beta}$ & SE$_A$ & SD$_{CV}$ & $t_A$ & $\mathrm{SR}_{CV}$ \\
+		\midrule
+		\multicolumn{11}{l}{\textit{Panel A: Market Factor ($\beta_{MKT}$)}} \\
+		\addlinespace[2pt]
+		0 yr & 1.021 & 1.241 & 0.124 & 0.82 & 8.24 & 0.976 & 1.582 & 0.207 & 0.62 & 4.79 \\
+		0.1 yr & 1.037 & 2.388 & 0.125 & 0.43 & 8.35 & 0.989 & 1.627 & 0.207 & 0.61 & 4.86 \\
+		2.5 yr & 1.020 & 2.370 & 0.147 & 0.43 & 7.11 & 0.996 & 6.597 & 0.222 & 0.15 & 4.46 \\
+		5 yr & 1.088 & 0.928 & 0.129 & 1.17 & 8.56 & 1.012 & 784.787 & 0.228 & 0.00 & 4.37 \\
+		10 yr & 1.129 & 0.857 & 0.132 & 1.32 & 8.64 & 1.036 & 6.643 & 0.243 & 0.16 & 4.11 \\
+		12.5 yr & 1.101 & 0.890 & 0.141 & 1.24 & 7.70 & 1.031 & 3.514 & 0.243 & 0.29 & 3.91 \\
+		15 yr & 1.093 & 0.854 & 0.145 & 1.28 & 7.27 & 1.002 & 3.999 & 0.270 & 0.25 & 3.27 \\
+		17.5 yr & 1.052 & 14.386 & 0.176 & 0.07 & 5.71 & 0.908 & 3.293 & 0.323 & 0.28 & 2.47 \\
+		20 yr & 1.012 & 5.785 & 0.188 & 0.17 & 5.42 & 0.768 & 2.823 & 0.390 & 0.27 & 1.74 \\
+		22.5 yr & 0.965 & 4.297 & 0.230 & 0.22 & 4.30 & 0.684 & 2.033 & 0.425 & 0.34 & 1.47 \\
+		25 yr & 0.946 & 4.686 & 0.243 & 0.20 & 4.01 & 0.664 & 1.961 & 0.433 & 0.34 & 1.41 \\
+		27.5 yr & 0.944 & 4.685 & 0.244 & 0.20 & 3.99 & 0.664 & 1.958 & 0.434 & 0.34 & 1.41 \\
+		30 yr & 0.944 & 4.685 & 0.244 & 0.20 & 3.99 & 0.664 & 1.958 & 0.434 & 0.34 & 1.41 \\
+		\addlinespace[4pt]
+		\multicolumn{11}{l}{\textit{Panel B: ROE ($\beta_{ROE}$)}} \\
+		\addlinespace[2pt]
+		0 yr & 0.668 & 1.238 & 0.571 & 0.54 & 1.19 & 1.063 & 1.569 & 1.022 & 0.68 & 0.78 \\
+		0.1 yr & 0.634 & 2.298 & 0.544 & 0.28 & 1.17 & 1.009 & 1.650 & 0.971 & 0.61 & 0.77 \\
+		2.5 yr & 0.506 & 2.024 & 0.476 & 0.25 & 1.04 & 0.670 & 6.647 & 0.960 & 0.10 & 0.59 \\
+		5 yr & 0.287 & 0.984 & 0.441 & 0.29 & 0.71 & 0.240 & 736.719 & 0.819 & 0.00 & 0.35 \\
+		10 yr & -0.062 & 3.275 & 0.495 & -0.02 & 0.04 & -0.204 & 4.578 & 0.727 & -0.04 & -0.04 \\
+		12.5 yr & -0.220 & 2.701 & 0.560 & -0.08 & -0.14 & -0.325 & 2.025 & 0.725 & -0.16 & -0.10 \\
+		15 yr & -0.312 & 3.489 & 0.684 & -0.09 & -0.16 & -0.354 & 1.942 & 0.696 & -0.18 & -0.10 \\
+		17.5 yr & -0.379 & 22.063 & 0.803 & -0.02 & -0.18 & -0.323 & 1.986 & 0.678 & -0.16 & -0.07 \\
+		20 yr & -0.419 & 9.840 & 0.203 & -0.04 & -2.28 & -0.239 & 3.292 & 0.680 & -0.07 & 0.04 \\
+		22.5 yr & -0.406 & 7.976 & 0.213 & -0.05 & -2.29 & -0.171 & 2.541 & 0.714 & -0.07 & 0.12 \\
+		25 yr & -0.388 & 8.204 & 0.224 & -0.05 & -2.11 & -0.154 & 2.489 & 0.712 & -0.06 & 0.13 \\
+		27.5 yr & -0.386 & 8.218 & 0.225 & -0.05 & -2.10 & -0.154 & 2.487 & 0.707 & -0.06 & 0.13 \\
+		30 yr & -0.386 & 8.218 & 0.225 & -0.05 & -2.10 & -0.154 & 2.487 & 0.707 & -0.06 & 0.13 \\
+		\bottomrule
+	\end{tabular}
+	\par\vspace{2pt}
+	{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = stability ratio (estimate / fold dispersion). Significance markers based on $t_A$: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+\end{table}
+
+
