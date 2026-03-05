@@ -1,0 +1,67 @@
+\subsection{Formal MSE decomposition}
+\label{sec:appendix_mse_decomposition}
+
+The qualitative tradeoff described above can be formalized into an explicit Mean Squared Error (MSE) decomposition that separates the population-level targeting error (from the Timing Risk Premium) and the finite-sample estimation error (from the nonlinear objective).
+Let $\theta_0$ denote the structural parameter of interest (e.g., the true factor loadings).
+The standard MSE around this structural parameter decomposes into squared bias and variance:
+\begin{equation}
+	\label{eq:mse_general}
+	\mathrm{MSE}(\hat{\theta}_H, \theta_0) 
+	\;:=\; \mathbb{E}\big[\|\hat{\theta}_H - \theta_0\|^2\big]
+	\;=\; \|\mathbb{E}[\hat{\theta}_H] - \theta_0\|^2 + \mathbb{E}\big[\|\hat{\theta}_H - \mathbb{E}[\hat{\theta}_H]\|^2\big]
+\end{equation}
+
+To understand how this behaves under horizon averaging, we expand this around the horizon-specific pseudo-true parameter $\theta^*_H$.
+\begin{proposition}[MSE decomposition of the horizon-averaged estimator]
+	\label{prop:mse_decomp}
+	Under the regularity conditions for the finite-sample bias expansion of nonlinear M-estimators \citep{rilstone1996second, bao2007finite}, the mean squared error of $\hat{\theta}_H$ around the structural parameter $\theta_0$ decomposes to leading order as:
+	\begin{equation}
+		\label{eq:mse_leading_order}
+		\mathrm{MSE}(\hat{\theta}_H, \theta_0) 
+		\;\approx\; 
+		\underbrace{B_{\text{pop}}(H)^2}_{\text{TRP targeting error}} + 
+		\underbrace{B_{\text{fs}}(H)^2}_{\text{Finite-sample bias}} + 
+		\underbrace{\mathcal{V}(H)}_{\text{Estimator variance}}
+	\end{equation}
+	where
+	\begin{align*}
+		B_{\text{pop}}(H)^2 &:= \|\theta^*_H - \theta_0\|^2 \\
+		B_{\text{fs}}(H)^2  &:= \|\mathbb{E}[\hat{\theta}_H] - \theta^*_H\|^2 \;\propto\; \mathrm{Var}[\bar{\epsilon}_i^{(H)}(\theta^*_H)] / n \\
+		\mathcal{V}(H)      &:= \mathrm{tr}(\Sigma_H / n)
+	\end{align*}
+	with $\Sigma_H$ denoting the asymptotic sandwich covariance matrix evaluated at $\theta^*_H$.
+\end{proposition}
+
+The cross-term $2(\theta^*_H - \theta_0)^\top \mathbb{E}[\hat{\theta}_H - \theta^*_H]$ is absorbed into the leading-order factorization because both bias terms decay with sample size $n$ and horizon $H$, respectively.
+
+\begin{corollary}[Monotonicity in $H$]
+	\label{cor:mse_monotonicity}
+	Under the conditions of Proposition \ref{prop:mse_decomp}, the components of the MSE exhibit the following monotonicity properties with respect to the maximum compounding horizon $H$:
+	\begin{enumerate}
+		\item[(i)] $B_{\text{pop}}(H)$ is non-decreasing in $H$ with $B_{\text{pop}}(0) = 0$. Each additional NFV term $\tau > t_{i,j}^{\mathrm{Inv}}$ contributes a non-negative TRP increment to the population moment (Equation \ref{eq:bias_npv_nfv}), while the $1/|\mathcal{T}_i|$ denominator ensures that $B_{\text{pop}}(H)$ grows sublinearly.
+		\item[(ii)] $B_{\text{fs}}(H)$ is non-increasing in $H$. Because the pricing errors $\epsilon_{\tau,i}$ are imperfectly correlated across $\tau$, the variance of the average moment $\mathrm{Var}[\bar{\epsilon}_i^{(H)}]$ decreases strictly with $|\mathcal{T}_i|$, which in turn monotonically reduces the finite-sample bias induced by the nonlinear objective.
+		\item[(iii)] $\mathcal{V}(H)$ is non-increasing in $H$. Averaging across multiple compounding dates corresponds to combining imperfectly correlated moment conditions, which weakly reduces the asymptotic variance of $\hat{\theta}_H$ around $\theta^*_H$.
+	\end{enumerate}
+	Consequently, provided the TRP terms are not identically zero, the total $\mathrm{MSE}(H)$ admits an interior minimum at some optimal horizon $H^* \in (0, \infty)$.
+\end{corollary}
+
+\begin{remark}[Magnitude of the population bias]
+	While $B_{\text{pop}}(H)$ grows with $H$, its magnitude is tightly disciplined by fundamental asset pricing bounds. For each deal $j$ and discounting date $\tau > t_{i,j}^{\mathrm{Inv}}$, the Cauchy--Schwarz inequality applied to the \cite{HJ91} framework bounds the covariance:
+	\begin{equation*}
+		\left| \mathrm{Cov}\Big(\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau},\, \delta_{i,j}\Big) \right| 
+		\leq 
+		\sigma\Big(\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}\Big) \cdot \sigma(\delta_{i,j})
+	\end{equation*}
+	The standard deviation of the SDF ratio is bounded by the maximum Sharpe ratio over the $(t_{i,j}^{\mathrm{Inv}}, \tau)$ horizon times $\mathbb{E}[\Psi_{t_{i,j}^{\mathrm{Inv}}}/\Psi_\tau]$. 
+	Furthermore, the $1/|\mathcal{T}_i|$ averaging dilutes these terms: for a fund with roughly $12H$ discounting dates, the cumulative TRP contribution enters $B_{\text{pop}}(H)$ with a $1/(12H)$ scaling factor.
+	Under our baseline simulation data generating process, the resulting TRP population bias $B_{\text{pop}}(H^*)$ is an order of magnitude smaller than the uncorrected finite-sample bias $B_{\text{fs}}(0)$ at the zero horizon.
+\end{remark}
+
+\begin{remark}[DGP dependence of $H^*$]
+	The exact location of the interior minimum $H^*$ depends sensitively on the underlying data generating process:
+	(1) higher idiosyncratic volatility $\sigma$ increases $B_{\text{fs}}$, shifting $H^*$ upward; 
+	(2) higher factor volatility and risk premiums increase SDF variability and thus $B_{\text{pop}}$, shifting $H^*$ downward; 
+	(3) larger cross-sectional sample sizes $n$ shrink $B_{\text{fs}}$, shifting $H^*$ downward as the relative benefit of horizon averaging diminishes.
+	The simulation results in Section \ref{sec:simulation_study} empirically confirm this tradeoff and indicate that $H^* \approx 12$--$15$~years under our baseline calibration.
+\end{remark}
+

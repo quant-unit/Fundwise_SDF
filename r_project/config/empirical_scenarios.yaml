@@ -173,6 +173,78 @@ scenarios:
     active: false
     final_nav_discount: 50
 
+  fw_no_cv_north_america_NC0:
+    description: "Fund-weighted VYP, no CV, North America"
+    weighting: "FW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+    final_nav_discount: 0
+
+  ew_no_cv_north_america_NC0:
+    description: "Equal-weighted VYP, no CV, North America"
+    weighting: "EW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+    final_nav_discount: 0
+
+  fw_no_cv_north_america_NC25:
+    description: "Fund-weighted VYP, no CV, North America"
+    weighting: "FW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+    final_nav_discount: 25
+
+  ew_no_cv_north_america_NC25:
+    description: "Equal-weighted VYP, no CV, North America"
+    weighting: "EW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+    final_nav_discount: 25
+
+  fw_no_cv_north_america_NC50:
+    description: "Fund-weighted VYP, no CV, North America"
+    weighting: "FW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+    final_nav_discount: 50
+
+  ew_no_cv_north_america_NC50:
+    description: "Equal-weighted VYP, no CV, North America"
+    weighting: "EW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+    final_nav_discount: 50
+    
+  fw_no_cv_north_america_NC75:
+    description: "Fund-weighted VYP, no CV, North America"
+    weighting: "FW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+    final_nav_discount: 75
+
+  ew_no_cv_north_america_NC75:
+    description: "Equal-weighted VYP, no CV, North America"
+    weighting: "EW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+    final_nav_discount: 75
+    
 # ============================================================================
 # TWO-FACTOR MODELS (Market Beta + Second Factor)
 # ============================================================================

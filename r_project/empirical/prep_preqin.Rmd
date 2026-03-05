@@ -348,15 +348,21 @@ make.preqin.csv <- function(fund.size.weighting, vin.year.pfs, region.filter, fi
     invisible(df.out)
 }
 # Execute for various configurations
-df.out <- make.preqin.csv(TRUE, TRUE, "North America")
-df.out <- make.preqin.csv(FALSE, TRUE, "North America")
+df.out.fw <- make.preqin.csv(TRUE, TRUE, "North America")
+df.out.ew <- make.preqin.csv(FALSE, TRUE, "North America")
 df.out <- make.preqin.csv(TRUE, TRUE, "North America", 0.5) # 50% final NAV discount
 df.out <- make.preqin.csv(FALSE, TRUE, "North America", 0.5) # 50% final NAV discount
+df.out <- make.preqin.csv(TRUE, TRUE, "North America", 0.25) # 50% final NAV discount
+df.out <- make.preqin.csv(FALSE, TRUE, "North America", 0.25) # 50% final NAV discount
+df.out <- make.preqin.csv(TRUE, TRUE, "North America", 0.75) # 50% final NAV discount
+df.out <- make.preqin.csv(FALSE, TRUE, "North America", 0.75) # 50% final NAV discount
+df.out <- make.preqin.csv(TRUE, TRUE, "North America", 0) # 50% final NAV discount
+df.out <- make.preqin.csv(FALSE, TRUE, "North America", 0) # 50% final NAV discount
 
 df.out <- make.preqin.csv(TRUE, TRUE, NA)
 df.out <- make.preqin.csv(FALSE, TRUE, NA)
-df.out.fw <- make.preqin.csv(TRUE, FALSE, NA)
-df.out.ew <- make.preqin.csv(FALSE, FALSE, NA)
+df.out <- make.preqin.csv(TRUE, FALSE, NA)
+df.out <- make.preqin.csv(FALSE, FALSE, NA)
 df.out <- make.preqin.csv(TRUE, TRUE, NA, 0.5) # 50% final NAV discount
 df.out <- make.preqin.csv(FALSE, TRUE, NA, 0.5) # 50% final NAV discount
 
@@ -413,6 +419,23 @@ for (f_type in c("PE", "BO", "VC")) {
     agg.all$Vintage <- as.factor(agg.all$Vintage)
     agg.all$Weighting <- factor(agg.all$Weighting, levels = c("Fund-size weighted", "Equal weighted"))
 
+    # Define custom color scale
+    vintages <- levels(agg.all$Vintage)
+
+    target_vintages <- as.character(2011:2021)
+    target_vintages <- target_vintages[target_vintages %in% vintages]
+    other_vintages <- setdiff(vintages, target_vintages)
+
+    # Full plasma scale for older vintages
+    other_colors <- scales::viridis_pal(option = "plasma", end = 0.9)(length(other_vintages))
+    names(other_colors) <- other_vintages
+
+    # Distinct teal/green gradient for 2011-2021 so they stand out but don't merge into a single solid color
+    target_colors <- grDevices::colorRampPalette(c("#66c2a4", "#006d2c"))(length(target_vintages))
+    names(target_colors) <- target_vintages
+
+    vintage_colors <- c(other_colors, target_colors)
+
     # Create faceted plot
     p_jcurve <- ggplot(agg.all, aes(x = Age, y = CumCF_Pct, color = Vintage)) +
         geom_line(linewidth = 1) +
@@ -426,7 +449,7 @@ for (f_type in c("PE", "BO", "VC")) {
             strip.text = element_text(size = 11, face = "bold"),
             panel.grid.minor = element_blank()
         ) +
-        scale_color_viridis_d(option = "plasma", end = 0.9) +
+        scale_color_manual(values = vintage_colors) +
         labs(
             title = paste0("Cumulative net cash flows since inception (all available ", f_type, " vintages in Preqin dataset)"),
             y = "",

@@ -295,7 +295,7 @@ plot_empirical_estimates <- function(
             scale_linetype_manual(values = linetypes_source, name = "Estimation Method") +
             scale_shape_manual(values = shapes_source, name = "Estimation Method") +
             scale_x_continuous(
-                breaks = seq(0, max(mkt_df$horizon_years, na.rm = TRUE), by = 5),
+                breaks = seq(0, max(c(0, mkt_df$horizon_years), na.rm = TRUE), by = 5),
                 expand = c(0.02, 0)
             ) +
             labs(
@@ -372,7 +372,7 @@ plot_empirical_estimates <- function(
                     scale_linetype_manual(values = linetypes_source, name = "Estimation Method") +
                     scale_shape_manual(values = shapes_source, name = "Estimation Method") +
                     scale_x_continuous(
-                        breaks = seq(0, max(coef_df$horizon_years, na.rm = TRUE), by = 5),
+                        breaks = seq(0, max(c(0, coef_df$horizon_years), na.rm = TRUE), by = 5),
                         expand = c(0.02, 0)
                     ) +
                     labs(
@@ -861,7 +861,7 @@ plot_max_vintage_cutoff <- function(
         for (w in c("EW", "FW")) {
             folder <- file.path(
                 data_dir,
-                paste0("cache_q_factors_", data_source, "_", w, "_VYP", nc_tag, region_tag, "_max_vin_", v)
+                paste0("cache_q_factors_", data_source, "_", w, "_VYP", region_tag, nc_tag, "_max_vin_", v)
             )
             csv_path <- file.path(folder, "0_asymptotic_inference_summary.csv")
 
@@ -969,7 +969,7 @@ plot_max_vintage_cutoff <- function(
                 guide  = guide_legend(nrow = 1)
             ) +
             scale_x_continuous(
-                breaks = seq(0, max(df$horizon_years, na.rm = TRUE), by = 5),
+                breaks = seq(0, max(c(0, df$horizon_years), na.rm = TRUE), by = 5),
                 expand = c(0.02, 0)
             ) +
             labs(
@@ -1518,7 +1518,7 @@ plot_max_vintage_cutoff_combined_mkt <- function(
             nt <- nc_tags[i]
             nl <- nc_labels[i]
             for (w in c("EW", "FW")) {
-                folder <- file.path(data_dir, paste0("cache_q_factors_", data_source, "_", w, "_VYP", nt, region_tag, "_max_vin_", v))
+                folder <- file.path(data_dir, paste0("cache_q_factors_", data_source, "_", w, "_VYP", region_tag, nt, "_max_vin_", v))
                 csv_path <- file.path(folder, "0_asymptotic_inference_summary.csv")
                 if (!file.exists(csv_path)) {
                     warning(paste("File not found (skipped):", csv_path))
@@ -1580,7 +1580,7 @@ plot_max_vintage_cutoff_combined_mkt <- function(
             geom_line(linewidth = main.linewidth, alpha = 0.85) +
             geom_point(size = 1.5 * cex, alpha = 0.85) +
             scale_color_viridis_d(option = "turbo", name = "Max Vintage Year", guide = guide_legend(nrow = 1)) +
-            scale_x_continuous(breaks = seq(0, max(df$horizon_years, na.rm = TRUE), by = 5), expand = c(0.02, 0)) +
+            scale_x_continuous(breaks = seq(0, max(c(0, df$horizon_years), na.rm = TRUE), by = 5), expand = c(0.02, 0)) +
             labs(title = title, x = "Horizon (Years)", y = if (show_y_label) y_label else NULL) +
             {
                 if (!is.null(v.lines_vec)) {
@@ -2203,7 +2203,7 @@ plot_max_vintage_cutoff_combined_mkt(
 ### Preqin - North America
 ### Paper: Buyout (BO) and Venture Capital (VC)
 
-file.folder <- "data_out_2026_03_03"
+file.folder <- "data_out_2026_03_04"
 out.folder <- "figures_bovc_us" # North America Results
 
 # BO: Two-factor model with only Alpha
@@ -2278,23 +2278,23 @@ plot_empirical_estimates(
 )
 
 # BO Combined MKT Max vintage-year cutoff analysis (100% NAV and 50% NAV-discount)
-# plot_max_vintage_cutoff_combined_mkt(
-#     data_dir = file.folder,
-#     fund_type = "BO",
-#     vintages = 2011:2021,
-#     nc_tags = c("", "_NC50"),
-#     nc_labels = c("100% NAV as Cashflow", "50% NAV-discount sample"),
-#     export_pdf = TRUE,
-#     export_svg = TRUE,
-#     export_csv = TRUE,
-#     width = 7,
-#     height = 4,
-#     y.max.mkt = 2.5, y.min.mkt = 0,
-#     main.linewidth = 0.8,
-#     weighting_filter = c("FW"),
-#     region = "North America",
-#     output_file = paste0(out.folder, "/max_vintage_BO_US_MKT_combined_NC")
-# )
+plot_max_vintage_cutoff_combined_mkt(
+    data_dir = file.folder,
+    fund_type = "BO",
+    vintages = 2011:2021,
+    nc_tags = c("", "_NC50"),
+    nc_labels = c("100% NAV as Cashflow", "50% NAV-discount sample"),
+    export_pdf = TRUE,
+    export_svg = TRUE,
+    export_csv = TRUE,
+    width = 7,
+    height = 4,
+    y.max.mkt = 3, y.min.mkt = 0,
+    main.linewidth = 0.8,
+    weighting_filter = c("FW"),
+    region = "North America",
+    output_file = paste0(out.folder, "/max_vintage_BO_US_MKT_combined_NC")
+)
 
 # VC: Two-factor model with only Alpha
 plot_empirical_estimates(
@@ -2368,20 +2368,44 @@ plot_empirical_estimates(
 )
 
 # VC Combined MKT Max vintage-year cutoff analysis (100% NAV and 50% NAV-discount)
-# plot_max_vintage_cutoff_combined_mkt(
-#     data_dir = file.folder,
-#     fund_type = "VC",
-#     vintages = 2011:2021,
-#     nc_tags = c("", "_NC50"),
-#     nc_labels = c("100% NAV as Cashflow", "50% NAV-discount sample"),
-#     export_pdf = TRUE,
-#     export_svg = TRUE,
-#     export_csv = TRUE,
-#     width = 7,
-#     height = 4,
-#     y.max.mkt = 2.5, y.min.mkt = 0,
-#     main.linewidth = 0.8,
-#     weighting_filter = c("FW"),
-#     region = "North America",
-#     output_file = paste0(out.folder, "/max_vintage_VC_US_MKT_combined_NC")
-# )
+plot_max_vintage_cutoff_combined_mkt(
+    data_dir = file.folder,
+    fund_type = "VC",
+    vintages = 2011:2021,
+    nc_tags = c("", "_NC50"),
+    nc_labels = c("100% NAV as Cashflow", "50% NAV-discount sample"),
+    export_pdf = TRUE,
+    export_svg = TRUE,
+    export_csv = TRUE,
+    width = 7,
+    height = 4,
+    y.max.mkt = 3, y.min.mkt = 0,
+    main.linewidth = 0.8,
+    weighting_filter = c("FW"),
+    region = "North America",
+    output_file = paste0(out.folder, "/max_vintage_VC_US_MKT_combined_NC")
+)
+
+# NAV Discounts
+
+file.folder <- "data_out_2026_03_05"
+out.folder <- "figures_bovc_us" # North America Results
+
+plot_max_vintage_cutoff_combined_mkt(
+  data_dir = file.folder,
+  fund_type = "VC",
+  vintages = 2010,
+  nc_tags = c("_NC0","_NC25", "_NC50", "_NC75"),
+  nc_labels = c("0% NAV as Cashflow", "25% NAV-discount sample", "50% NAV-discount sample", "50% NAV-discount sample"),
+  export_pdf = TRUE,
+  export_svg = TRUE,
+  export_csv = TRUE,
+  width = 7,
+  height = 4,
+  y.max.mkt = 3, y.min.mkt = 0,
+  main.linewidth = 0.8,
+  weighting_filter = c("FW"),
+  region = "North America",
+  output_file = paste0(out.folder, "/nav_disc_VC_US_MKT_combined_NC")
+)
+

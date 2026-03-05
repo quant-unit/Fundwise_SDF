@@ -241,9 +241,9 @@ source(here("results/analyze_result.R"))
 suffix <- paste0("FW_VYP_NC50_max_vin_", 2021)
 source(here("results/analyze_result.R"))
 
-# 5. Preqin North America results ----
+# 5. Preqin North America USD results ----
 
-data.out.folder <- "results/data_out_2026_03_03"
+data.out.folder <- "results/data_out_2026_03_04"
 
 prefix <- "q_factors_preqin_"
 suffix <- "EW_VYP_North America"
@@ -254,3 +254,150 @@ prefix <- "q_factors_preqin_"
 suffix <- "FW_VYP_North America"
 
 source(here("results/analyze_result.R"))
+
+# 6. Preqin North America USD Vintage Year Cutoffs ----
+
+data.out.folder <- "results/data_out_2026_03_04"
+
+suffix <- paste0("EW_VYP_North America_max_vin_", 2011)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_North America_max_vin_", 2012)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_North America_max_vin_", 2013)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_North America_max_vin_", 2014)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_North America_max_vin_", 2015)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_North America_max_vin_", 2016)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_North America_max_vin_", 2017)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_North America_max_vin_", 2018)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_North America_max_vin_", 2019)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_North America_max_vin_", 2020)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_North America_max_vin_", 2021)
+source(here("results/analyze_result.R"))
+
+
+suffix <- paste0("FW_VYP_North America_max_vin_", 2011)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_North America_max_vin_", 2012)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_North America_max_vin_", 2013)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_North America_max_vin_", 2014)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_North America_max_vin_", 2015)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_North America_max_vin_", 2016)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_North America_max_vin_", 2017)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_North America_max_vin_", 2018)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_North America_max_vin_", 2019)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_North America_max_vin_", 2020)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_North America_max_vin_", 2021)
+source(here("results/analyze_result.R"))
+
+# 6b. Preqin North America USD Vintage Year Cutoffs (NC50) ----
+
+prefix <- "q_factors_preqin_"
+
+suffix <- paste0("EW_VYP_North America_NC50_max_vin_", 2011)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_North America_NC50_max_vin_", 2012)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_North America_NC50_max_vin_", 2013)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_North America_NC50_max_vin_", 2014)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_North America_NC50_max_vin_", 2015)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_North America_NC50_max_vin_", 2016)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_North America_NC50_max_vin_", 2017)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_North America_NC50_max_vin_", 2018)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_North America_NC50_max_vin_", 2019)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_North America_NC50_max_vin_", 2020)
+source(here("results/analyze_result.R"))
+suffix <- paste0("EW_VYP_North America_NC50_max_vin_", 2021)
+source(here("results/analyze_result.R"))
+
+suffix <- paste0("FW_VYP_North America_NC50_max_vin_", 2011)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_North America_NC50_max_vin_", 2012)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_North America_NC50_max_vin_", 2013)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_North America_NC50_max_vin_", 2014)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_North America_NC50_max_vin_", 2015)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_North America_NC50_max_vin_", 2016)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_North America_NC50_max_vin_", 2017)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_North America_NC50_max_vin_", 2018)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_North America_NC50_max_vin_", 2019)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_North America_NC50_max_vin_", 2020)
+source(here("results/analyze_result.R"))
+suffix <- paste0("FW_VYP_North America_NC50_max_vin_", 2021)
+source(here("results/analyze_result.R"))
+
+# 7. Preqin North America USD NAV Discounts ----
+
+data.out.folder <- "results/data_out_2026_03_05"
+
+prefix <- "q_factors_preqin_"
+suffix <- "EW_VYP_North America_NC0"
+
+source(here("results/analyze_result.R"))
+
+prefix <- "q_factors_preqin_"
+suffix <- "FW_VYP_North America_NC0"
+
+source(here("results/analyze_result.R"))
+
+prefix <- "q_factors_preqin_"
+suffix <- "EW_VYP_North America_NC25"
+
+source(here("results/analyze_result.R"))
+
+prefix <- "q_factors_preqin_"
+suffix <- "FW_VYP_North America_NC25"
+
+source(here("results/analyze_result.R"))
+
+prefix <- "q_factors_preqin_"
+suffix <- "EW_VYP_North America_NC50"
+
+source(here("results/analyze_result.R"))
+
+prefix <- "q_factors_preqin_"
+suffix <- "FW_VYP_North America_NC50"
+
+source(here("results/analyze_result.R"))
+
+prefix <- "q_factors_preqin_"
+suffix <- "EW_VYP_North America_NC75"
+
+source(here("results/analyze_result.R"))
+
+prefix <- "q_factors_preqin_"
+suffix <- "FW_VYP_North America_NC75"
+
+source(here("results/analyze_result.R"))
+
+
