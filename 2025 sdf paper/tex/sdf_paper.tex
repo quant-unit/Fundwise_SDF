@@ -1824,7 +1824,7 @@ Taking the unconditional expectation yields
 	\right]
 \end{equation}
 
-Because we now compute the unconditional expectation rather than conditioning on $\mathcal{F}_\tau$, we can decompose each $(\tau, j)$ term via the standard covariance identity $\mathbb{E}[XY] = \mathrm{Cov}(X,Y) + \mathbb{E}[X]\mathbb{E}[Y]$:
+Because we now compute the unconditional expectation rather than conditioning on the deal investment date $\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$, we can decompose each $(\tau, j)$ term via the standard covariance identity $\mathbb{E}[XY] = \mathrm{Cov}(X,Y) + \mathbb{E}[X]\mathbb{E}[Y]$:
 \begin{equation}
 	\label{eq:cov_decomp}
 	\mathbb{E}\!\left[
@@ -1907,7 +1907,7 @@ Therefore the bias decomposes as
 
 \noindent\textbf{Remark (misspecification).}
 Under model misspecification, $\mathbb{E}[\delta_{i,j}] \neq 0$ and the second term in Equation~\ref{eq:cov_decomp} no longer vanishes.
-This introduces an additional bias component proportional to $\mathbb{E}[\Psi_{t_{i,j}^{\mathrm{Inv}}}/\Psi_\tau] \cdot \mathbb{E}[\delta_{i,j}]$; while the $1/|\mathcal{T}_i|$ denominator dilutes each additional term, the bias grows with $|\mathcal{T}_i|$ whenever the added NFV terms have non-vanishing $\mathbb{E}[\Psi_{t_{i,j}^{\mathrm{Inv}}}/\Psi_\tau]$, so that the cumulative sum of misspecification terms outpaces the averaging effect.
+This introduces a persistent bias component governed by $\mathbb{E}[\Psi_{t_{i,j}^{\mathrm{Inv}}}/\Psi_\tau] \cdot \mathbb{E}[\delta_{i,j}]$. Since this non-zero baseline permeates the NFV terms $\tau > t_{i,j}^{\mathrm{Inv}}$, it does not wash out with horizon averaging. Instead, the persistent misspecification bias bounds the average pricing error firmly away from zero, regardless of how large the compounding horizon $H$ gets.
 
 
 \subsection{Reconciliation with the simulation study}
@@ -1932,7 +1932,7 @@ where $H = \nabla^2 Q_n(\theta_0)$ denotes the Hessian of the objective function
 The term $\text{curvature}$ refers to the second-order derivatives $\nabla^2_\theta \bar{\epsilon}_i(\theta_0)$ of the moment conditions with respect to the parameter vector.
 These derivatives measure how nonlinear the estimating equations are in $\theta$: if the pricing-error moments were perfectly linear in $\theta$, the curvature would vanish and no finite-sample bias would arise.
 The correction term $b(\cdot)$ is the Nagar-type bias correction from \cite{rilstone1996second} and \cite{newey2004higher}; it captures the interaction between the variance of the moment conditions $\mathrm{Var}[\bar{\epsilon}_i(\theta_0)]$ and the curvature of the objective.
-Specifically, $b$ is proportional to $\mathrm{Var}[\bar{\epsilon}_i(\theta_0)]$: the noisier the moments, the more the nonlinear optimizer is ``pulled away'' from the true $\theta_0$ in finite samples, because the concavity/convexity of $Q_n$ causes asymmetric responses to positive and negative moment deviations.
+Specifically, $b$ is driven by the covariance between the moment Jacobian (the gradient of the pricing errors) and the pricing errors themselves, which scales with $\mathrm{Var}[\bar{\epsilon}_i(\theta_0)]$. The noisier the moment conditions, the larger the correlation between the score and the objective function's curvature, exacerbating the finite-sample bias of the nonlinear estimator.
 When each fund provides only one noisy moment (NPV-only), this variance is high, resulting in a substantial finite-sample bias.
 
 \paragraph{Effect 2: Variance reduction through $\mathcal{T}$-averaging}
@@ -2018,13 +2018,13 @@ To understand how this behaves under horizon averaging, we expand this around th
 	with $\Sigma_H$ denoting the asymptotic sandwich covariance matrix evaluated at $\theta^*_H$.
 \end{proposition}
 
-The cross-term $2(\theta^*_H - \theta_0)^\top \mathbb{E}[\hat{\theta}_H - \theta^*_H]$ is absorbed into the leading-order factorization because both bias terms decay with sample size $n$ and horizon $H$, respectively.
+The cross-term $2(\theta^*_H - \theta_0)^\top \mathbb{E}[\hat{\theta}_H - \theta^*_H]$ is of order $\mathcal{O}(1/n)$, as the population bias $B_{\text{pop}}$ is $\mathcal{O}(1)$ with respect to sample size $n$, while the finite-sample bias $B_{\text{fs}}$ decays as $\mathcal{O}(1/n)$. While this cross-term is of the same asymptotic order as the variance $\mathcal{V}(H)$, the leading-order factorization in Equation~\ref{eq:mse_leading_order} conceptually isolates the squared targeting error $B_{\text{pop}}(H)^2$ from the finite-sample nonlinearity variance and bias.
 
 \begin{corollary}[Monotonicity in $H$]
 	\label{cor:mse_monotonicity}
 	Under the conditions of Proposition \ref{prop:mse_decomp}, the components of the MSE exhibit the following monotonicity properties with respect to the maximum compounding horizon $H$:
 	\begin{enumerate}
-		\item[(i)] $B_{\text{pop}}(H)$ is non-decreasing in $H$ with $B_{\text{pop}}(0) = 0$. Each additional NFV term $\tau > t_{i,j}^{\mathrm{Inv}}$ contributes a non-negative TRP increment to the population moment (Equation \ref{eq:bias_npv_nfv}), while the $1/|\mathcal{T}_i|$ denominator ensures that $B_{\text{pop}}(H)$ grows sublinearly.
+		\item[(i)] $B_{\text{pop}}(H)$ generally accumulates with $H$, starting from $B_{\text{pop}}(0) = 0$. As $H$ increases, additional NFV terms $\tau > t_{i,j}^{\mathrm{Inv}}$ introduce non-zero Timing Risk Premium covariances to the population moment (Equation \ref{eq:bias_npv_nfv}). The $1/|\mathcal{T}_i|$ denominator ensures that these terms are diluted, constraining the growth of $B_{\text{pop}}(H)$ to be small relative to the variance reduction.
 		\item[(ii)] $B_{\text{fs}}(H)$ is non-increasing in $H$. Because the pricing errors $\epsilon_{\tau,i}$ are imperfectly correlated across $\tau$, the variance of the average moment $\mathrm{Var}[\bar{\epsilon}_i^{(H)}]$ decreases strictly with $|\mathcal{T}_i|$, which in turn monotonically reduces the finite-sample bias induced by the nonlinear objective.
 		\item[(iii)] $\mathcal{V}(H)$ is non-increasing in $H$. Averaging across multiple compounding dates corresponds to combining imperfectly correlated moment conditions, which weakly reduces the asymptotic variance of $\hat{\theta}_H$ around $\theta^*_H$.
 	\end{enumerate}
