@@ -52,7 +52,7 @@
 	
 	\vspace{0.6em}
 	\begin{itemize}
-		\item Goal: recover latent market exposure from PE cash flow data.
+		\item Goal: recover latent market exposure from \emph{cash flow data}.
 		\item Plan: naive approach first, then semiparametric SDF estimation.
 	\end{itemize}
 	
@@ -63,6 +63,7 @@
 		\item Risk-adjusted benchmarks for private equity funds.
 		\item Holistic risk management for public and private portfolios.
 		\item More realistic strategic asset allocation decisions.
+		\item Cash-flow based risk assessment for private ``in-house" projects.
 	\end{itemize}
 \end{frame}
 
@@ -299,47 +300,7 @@ Nonlinear least-mean-distance:
 \end{frame}
 
 
-\begin{frame}[t]{Empirical: 4.\ Results Reported by \cite{DLP12}}
-	
-For VC funds, \cite{DLP12} report an annualized $\alpha$ of 
-\vspace{0.25em}
-\begin{itemize}
-	\item -12.3\% \hspace{0.5em} in the $\alpha+MKT$ model,
-	\item -8.5\% \hspace{1em} in the $\alpha+MKT+SMB+HML$ model.
-\end{itemize}
 
-\vspace{0.5em}
-
-For BO funds, \cite{DLP12} report an annualized $\alpha$ of 
-\vspace{0.25em}
-\begin{itemize}
-	\item -4.8\% \hspace{1em} in the $\alpha+MKT$ model,
-	\item -11.0\% \hspace{0.6em} in the $\alpha+MKT+SMB+HML$ model.
-\end{itemize}
-
-
-\vspace{0.25em}
-
-{\tiny
-\begin{center}
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{llcccc}
-\toprule
-Type & Model & $\alpha$ (monthly) & $\beta_{MKT}$ & $\beta_{SMB}$ & $\beta_{HML}$ \\
-\midrule
-VC & $\alpha$ + MKT & $-1.09^{***}$ (0.21) & $2.73^{***}$ (0.55) & -- & -- \\
-VC & $\alpha$ + MKT + SMB + HML & $-0.74^{*}$ (0.41) & $2.37^{***}$ (0.55) & 0.94 (0.65) & -0.24 (0.67) \\
-BO & $\alpha$ + MKT & -0.41 (0.58) & $1.31^{**}$ (0.66) & -- & -- \\
-BO & $\alpha$ + MKT + SMB + HML & -0.97 (0.70) & $1.71^{***}$ (0.65) & -0.92 (0.65) & 1.43 (1.17) \\
-\bottomrule
-\end{tabular}
-\end{center}
-}
-
-\vspace{0.25em}
-\tiny Source: \cite{DLP12}, Table 5, Panel A (net-of-fee cash flows). Standard errors in parentheses are bootstrap SEs; stars follow the original significance notation. Based on \cite{FF15} factors.
-
-\end{frame}
 
 
 
@@ -390,7 +351,47 @@ BO & $\alpha$ + MKT + SMB + HML & -0.97 (0.70) & $1.71^{***}$ (0.65) & -0.92 (0.
 \end{frame}
 
 
-
+\begin{frame}[t]{Empirical Results Reported by \cite{DLP12}}
+	
+	For VC funds, \cite{DLP12} report an annualized $\alpha$ of 
+	\vspace{0.25em}
+	\begin{itemize}
+		\item -12.3\% \hspace{0.5em} in the $\alpha+MKT$ model,
+		\item -8.5\% \hspace{1em} in the $\alpha+MKT+SMB+HML$ model.
+	\end{itemize}
+	
+	\vspace{0.5em}
+	
+	For BO funds, \cite{DLP12} report an annualized $\alpha$ of 
+	\vspace{0.25em}
+	\begin{itemize}
+		\item -4.8\% \hspace{1em} in the $\alpha+MKT$ model,
+		\item -11.0\% \hspace{0.6em} in the $\alpha+MKT+SMB+HML$ model.
+	\end{itemize}
+	
+	
+	\vspace{0.25em}
+	
+	{\small
+		\begin{center}
+			\setlength{\tabcolsep}{3pt}
+			\begin{tabular}{llcccc}
+				\toprule
+				Type & Model & $\alpha$ (monthly) & $\beta_{MKT}$ & $\beta_{SMB}$ & $\beta_{HML}$ \\
+				\midrule
+				VC & $\alpha$ + MKT & $-1.09^{***}$ (0.21) & $2.73^{***}$ (0.55) & -- & -- \\
+				VC & $\alpha$ + MKT + SMB + HML & $-0.74^{*}$ (0.41) & $2.37^{***}$ (0.55) & 0.94 (0.65) & -0.24 (0.67) \\
+				BO & $\alpha$ + MKT & -0.41 (0.58) & $1.31^{**}$ (0.66) & -- & -- \\
+				BO & $\alpha$ + MKT + SMB + HML & -0.97 (0.70) & $1.71^{***}$ (0.65) & -0.92 (0.65) & 1.43 (1.17) \\
+				\bottomrule
+			\end{tabular}
+		\end{center}
+	}
+	
+	\vspace{0.25em}
+	\tiny Source: \cite{DLP12}, Table 5, Panel A (net-of-fee cash flows). Standard errors in parentheses are bootstrap SEs; stars follow the original significance notation. Based on \cite{FF15} factors.
+	
+\end{frame}
 
 
 
