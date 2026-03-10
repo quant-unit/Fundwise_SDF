@@ -33,7 +33,7 @@ defaults:
     sdf_model: "linear"
     weighting: "EW_VYP"
     error_function: "L2_Lasso"
-    max_months: [0, 1, 30, 60, 90, 120, 150, 180, 210, 240]
+    max_months: [0, 1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     lambdas: 0
     kernel_bandwidth: 12
     alpha_upper: 0.02
@@ -133,7 +133,6 @@ scenarios:
       investment_period: 5
       max_holding_period: 5
     estimation:
-      max_months: [0, 1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
       factors_to_use: ""
     active: true
     data_folder: auto
@@ -258,6 +257,56 @@ scenarios:
     active: true
     data_folder: auto
   
+  lifetime_1_1_alpha:
+    description: "Very short: investing=1, holding=1"
+    dgp:
+      investment_period: 1
+      max_holding_period: 1
+    estimation:
+      factors_to_use: "Alpha"
+    active: true
+    data_folder: auto
+  
+  lifetime_2_2_alpha:
+    description: "Very short: investing=1, holding=1"
+    dgp:
+      investment_period: 2
+      max_holding_period: 2
+    estimation:
+      factors_to_use: "Alpha"
+    active: true
+    data_folder: auto
+    
+  lifetime_3_3_alpha:
+    description: "Very short: investing=1, holding=1"
+    dgp:
+      investment_period: 3
+      max_holding_period: 3
+    estimation:
+      factors_to_use: "Alpha"
+    active: true
+    data_folder: auto
+  
+  lifetime_3_6_alpha:
+    description: "Very short: investing=1, holding=1"
+    dgp:
+      investment_period: 3
+      max_holding_period: 6
+    estimation:
+      factors_to_use: "Alpha"
+    active: true
+    data_folder: auto
+  
+  lifetime_3_10_alpha:
+    description: "Very short: investing=1, holding=1"
+    dgp:
+      investment_period: 3
+      max_holding_period: 10
+    estimation:
+      factors_to_use: "Alpha"
+    active: true
+    data_folder: auto
+    
   # --------------------------------------------------------------------------
   # No Investment Period (investing=0)
   # --------------------------------------------------------------------------

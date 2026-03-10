@@ -522,6 +522,7 @@ if (sys.nframe() == 0L) {
     cat("Available scenarios:\n\n")
     list_simulation_scenarios(active_only = FALSE)
     scenarios <- c(
+        "lifetime_1_1_alpha", "lifetime_2_2_alpha", "lifetime_3_3_alpha", "lifetime_3_6_alpha", "lifetime_3_10_alpha",
         "base_case_vyp",
         "base_case_zero_alpha", "base_case_positive_alpha", "base_case_negative_alpha",
         "big_n_v_60funds", "small_n_10funds", "exp_aff_alpha",
@@ -538,6 +539,6 @@ if (sys.nframe() == 0L) {
 
     results <- run_simulation_study(
         scenario_ids = scenarios,
-        generate_data = FALSE, estimate = FALSE, analyze = TRUE
+        generate_data = TRUE, estimate = TRUE, analyze = FALSE
     )
 }
