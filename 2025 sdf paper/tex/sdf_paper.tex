@@ -1513,7 +1513,7 @@ Tables~\ref{tab:empirical_bo_alpha}--\ref{tab:empirical_vc_alpha} and Figure~\re
 The results show the pathological behavior anticipated by the simulation study: once an unconstrained alpha intercept is introduced, the estimation destabilizes and the MKT loading collapses.
 
 For BO, the alpha term absorbs a substantial share of the explanatory power: under EW, $\hat{\alpha}$ ranges from 0.003 to 0.006 per month and the MKT coefficient oscillates erratically between 0.41 and 1.01, with no stable convergence across Horizons; under FW, $\hat{\alpha}$ is persistently around 0.005--0.008 per month while the MKT loading collapses to values between 0.10 and 0.32.
-The asymptotic standard errors are highly erratic, with several entries at or very near zero (indicating near-degenerate regions of the objective function) interspersed with values exceeding 25.
+The asymptotic standard errors are highly erratic, with several entries at or very near zero interspersed with values exceeding 25.
 Cross-validation fold dispersions for $\hat{\beta}_{\mathrm{MKT}}$ are large (0.09--0.49 under EW; 0.65--0.74 under FW), confirming that the collapsed point estimates are unstable across data subsets.
 
 For VC, the two-factor model exhibits a distinctive and economically puzzling pattern.
@@ -1872,7 +1872,7 @@ Hence the asymptotic bias of the average pricing error is entirely determined by
 \end{equation}
 
 The key observation is that this covariance is exactly zero when $\tau \leq t_{i,j}^{\mathrm{Inv}}$ (Case~A from Section~\ref{sec:asset_pricing_pooled}).
-When $\tau \leq t_{i,j}^{\mathrm{Inv}}$, iterated expectations through $\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$ give
+When $\tau \leq t_{i,j}^{\mathrm{Inv}}$, the SDF ratio $\Psi_{t_{i,j}^{\mathrm{Inv}}}/\Psi_\tau$ is determined entirely by realized factors up to time $t_{i,j}^{\mathrm{Inv}}$, making it $\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$-measurable and allowing us to pass it outside the inner conditional expectation. Iterated expectations through $\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$ therefore give
 \begin{equation}
 	\mathrm{Cov}\!\left(
 	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau},\,
@@ -1926,22 +1926,21 @@ The resolution involves two competing effects.
 
 \paragraph{Effect 1: Finite-sample bias from nonlinear estimation}
 
-We write the nonlinear least-squares objective in its maximization form $Q_n(\theta) = -\frac{1}{n}\sum_{i=1}^n \bar{\epsilon}_i(\theta)^2$, so that $\hat{\theta} = \arg\max_\theta Q_n(\theta)$ and the Hessian $H = \nabla^2 Q_n(\theta_0)$ is negative semi-definite at the optimum.\footnote{Equivalently, one may minimize $\frac{1}{n}\sum_i \bar{\epsilon}_i^2$; the sign change cancels in the bias expression below.}
-The finite-sample bias of $\hat{\theta}$ is approximately (standard \cite{nagar1959bias}-type expansion for M-estimators):
+Consider the nonlinear least-squares objective $Q_n(\theta) = \frac{1}{n}\sum_{i=1}^n \bar{\epsilon}_i^{(H)}(\theta)^2$, so that $\hat{\theta}_H = \arg\min_\theta Q_n(\theta)$.
+Because the population moment condition is not exactly satisfied at the structural parameter $\theta_0$ when taking NFV terms into account, the finite-sample bias of $\hat{\theta}_H$ is evaluated relative to the horizon-specific pseudo-true parameter $\theta^*_H$ (where the averaged population moment is exactly zero).
+Based on the standard \cite{nagar1959bias}-type expansion for nonlinear estimators \citep[e.g.,][]{rilstone1996second, newey2004higher, bao2007finite}, the finite-sample bias takes the conceptual form:
 \begin{equation}
 	\label{eq:finite_sample_bias}
-	\mathbb{E}[\hat{\theta} - \theta_0]
-	\approx
-	-\frac{1}{n}\, H^{-1} \cdot b\!\left(
-	\mathrm{Var}[\bar{\epsilon}_i],\, \text{curvature}
+	\mathbb{E}[\hat{\theta}_H - \theta^*_H]
+	\;\propto\;
+	\frac{1}{n}\, \mathcal{H}^{-1} \cdot \mathrm{Cov}\!\left( 
+	\text{Score}, \text{Curvature} 
 	\right)
 \end{equation}
-where $H = \nabla^2 Q_n(\theta_0)$ denotes the Hessian of the objective function.
-The term $\text{curvature}$ refers to the second-order derivatives $\nabla^2_\theta \bar{\epsilon}_i(\theta_0)$ of the moment conditions with respect to the parameter vector.
-These derivatives measure how nonlinear the estimating equations are in $\theta$: if the pricing-error moments were perfectly linear in $\theta$, the curvature would vanish and no finite-sample bias would arise.
-The correction term $b(\cdot)$ is the Nagar-type bias correction from \cite{rilstone1996second} and \cite{newey2004higher}; it captures the interaction between the variance of the moment conditions $\mathrm{Var}[\bar{\epsilon}_i(\theta_0)]$ and the curvature of the objective.
-Specifically, $b$ is driven by the covariance between the moment Jacobian (the gradient of the pricing errors) and the pricing errors themselves, which scales with $\mathrm{Var}[\bar{\epsilon}_i(\theta_0)]$. The noisier the moment conditions, the larger the correlation between the score and the objective function's curvature, exacerbating the finite-sample bias of the nonlinear estimator.
-When each fund provides only one noisy moment (NPV-only), this variance is high, resulting in a substantial finite-sample bias.
+where $\mathcal{H} = \nabla^2 Q_n(\theta^*_H)$ denotes the objective's positive-definite Hessian evaluated at the pseudo-true parameter, and the covariance captures the expectation of the product between the first and second derivatives of the moment conditions evaluated at $\theta^*_H$.
+If the pricing-error moments were perfectly linear in $\theta$, this curvature term would vanish and no finite-sample bias would arise.
+The magnitude of this finite-sample bias is largely dictated by the variance of the moment conditions $\mathrm{Var}[\bar{\epsilon}_i^{(H)}(\theta^*_H)]$: noisier moment conditions exacerbate the correlation between the score vector and the objective's curvature, significantly inflating the finite-sample bias.
+When each fund provides only one highly volatile moment (NPV-only, $H=0$), this variance is high, resulting in a substantial initial finite-sample bias.
 
 \paragraph{Effect 2: Variance reduction through $\mathcal{T}$-averaging}
 
@@ -2008,25 +2007,27 @@ The standard MSE around this structural parameter decomposes into squared bias a
 To understand how this behaves under horizon averaging, we expand this around the horizon-specific pseudo-true parameter $\theta^*_H$.
 \begin{proposition}[MSE decomposition of the horizon-averaged estimator]
 	\label{prop:mse_decomp}
-	Under the regularity conditions for the finite-sample bias expansion of nonlinear M-estimators \citep{rilstone1996second, bao2007finite}, the mean squared error of $\hat{\theta}_H$ around the structural parameter $\theta_0$ decomposes to leading order as:
+	Under the regularity conditions for the finite-sample bias expansion of nonlinear M-estimators \citep{rilstone1996second, bao2007finite}, the mean squared error of $\hat{\theta}_H$ around the structural parameter $\theta_0$ exactly decomposes into four components:
 	\begin{equation}
 		\label{eq:mse_leading_order}
 		\mathrm{MSE}(\hat{\theta}_H, \theta_0) 
-		\;\approx\; 
+		\;=\; 
 		\underbrace{B_{\text{pop}}(H)^2}_{\text{TRP targeting error}} + 
-		\underbrace{B_{\text{fs}}(H)^2}_{\text{Finite-sample bias}} + 
-		\underbrace{\mathcal{V}(H)}_{\text{Estimator variance}}
+		\underbrace{B_{\text{fs}}(H)^2}_{\text{Finite sample bias}^2} + 
+		\underbrace{\mathcal{V}(H)}_{\text{Estimator variance}} + 
+		\text{Cross-term}
 	\end{equation}
 	where
 	\begin{align*}
 		B_{\text{pop}}(H)^2 &:= \|\theta^*_H - \theta_0\|^2 \\
-		B_{\text{fs}}(H)^2  &:= \|\mathbb{E}[\hat{\theta}_H] - \theta^*_H\|^2 \;\propto\; \mathrm{Var}[\bar{\epsilon}_i^{(H)}(\theta^*_H)] / n \\
-		\mathcal{V}(H)      &:= \mathrm{tr}(\Sigma_H / n)
+		B_{\text{fs}}(H)^2  &:= \|\mathbb{E}[\hat{\theta}_H] - \theta^*_H\|^2 \;\propto\; \big( \mathrm{Var}[\bar{\epsilon}_i^{(H)}(\theta^*_H)] / n \big)^2 \\
+		\mathcal{V}(H)      &:= \mathrm{tr}(\Sigma_H / n) \\
+		\text{Cross-term}   &:= 2(\theta^*_H - \theta_0)^\top \mathbb{E}[\hat{\theta}_H - \theta^*_H]
 	\end{align*}
 	with $\Sigma_H$ denoting the asymptotic sandwich covariance matrix evaluated at $\theta^*_H$.
 \end{proposition}
 
-The cross-term $2(\theta^*_H - \theta_0)^\top \mathbb{E}[\hat{\theta}_H - \theta^*_H]$ is of order $\mathcal{O}(1/n)$, as the population bias $B_{\text{pop}}$ is $\mathcal{O}(1)$ with respect to sample size $n$, while the finite-sample bias $B_{\text{fs}}$ decays as $\mathcal{O}(1/n)$. While this cross-term is of the same asymptotic order as the variance $\mathcal{V}(H)$, the leading-order factorization in Equation~\ref{eq:mse_leading_order} conceptually isolates the squared targeting error $B_{\text{pop}}(H)^2$ from the finite-sample nonlinearity variance and bias.
+While the cross-term is non-zero, the economic tradeoff determining the optimal horizon $H^*$ is governed strategically by the opposing monotonic forces of the pure targeting error $B_{\text{pop}}(H)^2$ and the finite-sample estimation errors $\{B_{\text{fs}}(H)^2, \mathcal{V}(H)\}$. The covariance between the targeting error and the sampling error does not alter this fundamental directional tension.
 
 \begin{corollary}[Monotonicity in $H$]
 	\label{cor:mse_monotonicity}
@@ -2036,7 +2037,7 @@ The cross-term $2(\theta^*_H - \theta_0)^\top \mathbb{E}[\hat{\theta}_H - \theta
 		\item[(ii)] $B_{\text{fs}}(H)$ is non-increasing in $H$. Because the pricing errors $\epsilon_{\tau,i}$ are imperfectly correlated across $\tau$, the variance of the average moment $\mathrm{Var}[\bar{\epsilon}_i^{(H)}]$ decreases strictly with $|\mathcal{T}_i|$, which in turn monotonically reduces the finite-sample bias induced by the nonlinear objective.
 		\item[(iii)] $\mathcal{V}(H)$ is non-increasing in $H$. Averaging across multiple compounding dates corresponds to combining imperfectly correlated moment conditions, which weakly reduces the asymptotic variance of $\hat{\theta}_H$ around $\theta^*_H$.
 	\end{enumerate}
-	Consequently, provided the TRP terms are not identically zero, the total $\mathrm{MSE}(H)$ admits an interior minimum at some optimal horizon $H^* \in (0, \infty)$.
+	Consequently, provided the initial marginal reduction in finite-sample variance and bias exceeds the marginal penalty of the diluted TRP terms, the total $\mathrm{MSE}(H)$ admits an interior minimum at some optimal horizon $H^* \in (0, \infty)$.
 \end{corollary}
 
 \begin{remark}[Magnitude of the population bias]
@@ -2076,11 +2077,11 @@ Within the \cite{HJ91} framework, the magnitude of such covariances is bounded b
 Under correct model specification, the TRP terms are therefore non-zero (i.e., they reflect genuine systematic risk) but their size is disciplined by the Hansen--Jagannathan bound.
 Consequently, the TRP bias introduced by NFV terms ($\tau > t_{i,j}^{\mathrm{Inv}}$) grows only moderately with $|\mathcal{T}_i|$ and is further diluted by the $1/|\mathcal{T}_i|$ denominator.
 
-\paragraph{Analogy to model averaging.}
-The structure of $\mathcal{T}$-averaging closely mirrors the jackknife model averaging framework of \cite{hansen2012jackknife}, where combining multiple (possibly misspecified) estimators achieves a bias--variance tradeoff: averaging reduces variance at the expense of a small bias from the inclusion of imperfect components.
-In our setting, the ``models'' being averaged are not separate econometric specifications but rather the individual pricing-error moment conditions evaluated at different discounting dates $\tau$.
-Each individual moment is unbiased for the NPV terms but may carry TRP bias for the NFV terms; analogous to the weak misspecification in the \cite{hansen2012jackknife} setup.
-Their key insight applies directly: the variance reduction from averaging dominates the bias cost as long as the individual components are not too severely biased, which is precisely what the \cite{HJ91} bound guarantees in our context.
+\paragraph{Analogy to estimation with misspecified moments.}
+The structure of $\mathcal{T}$-averaging closely parallels the econometrics literature on estimation with misspecified models \citep[e.g.,][]{hall2003}, where evaluating GMM objective functions using moments that are structurally invalid alters both the convergence rate and the asymptotic distribution.
+In our setting, combining valid observations (the NPV terms) with weakly misspecified moments (the NFV terms affected by the Timing Risk Premium) achieves a deliberate finite-sample bias--variance tradeoff.
+Our procedure essentially adds structurally biased but informative moments into the estimation to aggressively collapse the estimator's variance. 
+The variance reduction dominates the bias cost as long as the individual misspecified components are not too severely biased, a restriction guaranteed precisely by the \cite{HJ91} bound in our context.
 
 \paragraph{Summary.}
 The $\mathcal{T}$-averaging mechanism does not make the TRP wash out in the sense that each individual TRP term goes to zero.
@@ -2098,7 +2099,7 @@ Across different macro regimes, the TRP cost could be larger and the optimal $|\
 
 \cite[Table 1]{DLP12} report Monte Carlo results for $n=50$ funds per vintage-year portfolio with an annualized idiosyncratic volatility of 108\% ($\sigma_{\text{monthly}}=0.3$).
 In our base case (S1), we use only $n=20$ funds per vintage, which is more realistic for older vintages and smaller private capital asset classes beyond Buyout and Venture Capital.
-Scenarios S2--S9 in Table~\ref{tab:driessen_comparison} systematically vary the simulation design to identify which features drive the remaining discrepancy between our results and the \cite{DLP12} benchmark.
+Scenarios S2--S10 in Table~\ref{tab:driessen_comparison} systematically vary the simulation design to identify which features drive the remaining discrepancy between our results and the \cite{DLP12} benchmark.
 
 Several structural differences between the two simulation designs should be noted.
 First, \cite{DLP12} use a shifted lognormal distribution for the idiosyncratic error term (cf.\ their online appendix, Equation~9), which ensures that the error addend has a finite lower bound (approximately $-1$) and avoids the non-linear distortions that arise when normally distributed errors occasionally produce extreme negative total returns.
@@ -2113,12 +2114,14 @@ Adding simulated market returns (S5) yields no further improvement ($\hat{\beta}
 The most effective modification is shortening the maximum deal holding period from 10 years to 5 years (S8), which significantly improves the beta estimate ($\hat{\beta}=0.91$) and reduces the alpha bias to $0.30\%$ without requiring lower idiosyncratic volatility.
 Combining this holding-period restriction with deterministic investment timing (S9) yields a similar beta estimate ($\hat{\beta}=0.88$) and alpha bias ($0.32\%$), with the deterministic timing contributing only a modest additional effect.
 By limiting the compounding duration, both scenarios restrict the geometric growth of idiosyncratic errors, reducing the frequency of degenerate alpha estimates and partially restoring the accuracy of the market beta.
-However, even the most favorable holding-period scenario (S8) still exhibits substantially more beta attenuation ($\hat{\beta}=0.91$ vs.\ $0.98$) and alpha bias ($0.30\%$ vs.\ $0.05\%$) than the \cite{DLP12} benchmark.
-Tightening the alpha upper bound $\bar{\alpha}$ dramatically affects results: at $\bar{\alpha}=0.5\%$ (S6), 32\% of draws hit the bound, and beta is close to the benchmark ($\hat{\beta}=0.87$), but at the cost of artificially constraining the alpha search space.
+Tightening the alpha upper bound $\bar{\alpha}$ also dramatically affects results: at $\bar{\alpha}=1\%$ (S6), 32\% of draws hit the bound, and beta is close to the benchmark ($\hat{\beta}=0.87$), but at the cost of artificially constraining the alpha search space.
+Combining all modifications---holding-period restrictions, deterministic timing, and a tighter alpha bound of $\bar{\alpha}=1\%$ (S10)---produces our closest approximation to the benchmark. 
+Under this configuration, the beta estimate improves to $0.93$ and the alpha bias falls to $0.27\%$, though 10\% of draws still hit the alpha bound.
+However, even under this most favorable scenario (S10), our estimator still exhibits substantially more beta attenuation ($\hat{\beta}=0.93$ vs.\ $0.98$) and alpha bias ($0.27\%$ vs.\ $0.05\%$) than the \cite{DLP12} benchmark.
 This sensitivity reveals a fundamental tension in the two-factor model: the alpha term absorbs residual nonlinearity that the linear SDF cannot capture, and bounding it arbitrarily distorts the beta estimate.
 
 Overall, the large remaining discrepancy between our simulation results and those of \cite{DLP12}, even after adopting their shifted lognormal errors and simulated market returns, suggests that the favorable small-sample properties reported in \cite{DLP12} may be overly optimistic when the alpha upper bound is set more liberally ($\bar{\alpha}=2\%$/month in our default configuration vs.\ $\bar{\alpha}=1\%$/month in \cite{DLP12}).
-Across all scenarios with $\sigma=30\%$, the beta estimates range from $0.62$ to $0.91$, well below the \cite{DLP12} benchmark of $0.98$, confirming the estimator's sensitivity to the interplay between idiosyncratic noise, compounding Horizon, and alpha bounds.
+Across all scenarios with $\sigma=30\%$, the beta estimates range from $0.62$ to $0.93$, well below the \cite{DLP12} benchmark of $0.98$, confirming the estimator's sensitivity to the interplay between idiosyncratic noise, compounding Horizon, and alpha bounds.
 
 
 % Table: Small-Sample Bias and Variance (Horizon 0)
@@ -2138,10 +2141,11 @@ Across all scenarios with $\sigma=30\%$, the beta estimates range from $0.62$ to
 			(S3) $n=50$, $\sigma=30\%$, Normal & 1.00 & 0.62 & 0.72 & 0.12 & 1.03 & 0.00 & 0.68 & 0.70 & 0.13 & 1.08 & 0\% \\
 			(S4) $n=50$, $\sigma=30\%$, Shifted LN & 1.00 & 0.71 & 0.72 & 0.23 & 1.12 & 0.00 & 0.57 & 0.67 & 0.07 & 0.91 & 0\% \\
 			(S5) $n=50$, $\sigma=30\%$, Shifted LN, Sim.~MKT & 1.00 & 0.66 & 0.79 & 0.11 & 1.06 & 0.00 & 0.71 & 0.79 & 0.03 & 1.34 & 0\% \\
-			(S6) $n=50$, $\sigma=30\%$, Shifted LN, Sim.~MKT, $\bar{\alpha}=0.5\%$ & 1.00 & 0.87 & 0.69 & 0.41 & 1.24 & 0.00 & 0.48 & 0.50 & 0.06 & 1.00 & 32\% \\
+			(S6) $n=50$, $\sigma=30\%$, Shifted LN, Sim.~MKT, $\bar{\alpha}=1\%$ & 1.00 & 0.87 & 0.69 & 0.41 & 1.24 & 0.00 & 0.48 & 0.50 & 0.06 & 1.00 & 32\% \\
 			(S7) $n=50$, $\sigma=30\%$, Shifted LN, Sim.~MKT, Det.~Timing & 1.00 & 0.70 & 0.79 & 0.19 & 1.12 & 0.00 & 0.65 & 0.80 & -0.01 & 1.20 & 0\% \\
 			(S8) $n=50$, $\sigma=30\%$, Shifted LN, Sim.~MKT, Max.~Hold 5 & 1.00 & 0.91 & 0.54 & 0.64 & 1.19 & 0.00 & 0.30 & 0.52 & -0.03 & 0.47 & 0\% \\
 			(S9) $n=50$, $\sigma=30\%$, Shifted LN, Sim.~MKT, Max.~Hold 5, Det.~Timing & 1.00 & 0.88 & 0.54 & 0.61 & 1.16 & 0.00 & 0.32 & 0.51 & -0.01 & 0.53 & 0\% \\
+			(S10) $n=50$, $\sigma=30\%$, Shifted LN, Sim.~MKT, Max.~Hold 5, Det.~Timing, $\bar{\alpha}=1\%$ & 1.00 & 0.93 & 0.50 & 0.65 & 1.17 & 0.00 & 0.27 & 0.39 & -0.01 & 0.52 & 10\% \\
 			\addlinespace
 			\multicolumn{12}{l}{\textit{Driessen et al. 2012, Table 1}} \\
 			Benchmark Estimates ($n=50$, $\sigma_{\text{monthly}}=30\%$) & 1.00 & 0.98 & 0.32 & 0.80 & 1.15 & 0.00 & 0.05 & 0.2 & -0.06 & 0.15 & n/a \\
@@ -2151,55 +2155,54 @@ Across all scenarios with $\sigma=30\%$, the beta estimates range from $0.62$ to
 	\begin{minipage}{\linewidth}
 		\vspace{0.2cm}
 		\footnotesize \textit{Notes:} 
-		This table reports the small-sample properties of the generalized estimator for Horizon~0 (i.e., treating funds as held to maturity), mimicking the structure of Table~1 in \cite{DLP12}. We simulate 1,000 Monte Carlo draws. 
-		All scenarios use 20 vintage years (1986--2005) with 15 deals per fund. The base case (S1) uses $n=20$ funds per vintage, $\sigma=0.2$ monthly idiosyncratic volatility, and a normal error distribution; scenarios S2--S9 deviate from these defaults as indicated in the table. 
-		The simulation dimensions vary as follows: $n$ = number of funds per vintage-year portfolio; $\sigma$ = monthly idiosyncratic standard deviation; \textit{Normal} = Gaussian error term (default); \textit{Shifted LN} = shifted lognormal error term (cf.\ \cite{DLP12}); \textit{Sim.~MKT} = total market return drawn from a shifted lognormal (S\&P~500 1980--2003 moments) with a constant risk-free rate of 4\% annualized, instead of conditioning on the historical path; \textit{Det.~Timing} = deterministic (evenly spaced) deal investment dates instead of random; \textit{Max.~Hold 5} = maximum holding period of a deal limited to 5 years (default 10 years); $\bar{\alpha}$ = upper bound on the alpha parameter in the optimization (default $\bar{\alpha} = 2\%$/month). 
-		The \textit{\%~Bound} column reports the fraction of draws where the alpha estimate reached the upper optimization bound~$\bar{\alpha}$. 
-		The final row presents the Benchmark Estimates obtained directly from Table~1 in \cite{DLP12} for comparative purposes. Alpha estimates are monthly and presented in percentages.
+		This table reports the small-sample properties of the generalized estimator for Horizon~0 (i.e., treating funds as held to maturity), mimicking the structure of Table~1 in \cite{DLP12}. We simulate 1,000 Monte Carlo draws. All scenarios use 20 vintage years (1986--2005) with 15 deals per fund; unless stated otherwise, $n=20$ funds per vintage, $\sigma=0.2$ monthly idiosyncratic volatility, and a normal error distribution. The simulation dimensions vary as follows: $n$ = number of funds per vintage-year portfolio; $\sigma$ = monthly idiosyncratic standard deviation; \textit{Normal} = Gaussian error term (default); \textit{Shifted LN} = shifted lognormal error term (cf.\ \cite{DLP12}); \textit{Sim.~MKT} = total market return drawn from a shifted lognormal (S\&P~500 1980--2003 moments) with a constant risk-free rate of 4\% annualized, instead of conditioning on the historical path; \textit{Det.~Timing} = deterministic (evenly spaced) deal investment dates instead of random; \textit{Max.~Hold 5} = maximum holding period of a deal limited to 5 years (default 10 years); $\bar{\alpha}$ = upper bound on the alpha parameter in the optimization (default $\bar{\alpha} = 2\%$/month). The \textit{\%~Bound} column reports the fraction of draws where the alpha estimate reached the upper optimization bound~$\bar{\alpha}$. The final row presents the Benchmark Estimates obtained directly from Table~1 in \cite{DLP12} for comparative purposes. Alpha estimates are monthly and presented in percentages.
 	\end{minipage}
 \end{table}
 
 
 
 
+
 \subsection{Comparison to empirical results}
 
-\textcolor{orange}{TODO: replace with North America USD sub-sample results.}
 
-We now compare our empirical results directly with those published by \cite{DLP12}.
+In this section, we evaluate the empirical stability of single- and multi-factor SDF specifications by estimating these models on our dataset (for the US-Dollar North America subsample with maximum vintage 2010) and comparing the results directly with the benchmark estimates published by \cite{DLP12}.
 A key distinction is the underlying private market dataset: we use the Preqin cash flow database, which is also employed by \cite{KN16} and \cite{ACGP18}, whereas \cite{DLP12} rely on the Thomson Venture Economics (TVE) fund-level dataset, which suffers from well-documented data quality issues such as forward-filling of stale KPIs \citep{HJK14}.
 \cite[Table~5]{DLP12} report results for Buyout (BO) and Venture Capital (VC) funds using both a two-factor model (S\&P~500 MKT + $\alpha$) and the \cite{FF93} four-factor model (MKT, SMB, HML, and $\alpha$).
 In their two-factor specification, VC exhibits a market beta of 2.73 and a highly negative annualized alpha of $-12.3\%$, while BO yields a market beta of 1.31 and an annualized alpha of $-4.8\%$.
-These strongly negative alpha estimates can be at least partially attributed to the aforementioned data errors in TVE; indeed, the BO alpha coefficient is statistically insignificant once bootstrap standard errors are taken into account, whereas the VC alpha remains significant.
+These strongly negative alpha estimates can be at least partially attributed to the aforementioned data errors in TVE.
+Indeed, the BO alpha coefficient is statistically insignificant once bootstrap standard errors are taken into account, whereas the VC alpha remains significant.
 In their four-factor specification, the factor loadings are broadly plausible: BO exhibits $\hat{\beta}_{\mathrm{MKT}}=0.72$, $\hat{\beta}_{\mathrm{SMB}}=0.50$, and $\hat{\beta}_{\mathrm{HML}}=0.19$, while VC shows $\hat{\beta}_{\mathrm{MKT}}=2.20$, $\hat{\beta}_{\mathrm{SMB}}=1.83$, and $\hat{\beta}_{\mathrm{HML}}=-0.48$.
 However, \cite{DLP12} note that the four-factor model does not significantly improve upon the two-factor specification and that the SMB and HML loadings are largely insignificant.
 
 Table~\ref{tab:driessen_comparison_bo_vc} and Table~\ref{tab:driessen_comparison_pe} present our empirical results for the single-factor (MKT), two-factor ($\alpha$, MKT), three-factor (MKT, SMB, HML), and four-factor ($\alpha$, MKT, SMB, HML) \cite{FF93} models for BO, VC, and PE at Horizon~0, using the conservatively restricted sample with a maximum vintage-year cutoff of 2010.
 
 We begin with the single-factor MKT model to establish a reliable baseline.
-Under this specification, market betas are consistently positive and theoretically plausible: the cross-validation fold averages ($\hat{\beta}_{\mathrm{MKT}}$) are 1.20 for BO, 1.74 for VC, and 1.27 for PE under equal weighting (EW). 
-The CV standard deviations verify that these estimates are highly stable across data subsets (e.g., CV standard deviations of 0.11 for BO and 0.06 for PE under EW).
+Under this specification, market betas are consistently positive and theoretically plausible: the cross-validation fold averages ($\hat{\beta}_{\mathrm{MKT}}$) are 1.23 for BO, 1.78 for VC, and 1.21 for PE under equal weighting (EW). 
+The CV standard deviations verify that these estimates are highly stable across data subsets (e.g., CV standard deviations of 0.12 for BO and 0.09 for PE under EW).
 This result provides solid empirical backing that private equity returns exhibit strong, persistent co-movement with the broader market.
 
 However, when explicitly allowing for an abnormal performance $\alpha$ intercept alongside the market factor, the estimation immediately collapses.
-In the two-factor model ($\alpha$, MKT), the alpha parameter effectively acts as a sink that absorbs random, fund-specific noise compounded over a fund's lifetime.
-Even when restricting the sample to mature vintages, private equity datasets contain relatively few funds per year. As a result, there are simply not enough cross-sectional observations to adequately average out this idiosyncratic noise.
-Consequently, the optimizer overwhelmingly assigns inflated, positive alpha premiums (often hitting or nearing the 2\% monthly bound, e.g., $\hat{\alpha} = 0.020$ for VC under EW and $0.011$ for BO under FW), while the market betas are artificially driven toward zero or even turn negative (e.g., $\hat{\beta}_{\mathrm{MKT}} = -0.13$ for BO and $-0.10$ for PE under FW).
-While asymptotic standard errors correspondingly explode or suspiciously round to zero (denoting entirely flat or near-degenerate regions in the objective function space), the CV standard deviations reveal the actual parameter variation across data subsets. 
-For instance, the cross-validation fold dispersion for the MKT estimate exceeds $0.5$ for both BO and PE under FW, confirming that the collapsed point estimates are highly sensitive to the sample and untrustworthy.
+In the two-factor model ($\alpha$, MKT), the alpha parameter becomes highly sensitive to random, fund-specific noise compounded over a fund's lifetime.
+Even when restricting the sample to mature vintages, private equity datasets contain relatively few funds per year. 
+As a result, there are simply not enough cross-sectional observations to adequately average out this idiosyncratic noise.
+Consequently, the optimizer overwhelmingly assigns inflated, positive alpha premiums (often hitting or nearing the 2\% monthly bound, e.g., $\hat{\alpha} = 0.020$ for VC under EW and $0.008$ for BO under FW), while the market betas are artificially driven toward zero (e.g., $\hat{\beta}_{\mathrm{MKT}} = 0.14$ for BO and $0.18$ for PE under FW).
+While asymptotic standard errors correspondingly explode or round to zero, the CV standard deviations reveal the actual parameter variation across data subsets. 
+For instance, the cross-validation fold dispersion for the MKT estimate exceeds $0.6$ for both BO and PE under FW, confirming that the collapsed point estimates are highly sensitive to the sample and untrustworthy.
 
 This pathological behavior extends directly to the multi-factor models.
-When estimating the three-factor model (MKT, SMB, HML) \emph{without} an alpha term, the estimates roughly mirror the MKT-only model (e.g., BO $\hat{\beta}_{\mathrm{MKT}} = 1.34$ under EW), and the CV analysis shows reasonable out-of-sample stability, even though the asymptotic standard errors are vast due to multicollinearity.
-The SMB loading is consistently positive for BO and PE, but predominantly negative or near zero for VC. Notably, this sign for VC generally \emph{reverses} the pattern reported by \cite{DLP12}, who find a strongly positive VC SMB loading ($\hat{\beta}_{\mathrm{SMB}}=1.83$). 
+When estimating the three-factor model (MKT, SMB, HML) \emph{without} an alpha term, the estimates roughly mirror the MKT-only model (e.g., BO $\hat{\beta}_{\mathrm{MKT}} = 1.35$ under EW), and the CV analysis shows reasonable out-of-sample stability, even though the asymptotic standard errors are vast.
+The SMB loading is consistently positive for BO and PE, but predominantly negative or near zero for VC. 
+Notably, this sign for VC generally \emph{reverses} the pattern reported by \cite{DLP12}, who find a strongly positive VC SMB loading ($\hat{\beta}_{\mathrm{SMB}}=1.83$). 
 The discrepancy likely reflects differences in the underlying datasets (Preqin vs.\ TVE) and sample periods, underscoring the severe fragility of multi-factor estimates in private equity.
 
 But once the alpha term is reintroduced in the four-factor model ($\alpha$, MKT, SMB, HML), the framework fails for the same reasons as the two-factor model.
-Because the alpha term absorbs the bulk of the remaining variance, the other factor loadings swing erratically: the asymptotic MKT coefficient for BO drops to essentially zero (-0.008 under FW), while SMB and HML loadings reach extreme values.
-The pervasive asymptotic standard errors of exactly $(0.000)$ in these models are a telltale numerical artifact of a near-singular Hessian matrix hitting the boundary constraints. 
-The CV analysis exposes this reality: rather than being perfectly estimated with zero error, the parameters swing erratically across hold-out sets, with CV standard deviations for the factor loadings routinely exceeding $0.4$, formally proving that the multi-factor models are entirely unreliable when alpha is included.
+Because the alpha term absorbs the bulk of the remaining variance, the other factor loadings swing erratically: the asymptotic MKT coefficient for BO drops substantially (to $0.25$ under FW), while SMB and HML loadings reach extreme values.
+The pervasive asymptotic standard errors of exactly $(0.000)$ in these models often coincide with the estimates hitting the boundary constraints. 
+The CV analysis exposes this reality: rather than being estimated with zero error, the parameters swing erratically across hold-out sets, with CV standard deviations for the factor loadings routinely exceeding $0.4$, indicating that the multi-factor models are highly unreliable when alpha is included.
 
 In conclusion, our empirical evaluation provides a strong, objective corroboration of the simulation-based warnings from Section~\ref{sec:simulation_study}: with the limited cross-section of only 20--40 vintage-year portfolios currently available in commercial private equity databases, any generalized SDF model attempting to simultaneously extract multiple pricing factors alongside an explicit alpha parameter is severely under-identified given the available cross-section. 
-The inclusion of an unconstrained or loosely constrained abnormal performance term systematically destroys the structural integrity of the entire factor model by confounding signal with cross-sectional noise.
+The inclusion of an unconstrained or loosely constrained abnormal performance term confounds the signal with cross-sectional noise, significantly destabilizing the factor model estimates.
 Therefore, until substantially more granular and independent cross-sectional data becomes cleanly available, we conclude that the single-factor market model remains the most robust and estimable specification for private equity SDF performance evaluation in our implementations.
 
 
@@ -2210,50 +2213,51 @@ Therefore, until substantially more granular and independent cross-sectional dat
 	\label{tab:driessen_comparison_bo_vc}
 	\resizebox{\textwidth}{!}{
 		\begin{tabular}{l cccc c cccc}
-			\toprule
-			& \multicolumn{4}{c}{Equal-Weighted (EW)} && \multicolumn{4}{c}{Value-Weighted (FW)} \\ \cmidrule(lr){2-5} \cmidrule(lr){7-10}
-			Model & $\alpha$ & MKT & SMB & HML && $\alpha$ & MKT & SMB & HML \\ \midrule
+			\hline\hline
+			& \multicolumn{4}{c}{Equal-Weighted (EW)} && \multicolumn{4}{c}{Fund-Weighted (FW)} \\ \cline{2-5} \cline{7-10}
+			Model & $\alpha$ & MKT & SMB & HML && $\alpha$ & MKT & SMB & HML \\ \hline
 			\multicolumn{10}{l}{\textbf{Buyout (BO)}} \\
-			1-Factor (Asymp.) &  & 1.229 &  &  &  &  & 1.157 &  &  \\
-			&  & (0.769) &  &  &  &  & (0.994) &  &  \\
-			1-Factor (CV) &  & 1.198 &  &  &  &  & 1.100 &  &  \\
-			&  & (0.110) &  &  &  &  & (0.160) &  &  \\
-			2-Factor (Asymp.) & 0.009 & 0.147 &  &  &  & 0.011 & -0.129 &  &  \\
-			& (0.000) & (0.080) &  &  &  & (0.071) & (11.302) &  &  \\
-			2-Factor (CV) & 0.007 & 0.411 &  &  &  & 0.010 & -0.128 &  &  \\
-			& (0.004) & (0.518) &  &  &  & (0.005) & (0.631) &  &  \\
-			3-Factor (Asymp.) &  & 1.340 & 1.330 & 0.533 &  &  & 1.221 & 2.025 & 0.439 \\
-			&  & (1.420) & (4.754) & (1.105) &  &  & (15.321) & (51.481) & (5.521) \\
-			3-Factor (CV) &  & 1.303 & 1.167 & 0.498 &  &  & 1.165 & 1.746 & 0.330 \\
-			&  & (0.164) & (0.389) & (0.120) &  &  & (0.160) & (0.489) & (0.240) \\
-			4-Factor (Asymp.) & 0.007 & 0.288 & 0.454 & 0.079 &  & 0.008 & -0.008 & 1.255 & -0.286 \\
-			& (0.004) & (0.000) & (0.000) & (0.000) &  & (0.001) & (0.000) & (0.000) & (0.000) \\
-			4-Factor (CV) & 0.005 & 0.676 & 0.303 & -0.004 &  & 0.008 & 0.276 & 0.787 & -0.110 \\
-			& (0.003) & (0.392) & (0.284) & (0.213) &  & (0.004) & (0.505) & (0.404) & (0.604) \\[0.15cm]
+			1-Factor (Asymp.) &  & 1.268 &  &  &  &  & 1.197 &  &  \\
+			&  & (1.162) &  &  &  &  & (1.177) &  &  \\
+			1-Factor (CV) &  & 1.234 &  &  &  &  & 1.142 &  &  \\
+			&  & (0.119) &  &  &  &  & (0.137) &  &  \\
+			2-Factor (Asymp.) & 0.004 & 1.005 &  &  &  & 0.008 & 0.140 &  &  \\
+			& (0.006) & (1.070) &  &  &  & (0.189) & (25.676) &  &  \\
+			2-Factor (CV) & 0.006 & 0.588 &  &  &  & 0.008 & 0.122 &  &  \\
+			& (0.004) & (0.481) &  &  &  & (0.005) & (0.718) &  &  \\
+			3-Factor (Asymp.) &  & 1.389 & 1.296 & 0.415 &  &  & 1.252 & 1.870 & 0.296 \\
+			&  & (1.588) & (4.991) & (0.988) &  &  & (2.471) & (6.876) & (2.989) \\
+			3-Factor (CV) &  & 1.354 & 1.144 & 0.391 &  &  & 1.198 & 1.544 & 0.196 \\
+			&  & (0.177) & (0.382) & (0.114) &  &  & (0.148) & (0.510) & (0.274) \\
+			4-Factor (Asymp.) & 0.004 & 1.005 & 0.006 & 0.008 &  & 0.007 & 0.251 & 0.147 & 0.115 \\
+			& (0.003) & (0.000) & (0.000) & (0.000) &  & (0.009) & (0.000) & (0.000) & (0.000) \\
+			4-Factor (CV) & 0.004 & 0.901 & 0.115 & -0.005 &  & 0.007 & 0.420 & 0.548 & -0.159 \\
+			& (0.002) & (0.215) & (0.241) & (0.122) &  & (0.007) & (0.774) & (1.090) & (0.907) \\[0.15cm]
 			\multicolumn{10}{l}{\textbf{Venture Capital (VC)}} \\
-			1-Factor (Asymp.) &  & 1.850 &  &  &  &  & 1.585 &  &  \\
-			&  & (1.743) &  &  &  &  & (1.600) &  &  \\
-			1-Factor (CV) &  & 1.743 &  &  &  &  & 1.584 &  &  \\
-			&  & (0.411) &  &  &  &  & (0.361) &  &  \\
-			2-Factor (Asymp.) & 0.020 & 0.442 &  &  &  & -0.001 & 1.691 &  &  \\
-			& (0.079) & (13.131) &  &  &  & (0.004) & (0.804) &  &  \\
-			2-Factor (CV) & 0.013 & 0.772 &  &  &  & 0.004 & 1.387 &  &  \\
-			& (0.009) & (0.206) &  &  &  & (0.010) & (0.558) &  &  \\
-			3-Factor (Asymp.) &  & 1.985 & -0.296 & 1.487 &  &  & 1.931 & -0.407 & 1.410 \\
-			&  & (0.710) & (1.765) & (0.289) &  &  & (0.931) & (1.723) & (0.419) \\
-			3-Factor (CV) &  & 1.893 & -0.303 & 1.253 &  &  & 1.871 & 0.062 & 1.102 \\
-			&  & (0.456) & (0.429) & (0.903) &  &  & (0.645) & (0.731) & (1.412) \\
-			4-Factor (Asymp.) & 0.004 & 1.587 & -0.675 & 1.679 &  & -0.002 & 1.843 & -0.173 & 0.154 \\
-			& (0.001) & (0.000) & (0.000) & (0.000) &  & (0.005) & (0.000) & (0.000) & (0.000) \\
-			4-Factor (CV) & 0.012 & 1.185 & 0.006 & 1.645 &  & 0.004 & 1.628 & -0.103 & 1.188 \\
-			& (0.009) & (0.385) & (0.516) & (1.763) &  & (0.009) & (0.541) & (0.709) & (1.966) \\
-			\bottomrule
+			1-Factor (Asymp.) &  & 1.887 &  &  &  &  & 1.588 &  &  \\
+			&  & (1.768) &  &  &  &  & (1.655) &  &  \\
+			1-Factor (CV) &  & 1.775 &  &  &  &  & 1.592 &  &  \\
+			&  & (0.405) &  &  &  &  & (0.363) &  &  \\
+			2-Factor (Asymp.) & 0.020 & 0.467 &  &  &  & -0.001 & 1.735 &  &  \\
+			& (0.121) & (19.892) &  &  &  & (0.050) & (11.554) &  &  \\
+			2-Factor (CV) & 0.014 & 0.732 &  &  &  & 0.004 & 1.409 &  &  \\
+			& (0.009) & (0.186) &  &  &  & (0.010) & (0.589) &  &  \\
+			3-Factor (Asymp.) &  & 2.013 & -0.364 & 1.425 &  &  & 1.943 & -0.444 & 1.395 \\
+			&  & (0.755) & (2.207) & (0.440) &  &  & (0.856) & (1.689) & (1.521) \\
+			3-Factor (CV) &  & 1.911 & -0.330 & 1.209 &  &  & 1.887 & 0.051 & 1.112 \\
+			&  & (0.453) & (0.430) & (0.946) &  &  & (0.666) & (0.720) & (1.444) \\
+			4-Factor (Asymp.) & 0.020 & 1.384 & 0.680 & 4.096 &  & 0.001 & 1.620 & -0.534 & 1.112 \\
+			& (0.000) & (0.000) & (0.000) & (0.000) &  & (0.003) & (0.000) & (0.000) & (0.000) \\
+			4-Factor (CV) & 0.012 & 1.090 & -0.171 & 1.534 &  & 0.005 & 1.780 & -0.053 & 1.437 \\
+			& (0.008) & (0.373) & (0.336) & (1.511) &  & (0.010) & (0.558) & (0.722) & (1.941) \\
+			\hline
 		\end{tabular}
 	}
 	\par
 	\vspace{1ex}
-	\raggedright \footnotesize \textit{Note:} This table presents the estimation results of the single-factor (MKT), 2-factor ($\alpha$, MKT), Fama-French 3-factor (MKT, SMB, HML), and 4-factor ($\alpha$, MKT, SMB, HML) models. Cash flows are discounted to horizon 0. Both asymptotic (Asymp.) full-sample estimates and cross-validation (CV) fold averages are reported. Fold dispersions (standard deviations of the estimates across CV folds) are reported in parentheses below the estimates. The estimation uses Equal-Weighted (EW) and Value-Weighted (FW) cash flows. The upper bound for $\alpha$ was constrained to 0.02.
+	\raggedright \footnotesize \textit{Note:} This table presents the estimation results of the single-factor (MKT), 2-factor ($\alpha$, MKT), Fama-French 3-factor (MKT, SMB, HML), and 4-factor ($\alpha$, MKT, SMB, HML) models. Cash flows are discounted to horizon 0. Both asymptotic (Asymp.) full-sample estimates and cross-validation (CV) means across hold-out sets are reported. Standard errors (or standard deviations of the estimates for CV) are reported in parentheses below the estimates. The estimation uses Equal-Weighted (EW) and Fund-Size-Weighted (FW) cash flows. The upper bound for $\alpha$ was constrained to 0.02.
 \end{table}
+
 
 
 
@@ -2263,33 +2267,34 @@ Therefore, until substantially more granular and independent cross-sectional dat
 	\label{tab:driessen_comparison_pe}
 	\resizebox{\textwidth}{!}{
 		\begin{tabular}{l cccc c cccc}
-			\toprule
-			& \multicolumn{4}{c}{Equal-Weighted (EW)} && \multicolumn{4}{c}{Value-Weighted (FW)} \\ \cmidrule(lr){2-5} \cmidrule(lr){7-10}
-			Model & $\alpha$ & MKT & SMB & HML && $\alpha$ & MKT & SMB & HML \\ \midrule
+			\hline\hline
+			& \multicolumn{4}{c}{Equal-Weighted (EW)} && \multicolumn{4}{c}{Fund-Weighted (FW)} \\ \cline{2-5} \cline{7-10}
+			Model & $\alpha$ & MKT & SMB & HML && $\alpha$ & MKT & SMB & HML \\ \hline
 			\multicolumn{10}{l}{\textbf{Private Equity (PE)}} \\
-			1-Factor (Asymp.) &  & 1.274 &  &  &  &  & 1.130 &  &  \\
-			&  & (0.799) &  &  &  &  & (1.029) &  &  \\
-			1-Factor (CV) &  & 1.268 &  &  &  &  & 1.065 &  &  \\
-			&  & (0.062) &  &  &  &  & (0.170) &  &  \\
-			2-Factor (Asymp.) & 0.004 & 1.005 &  &  &  & 0.010 & -0.102 &  &  \\
-			& (0.007) & (1.438) &  &  &  & (0.067) & (11.349) &  &  \\
-			2-Factor (CV) & 0.004 & 0.903 &  &  &  & 0.009 & -0.120 &  &  \\
-			& (0.002) & (0.291) &  &  &  & (0.005) & (0.626) &  &  \\
-			3-Factor (Asymp.) &  & 1.331 & 0.871 & 0.580 &  &  & 1.186 & 1.874 & 0.352 \\
-			&  & (1.503) & (1.744) & (0.762) &  &  & (521.924) & (1737.701) & (254.679) \\
-			3-Factor (CV) &  & 1.285 & 0.610 & 0.613 &  &  & 1.123 & 1.605 & 0.278 \\
-			&  & (0.153) & (0.385) & (0.161) &  &  & (0.162) & (0.443) & (0.206) \\
-			4-Factor (Asymp.) & 0.004 & 1.005 & 0.004 & 0.008 &  & 0.002 & 1.182 & 0.487 & 0.578 \\
-			& (0.004) & (0.000) & (0.000) & (0.000) &  & (0.001) & (0.000) & (0.000) & (0.000) \\
-			4-Factor (CV) & 0.005 & 0.853 & 0.030 & 0.028 &  & 0.005 & 0.501 & 0.791 & 0.144 \\
-			& (0.003) & (0.339) & (0.113) & (0.171) &  & (0.003) & (0.390) & (0.552) & (0.573) \\
-			\bottomrule
+			1-Factor (Asymp.) &  & 1.216 &  &  &  &  & 1.134 &  &  \\
+			&  & (0.793) &  &  &  &  & (1.171) &  &  \\
+			1-Factor (CV) &  & 1.214 &  &  &  &  & 1.083 &  &  \\
+			&  & (0.087) &  &  &  &  & (0.136) &  &  \\
+			2-Factor (Asymp.) & 0.003 & 1.003 &  &  &  & 0.008 & 0.178 &  &  \\
+			& (0.001) & (0.801) &  &  &  & (0.595) & (88.860) &  &  \\
+			2-Factor (CV) & 0.004 & 0.912 &  &  &  & 0.007 & 0.154 &  &  \\
+			& (0.002) & (0.259) &  &  &  & (0.005) & (0.630) &  &  \\
+			3-Factor (Asymp.) &  & 1.252 & 0.790 & 0.471 &  &  & 1.177 & 1.695 & 0.240 \\
+			&  & (13.846) & (4.351) & (10.009) &  &  & (4.248) & (4.996) & (2.624) \\
+			3-Factor (CV) &  & 1.210 & 0.522 & 0.548 &  &  & 1.140 & 1.418 & 0.169 \\
+			&  & (0.186) & (0.328) & (0.168) &  &  & (0.131) & (0.443) & (0.223) \\
+			4-Factor (Asymp.) & 0.003 & 1.003 & 0.003 & 0.006 &  & 0.009 & 0.035 & 0.095 & -0.177 \\
+			& (0.001) & (0.000) & (0.000) & (0.000) &  & (0.008) & (0.000) & (0.000) & (0.000) \\
+			4-Factor (CV) & 0.004 & 0.924 & 0.035 & 0.033 &  & 0.006 & 0.367 & 0.343 & -0.127 \\
+			& (0.002) & (0.226) & (0.091) & (0.075) &  & (0.005) & (0.460) & (1.075) & (0.836) \\
+			\hline
 		\end{tabular}
 	}
 	\par
 	\vspace{1ex}
-	\raggedright \footnotesize \textit{Note:} This table presents the estimation results of the single-factor (MKT), 2-factor ($\alpha$, MKT), Fama-French 3-factor (MKT, SMB, HML), and 4-factor ($\alpha$, MKT, SMB, HML) models. Cash flows are discounted to horizon 0. Both asymptotic (Asymp.) full-sample estimates and cross-validation (CV) fold averages are reported. Fold dispersions (standard deviations of the estimates across CV folds) are reported in parentheses below the estimates. The estimation uses Equal-Weighted (EW) and Value-Weighted (FW) cash flows. The upper bound for $\alpha$ was constrained to 0.02.
+	\raggedright \footnotesize \textit{Note:} This table presents the estimation results of the single-factor (MKT), 2-factor ($\alpha$, MKT), Fama-French 3-factor (MKT, SMB, HML), and 4-factor ($\alpha$, MKT, SMB, HML) models. Cash flows are discounted to horizon 0. Both asymptotic (Asymp.) full-sample estimates and cross-validation (CV) means across hold-out sets are reported. Standard errors (or standard deviations of the estimates for CV) are reported in parentheses below the estimates. The estimation uses Equal-Weighted (EW) and Fund-Size-Weighted (FW) cash flows. The upper bound for $\alpha$ was constrained to 0.02.
 \end{table}
+
 
 
 

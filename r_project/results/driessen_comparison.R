@@ -11,17 +11,17 @@ if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable())
 getwd()
 
 # folder for cross-validation
-base_folder <- "results/data_out_2026_02_26/"
-f_1f_ew_folder <- file.path(base_folder, "cache_ff3_factors_preqin_MKT_EW_VYP")
-f_1f_fw_folder <- file.path(base_folder, "cache_ff3_factors_preqin_MKT_FW_VYP")
-f_2f_ew_folder <- file.path(base_folder, "cache_ff3_factors_preqin_alpha_Alpha_EW_VYP")
-f_2f_fw_folder <- file.path(base_folder, "cache_ff3_factors_preqin_alpha_Alpha_FW_VYP")
+base_folder <- "results/data_out_2026_03_09/"
+f_1f_ew_folder <- file.path(base_folder, "cache_ff3_factors_preqin_MKT_EW_VYP_North America")
+f_1f_fw_folder <- file.path(base_folder, "cache_ff3_factors_preqin_MKT_FW_VYP_North America")
+f_2f_ew_folder <- file.path(base_folder, "cache_ff3_factors_preqin_alpha_Alpha_EW_VYP_North America")
+f_2f_fw_folder <- file.path(base_folder, "cache_ff3_factors_preqin_alpha_Alpha_FW_VYP_North America")
 # three-factor model: MKT + SMB + HML
-f_3f_ew_folder <- file.path(base_folder, "cache_ff3_factors_preqin_MKT_SMB_HML_EW_VYP")
-f_3f_fw_folder <- file.path(base_folder, "cache_ff3_factors_preqin_MKT_SMB_HML_FW_VYP")
+f_3f_ew_folder <- file.path(base_folder, "cache_ff3_factors_preqin_MKT_SMB_HML_EW_VYP_North America")
+f_3f_fw_folder <- file.path(base_folder, "cache_ff3_factors_preqin_MKT_SMB_HML_FW_VYP_North America")
 # four-factor model: Alpha + MKT + SMB + HML
-f_4f_ew_folder <- file.path(base_folder, "cache_ff3_factors_preqin_alpha_ALL_EW_VYP")
-f_4f_fw_folder <- file.path(base_folder, "cache_ff3_factors_preqin_alpha_ALL_FW_VYP")
+f_4f_ew_folder <- file.path(base_folder, "cache_ff3_factors_preqin_alpha_ALL_EW_VYP_North America")
+f_4f_fw_folder <- file.path(base_folder, "cache_ff3_factors_preqin_alpha_ALL_FW_VYP_North America")
 
 # Goal: 1. read all files per folder (and rbind to one data.frame), 2. filter appropriately, 3. determine CV mean and SD, 4. add CV results to LaTeX table
 

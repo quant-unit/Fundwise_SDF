@@ -8,7 +8,8 @@ scenarios <- c(
     "big_n_v_50funds_alpha_stdv30", "big_n_v_50funds_alpha_stdv30_shifted",
     "big_n_v_50funds_alpha_stdv30_shifted_mkt", "big_n_v_50funds_alpha_stdv30_shifted_mkt2",
     "big_n_v_50funds_alpha_stdv30_shifted_mkt4",
-    "big_n_v_50funds_alpha_stdv30_shifted_mkt6", "big_n_v_50funds_alpha_stdv30_shifted_mkt7"
+    "big_n_v_50funds_alpha_stdv30_shifted_mkt6", "big_n_v_50funds_alpha_stdv30_shifted_mkt7",
+    "big_n_v_50funds_alpha_stdv30_shifted_mkt8"
 )
 
 #' Generate a professional LaTeX table comparing our small-sample properties
@@ -64,10 +65,11 @@ generate_driessen_latex_table <- function(data_path, output_tex = NULL) {
         "big_n_v_50funds_alpha_stdv30" = "(S3) $n=50$, $\\sigma=30\\%$, Normal",
         "big_n_v_50funds_alpha_stdv30_shifted" = "(S4) $n=50$, $\\sigma=30\\%$, Shifted LN",
         "big_n_v_50funds_alpha_stdv30_shifted_mkt" = "(S5) $n=50$, $\\sigma=30\\%$, Shifted LN, Sim.~MKT",
-        "big_n_v_50funds_alpha_stdv30_shifted_mkt2" = "(S6) $n=50$, $\\sigma=30\\%$, Shifted LN, Sim.~MKT, $\\bar{\\alpha}=0.5\\%$",
+        "big_n_v_50funds_alpha_stdv30_shifted_mkt2" = "(S6) $n=50$, $\\sigma=30\\%$, Shifted LN, Sim.~MKT, $\\bar{\\alpha}=1\\%$",
         "big_n_v_50funds_alpha_stdv30_shifted_mkt4" = "(S7) $n=50$, $\\sigma=30\\%$, Shifted LN, Sim.~MKT, Det.~Timing",
         "big_n_v_50funds_alpha_stdv30_shifted_mkt6" = "(S8) $n=50$, $\\sigma=30\\%$, Shifted LN, Sim.~MKT, Max.~Hold 5",
-        "big_n_v_50funds_alpha_stdv30_shifted_mkt7" = "(S9) $n=50$, $\\sigma=30\\%$, Shifted LN, Sim.~MKT, Max.~Hold 5, Det.~Timing"
+        "big_n_v_50funds_alpha_stdv30_shifted_mkt7" = "(S9) $n=50$, $\\sigma=30\\%$, Shifted LN, Sim.~MKT, Max.~Hold 5, Det.~Timing",
+        "big_n_v_50funds_alpha_stdv30_shifted_mkt8" = "(S10) $n=50$, $\\sigma=30\\%$, Shifted LN, Sim.~MKT, Max.~Hold 5, Det.~Timing, $\\bar{\\alpha}=1\\%$"
     )
 
     # Formatting helper
@@ -150,5 +152,5 @@ generate_driessen_latex_table <- function(data_path, output_tex = NULL) {
 }
 
 # Example usage (uncomment to test directly):
-data_file <- "simulation/data_out_2026_new/bias_analysis/2026-02-24_185813_bias_full.csv"
+data_file <- "simulation/data_out_2026_new/bias_analysis/2026-03-10_193501_bias_full.csv"
 cat(generate_driessen_latex_table(data_file, output_tex = "simulation/driessen_simulation.tex"))

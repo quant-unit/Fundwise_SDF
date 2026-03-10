@@ -373,6 +373,7 @@ scenarios:
   ff3_fw_no_cv:
     description: "FF3 data, fund-weighted VYP, no CV (MKT-only)"
     public_filename: "ff3_factors"
+    region: "North America"
     weighting: "FW"
     do_cross_validation: false
     factors_to_use: "MKT"
@@ -381,6 +382,7 @@ scenarios:
   ff3_ew_no_cv:
     description: "FF3 data, equal-weighted VYP, no CV (MKT-only)"
     public_filename: "ff3_factors"
+    region: "North America"
     weighting: "EW"
     do_cross_validation: false
     factors_to_use: "MKT"
@@ -389,6 +391,7 @@ scenarios:
   ff3_fw_cv:
     description: "FF3 data, fund-weighted VYP, no CV (MKT-only)"
     public_filename: "ff3_factors"
+    region: "North America"
     weighting: "FW"
     do_cross_validation: true
     factors_to_use: "MKT"
@@ -397,6 +400,7 @@ scenarios:
   ff3_ew_cv:
     description: "FF3 data, equal-weighted VYP, no CV (MKT-only)"
     public_filename: "ff3_factors"
+    region: "North America"
     weighting: "EW"
     do_cross_validation: true
     factors_to_use: "MKT"
@@ -408,6 +412,7 @@ scenarios:
   ff3_fw_no_cv_SMB:
     description: "FF3 data, fund-weighted VYP, no CV, MKT+SMB"
     public_filename: "ff3_factors"
+    region: "North America"
     weighting: "FW"
     do_cross_validation: false
     factors_to_use: "SMB"
@@ -416,6 +421,7 @@ scenarios:
   ff3_ew_no_cv_SMB:
     description: "FF3 data, equal-weighted VYP, no CV, MKT+SMB"
     public_filename: "ff3_factors"
+    region: "North America"
     weighting: "EW"
     do_cross_validation: false
     factors_to_use: "SMB"
@@ -427,6 +433,7 @@ scenarios:
   ff3_fw_no_cv_HML:
     description: "FF3 data, fund-weighted VYP, no CV, MKT+HML"
     public_filename: "ff3_factors"
+    region: "North America"
     weighting: "FW"
     do_cross_validation: false
     factors_to_use: "HML"
@@ -435,6 +442,7 @@ scenarios:
   ff3_ew_no_cv_HML:
     description: "FF3 data, equal-weighted VYP, no CV, MKT+HML"
     public_filename: "ff3_factors"
+    region: "North America"
     weighting: "EW"
     do_cross_validation: false
     factors_to_use: "HML"
@@ -446,6 +454,7 @@ scenarios:
   ff3_fw_no_cv_alpha:
     description: "FF3 data, fund-weighted VYP, no CV, Alpha+MKT"
     public_filename: "ff3_factors"
+    region: "North America"
     weighting: "FW"
     do_cross_validation: false
     factors_to_use: "Alpha"
@@ -455,6 +464,7 @@ scenarios:
   ff3_ew_no_cv_alpha:
     description: "FF3 data, equal-weighted VYP, no CV, Alpha+MKT"
     public_filename: "ff3_factors"
+    region: "North America"
     weighting: "EW"
     do_cross_validation: false
     factors_to_use: "Alpha"
@@ -464,6 +474,7 @@ scenarios:
   ff3_fw_cv_alpha:
     description: "FF3 data, fund-weighted VYP, CV, Alpha+MKT"
     public_filename: "ff3_factors"
+    region: "North America"
     weighting: "FW"
     do_cross_validation: true
     factors_to_use: "Alpha"
@@ -473,6 +484,7 @@ scenarios:
   ff3_ew_cv_alpha:
     description: "FF3 data, equal-weighted VYP, CV, Alpha+MKT"
     public_filename: "ff3_factors"
+    region: "North America"
     weighting: "EW"
     do_cross_validation: true
     factors_to_use: "Alpha"
@@ -485,6 +497,7 @@ scenarios:
   ff3_fw_no_cv_ALL_3f:
     description: "FF3 data, fund-weighted VYP, no CV, MKT+SMB+HML"
     public_filename: "ff3_factors"
+    region: "North America"
     weighting: "FW"
     do_cross_validation: false
     factors_to_use: ["MKT", "SMB", "HML"]
@@ -494,6 +507,7 @@ scenarios:
   ff3_ew_no_cv_ALL_3f:
     description: "FF3 data, equal-weighted VYP, no CV, MKT+SMB+HML"
     public_filename: "ff3_factors"
+    region: "North America"
     weighting: "EW"
     do_cross_validation: false
     factors_to_use: ["MKT", "SMB", "HML"]
@@ -503,6 +517,7 @@ scenarios:
   ff3_fw_cv_ALL_3f:
     description: "FF3 data, fund-weighted VYP, no CV, MKT+SMB+HML"
     public_filename: "ff3_factors"
+    region: "North America"
     weighting: "FW"
     do_cross_validation: true
     factors_to_use: ["MKT", "SMB", "HML"]
@@ -512,6 +527,7 @@ scenarios:
   ff3_ew_cv_ALL_3f:
     description: "FF3 data, equal-weighted VYP, no CV, MKT+SMB+HML"
     public_filename: "ff3_factors"
+    region: "North America"
     weighting: "EW"
     do_cross_validation: true
     factors_to_use: ["MKT", "SMB", "HML"]
@@ -523,6 +539,7 @@ scenarios:
   ff3_fw_no_cv_ALL:
     description: "FF3 data, fund-weighted VYP, no CV, Alpha+MKT+SMB+HML"
     public_filename: "ff3_factors"
+    region: "North America"
     weighting: "FW"
     do_cross_validation: false
     factors_to_use: "ALL"
@@ -532,6 +549,7 @@ scenarios:
   ff3_ew_no_cv_ALL:
     description: "FF3 data, equal-weighted VYP, no CV, Alpha+MKT+SMB+HML"
     public_filename: "ff3_factors"
+    region: "North America"
     weighting: "EW"
     do_cross_validation: false
     factors_to_use: "ALL"
@@ -541,6 +559,7 @@ scenarios:
   ff3_fw_cv_ALL:
     description: "FF3 data, fund-weighted VYP, CV, Alpha+MKT+SMB+HML"
     public_filename: "ff3_factors"
+    region: "North America"
     weighting: "FW"
     do_cross_validation: true
     factors_to_use: "ALL"
@@ -550,6 +569,7 @@ scenarios:
   ff3_ew_cv_ALL:
     description: "FF3 data, equal-weighted VYP, CV, Alpha+MKT+SMB+HML"
     public_filename: "ff3_factors"
+    region: "North America"
     weighting: "EW"
     do_cross_validation: true
     factors_to_use: "ALL"

@@ -532,14 +532,12 @@ if (sys.nframe() == 0L) {
         "big_n_v_50funds_alpha_stdv30_shifted", "big_n_v_50funds_alpha_stdv30", "big_n_v_50funds_alpha", "big_n_v_50funds_alpha_stdv30_shifted_mkt", 
         "big_n_v_50funds_alpha_stdv30_shifted_mkt2",
         "big_n_v_50funds_alpha_stdv30_shifted_mkt4", "big_n_v_50funds_alpha_stdv30_shifted_mkt6", 
-        "big_n_v_50funds_alpha_stdv30_shifted_mkt7",
+        "big_n_v_50funds_alpha_stdv30_shifted_mkt7", "big_n_v_50funds_alpha_stdv30_shifted_mkt8",
         "base_case_cross_sectional_zero_alpha", "base_case_cross_sectional"
     )
 
-    # scenarios <- c("big_n_v_50funds_alpha_stdv30_shifted_mkt7")
-    # scenarios <- c("base_case_cross_sectional_zero_alpha", "base_case_cross_sectional")
     results <- run_simulation_study(
         scenario_ids = scenarios,
-        generate_data = FALSE, estimate = TRUE, analyze = TRUE
+        generate_data = FALSE, estimate = FALSE, analyze = TRUE
     )
 }
