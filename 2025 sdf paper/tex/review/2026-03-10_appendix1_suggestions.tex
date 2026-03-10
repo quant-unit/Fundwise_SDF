@@ -1,0 +1,416 @@
+% =========================================================
+% Appendix: Bias--Variance Tradeoff of T-Averaging
+% Blueprint rewrite
+% =========================================================
+
+\section{Bias--Variance Tradeoff of $\mathcal{T}$-Averaging}
+\label{sec:appendix_bias_variance}
+
+This appendix clarifies why $\mathcal{T}$-averaging can improve finite-sample performance even though, for $H>0$, it generally shifts the population target away from the structural parameter $\theta_0$.
+The key mechanism is a tradeoff between:
+(i) a \emph{population target shift} induced by NFV terms through the Timing Risk Premium (TRP), and
+(ii) a \emph{finite-sample stabilization effect} from averaging imperfectly correlated pricing errors across discounting dates.
+
+To keep these objects distinct, we proceed in four steps.
+First, we define the horizon-specific population criterion and its pseudo-true minimizer.
+Second, we isolate the exact source of the population moment bias at $\theta_0$.
+Third, we connect that moment bias to the shift in the population criterion's minimizer.
+Fourth, we present an exact MSE decomposition and then interpret the simulation results through a second-order finite-sample lens.
+
+% ---------------------------------------------------------
+\subsection{Setup and horizon-specific population target}
+\label{sec:appendix_bv_setup}
+
+For a given maximum compounding horizon $H$, let
+\[
+\mathcal{T}_{i,H}
+\;:=\;
+\bigl\{
+\tau \in \mathbb{N} : 1 \le \tau \le \min(12H, T_i^{\max})
+\bigr\},
+\]
+where $T_i^{\max}$ denotes the largest discounting date available for fund $i$.
+Define the horizon-averaged pricing error by
+\begin{equation}
+	\label{eq:avg_eps_H_blueprint}
+	\bar{\epsilon}_i^{(H)}(\theta)
+	\;:=\;
+	\frac{1}{|\mathcal{T}_{i,H}|}
+	\sum_{\tau \in \mathcal{T}_{i,H}}
+	\epsilon_{\tau,i}(\theta).
+\end{equation}
+
+The associated population criterion is
+\begin{equation}
+	\label{eq:QH_blueprint}
+	Q_H(\theta)
+	\;:=\;
+	\mathbb{E}\!\left[
+	\bigl(\bar{\epsilon}_i^{(H)}(\theta)\bigr)^2
+	\right],
+\end{equation}
+and the horizon-specific pseudo-true parameter is defined as its population minimizer:
+\begin{equation}
+	\label{eq:pseudotrue_blueprint}
+	\theta_H^\dagger
+	\;:=\;
+	\arg\min_\theta Q_H(\theta).
+\end{equation}
+
+The notation $\theta_H^\dagger$ emphasizes that this object is the target of the \emph{population nonlinear least-squares criterion}.
+It is not defined as the zero of the averaged population moment, and those two objects need not coincide in general.
+
+When $H=0$ (equivalently, when the estimator uses only the benchmark NPV discounting date), Assumption~\ref{ass:unconditional_unbiased} implies that the population criterion is centered at the structural parameter $\theta_0$.
+Hence, under correct specification,
+\[
+\theta_0^\dagger = \theta_0.
+\]
+For $H>0$, the inclusion of NFV terms generally perturbs the population criterion, so that
+\[
+\theta_H^\dagger \neq \theta_0
+\qquad\text{in general.}
+\]
+
+It is convenient to define the horizon-specific population moment bias at the structural parameter:
+\begin{equation}
+	\label{eq:bH_def_blueprint}
+	b_H
+	\;:=\;
+	\mathbb{E}\!\left[
+	\bar{\epsilon}_i^{(H)}(\theta_0)
+	\right].
+\end{equation}
+The next subsection shows that $b_H$ is driven exactly by the NFV component of the Timing Risk Premium.
+
+% ---------------------------------------------------------
+\subsection{Population moment bias at $\theta_0$}
+\label{sec:appendix_bv_moment_bias}
+
+Starting from Equation~\ref{eq:average_pricing_error} and the deal-level decomposition in Equation~\ref{eq:deal_pricing_error}, we can write
+\begin{equation}
+	\label{eq:avg_eps_expand_blueprint}
+	\bar{\epsilon}_i^{(H)}(\theta_0)
+	=
+	\frac{1}{|\mathcal{T}_{i,H}|}
+	\sum_{\tau \in \mathcal{T}_{i,H}}
+	\sum_{j=1}^{J}
+	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}\,
+	\delta_{i,j}.
+\end{equation}
+
+Taking unconditional expectations yields
+\begin{equation}
+	\label{eq:avg_eps_expectation_blueprint}
+	b_H
+	=
+	\frac{1}{|\mathcal{T}_{i,H}|}
+	\sum_{\tau \in \mathcal{T}_{i,H}}
+	\sum_{j=1}^{J}
+	\mathbb{E}\!\left[
+	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}\,
+	\delta_{i,j}
+	\right].
+\end{equation}
+
+Using $\mathbb{E}[XY] = \mathrm{Cov}(X,Y) + \mathbb{E}[X]\mathbb{E}[Y]$, each term admits the decomposition
+\begin{equation}
+	\label{eq:cov_decomp_blueprint}
+	\mathbb{E}\!\left[
+	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}\,
+	\delta_{i,j}
+	\right]
+	=
+	\mathrm{Cov}\!\left(
+	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau},\,
+	\delta_{i,j}
+	\right)
+	+
+	\mathbb{E}\!\left[
+	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}
+	\right]
+	\mathbb{E}[\delta_{i,j}].
+\end{equation}
+
+Under correct specification, $\mathbb{E}[\delta_{i,j}] = 0$, so only the covariance term remains.
+Moreover, for $\tau \le t_{i,j}^{\mathrm{Inv}}$, the ratio $\Psi_{t_{i,j}^{\mathrm{Inv}}}/\Psi_\tau$ is $\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$-measurable.
+Therefore,
+\[
+\mathbb{E}\!\left[
+\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}\,
+\delta_{i,j}
+\right]
+=
+\mathbb{E}\!\left[
+\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}\,
+\mathbb{E}\!\left[
+\delta_{i,j}\mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}
+\right]
+\right]
+= 0
+\]
+by Equation~\ref{eq:deal_pricing}.
+Hence only NFV terms contribute to $b_H$.
+
+\begin{lemma}[Exact source of the population moment bias]
+	\label{lem:bH_TRP}
+	Under correct specification,
+	\begin{equation}
+		\label{eq:bH_TRP_blueprint}
+		b_H
+		=
+		\frac{1}{|\mathcal{T}_{i,H}|}
+		\sum_{\tau \in \mathcal{T}_{i,H}}
+		\sum_{j=1}^{J}
+		\mathbf{1}\{\tau > t_{i,j}^{\mathrm{Inv}}\}
+		\,
+		\mathrm{Cov}\!\left(
+		\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau},\,
+		\delta_{i,j}
+		\right).
+	\end{equation}
+	In particular, the NPV terms contribute zero population bias, and the horizon-specific population moment bias is generated entirely by NFV terms through the Timing Risk Premium.
+\end{lemma}
+
+\begin{proof}
+	The result follows directly from Equation~\ref{eq:avg_eps_expectation_blueprint}, the covariance decomposition in Equation~\ref{eq:cov_decomp_blueprint}, the condition $\mathbb{E}[\delta_{i,j}] = 0$, and the iterated-expectations argument above for all pairs $(\tau,j)$ satisfying $\tau \le t_{i,j}^{\mathrm{Inv}}$.
+\end{proof}
+
+\paragraph{Misspecification.}
+Under misspecification, $\mathbb{E}[\delta_{i,j}] \neq 0$, so the second term in Equation~\ref{eq:cov_decomp_blueprint} no longer vanishes.
+In that case, the averaged population moment contains both:
+(i) the TRP covariance term, and
+(ii) an additional mean-shift term
+\[
+\mathbb{E}\!\left[
+\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}
+\right]\mathbb{E}[\delta_{i,j}],
+\]
+which does not disappear through horizon averaging.
+Thus, under misspecification, $\mathcal{T}$-averaging no longer trades off only a small TRP-induced target shift against variance reduction; it also propagates a persistent baseline pricing-error component.
+
+% ---------------------------------------------------------
+\subsection{From population moment bias to target shift}
+\label{sec:appendix_bv_target_shift}
+
+Lemma~\ref{lem:bH_TRP} characterizes the average pricing moment at $\theta_0$.
+To connect this to the parameter target, recall that the pseudo-true parameter $\theta_H^\dagger$ is defined by the first-order condition
+\begin{equation}
+	\label{eq:FOC_QH_blueprint}
+	\nabla_\theta Q_H(\theta_H^\dagger) = 0.
+\end{equation}
+
+Assume that $Q_H$ is twice continuously differentiable in a neighborhood of $\theta_0$ and that its Hessian is nonsingular there.
+A first-order Taylor expansion of $\nabla_\theta Q_H(\theta)$ around $\theta_0$ gives
+\begin{equation}
+	\label{eq:FOC_taylor_blueprint}
+	0
+	=
+	\nabla_\theta Q_H(\theta_0)
+	+
+	\mathcal{H}_H(\bar{\theta}_H)\,
+	(\theta_H^\dagger - \theta_0),
+\end{equation}
+where
+\[
+\mathcal{H}_H(\bar{\theta}_H)
+:=
+\nabla_\theta^2 Q_H(\bar{\theta}_H)
+\]
+for some intermediate point $\bar{\theta}_H$ between $\theta_0$ and $\theta_H^\dagger$.
+Rearranging yields
+\begin{equation}
+	\label{eq:theta_shift_blueprint}
+	\theta_H^\dagger - \theta_0
+	=
+	-
+	\mathcal{H}_H(\bar{\theta}_H)^{-1}
+	\nabla_\theta Q_H(\theta_0).
+\end{equation}
+
+Since
+\begin{equation}
+	\label{eq:grad_QH_blueprint}
+	\nabla_\theta Q_H(\theta_0)
+	=
+	2\,
+	\mathbb{E}\!\left[
+	\bar{\epsilon}_i^{(H)}(\theta_0)\,
+	\nabla_\theta \bar{\epsilon}_i^{(H)}(\theta_0)
+	\right],
+\end{equation}
+the target shift is governed by the interaction between:
+(i) the horizon-specific population moment bias $b_H$, and
+(ii) the sensitivity of the averaged pricing error to $\theta$.
+
+Equation~\ref{eq:theta_shift_blueprint} makes precise the sense in which the TRP affects the population target:
+the covariance terms identified in Lemma~\ref{lem:bH_TRP} perturb the gradient of the population criterion at $\theta_0$, thereby moving the minimizer from $\theta_0$ to $\theta_H^\dagger$.
+
+\begin{remark}[Magnitude of the target shift]
+	\label{rem:target_shift_magnitude}
+	For $\tau > t_{i,j}^{\mathrm{Inv}}$, the covariance term in Equation~\ref{eq:bH_TRP_blueprint} satisfies the generic bound
+	\[
+	\left|
+	\mathrm{Cov}\!\left(
+	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau},\,
+	\delta_{i,j}
+	\right)
+	\right|
+	\le
+	\sigma\!\left(
+	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}
+	\right)
+	\sigma(\delta_{i,j}),
+	\]
+	by Cauchy--Schwarz.
+	In Hansen--Jagannathan style, the variability of the SDF ratio is disciplined by the volatility of admissible pricing kernels over the corresponding horizon.
+	Moreover, the averaging operator contributes the factor $1/|\mathcal{T}_{i,H}|$.
+	Thus, although the target shift need not be zero for $H>0$, its magnitude is economically constrained when the TRP covariances are moderate.
+\end{remark}
+
+% ---------------------------------------------------------
+\subsection{Exact MSE decomposition}
+\label{sec:appendix_bv_mse}
+
+We now separate the horizon-specific target shift from sampling error around that target.
+For any $H$, the estimator satisfies the exact identity
+\begin{equation}
+	\label{eq:exact_decomp_start_blueprint}
+	\hat{\theta}_H - \theta_0
+	=
+	(\hat{\theta}_H - \theta_H^\dagger)
+	+
+	(\theta_H^\dagger - \theta_0).
+\end{equation}
+Taking squared norms and expectations gives the following decomposition.
+
+\begin{proposition}[Exact MSE decomposition around the structural parameter]
+	\label{prop:exact_mse_blueprint}
+	For any horizon $H$,
+	\begin{align}
+		\label{eq:exact_mse_blueprint}
+		\mathbb{E}\!\left[
+		\|\hat{\theta}_H - \theta_0\|^2
+		\right]
+		&=
+		\|\theta_H^\dagger - \theta_0\|^2
+		+
+		2(\theta_H^\dagger - \theta_0)^\top
+		\mathbb{E}\!\left[
+		\hat{\theta}_H - \theta_H^\dagger
+		\right] \nonumber\\
+		&\qquad
+		+
+		\left\|
+		\mathbb{E}\!\left[
+		\hat{\theta}_H - \theta_H^\dagger
+		\right]
+		\right\|^2
+		+
+		\mathrm{tr}\!\left(
+		\mathrm{Var}(\hat{\theta}_H)
+		\right).
+	\end{align}
+\end{proposition}
+
+\begin{proof}
+	Write
+	\[
+	\hat{\theta}_H - \theta_0
+	=
+	(\hat{\theta}_H - \theta_H^\dagger)
+	+
+	(\theta_H^\dagger - \theta_0),
+	\]
+	expand the squared norm, and then use
+	\[
+	\mathbb{E}\!\left[
+	\|\hat{\theta}_H - \theta_H^\dagger\|^2
+	\right]
+	=
+	\left\|
+	\mathbb{E}[\hat{\theta}_H - \theta_H^\dagger]
+	\right\|^2
+	+
+	\mathrm{tr}\!\left(
+	\mathrm{Var}(\hat{\theta}_H)
+	\right).
+	\qedhere
+	\]
+\end{proof}
+
+Proposition~\ref{prop:exact_mse_blueprint} isolates four conceptually distinct objects:
+\begin{enumerate}
+	\item the \emph{population target shift} $\|\theta_H^\dagger - \theta_0\|^2$,
+	\item the \emph{cross-term} linking target shift and sampling bias,
+	\item the \emph{finite-sample bias around the pseudo-true parameter}
+	$\|\mathbb{E}[\hat{\theta}_H - \theta_H^\dagger]\|^2$,
+	\item the \emph{sampling variance} $\mathrm{tr}(\mathrm{Var}(\hat{\theta}_H))$.
+\end{enumerate}
+
+This decomposition is exact.
+What remains heuristic is the way these terms move with $H$, to which we now turn.
+
+\paragraph{Heuristic link to second-order finite-sample bias.}
+For nonlinear extremum estimators, standard second-order expansions imply that
+\[
+\mathbb{E}[\hat{\theta}_H - \theta_H^\dagger] = O(n^{-1}),
+\]
+with a constant depending on higher-order moments of the score and curvature; see, e.g., \citet{nagar1959bias, rilstone1996second, newey2004higher, bao2007finite}.
+In the present setting, those higher-order terms are naturally amplified when the objective contributions are noisy.
+This suggests the following heuristic channel:
+reducing the volatility of $\bar{\epsilon}_i^{(H)}(\theta)$ tends to reduce the second-order finite-sample bias around $\theta_H^\dagger$.
+
+A convenient way to express the volatility of the horizon-averaged pricing error is
+\begin{equation}
+	\label{eq:var_matrix_blueprint}
+	\mathrm{Var}\!\left(
+	\bar{\epsilon}_i^{(H)}(\theta)
+	\right)
+	=
+	a_{i,H}^\top \Sigma_{i,H}(\theta)\, a_{i,H},
+\end{equation}
+where $a_{i,H}$ is the $|\mathcal{T}_{i,H}| \times 1$ averaging vector with entries $1/|\mathcal{T}_{i,H}|$, and $\Sigma_{i,H}(\theta)$ is the covariance matrix of the vector
+\[
+\bigl(
+\epsilon_{\tau,i}(\theta)
+\bigr)_{\tau \in \mathcal{T}_{i,H}}.
+\]
+When the pricing errors at different discounting dates are positively but imperfectly correlated, averaging across $\tau$ reduces this variance relative to relying on a single date.
+This is the basic sense in which $\mathcal{T}$-averaging stabilizes the criterion in finite samples.
+
+% ---------------------------------------------------------
+\subsection{Interpretation and reconciliation with the simulation study}
+\label{sec:appendix_bv_interpretation}
+
+The simulation evidence in Section~\ref{sec:simulation_study} can now be interpreted through Proposition~\ref{prop:exact_mse_blueprint}.
+
+At short horizons, the estimator relies on a small number of highly volatile pricing moments.
+This makes the nonlinear criterion unstable and can generate substantial finite-sample bias around the benchmark target.
+As $H$ increases, averaging combines additional pricing moments that are correlated, but not perfectly so, thereby smoothing the objective and reducing finite-sample estimation error.
+
+Against this benefit stands the population target shift documented in Lemma~\ref{lem:bH_TRP}:
+once $H$ is large enough to include NFV terms, the criterion is no longer centered at $\theta_0$.
+The resulting TRP-induced shift is economically meaningful but, under the baseline calibration, remains modest relative to the initial finite-sample distortion at very short horizons.
+
+This yields the central interpretation of the simulation results:
+for small to intermediate horizons, the stabilization benefit of $\mathcal{T}$-averaging dominates the incremental TRP cost;
+for sufficiently long horizons, the marginal gain from additional averaging weakens while the accumulation of NFV terms increases the scope for target shift.
+The empirically optimal horizon therefore need not be $H=0$ and need not be arbitrarily large.
+Instead, the optimal horizon is \emph{interior} and \emph{DGP-dependent}.
+
+\begin{remark}[Why we do not impose a global monotonicity theorem]
+	We do not claim that each MSE component is globally monotone in $H$ without additional restrictions.
+	In particular, the aggregate TRP contribution may contain offsetting covariance terms, and the effect of averaging on estimator variance depends on the covariance structure of the pricing moments and on the local geometry of the nonlinear criterion.
+	For this reason, the appendix establishes the exact decomposition and the source of the target shift, while the existence and location of the empirically optimal horizon are documented in the simulation study rather than asserted as a universal theorem.
+\end{remark}
+
+\begin{remark}[Connection to the GMM and misspecification literatures]
+	The role of $\mathcal{T}$-averaging is closely related to two familiar ideas.
+	First, from a GMM perspective, averaging combines multiple imperfectly correlated pricing moments, which can improve finite-sample stability when those moments contain useful information.
+	Second, from the perspective of estimation under misspecified moments, NFV terms can be viewed as informative but weakly biased components: they perturb the population target, yet may still reduce overall MSE when the induced target shift is small relative to the finite-sample stabilization they provide.
+\end{remark}
+
+\paragraph{Summary.}
+The main message is therefore not that the TRP ``washes out'' as $H$ grows.
+Rather, $\mathcal{T}$-averaging works by trading off a controlled population target shift against a potentially large reduction in finite-sample estimation error.
+Under the baseline DGP, the latter effect dominates over an economically relevant range of horizons, which is why the simulation study favors horizons near the fund lifetime rather than the NPV-only benchmark.
