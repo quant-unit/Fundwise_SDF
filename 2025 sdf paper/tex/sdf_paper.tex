@@ -1504,13 +1504,20 @@ These results suggest that empirical researchers should exercise caution when in
 \end{figure}
 
 
-\paragraph{\textcolor{orange}{TODO: Varying fund lifetimes:}}
+\paragraph{Varying fund lifetimes:}
 
-How does the optimal Horizon change for shorter fund lifetimes?
+Figure \ref{fig:sim_lifetimes} illustrates how the optimal Horizon shifts in response to abbreviated fund lifetimes. 
+As anticipated, the intercept of the alpha parameter decreases for shorter fund lifetimes relative to our baseline scenario of a five-year investment period and a ten-year maximum holding period. 
+Specifically, for the shortest examined fund lifetime of two years (comprising a one-year investment period and a one-year maximum holding period), the beta bias is minimized at a 12.5-year Horizon, while the alpha bias is minimized at a 5-year Horizon. 
+Similarly, for a fund with a two-year investment period and a two-year maximum holding period, the minimum beta bias occurs at a 15-year Horizon, and the minimum alpha bias at a 7.5-year Horizon. 
+Consequently, these results demonstrate that for funds with short lifespans, the optimal Horizon extends significantly beyond the fund's actual lifetime.
 
-Investment-period and holding-period pairs: 1/1, 2/2, 3/3, 3/6, 3/10.
-
-
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\textwidth]{simulation/bias_comparison_lifetime}
+	\caption{\textbf{Simulation ($\beta_{\textrm{MKT}}$, $\alpha$):} Varying fund lifetimes using VYP with the following yearly investment-period/holding-period pairs: 1/1, 2/2, 3/3, 3/6, and 3/10 (from left to right).}
+	\label{fig:sim_lifetimes}
+\end{figure}
 
 \paragraph{Size of set $\mathcal{T}$ (Maximum Compounding Horizon):}
 
@@ -1520,12 +1527,13 @@ This minimal choice for $\mathcal{T}$ corresponds exactly to the established \ci
 
 However, our diverse simulation results reveal a puzzling disconnect between asymptotic theory and finite-sample performance: extending the set of discounting dates deep into the fund lifecycle drastically improves the estimator's precision.
 Across almost all model specifications (see Figures \ref{fig:sim_q_factors} and \ref{fig:sim_exp_aff}), bias is minimized not at the theoretical 0-year Horizon, but rather around a 12.5 to 15-year compounding Horizon.
-At extremely short Horizons, idiosyncratic cash flow noise interacts non-linearly with the estimation procedure, inducing severe upward bias in factor loadings.
+At extremely short Horizons, idiosyncratic cash flow noise interacts non-linearly with the estimation procedure, inducing severe bias in factor loadings.
 By averaging pricing errors over multiple future dates, effectively incorporating the Timing Risk Premium, our approach acts as a powerful finite-sample bias correction.
 
 Interestingly, this ``variance reduction technique'' improves the mean estimate far more than it reduces standard errors. 
-While estimator variance traces a shallow U-shape with a minimum near the 15-year Horizon (see Table \ref{tab:sim_q5_summary}), this reduction is secondary to the striking stabilization of the parameter bias.
-We further analyze this puzzling result from a theoretical perspective in Appendix \ref{sec:appendix_bias_variance}, detailing the \emph{bias--variance tradeoff} and the role of the Timing Risk Premium.\footnote{The favorable tradeoff observed here may partly reflect the conditioning on a single realized factor path, which attenuates the TRP covariance terms; see Appendix~\ref{sec:appendix_bias_variance} for a detailed discussion.}
+While estimator variance traces a shallow U-shape with a minimum near the 15-year Horizon (see Table \ref{tab:sim_q5_summary}) for fund with a lifetime of 15 years, this reduction is secondary to the striking stabilization of the parameter bias.
+However, our simulations for shorter fund lifetimes indicate that determining the optimal horizon requires tailored simulation designs rather than a simple heuristic assuming the optimal horizon always coincides with the fund's life.
+We further analyze these puzzling results from a theoretical perspective in Appendix \ref{sec:appendix_bias_variance}, detailing the \emph{bias--variance tradeoff} and the role of the Timing Risk Premium.
 
 \paragraph{Simulation conclusion:}
 To conclude, our simulation study rationalizes two key practices from the \cite{DLP12} paper: (i) vintage-year portfolio formation helps to improve estimator precision, and (ii) increasing the number of funds per vintage seems more effective in controlling estimator variance than increasing the number of vintages (for i.i.d.\ error terms). 

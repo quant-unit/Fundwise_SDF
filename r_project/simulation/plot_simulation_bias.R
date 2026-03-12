@@ -537,6 +537,9 @@ file <- "simulation/data_out_2026_new/bias_analysis/2026-02-22_162216_bias_by_sc
 file <- "simulation/data_out_2026_new/bias_analysis/2026-02-24_185813_bias_by_scenario_horizon.csv"
 file <- "simulation/data_out_2026_new/bias_analysis/2026-03-02_113958_bias_by_scenario_horizon.csv"
 file <- "simulation/data_out_2026_new/bias_analysis/2026-03-03_190312_bias_by_scenario_horizon.csv"
+file <- "simulation/data_out_2026_new/bias_analysis/2026-03-12_174621_bias_by_scenario_horizon.csv"
+
+
 
 print(getwd())
 max.mkt <- 1.5 #  1.25
@@ -599,6 +602,18 @@ plot_simulation_bias(
     y.max.second = max.second,
     y.min.mkt = min.mkt,
     y.min.second = min.second,
+)
+
+plot_simulation_bias(
+  scenarios = c("lifetime_1_1_alpha", "lifetime_2_2_alpha", "lifetime_3_3_alpha", "lifetime_3_6_alpha", "lifetime_3_10_alpha"),
+  bias_file = file,
+  export_pdf = TRUE,
+  height = 7,
+  output_file = "simulation/figures/bias_comparison_lifetime",
+  y.max.mkt = max.mkt,
+  y.max.second = max.second,
+  y.min.mkt = min.mkt,
+  y.min.second = min.second,
 )
 
 # For Presentation
