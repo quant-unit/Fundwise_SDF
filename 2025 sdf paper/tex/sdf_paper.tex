@@ -481,7 +481,7 @@ where $w_i$ normalizes fund-level pricing errors before the loss is applied; it 
 
 \paragraph{The role of $\mathcal{T}_i$}
 
-The set $\mathcal{T}_i$ controls which discounting dates enter the averaged pricing error $\bar{\epsilon}_i(\theta)$ in Equation~\eqref{eq:average_pricing_error}. 
+The set $\mathcal{T}_i$ controls which discounting dates enter the averaged pricing error $\bar{\epsilon}_i(\theta)$ in Equation~\eqref{eq:average_pricing_error} (see Figure \ref{fig:npvs}). 
 Averaging over multiple dates in $\mathcal{T}_i$ was originally motivated by the ``exploding alpha'' problem first described by \cite{DLP12}: when the initial cash flow is very small, an arbitrarily large alpha can discount all subsequent cash flows close to zero, rendering the beta factors irrelevant and distorting estimation. Averaging over $\mathcal{T}_i$ mitigates this degeneracy.
 The relevant horizon family is parameterized as
 \begin{equation*}
@@ -493,12 +493,7 @@ This formulation encompasses two economically distinct cases:
     \item $H=0$: If $\mathcal{T}_i = \{t_i^0\}$, the estimator uses an inception-only NPV criterion, is anchored in the pooled pricing restriction from Section~\ref{sec:asset_pricing_pooled}, and targets the structural parameter $\theta_0$.
     \item $H>0$: If $\mathcal{T}_i = \mathcal{T}_{i,H}$ with $H>0$, the estimator is a generalized horizon-averaged criterion and targets the pseudo-true parameter $\theta_H^{\dagger}$. It provides finite-sample regularization benefits but incorporates a potential timing distortion. 
 \end{itemize}
-Larger values of $H$ offer more regularization, but a larger departure from the structural benchmark. 
-
-\begin{remark}[Target parameter under horizon averaging]
-	\label{rem:target_parameter}
-	For $\mathcal{T}_{i,H}=\{t_i^0,t_i^0+1,\dots,\min(t_i^0+12H,T_i^{\max})\}$, the estimator targets the horizon-specific pseudo-true parameter $\theta_H^{\dagger}=\arg\max_{\theta}Q_H(\theta)$. This coincides with the structural parameter $\theta_0$ only when $H=0$. For $H>0$, the estimator trades structural fidelity against finite-sample regularization by averaging pricing errors over discounting dates that may incorporate the timing wedge from Section~\ref{sec:asset_pricing_pooled}.
-\end{remark}
+Larger values of the horizon $H$ offer more regularization, but a larger departure from the structural benchmark with zero expected value. 
 
 \begin{figure}[ht]
 	\centering
@@ -512,6 +507,12 @@ Larger values of $H$ offer more regularization, but a larger departure from the 
 	}
 	\label{fig:npvs}
 \end{figure}
+
+\begin{remark}[Target parameter under horizon averaging]
+	\label{rem:target_parameter}
+	For $\mathcal{T}_{i,H}=\{t_i^0,t_i^0+1,\dots,\min(t_i^0+12H,T_i^{\max})\}$, the estimator targets the horizon-specific pseudo-true parameter $\theta_H^{\dagger}=\arg\max_{\theta}Q_H(\theta)$. 
+	This coincides with the structural parameter $\theta_0$ only when $H=0$. For $H>0$, the estimator trades structural fidelity against finite-sample regularization by averaging pricing errors over discounting dates that may incorporate the timing wedge from Section~\ref{sec:asset_pricing_pooled}.
+\end{remark}
 
 \textbf{Restriction used for identification and asymptotic theory.} In the consistency analysis below, we specialize the generalized criterion to $\mathcal{T}_i = \{t_i^0\}$. Under Proposition~\ref{theo:inception_value}, this yields a valid pooled fund-level zero-moment restriction at the structural parameter $\theta_0$.
 
@@ -577,8 +578,10 @@ w_i
 \cdot
 \frac{1}{\mathrm{card}(\mathcal T_{i,H})}
 \sum_{\tau \in \mathcal T_{i,H}}
-\epsilon_{\tau,i}(\theta),
-\qquad
+\epsilon_{\tau,i}(\theta)
+\]
+and
+\[
 \mathcal T_{i,H}
 =
 \left\{
