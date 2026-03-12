@@ -539,6 +539,6 @@ if (sys.nframe() == 0L) {
 
     results <- run_simulation_study(
         scenario_ids = scenarios,
-        generate_data = TRUE, estimate = TRUE, analyze = FALSE
+        generate_data = FALSE, estimate = FALSE, analyze = TRUE
     )
 }

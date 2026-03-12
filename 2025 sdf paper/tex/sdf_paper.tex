@@ -72,8 +72,7 @@ Illiquid Assets
 
 
 \section*{Acknowledgements}
-We thank Nicolas D\"{u}tsch, Philipp Abel, and Kai Urban for valuable feedback and helpful comments that greatly improved the paper.
-
+We thank Nicolas D\"{u}tsch, Philipp Abel, Kai Urban, Ralf Werner, and the participants of the GOR AG Analytics workshop in Frankfurt for their valuable feedback and helpful comments that greatly improved the paper.
 
 \section*{Declaration of interest}
 The authors report no conflict of interest. 
@@ -90,12 +89,12 @@ The authors alone are responsible for the content and writing of the paper.
 
 
 \abstract{
-	This paper introduces a unified semiparametric framework for estimating stochastic discount factors (SDF) on non-traded cash flow streams, providing a unifying objective-function perspective on the popular approaches of \cite{DLP12} and \cite{KN16}. 
+	This paper introduces a unified semiparametric framework for estimating stochastic discount factors (SDF) on non-traded cash flow streams, providing a generalized objective-function perspective that nests the approach of \cite{DLP12} and conceptually relates to the time-series method of \cite{KN16}.
 	Our nonlinear least-mean-distance estimator is accompanied by a spatial asymptotic inference framework that accounts for the near-epoch dependence of overlapping private equity funds. 
-	Using Monte Carlo simulations, we demonstrate that the non-negligible finite-sample estimation error observed at short horizons can be controlled and effectively stabilized by averaging pricing errors over an extended set of compounding dates, and by aggressively aggregating cross-sectional data into seasoned vintage-year portfolios. 
+	Using Monte Carlo simulations, we demonstrate that the non-negligible finite-sample estimation error observed at short horizons can be controlled and effectively stabilized by averaging pricing errors over an extended set of compounding dates, and by aggregating cross-sectional data into seasoned vintage-year portfolios. 
 	Empirically, we analyze a comprehensive private equity dataset covering Buyout (BO) and Venture Capital (VC) funds and reveal two critical data constraints: 
 	First, including recent, unseasoned vintages severely inflates market beta estimates due to an outsized mechanical reliance on reported net asset values. 
-	When constraining the sample to heavily seasoned funds at an MSE-minimizing 15-year horizon, we estimate an attenuated market beta of 0.79 and 0.80 for equal- and value-weighted Buyout portfolios, respectively, and 1.26 and 1.05 for Venture Capital.
+	When constraining the sample to heavily seasoned funds at an MSE-minimizing 15-year horizon, we estimate an attenuated market beta of 0.81 and 0.84 for equal- and value-weighted Buyout portfolios, respectively, and 1.30 and 1.07 for Venture Capital.
 	Second, multi-factor models and abnormal performance ($\alpha$) intercepts prove fundamentally fragile due to severe finite-sample noise. 
 	Consequently, we conclude that in our sample, single-factor market models are substantially more stable than multi-factor specifications, and we recommend restricting semiparametric SDF evaluation to such models until substantially more seasoned, cross-sectional private market data becomes available.
 }
@@ -110,9 +109,8 @@ The empirical analysis and risk assessment of private equity and other non-trade
 Unlike public assets with trusted and tradeable valuations (in liquid secondary markets), private equity fund investments generate irregular, infrequently observed cash flows for which standard return-based asset pricing techniques are unsuitable.
 
 To evaluate such irregular fund cash flows, the pioneering works of \cite{DLP12} and \cite{KN16} introduced highly influential stochastic discount factor (SDF) estimators that have become the gold standard in private market asset pricing.
-The profound impact of their methodologies is evident from widespread adoption.
-The \cite{DLP12} and \cite{KN16} estimators are heavily utilized to price a wide array of non-traded assets, spanning private equity, venture capital and real estate to infrastructure and collateralized loan obligations. 
-Building on these major contributions, we propose a unified semiparametric framework that recovers both estimators as special cases under specific aggregation and loss-function choices.
+The profound impact of their methodologies is evident from their widespread adoption, as the \cite{DLP12} and \cite{KN16} estimators are heavily utilized to price a wide array of non-traded assets, spanning private equity, venture capital and real estate to infrastructure and collateralized loan obligations. 
+Building on these major contributions, we propose a unified semiparametric framework that recovers the \cite{DLP12} estimator as a special case and clarifies the mathematical connection to the \cite{KN16} approach.
 The core benefit of our unified framework lies in generalizing the set of discounting dates, which ultimately allows researchers to identify, comprehend, and control the small-sample bias inherent to cash-flow-based SDF pricing.
 
 Our nonlinear least squares estimator stems from the class of Least-Mean-Distance (LMD) estimators, which are easier to handle than traditional Generalized Method of Moments (GMM) approaches \citep{PP97}.
@@ -122,22 +120,23 @@ In this context, it is paramount to quantify the economic distance between funds
 
 For a typically sized dataset of private equity funds, we document a severe finite-sample bias in cash-flow-based SDF estimators like \cite{DLP12} and \cite{KN16} that inherently arises from the non-linearity of the estimating equations.
 While this bias can be mitigated by increasing the cross-sectional sample size, such data is rarely available.
-Instead, we demonstrate that by generalizing the estimator to average pricing errors over multiple, non-optimal discounting dates, researchers can deliberately introduce a Timing Risk Premium that effectively offsets this finite-sample bias, dramatically improving the estimates in small samples (in our simulation study).
+Instead, we demonstrate that by generalizing the estimator to average pricing errors over multiple, non-optimal discounting dates, researchers can deliberately introduce a ``Timing Risk Premium" that effectively offsets this finite-sample bias, dramatically improving the estimates in small samples (in our simulation study).
 
-In the empirical application of our new estimator, we evaluate simple linear and exponential affine SDF models utilizing the well-known Preqin cash flow database across a grid of compounding horizons.
+In the empirical application of our new estimator, we evaluate simple linear SDF models utilizing the well-known Preqin cash flow database across a grid of compounding horizons.
 While evaluating multi-factor models proves unreasonable given high estimator variance, our single-factor market models yield stable and economically meaningful estimates for both Buyout and Venture Capital funds. 
-At an MSE-minimizing 15-year horizon upon seasoned vintage years, we estimate a market beta of 0.79 and 0.80 for equal- and value-weighted Buyout portfolios, and 1.26 and 1.05 for Venture Capital, respectively. 
+At an MSE-minimizing 15-year horizon upon seasoned vintage years, we estimate a market beta of 0.81 and 0.84 for equal- and value-weighted Buyout portfolios, and 1.30 and 1.07 for Venture Capital, respectively (for a single-factor model without $\alpha$ intercept). 
 While our rigorous asymptotic inference framework yields conservative standard errors, $hv$-block cross-validation stability diagnostics indicate that these market beta estimates are robust across data subsets. 
 We document that the inherent estimator variance limiting multi-factor approaches can only be partially overcome by forming portfolios with a larger number of cross-sectional units per vintage year, highlighting a fundamental data constraint in modern private market asset pricing.
 
 The paper is structured as follows. 
 Section \ref{sec:literature} reviews the related literature.
 Section \ref{sec:spatial_sdf_methodology} introduces our semiparametric LMD estimator and its corresponding asymptotic inference framework.
-Section \ref{sec:empirical_application} applies the method to estimate $q^5$-investment-factor SDFs for private equity fund data using simulated and real-world cash flows, with Buyout and Venture Capital results presented in Section~\ref{sec:empirical_results_bovc}.
+Section \ref{sec:empirical_application} details the empirical implementation choices and validates the framework through a simulation study.
+Section \ref{sec:empirical_results_bovc} presents the empirical results for Buyout and Venture Capital funds, evaluating both single- and multi-factor SDF models.
 Section \ref{sec:conclusion} concludes.
 Appendix \ref{sec:appendix_bias_variance} analyzes the bias--variance tradeoff in the context of our SDF estimation problem.
 Appendix \ref{sec:dlp_results_comparison} compares our simulation and empirical results to their \cite{DLP12} counterparts.
-Appendix \ref{sec:empirical_results_pe} replicates the empirical analysis for aggregate Private Equity funds.
+
 
 \subsection{Related Literature}
 \label{sec:literature}
@@ -151,7 +150,7 @@ Parametric models, such as those proposed by \cite{FNP12} and \cite{ACGP18}, exp
 While these methods can uncover latent factors or deal-level dynamics, they typically rely on strong distributional assumptions (e.g., log-normality) that may not fully capture the irregular and skewed nature of PE cash flows.
 
 Consequently, semiparametric approaches have gained prominence, starting with the seminal cross-sectional GMM framework of \cite{DLP12}. 
-They estimate a linear factor model that minimizes the squared pricing errors of PE vintage year portfolios, explicitly evaluating cash flows at fund inception.
+They estimate a linear factor model that minimizes the squared pricing errors of PE vintage year portfolios, explicitly evaluating discounted cash flows at fund inception.
 In a nutshell, the \cite{DLP12} estimator determines the estimated alpha and beta parameters of a linear factor model by minimizing the squared net present value (NPV) of all $n$ fund cash flows in a least-squares optimization problem:
 \begin{equation}
 	\label{eq:dlp12_minimization}
@@ -177,17 +176,20 @@ Further complementing this cash flow dimension, a strand of literature models th
 Additionally, \cite{HSS23} leverage a similar generalized framework to evaluate private firms using credit market equivalents.
 Finally, for comprehensive methodological and empirical overviews of risk and return assessment in private equity, we refer to \cite{K19,korteweg2023risk}, who also discuss the popular \cite{D79} regression that employs lagged returns to correct for stale valuations.
 
-Our paper's unified LMD framework contributes to this semiparametric literature by providing a unifying loss-function perspective on both the \cite{DLP12} and \cite{KN16} approaches while supplying the rigorous increasing-domain asymptotic inference missing in earlier work (drawing on the spatial theory of \cite{PP97}, \cite{KS11}, and \cite{JP12}). 
+Our paper's unified LMD framework contributes to this semiparametric literature by providing a loss-function formulation that encompasses the \cite{DLP12} approach and contextualizes the \cite{KN16} time-series analogue while supplying the rigorous increasing-domain asymptotic inference missing in earlier work (drawing on the spatial theory of \cite{PP97}, \cite{KS11}, and \cite{JP12}). 
 While \cite{GSW20} highlighted that NPV-based measures are biased relative to per-period returns, we explicitly formalize this discrepancy as a ``Timing Risk Premium'', a concept linked to recent findings on discount-rate risk in secondary markets \citep{boyer2023discount}.
 
 \section{Methodology}
 \label{sec:spatial_sdf_methodology}
 
 We now formalize a unified semiparametric framework for SDF estimation with pooled cash flows. 
-Section~\ref{sec:asset_pricing_pooled} establishes the theoretical asset-pricing conditions and highlights how the choice of discounting date induces a timing risk premium. 
+Section~\ref{sec:asset_pricing_pooled} establishes the theoretical asset-pricing conditions and highlights how the choice of discounting date induces a Timing Risk Premium. 
 Section~\ref{sec:fundwise_lmd_estimator} uses this insight to introduce a generalized Least-Mean-Distance (LMD) estimator that endogenizes the discounting dates. 
 Section~\ref{sec:asymptotic_framework} builds an increasing-domain asymptotic framework to accommodate the spatial dependence of overlapping vintage years, and Section~\ref{sec:asymptotic_inference} describes large-sample inference. 
-A detailed comparison demonstrating how this LMD estimator nests the prominent frameworks of \cite{DLP12} and \cite{KN16} as special cases is provided in Section~\ref{sec:comparison_to_similar_estimators}.
+A detailed comparison demonstrating how this LMD estimator nests the framework of \cite{DLP12} as a special case and relates to \cite{KN16} is provided in Section~\ref{sec:comparison_to_similar_estimators}.
+
+\subsection{Asset Pricing for Pooled Cash Flows}
+\label{sec:asset_pricing_pooled}
 
 \begin{table}[ht]
 	\centering
@@ -205,35 +207,39 @@ A detailed comparison demonstrating how this LMD estimator nests the prominent f
 		$K_{i,j}$ & Number of divestment cash flows for deal $j$ of fund $i$ \\
 		$cf_{i,j,t}$ & Net cash flow of deal $j$ in fund $i$ at time $t$ \\
 		$CF_{i,t}$ & Net cash flow of fund $i$ at time $t$ \\
-		$V_{i,\tau}$ & Continuation value of fund $i$ at date $\tau$ \\
+		$P_{\tau,t,i}$ & Time-$\tau$ price of a single time-$t$ cash flow \\
+		$PV_i(\theta)$ & Pooled present value \\
+		${LCV}_{i,\tau}$ & Latent continuation value of fund $i$ at date $\tau$ \\
+		$T, T_i^{\max}$ & Final period and maximum fund lifetime \\
+		$\tau$ & Generic discounting or revaluation date \\
+		$\mathcal{F}_{\tau}$ & Information set (filtration) at time $\tau$ \\
+		$\mathrm{Inv}_{i,j}, \mathrm{Div}_{i,j,k}$ & Investment and divestment cash flows \\
+		$t_{i,j}^{\mathrm{Inv}}, t_{i,j,k}^{\mathrm{Div}}$ & Deal investment and divestment dates \\
+		$m_{i,j}^{\mathrm{NFV}}(\cdot)$ & NFV-type theoretical moment \\
 		$\Psi_t$\ , $M_t$ & Multi-period and single-period SDF \\
 		$\Psi_{\tau,t}(\theta)$ & SDF ratio $\Psi_t / \Psi_\tau$, parameterized by $\theta$ \\
-		$\theta = (\alpha, \beta)$ & SDF parameter vector (intercept and factor loadings) \\
+		$\theta \in \mathbb{R}^p$ & SDF parameter vector (e.g., intercept and factor loadings) \\
 		$\theta_0$ & True parameter vector \\
 		$\delta_{i,j}$ & Deal-level pricing error \\
-		$\epsilon_{\tau,i}$ & Fund pricing error at discounting date $\tau$ \\
-		$\bar{\epsilon}_i, \bar{\epsilon}^{(H)}_i$ & Weighted average pricing error (generic and horizon-specific) \\
-		$H$ & Horizon parameter \\
-		$\mathcal{T}_i, \mathcal{T}_{i,H}$ & Set of discounting dates (generic and horizon-specific) \\
-		$w_i$ & Weighting factor for fund $i$ \\
-		$L(\cdot)$ & Loss function (e.g., $L(x) = x^2$) \\
-		$Q_n(\theta), Q_{n,H}(\theta)$ & Sample objective function (generic and horizon-specific) \\
-		$d_{i,j}$ & Economic distance between units $i$ and $j$ \\
-		$b_V$ & SHAC bandwidth parameter \\
-		$\theta_H^\dagger$ & Horizon-specific pseudo-true parameter vector \\
-		$H_H$ & Hessian of population objective at $\theta_H^\dagger$ \\
-		$\Lambda_H$ & Long-run covariance matrix of the score \\
-		$\Sigma_H$ & Asymptotic covariance matrix of $\hat{\theta}_H$ \\
 		\bottomrule
 	\end{tabular}
-	\caption{Key notation for the Methodology section.}
-	\label{tab:notation}
+	\caption{Key notation for asset pricing and pooled cash flows (Section \ref{sec:asset_pricing_pooled}).}
+	\label{tab:notation_asset_pricing}
 \end{table}
 
-\subsection{Asset Pricing for Pooled Cash Flows}
-\label{sec:asset_pricing_pooled}
 
-This subsection establishes when a pooled private-equity cash-flow stream satisfies a valid stochastic-discount-factor pricing restriction. The key issue is the choice of discounting date: discounting at or before the first investment date yields a clean conditional moment restriction, whereas post-investment discounting or future-value compounding generally introduces a timing-related covariance wedge. For fund $i$, let $CF_{i,t}$ denote the observed net cash flow at time $t$, and define the fund inception date by $t_i^0 := \min_j t_{i,j}^{\mathrm{Inv}}$. The deal-level decomposition is introduced only as a latent accounting device used to justify a pooled fund-level pricing restriction; it is not required as an observable input to the estimator.
+
+Because private equity funds invest capital over multiple quarters, any fund-level pricing restriction must aggregate deal-level moments across different investment dates.
+This subsection asks under what conditions such a pooled cash-flow stream satisfies a valid stochastic-discount-factor pricing restriction.
+The central finding is that the choice of discounting date is not innocuous: discounting at or before the first investment date preserves a clean conditional zero-moment condition (Lemma~\ref{lem:deal_level_timing}, Part~1), whereas post-investment discounting or future-value compounding generally introduces a timing-related covariance wedge (Parts~2 and~3).
+The argument proceeds in three steps.
+First, we state a deal-level decomposition of fund cash flows (Assumption~\ref{ass:deal_level_dgp}) and derive the timing result at the deal level (Lemma~\ref{lem:deal_level_timing}).
+Second, we aggregate to the fund level and show that pooled Net Present Value (NPV) moments satisfy a valid zero conditional moment restriction whenever discounting occurs at or before fund inception (Proposition~\ref{theo:inception_value}).
+Third, we discuss the implications for Net Future Value (NFV) moments and the interpretation of alpha measured ex~post.
+Throughout, the deal-level structure serves only as a latent accounting device used to justify the fund-level restriction; only pooled fund cash flows are required as observable inputs to the estimator.
+
+For fund $i$, let $CF_{i,t}$ denote the observed net cash flow at time $t$, and define the fund inception date by $t_i^0 := \min_j t_{i,j}^{\mathrm{Inv}}$.
+All fund-level variables are constructed from the following deal-level data generation process.
 
 \begin{assume}
 	\label{ass:deal_level_dgp}
@@ -247,10 +253,11 @@ This subsection establishes when a pooled private-equity cash-flow stream satisf
 		CF_{i,t}=\sum_{j=1}^{J_i} cf_{i,j,t}
 		\qquad \forall i,t.
 		\]
+		\item The fund has no cash flows before inception: $CF_{i,t} = 0$ for all $t < t_i^0$.
 	\end{enumerate}
 \end{assume}
 
-Under the maintained asset-pricing restriction, each deal is correctly priced by the stochastic discount factor at its investment date. Formally, the deal-level pricing error satisfies
+Under our central asset-pricing restriction, each deal is correctly priced by the stochastic discount factor at its investment date. Formally, the deal-level pricing error satisfies
 \begin{equation}
 	\label{eq:deal_pricing}
 	\mathbb{E} \left[ 
@@ -273,7 +280,7 @@ The next result characterizes how this deal-level pricing restriction depends on
 
 \begin{lemma}
 \label{lem:deal_level_timing}
-Suppose Eq.~\ref{eq:deal_pricing} holds.
+Suppose Equation~\eqref{eq:deal_pricing} holds.
 
 \begin{enumerate}
 	\item If $\tau \le t_{i,j}^{\mathrm{Inv}}$, then
@@ -291,7 +298,7 @@ Suppose Eq.~\ref{eq:deal_pricing} holds.
 	\end{equation}
 	which need not equal zero.
 
-	\item If $\tau < t_{i,j}^{\mathrm{Inv}} < t_{i,j}^{\mathrm{Future}}$, then 
+	\item Under the same pre-investment timing as Part~(1), suppose additionally that the pricing error is compounded forward to a date $t_{i,j}^{\mathrm{Future}} > t_{i,j}^{\mathrm{Inv}}$. If $\tau < t_{i,j}^{\mathrm{Inv}} < t_{i,j}^{\mathrm{Future}}$, then 
 	define the NFV-type moment
 	\[
 	m_{i,j}^{\mathrm{NFV}}(\tau,t_{i,j}^{\mathrm{Future}})
@@ -317,7 +324,7 @@ since $\tau \le t_{i,j}^{\mathrm{Inv}}$, the SDF ratio is known at $t_{i,j}^{\ma
 \[
 \mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}} \delta_{i,j} \mid \mathcal{F}_{\tau} \right] 
 = 
-\mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}} \underbrace{\mathbb{E} \left[ \delta_{i,j} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right]}_{= 0 \text{ by Eq.~\ref{eq:deal_pricing}}} \mid \mathcal{F}_{\tau} \right] 
+\mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}} \underbrace{\mathbb{E} \left[ \delta_{i,j} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right]}_{= 0 \text{ by Equation~\eqref{eq:deal_pricing}}} \mid \mathcal{F}_{\tau} \right] 
 = 0.
 \]
 
@@ -329,7 +336,7 @@ $\Psi_{t_{i,j}^{\mathrm{Inv}}}/\Psi_\tau$ is $\mathcal F_\tau$-measurable, so
 \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}
 \mathbb{E}\!\left[\delta_{i,j}\mid \mathcal F_\tau\right].
 \]
-Since $\delta_{i,j}$ is partially realized by date $\tau$, the conditional expectation on the right-hand side need not vanish.
+Since some divestment cash flows of deal $j$ may have been paid by date $\tau$, $\delta_{i,j}$ is partially $\mathcal{F}_\tau$-measurable, and its conditional expectation given $\mathcal{F}_\tau$ generally reflects realized outcomes rather than the zero-mean restriction at $t_{i,j}^{\mathrm{Inv}}$.
 
 For part (3), using the law of iterated expectations with an intermediate conditioning on $\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$,
 \begin{align*}
@@ -344,10 +351,14 @@ For part (3), using the law of iterated expectations with an intermediate condit
 	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}}
 	\mathrm{Cov} \left( \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}}, \delta_{i,j} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right) \mid \mathcal{F}_{\tau} \right]
 \end{align*}
-where we used the conditional covariance identity and Eq.~\ref{eq:deal_pricing}.
+where we used the conditional covariance identity and Equation~\eqref{eq:deal_pricing}.
 \end{proof}
 
-Part~(3) shows that compounding deal cash flows to a future date generally destroys the zero conditional moment restriction because the resulting expression contains a covariance between the pricing error and future SDF realizations. Accordingly, NFV-type moments are inappropriate as primitive ex-ante pricing moments unless this timing term is modeled explicitly. They can still be informative for ex-post benchmarking, but the resulting performance measure must then be interpreted as a composite object that mixes abnormal performance with timing-related compensation.
+Part~(3) shows that compounding deal cash flows to a future date generally destroys the zero conditional moment restriction because the resulting expression contains a covariance between the pricing error and future SDF realizations. 
+We refer to this non-zero expected value as the \emph{timing wedge}. 
+Economically, this wedge represents a \textbf{Timing Risk Premium}, i.e., the required compensation for the discount-rate risk borne during the interim illiquidity period between investment and realization.
+Accordingly, NFV-type moments are inappropriate as primitive ex-ante pricing moments unless this timing term is modeled explicitly.
+They can still be informative for ex-post benchmarking, but the resulting performance measure must then be interpreted as a composite object that mixes true abnormal performance (skill) with timing-related compensation.
 
 \begin{proposition}
 	\label{theo:inception_value}
@@ -363,7 +374,7 @@ Part~(3) shows that compounding deal cash flows to a future date generally destr
 \end{proposition}
 
 \begin{proof}
-If $\tau\le t_i^0$, then $\tau\le t_{i,j}^{\mathrm{Inv}}$ for every deal $j$ in fund $i$. Using the deal-level decomposition of the pooled cash-flow stream and Eq.~\ref{eq:deal_pricing_error},
+If $\tau\le t_i^0$, then $\tau\le t_{i,j}^{\mathrm{Inv}}$ for every deal $j$ in fund $i$. Using the deal-level decomposition of the pooled cash-flow stream and Equation~\eqref{eq:deal_pricing_error},
 \begin{equation}
 	\label{eq:price_pooled_cash_flows_proof_1}
 	\mathbb{E}\!\left[
@@ -376,7 +387,7 @@ If $\tau\le t_i^0$, then $\tau\le t_{i,j}^{\mathrm{Inv}}$ for every deal $j$ in 
 	\,\middle|\,\mathcal F_\tau
 	\right].
 \end{equation}
-Applying Eq.~\ref{eq:zero_deal_expectation} term-by-term yields
+Applying Equation~\eqref{eq:zero_deal_expectation} term-by-term yields
 \begin{equation}
 	\label{eq:price_pooled_cash_flows_proof_2}
 	\mathbb{E}\!\left[
@@ -387,15 +398,55 @@ Applying Eq.~\ref{eq:zero_deal_expectation} term-by-term yields
 \end{equation}
 \end{proof}
 
-For ex-post benchmarking purposes, any \emph{alpha} measured via Net Future Values is mechanically a composite metric. Crucially, as detailed in Appendix~\ref{sec:appendix_bv_alpha_interpretation}, even in the absence of true selection skill at inception, such ex-post measures generally incorporate a ``timing risk premium.'' This premium arises mechanically whenever future SDF realizations covary with interim deal valuations.
 
-Proposition~\ref{theo:inception_value} provides the clean benchmark for identification: pooled NPV moments are theoretically well founded when discounting occurs at or before fund inception. Once $\tau>t_i^0$, some underlying deals are active or already partially realized, so the corresponding pooled pricing error need not have conditional mean zero. The choice of discounting dates is therefore not innocuous. Section~\ref{sec:fundwise_lmd_estimator} uses this result to motivate an estimator that makes the timing set $\mathcal T_i$ explicit and thereby clarifies the resulting bias--variance tradeoff. Accordingly, when the estimator uses only discounting dates $\tau \le t_i^0$, the pooled fund-level pricing error inherits a valid zero conditional moment; when it uses $\tau > t_i^0$, it generally targets a tilted criterion that embeds the timing wedge characterized above.
+Proposition~\ref{theo:inception_value} provides the clean benchmark for identification: pooled NPV moments are theoretically well founded when discounting occurs at or before fund inception. Once $\tau>t_i^0$, some underlying deals are active or already partially realized, so the corresponding pooled pricing error incorporates the timing wedge.
+The choice of discounting dates is therefore not innocuous.
+Section~\ref{sec:fundwise_lmd_estimator} formalizes this choice by defining an estimator that explicitly specifies which discounting dates are used: when it restricts to dates $\tau \le t_i^0$, the pooled fund-level pricing error inherits a valid zero conditional moment; when it includes dates $\tau > t_i^0$, it generally targets a tilted criterion that embeds the Timing Risk Premium characterized by Equation \eqref{eq:future_value_bias_derivation}.
+
+Critically, this Timing Risk Premium is not solely relevant for ex-post benchmarking.
+While it dictates that any \emph{alpha} measured via Net Future Values is mechanically a composite metric (as detailed in Appendix~\ref{sec:appendix_bv_alpha_interpretation}), it also fundamentally drives the large-sample and small-sample properties of our generalized LMD estimator. 
+As we demonstrate in later sections, averaging pricing errors over extended horizons deliberately injects this structural timing wedge to effectively counterbalance severe finite-sample estimator bias and variance.
+
 
 
 \subsection{Least-Mean-Distance estimator}
 \label{sec:fundwise_lmd_estimator}
 
-In this subsection, we define a generalized fund-level criterion that averages pricing errors across a user-specified set of discounting dates $\mathcal{T}_i$. This nests the inception-only NPV criterion as a special case and allows us to study how horizon averaging trades structural validity against finite-sample regularization. Throughout, only pooled fund cash flows are observed, whereas the deal-level decomposition from Section~\ref{sec:asset_pricing_pooled} remains a latent theoretical device.
+\begin{table}[ht]
+	\centering
+	\small
+	\begin{tabular}{@{}ll@{}}
+		\toprule
+		Symbol & Description \\
+		\midrule
+		$\epsilon_{\tau,i}$ & Fund pricing error at discounting date $\tau$ \\
+		$\bar{\epsilon}_i, \bar{\epsilon}^{(H)}_i$ & Weighted average pricing error (generic and horizon-specific) \\
+		$H$ & Horizon parameter \\
+		$\mathcal{T}_i, \mathcal{T}_{i,H}$ & Set of discounting dates (generic and horizon-specific) \\
+		$w_i$ & Weighting factor for fund $i$ \\
+		$L(\cdot)$ & Loss function (e.g., $L(x) = x^2$) \\
+		$Q_H(\theta)$ & Horizon-specific population objective function \\
+		$Q_n(\theta), Q_{n,H}(\theta)$ & Sample objective function (generic and horizon-specific) \\
+		$s_i^{(H)}(\theta)$ & Unit score contribution \\
+		$d_{i,j}$ & Economic distance between units $i$ and $j$ \\
+		$K(\cdot), k_{i,j}$ & Symmetric SHAC kernel function and generic weights \\
+		$b_V$ & SHAC bandwidth parameter \\
+		$\hat{\theta}, \hat{\theta}_H$ & LMD Estimator (generic and horizon-specific targets) \\
+		$\theta_H^\dagger$ & Horizon-specific pseudo-true parameter vector \\
+		$\mathcal{H}_H$ & Hessian of population objective at $\theta_H^\dagger$ \\
+		$\Lambda_H$ & Long-run covariance matrix of the score \\
+		$\Sigma_H$ & Asymptotic covariance matrix of $\hat{\theta}_H$ \\
+		$W_H$ & Wald statistic for linear hypotheses  \\
+		$R, r$ & Linear constraint matrix and vector \\
+		\bottomrule
+	\end{tabular}
+	\caption{Key notation for the LMD estimator and asymptotic inference (Sections \ref{sec:fundwise_lmd_estimator}--\ref{sec:asymptotic_inference}).}
+	\label{tab:notation_estimator}
+\end{table}
+
+In this subsection, we define a generalized fund-level criterion that averages pricing errors across a user-specified set of discounting dates $\mathcal{T}_i$. 
+This nests the inception-only NPV criterion of \cite{DLP12} as a special case and allows us to study how horizon averaging trades structural validity against finite-sample regularization. 
+Throughout, only pooled fund cash flows are observed, whereas the deal-level decomposition from Section~\ref{sec:asset_pricing_pooled} remains a latent theoretical device.
 
 The stochastic discount factor $\Psi_{\tau,t}$ is used to calculate the time-$\tau$ price $P_{\tau,t,i}$ of a \textbf{single} time-$t$ cash flow of any given PE fund $i$
 \begin{equation}
@@ -405,8 +456,7 @@ P_{\tau,t,i} := \Psi_{\tau,t} \cdot CF_{i,t}
 \qquad \forall \quad \tau,t,i
 \end{equation}
 with multi-period SDF $\Psi_t = \prod_{k=1}^t M_k$ and $\Psi_0 = 1$.
-As SDFs are commonly parameterized by a vector $\theta \in \mathbb{R}^{p}$, i.e., $\Psi_{\tau,t} \equiv \Psi_{\tau,t} (\theta)$, our goal is to find an estimation method for the optimal $\theta$.
-We denote this optimal/best/true parameter vector as $\theta_0$.
+As SDFs are commonly parameterized by a vector $\theta \in \mathbb{R}^{p}$, i.e., $\Psi_{\tau,t} \equiv \Psi_{\tau,t} (\theta)$, our goal is to find an estimation method for the true parameter vector $\theta_0$.
 
 For each fund $i$ and all points $\tau$ within a common fund lifetime, the empirical pricing error $\epsilon_{\tau,i}(\theta)$ of \textbf{all} fully realized fund cash flows is calculated as a time-$\tau$ revaluation of the entire cash-flow stream
 \begin{equation}
@@ -415,17 +465,7 @@ For each fund $i$ and all points $\tau$ within a common fund lifetime, the empir
 \qquad \forall \quad \tau,i
 \end{equation}
 Note that for $t<\tau$, the terms $\frac{\Psi_t}{\Psi_\tau}CF_{i,t}$ are compounded past cash flows, not discounted future cash flows, so the term ``present value'' is no longer accurate for $\tau > t_i^0$. For $\tau>t_i^0$, $\epsilon_{\tau,i}(\theta)$ is not a continuation value but a time-$\tau$ revaluation of the entire realized cash-flow stream, and therefore generally inherits the timing wedge characterized in Section~\ref{sec:asset_pricing_pooled}.
-This time-$\tau$ revaluation $\epsilon_{\tau,i}(\theta)$ must be sharply distinguished from the theoretical continuation value of the remaining cash flows
-\begin{equation}
-	\label{eq:fund_valuation}
-	V_{i,\tau}(\theta)
-	:=
-	\mathbb{E}\!\left[
-	\sum_{t=\tau}^{T}\frac{\Psi_t}{\Psi_\tau}CF_{i,t}
-	\,\middle|\,\mathcal F_\tau
-	\right],
-\end{equation}
-which is not directly observed.
+This time-$\tau$ revaluation $\epsilon_{\tau,i}(\theta)$ must be sharply distinguished from the latent continuation value ${LCV}_{i,\tau}(\theta) := \mathbb{E}[\sum_{t=\tau}^{T}(\Psi_t/\Psi_\tau)CF_{i,t} \mid \mathcal{F}_\tau]$, which conditions on information at $\tau$ and is not directly observed.
 
 To analyze the effect of different discounting dates $\tau$ on the bias and variance of the estimated SDF parameters, we define the generalized criterion $\bar{\epsilon}_{i}(\theta)$ that averages pricing errors over the set $\mathcal{T}_i$:
 \begin{equation}
@@ -441,7 +481,7 @@ where $w_i$ normalizes fund-level pricing errors before the loss is applied; it 
 
 \paragraph{The role of $\mathcal{T}_i$}
 
-The set $\mathcal{T}_i$ controls which discounting dates enter the averaged pricing error $\bar{\epsilon}_i(\theta)$ in Equation~\ref{eq:average_pricing_error}. 
+The set $\mathcal{T}_i$ controls which discounting dates enter the averaged pricing error $\bar{\epsilon}_i(\theta)$ in Equation~\eqref{eq:average_pricing_error}. 
 Averaging over multiple dates in $\mathcal{T}_i$ was originally motivated by the ``exploding alpha'' problem first described by \cite{DLP12}: when the initial cash flow is very small, an arbitrarily large alpha can discount all subsequent cash flows close to zero, rendering the beta factors irrelevant and distorting estimation. Averaging over $\mathcal{T}_i$ mitigates this degeneracy.
 The relevant horizon family is parameterized as
 \begin{equation*}
@@ -457,17 +497,17 @@ Larger values of $H$ offer more regularization, but a larger departure from the 
 
 \begin{remark}[Target parameter under horizon averaging]
 	\label{rem:target_parameter}
-	For $\mathcal{T}_{i,H}=\{t_i^0,t_i^0+1,\dots,\min(t_i^0+12H,T_i^{\max})\}$, the estimator targets the horizon-specific pseudo-true parameter $\theta_H^{\dagger}=\arg\min_{\theta}Q_H(\theta)$. This coincides with the structural parameter $\theta_0$ only when $H=0$. For $H>0$, the estimator trades structural fidelity against finite-sample regularization by averaging pricing errors over discounting dates that may incorporate the timing wedge from Section~\ref{sec:asset_pricing_pooled}.
+	For $\mathcal{T}_{i,H}=\{t_i^0,t_i^0+1,\dots,\min(t_i^0+12H,T_i^{\max})\}$, the estimator targets the horizon-specific pseudo-true parameter $\theta_H^{\dagger}=\arg\max_{\theta}Q_H(\theta)$. This coincides with the structural parameter $\theta_0$ only when $H=0$. For $H>0$, the estimator trades structural fidelity against finite-sample regularization by averaging pricing errors over discounting dates that may incorporate the timing wedge from Section~\ref{sec:asset_pricing_pooled}.
 \end{remark}
 
 \begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.9\textwidth]{figure/npvs3}
 	\caption{
-		How to calculate and interpret the average pricing error introduced by Equation \ref{eq:average_pricing_error}:
+		How to calculate and interpret the average pricing error introduced by Equation~\eqref{eq:average_pricing_error}:
 		The time index $t$ is relevant for the net cash flows (black dots).
 		The time index $\tau$ is used for the pricing error, i.e., the sum of discounted net cash flows (blue boxes).
-		The weighted average of these "pricing errors" gives the average pricing error $\bar{\epsilon}$ as defined in Equation \ref{eq:average_pricing_error} (solid blue line).
+		The weighted average of these "pricing errors" gives the average pricing error $\bar{\epsilon}$ as defined in Equation~\eqref{eq:average_pricing_error} (solid blue line).
 		In this example, $\mathrm{card}(\mathcal{T}_{i})=7$, i.e., the number of blue boxes.
 	}
 	\label{fig:npvs}
@@ -478,22 +518,13 @@ Larger values of $H$ offer more regularization, but a larger departure from the 
 \begin{remark}
 	This restriction guarantees that $\mathbb{E}[\bar{\epsilon}_i(\theta_0)] = 0$ under the true parameter.
 	For the quadratic loss $L(x) = x^2$, the population objective $Q_0(\theta) = -\mathbb{E}[\bar{\epsilon}_i(\theta)^2] = -\mathrm{Var}[\bar{\epsilon}_i(\theta)] - (\mathbb{E}[\bar{\epsilon}_i(\theta)])^2$ involves both variance and bias terms.
-	Consistency then requires that $\theta_0$ uniquely minimizes this composite criterion (see Proposition~\ref{prop:consistency}).
+	Consistency then requires that $\theta_0$ uniquely minimizes this composite criterion (see Proposition~\ref{prop:consistency_H}).
 \end{remark}
 
-Because our estimator is defined through the optimization of a sample criterion, it belongs to the broad class of extremum estimators. We therefore introduce that definition before specifying the particular LMD objective used in this paper.
-\begin{definition}
-	\label{def:extremum_estimator}
-	Extremum estimator \cite[Equation 1.1]{NM94}: \\
-	An estimator $\hat{\theta}$ is an extremum estimator if there is an objective function $Q_n(\theta)$ such that
-	\[
-	\hat{\theta} = \arg\max_{\theta} \ Q_n(\theta)
-	\]
-	for $\theta \in \Theta$ where $\Theta$ is the set of all possible parameter values.
-\end{definition}
+Because our estimator is defined through the optimization of a sample criterion, it is an extremum estimator in the sense of \citet[Eq.~1.1]{NM94}, with $\hat{\theta} = \arg\max_{\theta \in \Theta} Q_n(\theta)$.
 
 Concretely, our Least Mean Distance (LMD) estimator \cite[Equation 7.1]{PP97} minimizes the average loss of $\bar{\epsilon}_{i}(\theta)$.
-For consistency with Definition \ref{def:extremum_estimator}, we will technically maximize the average negative loss of $\bar{\epsilon}_{i}(\theta)$, which is equivalent.
+For consistency with the extremum-estimator convention, we will technically maximize the average negative loss of $\bar{\epsilon}_{i}(\theta)$, which is equivalent.
 
 \begin{equation}
 \label{eq:estimator}
@@ -574,6 +605,7 @@ L\!\left(
 \right)
 \right].
 \end{equation}
+Under the ergodicity implied by the increasing-domain framework (Assumption~\ref{as:vya}), the Ces\`aro average $n^{-1}\sum_{i=1}^n \mathbb{E}[L(\bar{\epsilon}_i^{(H)}(\theta))]$ converges to the single-unit expectation as $V\to\infty$.
 The corresponding population target is the unique maximizer
 \begin{equation}
 \label{eq:pseudotrue_target}
@@ -646,6 +678,11 @@ This increasing-domain perspective differs from the infill framework of \citet{D
 
 The first step is a uniform law of large numbers for the horizon-specific sample criterion \(Q_{n,H}(\theta)\).
 
+\begin{assume}[Parameter space]
+\label{as:compact_theta}
+The parameter space $\Theta \subset \mathbb{R}^p$ is compact.
+\end{assume}
+
 \begin{assume}[Primitive regularity conditions for uniform convergence]
 \label{as:ulln_H}
 For each fixed \(H\):
@@ -658,7 +695,7 @@ For each fixed \(H\):
     i=1,\dots,n
     \right\}
     \]
-    is near-epoch dependent (NED) on an \(\alpha\)-mixing vintage-year process \(\{\eta_v\}_{v\ge 1}\), uniformly in \(\theta \in \Theta\).
+    is near-epoch dependent (NED) on an \(\alpha\)-mixing vintage-year process \(\{\eta_v\}_{v\ge 1}\), uniformly in \(\theta \in \Theta\) (that is, the NED approximation constants are bounded uniformly over \(\theta \in \Theta\) and \(i\)).
     \item The loss function \(L(\cdot)\) is continuous and Lipschitz on the relevant support.
     \item There exists \(p>2\) such that
     \[
@@ -713,7 +750,7 @@ For each fixed \(H\), the population criterion \(Q_H(\theta)\) has a unique maxi
 
 \begin{proposition}[Consistency]
 \label{prop:consistency_H}
-Under Assumptions~\ref{as:portfolio}, \ref{as:vya}, \ref{as:ulln_H}, and \ref{as:identification_H},
+Under Assumptions~\ref{as:portfolio}, \ref{as:vya}, \ref{as:compact_theta}, \ref{as:ulln_H}, and \ref{as:identification_H},
 \[
 \hat{\theta}_H
 \xrightarrow{p}
@@ -723,7 +760,7 @@ Under Assumptions~\ref{as:portfolio}, \ref{as:vya}, \ref{as:ulln_H}, and \ref{as
 \end{proposition}
 
 \begin{proof}
-The claim follows from the standard extremum-estimator argument of \citet[Theorem~2.1]{NM94}. Proposition~\ref{prop:ulln_H} yields uniform convergence of \(Q_{n,H}\) to \(Q_H\), Assumption~\ref{as:identification_H} provides a unique maximizer, and compactness and continuity are inherited from the parameter space \(\Theta\), the discount-factor mapping \(\Psi_{\tau,t}(\theta)\), and the continuity of the loss function.
+The claim follows from the standard extremum-estimator argument of \citet[Theorem~2.1]{NM94}. Proposition~\ref{prop:ulln_H} yields uniform convergence of \(Q_{n,H}\) to \(Q_H\), Assumption~\ref{as:identification_H} provides a unique maximizer, and compactness of \(\Theta\) (Assumption~\ref{as:compact_theta}) together with continuity of the discount-factor mapping \(\Psi_{\tau,t}(\theta)\) and the loss function deliver the remaining conditions.
 \end{proof}
 
 \begin{corollary}[Structural consistency under inception-only pricing]
@@ -750,7 +787,7 @@ Under the conditions of Proposition~\ref{prop:consistency_H}, suppose additional
     \item \(Q_H(\theta)\) is twice continuously differentiable in a neighborhood of \(\theta_H^\dagger\);
     \item the Hessian
     \[
-    H_H
+    \mathcal{H}_H
     :=
     \nabla_{\theta\theta} Q_H(\theta_H^\dagger)
     \]
@@ -778,7 +815,7 @@ where
 \[
 \Sigma_H
 =
-H_H^{-1}\Lambda_H H_H^{-1},
+\mathcal{H}_H^{-1}\Lambda_H \mathcal{H}_H^{-1},
 \qquad
 \Lambda_H
 :=
@@ -792,7 +829,7 @@ n \cdot
 \end{proposition}
 
 \begin{proof}
-The result follows from the extremum-estimator CLT of \citet[Theorem~3.1]{NM94} combined with a central limit theorem for NED random fields under increasing-domain asymptotics; see \citet[Theorem~4]{JP12}. The nonstandard feature in the present application is the vintage-year dependence of the score contributions. Assumptions~\ref{as:vya} and \ref{as:ulln_H} deliver the weak dependence and moment conditions needed to apply the random-field CLT.
+The result follows from the extremum-estimator CLT of \citet[Theorem~3.1]{NM94} combined with a central limit theorem for NED random fields under increasing-domain asymptotics; see \citet[Theorem~4]{JP12}. The nonstandard feature in the present application is the vintage-year dependence of the score contributions. Assumptions~\ref{as:vya} and \ref{as:ulln_H} deliver the weak dependence and moment conditions needed to apply the random-field CLT (where compactness of \(\Theta\) is inherited from Assumption~\ref{as:compact_theta}).
 \end{proof}
 
 \begin{corollary}[Structural asymptotic normality in the inception-only case]
@@ -822,9 +859,9 @@ Proposition~\ref{prop:clt_H} implies the familiar sandwich form
 \[
 \Sigma_H
 =
-H_H^{-1}\Lambda_H H_H^{-1}.
+\mathcal{H}_H^{-1}\Lambda_H \mathcal{H}_H^{-1}.
 \]
-We now describe consistent estimators of the two building blocks \(H_H\) and \(\Lambda_H\).
+We now describe consistent estimators of the two building blocks \(\mathcal{H}_H\) and \(\Lambda_H\).
 
 \paragraph{Score contributions.}
 
@@ -859,7 +896,7 @@ This explicit definition makes clear that the long-run covariance matrix \(\Lamb
 A sample analogue of the Hessian is
 \begin{equation}
 \label{eq:hessian_estimator_H}
-\hat H_H
+\hat{\mathcal{H}}_H
 :=
 \nabla_{\theta\theta} Q_{n,H}(\hat\theta_H)
 =
@@ -871,7 +908,7 @@ L\!\left(
 \bar{\epsilon}^{(H)}_i(\hat\theta_H)
 \right).
 \end{equation}
-When analytic derivatives are unavailable, the derivatives entering Equation~\eqref{eq:hessian_estimator_H} can be computed numerically. In practice, central finite differences are typically adequate, although automatic differentiation or quasi-Newton approximations may also be used. For a methodological paper, the exact numerical routine is secondary; what matters asymptotically is that \(\hat H_H\) consistently estimates \(H_H\).
+When analytic derivatives are unavailable, the derivatives entering Equation~\eqref{eq:hessian_estimator_H} can be computed numerically. In practice, central finite differences are typically adequate, although automatic differentiation or quasi-Newton approximations may also be used. For a methodological paper, the exact numerical routine is secondary; what matters asymptotically is that \(\hat{\mathcal{H}}_H\) consistently estimates \(\mathcal{H}_H\).
 
 \paragraph{SHAC estimator of the long-run covariance matrix.}
 
@@ -921,9 +958,9 @@ The estimated asymptotic covariance matrix is
 \widehat{\mathrm{Avar}}(\hat\theta_H)
 =
 \frac{1}{n}
-\hat H_H^{-1}
+\hat{\mathcal{H}}_H^{-1}
 \hat{\Lambda}_H
-\hat H_H^{-1}.
+\hat{\mathcal{H}}_H^{-1}.
 \end{equation}
 Accordingly, the vector of asymptotic standard errors is
 \begin{equation}
@@ -1053,7 +1090,7 @@ Table \ref{tab:comparison} summarizes the most prominent distinctions between th
 		\midrule
 		\textbf{Estimator type}
 		& Cross-sectional NLS (one-step GMM) 
-		& Time-series GMM (public SDF) 
+		& Time-series GMM (public-market calibrated) 
 		& Nonlinear Least-Mean-Distance \\
 		\addlinespace
 		\textbf{Cash flows priced}
@@ -1097,7 +1134,117 @@ Table \ref{tab:comparison} summarizes the most prominent distinctions between th
 \section{Implementation choices and simulation}
 \label{sec:empirical_application}
 
+In this section and the next, we move from the general methodology to our empirical application.
+First, we describe the data and establish our sample restriction based on terminal cash-flow measurement concerns.
+Second, we detail the empirical implementation choices that anchor the general estimator from Section~\ref{sec:fundwise_lmd_estimator}.
+Third, we use a simulation study to validate and calibrate these choices.
+Finally, Section~\ref{sec:empirical_results_bovc} presents the resulting empirical estimates for Buyout and Venture Capital funds.
 
+
+\subsection{Data}
+\label{sec:data}
+
+We use the Preqin cash flow data set as of 14th April 2022, which is well known in the academic private equity literature \citep{HJK14,brown2015different,KN16,ACGP18}.
+To keep the empirical analysis clear and concise, we filter the dataset for Buyout (BO) and Venture Capital (VC) funds.
+We only keep funds with fund currency US Dollar (USD) and region equal to North America.
+In rare instances, the Preqin taxonomy assigns geographic labels that are inconsistent with the North America region filter (e.g., a fund classified under a sub-regional or country-level tag that nonetheless passes the broader filter). Because all retained funds are denominated in USD, these classification inconsistencies do not introduce foreign-exchange contamination.
+
+
+For this subset of BO and VC funds, we extract all (i) equal-weighted (hereafter EW) and (ii) value-weighted (hereafter FW, for fund-size-weighted) cash flow series.
+In the overall dataset, the minimum vintage year is 1982, and the maximum is 2021.
+We retain all vintage years, including recent ones.
+Section \ref{sec:empirical_vintage_cutoffs_bovc} assesses the impact of unseasoned fund NAVs on our empirical estimation results.
+On this basis, we decide how many recent vintage years to remove to reduce reliance on unrealized NAVs.
+For the vintage years we keep, all liquidated and non-liquidated funds enter our estimation.
+For non-liquidated funds, we treat the latest net asset value as final cash flow.
+
+
+\paragraph{Buyout sample.}
+The Buyout (North America) sample contains 933 distinct funds spanning 36 vintage years.
+The vintage year distribution is as follows: 1985 (2), 1986 (3), 1987 (5), 1988 (6), 1990 (2), 1991 (3), 1992 (6), 1993 (5), 1994 (14), 1995 (11), 1996 (13), 1997 (14), 1998 (32), 1999 (27), 2000 (34), 2001 (21), 2002 (14), 2003 (21), 2004 (24), 2005 (44), 2006 (50), 2007 (49), 2008 (45), 2009 (19), 2010 (31), 2011 (25), 2012 (39), 2013 (36), 2014 (44), 2015 (35), 2016 (57), 2017 (35), 2018 (45), 2019 (65), 2020 (34), 2021 (23).
+The region distribution is as follows: Americas (4), Asia (16), Canada (1), Central and East Europe (2), Europe (6), Japan (1), Midwest (2), North America (461), South America (2), Southeast (1), Southwest (1), US (433), West Europe (1).
+The strategy distribution is as follows: Buyout (933).
+The fund currency distribution is as follows: USD (933).
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.9\textwidth]{empirical/cumcashflowsBO.pdf}
+	\caption{\textbf{Cumulative cash flows:} J-curves by vintage year for BO funds in Preqin dataset scaled by fund commitment. Post-2010 vintage years are shown as green lines. Based on the sensitivity analysis in Section~\ref{sec:empirical_vintage_cutoffs_bovc}, these vintages are excluded from the empirical estimates in Section~\ref{sec:empirical_results_bovc} to limit reliance on unrealized NAVs.}
+	\label{fig:preqin_cashflows_bo}
+\end{figure}
+
+\paragraph{Venture Capital sample.}
+The Venture Capital (North America) sample contains 968 distinct funds spanning 38 vintage years.
+The vintage year distribution is as follows: 1982 (1), 1985 (3), 1986 (4), 1987 (2), 1988 (1), 1989 (1), 1990 (4), 1991 (1), 1992 (7), 1993 (6), 1994 (6), 1995 (8), 1996 (14), 1997 (16), 1998 (28), 1999 (44), 2000 (70), 2001 (45), 2002 (28), 2003 (18), 2004 (31), 2005 (34), 2006 (44), 2007 (48), 2008 (38), 2009 (18), 2010 (18), 2011 (23), 2012 (21), 2013 (32), 2014 (33), 2015 (37), 2016 (40), 2017 (50), 2018 (52), 2019 (64), 2020 (45), 2021 (33).
+The region distribution is as follows: Asia (10), Australasia (1), Canada (1), China (10), Europe (3), India (2), Mexico (1), Midwest (2), North America (267), Northeast (2), Southwest (1), Thailand (1), US (664), West (1).
+The strategy distribution is as follows: Early Stage (274), Early Stage: Seed (47), Early Stage: Start-up (26), Expansion / Late Stage (127), Venture (General) (472), Venture Debt (22).
+The fund currency distribution is as follows: USD (968).
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.9\textwidth]{empirical/cumcashflowsVC.pdf}
+	\caption{\textbf{Cumulative cash flows:} J-curves by vintage year for VC funds in Preqin dataset scaled by fund commitment. Post-2010 vintage years are shown as green lines. Based on the sensitivity analysis in Section~\ref{sec:empirical_vintage_cutoffs_bovc}, these vintages are excluded from the empirical estimates in Section~\ref{sec:empirical_results_bovc} to limit reliance on unrealized NAVs.}
+	\label{fig:preqin_cashflows_vc}
+\end{figure}
+
+
+\subsection{The impact of unseasoned funds and reported NAVs}
+\label{sec:empirical_vintage_cutoffs_bovc}
+
+Figure~\ref{fig:max_vintage_BOVC_MKT} presents the vintage-year cutoff sensitivity analysis separately for BO and VC under value weighting.
+A clear upward-drift pattern is present in both sub-samples: as more recent, unseasoned vintages are included, the estimated market beta increases monotonically.
+For BO under value weighting, $\hat{\beta}_{\mathrm{MKT}}$ rises from approximately 1.23 with a 2011 vintage cutoff to roughly 2.42 with the full sample (2021); notably, most of the increase is concentrated in vintages after 2016, where $\hat{\beta}_{\mathrm{MKT}}$ jumps sharply from 1.53 (2016 cutoff) to 2.34 (2017 cutoff), reflecting the disproportionate influence of young, unrealized funds.
+For VC, the drift is similarly dramatic: the FW estimate climbs from approximately 1.57 (2011 cutoff) to 2.33 with the full sample.
+Discounting all final NAVs by 50\% substantially flattens the upward trend: the BO FW estimate range compresses to 1.09--1.65, and the VC FW range to 1.41--1.54, confirming that the drift is attributable to the outsized mechanical reliance on subjectively reported Net Asset Values for young funds.
+These findings reinforce the sample restriction to the 2010 maximum vintage year applied throughout the remainder of this section.
+
+\begin{figure}[htbp]
+	\centering
+	\begin{minipage}{0.5\textwidth}
+		\centering
+		\includegraphics[width=0.9\textwidth]{empirical_bovc_us/max_vintage_BO_US_MKT_combined_NC}
+	\end{minipage}\hfill
+	\begin{minipage}{0.5\textwidth}
+		\centering
+		\includegraphics[width=0.9\textwidth]{empirical_bovc_us/max_vintage_VC_US_MKT_combined_NC}
+	\end{minipage}
+	\caption{\textbf{Sensitivity analysis ($MKT$ factor):} Single-factor model for BO (left) and VC (right) under value weighting, using VYP with different vintage-year cutoffs (asymptotic estimates). For each asset class, the left chart shows the standard baseline (full NAV as final cash flow), while the right chart applies a 50\% discount to all final NAVs.}
+	\label{fig:max_vintage_BOVC_MKT}
+\end{figure}
+
+
+\subsection{NAV discount sensitivity analysis}
+\label{sec:empirical_nav_discount_bovc}
+
+To further quantify the sensitivity of factor loading estimates to terminal Net Asset Value treatment, we conduct a systematic NAV discount analysis on the seasoned sample (maximum vintage year 2010).
+Figure~\ref{fig:nav_disc_BOVC_MKT} reports single-factor MKT estimates under five NAV treatments: the baseline (full reported NAV as final cash flow), 25\%, 50\%, and 75\% constant discounts applied to all final NAVs, and a complete NAV write-off (100\% discount).
+
+For BO, the estimated market beta decreases monotonically with the NAV discount.
+At the 0-year Horizon (see Remark~\ref{rem:horizon_def}) under EW, $\hat{\beta}_{\mathrm{MKT}}$ drops from 1.26 (no discount) to 1.19 (25\% discount), 1.12 (50\%), 1.03 (75\%), and 0.94 (100\% write-off); under FW, the corresponding range is 1.20 to 0.98.
+At the 15-year Horizon, the EW estimate ranges from 0.81 (no discount) to 0.55 (100\% write-off), while the FW estimate spans 0.84 to 0.62.
+The qualitative conclusion is robust across all NAV treatments: the single-factor market model remains economically plausible and stable.
+
+For VC under EW, the pattern is analogous but the sensitivity is more muted in percentage terms due to the higher baseline beta: the 0-year estimate declines from 1.88 (no discount) to 1.84 (25\%), 1.80 (50\%), 1.77 (75\%), and 1.74 (100\%); at the 15-year Horizon, from 1.30 (no discount) to 1.09 (100\% write-off).
+Under FW, the sensitivity is more pronounced, particularly at longer Horizons: the 0-year estimate ranges from 1.59 to 1.34, while the 15-year estimate declines from 1.07 to 0.73.
+
+This analysis demonstrates that terminal NAV treatment has a material but bounded effect on estimated factor loadings.
+The monotonic relationship confirms the intuition that reported NAVs mechanically inflate estimated betas: funds whose final cash flow is a subjective valuation rather than a realized exit price appear more systematically risky because their NAVs partially co-move with public market indices.
+Importantly, even under the extreme assumption of a complete NAV write-off, the qualitative conclusions of this section remain unchanged: BO maintains a market beta near or slightly below unity, while VC retains a substantially higher systematic exposure.
+We do not impose a model-based residual-value adjustment, as this would constitute a separate research agenda; instead, the range spanned by the five NAV treatments provides a transparent envelope of estimation uncertainty attributable to terminal value measurement.
+
+\begin{figure}[htbp]
+	\centering
+	\begin{minipage}{0.5\textwidth}
+		\centering
+		\includegraphics[width=0.9\textwidth]{empirical_bovc_us/nav_disc_BO_US_MKT_combined_NC}
+	\end{minipage}\hfill
+	\begin{minipage}{0.5\textwidth}
+		\centering
+		\includegraphics[width=0.9\textwidth]{empirical_bovc_us/nav_disc_VC_US_MKT_combined_NC}
+	\end{minipage}
+	\caption{\textbf{NAV discount sensitivity ($MKT$ factor):} Single-factor model for BO (left) and VC (right) using VYP and maximum vintage year 2010. Each panel shows asymptotic estimates under five NAV treatments: full NAV as final cash flow, 25\%, 50\%, 75\% constant discounts, and 100\% NAV write-off.}
+	\label{fig:nav_disc_BOVC_MKT}
+\end{figure}
 
 
 \subsection{Model and estimator specifications}
@@ -1121,7 +1268,8 @@ and an exponential affine SDF model adapted from \cite{KN16}
 \right)
 \right]
 \end{equation}
-with (arithmetic) risk-free return $r_f=R_{rf}-1$, (arithmetic) zero-net-investment portfolio returns $F_m$, and parameter vector $\theta=(\alpha,\beta)$.
+with monthly (arithmetic) risk-free return $r_f=R_{rf}-1$, monthly (arithmetic) zero-net-investment portfolio returns $F_m$, and parameter vector $\theta=(\alpha,\beta)$.
+Throughout both the simulation and the empirical application, all factor returns and fund cash flows are observed at monthly frequency.
 
 The public market factors that enter our SDF draw on the US dataset of the recently popularized $q^5$ investment factor model sourced from \url{http://global-q.org/factors.html} \citep{HXZ15,hou2021augmented}. 
 Their five-factor model includes the market excess return (MKT), a size factor (ME), an investment factor (IA), a return on equity factor (ROE), and an expected growth factor (EG).
@@ -1131,12 +1279,20 @@ The maximum date in the  $q^5$ investment factor dataset is 2024-12-31.
 To avoid overfitting, we restrict our analysis to six simple SDF models that contain \{MKT\} alone or \{MKT\} plus \{ME or IA or ROE or EG or Alpha\}.
 In Equation \ref{eq:estimator}, we use the quadratic loss function $L(x)=x^2$.
 
+\paragraph{Empirical design.}
+As the simulation study in Subsection~\ref{sec:simulation_study} will confirm, we use vintage-year portfolios (VYPs) to estimate simple linear SDF models for the Buyout (BO) and Venture Capital (VC) sub-samples individually, restricting the data to North American, USD-denominated funds from the Preqin dataset described in Subsection~\ref{sec:data}.
+This restriction ensures consistency between fund cash flows and the U.S.\ $q$-investment factor benchmarks used throughout the analysis.
+We analyze BO and VC as two distinct asset classes with fundamentally different risk profiles and report both equal-weighted (EW) and value-weighted (FW) estimates across a grid of compounding Horizons.
+For each model specification, we report asymptotic standard errors (SE$_A$) from the SHAC framework alongside $hv$-block cross-validation fold dispersions (SD$_{CV}$), defined as the standard deviation of parameter estimates across hold-out folds.
+Throughout the empirical analysis, $t_A$ denotes the $t$-ratio based on asymptotic standard errors; $\mathrm{SR}_{CV}$ (stability ratio) denotes the ratio of the full-sample estimate to the cross-validation fold dispersion, i.e., $\mathrm{SR}_{CV} := \hat{\theta} / \mathrm{SD}_{CV}$\footnote{All R code and data are available in an online repository: \url{https://github.com/quant-unit/Fundwise_SDF/tree/master/r_project}.}.
+As discussed in Remark~\ref{rem:cv_diagnostic}, $\mathrm{SR}_{CV}$ complements asymptotic inference as a stability diagnostic.
+
 To assess the parameter significance, we compute the asymptotic standard errors as outlined in Subsection \ref{sec:asymptotic_inference}.
 For the Bartlett kernel's bandwidth $b_n=D$ we select 12 years, i.e., funds with absolute vintage year differences larger than 12 years are assumed to be independent.
 
 
 
-\textbf{Implementation remark.} For liquidated funds, the relevant cash-flow stream is directly observed. For active funds, however, the theoretical continuation value is not observed; in practice one observes reported NAVs, which may be affected by stale pricing and appraisal smoothing. In the empirical application, we therefore treat the most recent NAV of non-liquidated funds as a proxy for the final distribution cash flow.
+
 
 
 
@@ -1149,13 +1305,13 @@ The asymptotic results provide the benchmark large-sample approximation. At the 
 Additionally, we assess the out-of-sample stability and model-selection properties of our SDF models.
 To account for the dependency between funds from adjacent vintage years caused by overlapping fund cash flows, we draw on $hv$-block cross-validation \citep{R00}.
 As \cite{R00} demonstrates, $hv$-block cross-validation is a consistent model-selection criterion for dependent data: the $h$-block gap between training and validation sets ensures approximate independence, while the $v$-block provides a sufficiently large validation sample within each fold.
-In our implementation, we form three partitions for several vintage year groups.
-The validation set ($v$-block) always contains funds of three neighboring vintage years (e.g., 2000, 2001, 2002).
-To reduce the dependency between training and validation set, we remove all funds from three-year-adjacent vintage years, i.e., the $h$-block (e.g., 1997, 1998, 1999, 2003, 2004, 2005).
-Funds from the remaining vintage years enter the training set and are thus used for model estimation (e.g., 1985-1996, 2006-end).
-The number of validation folds adapts dynamically to the selected maximum vintage year cutoff in any given empirical estimation run. 
-For instance, when estimating the full sample through 2021, we apply ten-fold cross-validation; when estimating a heavily seasoned sample truncated at 2010 to avoid reliance on subjective interim NAVs, the framework naturally truncates to seven active folds.
-Table \ref{tab:hv_block_cv} illustrates the full ten partitions used for the unrestricted data set.
+In our implementation, each cross-validation fold partitions the data into three disjoint groups:
+(i)~a \emph{validation set} ($v$-block) comprising funds from three consecutive vintage years (e.g., 2000, 2001, 2002), on which the out-of-sample pricing error is evaluated;
+(ii)~a \emph{buffer zone} ($h$-block) of three vintage years on each side of the $v$-block (e.g., 1997--1999 and 2003--2005), which is discarded entirely to break the dependence between training and validation data caused by overlapping fund cash flows; and
+(iii)~an \emph{estimation set} consisting of all remaining vintage years (e.g., 1985--1996 and 2006--end), on which the model parameters are estimated.
+This three-way split is repeated across rolling vintage-year windows, as detailed in Table~\ref{tab:hv_block_cv}.
+The number of active folds adapts dynamically to the selected maximum vintage year cutoff in any given estimation run.
+For instance, when estimating the full sample through 2021, we apply ten folds; when estimating a heavily seasoned sample truncated at 2010 to avoid reliance on subjective interim NAVs, the framework naturally truncates to seven active folds.
 
 \begin{remark}[Cross-validation as stability diagnostic]
 	\label{rem:cv_diagnostic}
@@ -1265,11 +1421,11 @@ To assess this tradeoff, we compare five data configurations (depicted in Figure
 (4) an early-vintage sub-sample ($V=10$, years 1986--1995, $n/V=20$); and 
 (5) a late-vintage sub-sample ($V=10$, years 1996--2005, $n/V=20$).
 
-Our simulation yields a clear prescriptive result for empirical practice: increasing the number of cross-sectional units per portfolio ($n/V$) is substantially more effective at suppressing estimator variance than adding more vintage years ($V$).
+In our simulation design, increasing the number of cross-sectional units per portfolio ($n/V$) is substantially more effective at suppressing estimator variance than adding more vintage years ($V$).
 For the single-factor model at the 15-year Horizon, transitioning from 10 funds to 20 funds per vintage over a 39-year period (scenarios 2 vs.\ 3) reduces the standard deviation of $\hat{\beta}_{\mathrm{MKT}}$ by roughly 22\%, from 0.218 to 0.169.
 In contrast, shrinking the time-series dimension from 39 years to just 10 years (while holding $n/V=20$ constant) elevates the variance only moderately for the early-vintage sub-sample ($\sigma(\hat{\beta}_{\mathrm{MKT}}) \approx 0.194$ for 1986--1995), though the late-vintage sub-sample (1996--2005) exhibits considerably higher variance ($\sigma(\hat{\beta}_{\mathrm{MKT}}) \approx 0.432$), reflecting the sensitivity to the realized macro environment.
 This hierarchy of variance reduction is even more pronounced in the two-factor setting, where idiosyncratic cash flow noise severely impairs multivariate identification: increasing $n/V$ aggressively dampens the spurious $\alpha$ variance.
-Consequently, our findings provide a compelling rationale for the finite-sample superiority of the \cite{DLP12} infill asymptotics (fixing $V$, letting $n_v \to \infty$) over approaches that rely purely on time-series aggregation.
+Consequently, our findings provide an empirical rationale for the finite-sample superiority of the \cite{DLP12} infill asymptotics (fixing $V$, letting $n_v \to \infty$) over approaches that rely purely on time-series aggregation.
 
 
 \begin{figure}[H]
@@ -1359,7 +1515,7 @@ Investment-period and holding-period pairs: 1/1, 2/2, 3/3, 3/6, 3/10.
 \paragraph{Size of set $\mathcal{T}$ (Maximum Compounding Horizon):}
 
 Our most critical simulation finding relates to the optimal choice of the maximum compounding Horizon, i.e., the size of the set of discounting dates $\mathcal{T}$.
-From a purely theoretical perspective (cf.\ Section \ref{sec:asset_pricing_pooled}), discounting all cash flows exclusively to the fund inception date, corresponding to a zero-month or NPV-only Horizon in our notation, should yield unconditionally unbiased estimates under Assumption \ref{ass:unconditional_unbiased}.
+From a purely theoretical perspective (cf.\ Section \ref{sec:asset_pricing_pooled}), discounting all cash flows exclusively to the fund inception date, corresponding to a zero-month or NPV-only Horizon in our notation, should yield unconditionally unbiased estimates under the deal-level exact-pricing restriction (Equation~\eqref{eq:deal_pricing}).
 This minimal choice for $\mathcal{T}$ corresponds exactly to the established \cite{DLP12} framework.
 
 However, our diverse simulation results reveal a puzzling disconnect between asymptotic theory and finite-sample performance: extending the set of discounting dates deep into the fund lifecycle drastically improves the estimator's precision.
@@ -1379,6 +1535,8 @@ Our simulation study also suggests that (iv) averaging pricing errors over multi
 Ultimately, selecting a set of compounding dates $\mathcal{T}$ that spans a significant portion of the fund lifecycle appears to decrease finite-sample bias (and to a lesser extent, variance) more effectively than all other measures combined.
 Appendix~\ref{sec:appendix_bias_variance}, in particular Section~\ref{sec:appendix_bv_alpha_interpretation}, explains the theoretical foundation of this observation by showing how NFV-induced timing terms can shift the population target while still improving finite-sample performance through the bias--variance tradeoff.
 
+Accordingly, in the empirical application we use vintage-year portfolios, the simple linear SDF, emphasize one-factor MKT specifications, treat two-factor results as exploratory, and focus on Horizons around 12.5--15 years while also reporting sensitivity over a broader grid.
+
 
 
 
@@ -1391,133 +1549,25 @@ Appendix~\ref{sec:appendix_bias_variance}, in particular Section~\ref{sec:append
 \section{Empirical results for BO and VC data}
 \label{sec:empirical_results_bovc}
 
-
-\subsection{Data}
-\label{sec:data}
-
-We use the Preqin cash flow data set as of 14th April 2022, which is well known in the academic private equity literature \citep{HJK14,brown2015different,KN16,ACGP18}.
-To keep the empirical analysis clear and concise, we filter the dataset for Buyout (BO) and Venture Capital (VC) funds.
-We only keep funds with fund currency US Dollar (USD) and region equal to North America.
+This section presents the empirical SDF estimates for BO and VC.
+Our baseline specification is the single-factor MKT model estimated on vintage-year portfolios with a maximum vintage year of 2010, chosen to avoid reliance on unrealized NAVs (see Section~\ref{sec:empirical_vintage_cutoffs_bovc}).
+Two-factor models that add an alpha intercept serve as robustness and exploratory extensions.
+We report both EW and FW estimates across the full Horizon grid.
 
 
-For this subset of BO and VC funds, we extract all (i) equal-weighted and (ii) value-weighted (or fund-size-weighted) cash flow series.
-In the overall dataset, the minimum vintage year is 1982, and the maximum is 2021.
-We explicitly refrain from excluding the most recent vintage years.
-Section \ref{sec:empirical_vintage_cutoffs_bovc} assess the impact of unseasoned fund NAVs on our empirical estimation results.
-On this basis, we decide how many recent vintage years we want to remove to reduce reliance of unrealized NAVs.
-For the vintage years, we keep, all liquidated and non-liquidated funds enter our estimation.
-For non-liquidated funds, we treat the latest net asset value as final cash flow.
-
-
-
-Following the conclusions from the simulation study, we use the Preqin data from Section \ref{sec:data} restricted to North American, USD-denominated funds and form vintage-year portfolios (VYPs) to estimate simple linear SDF models for the Buyout (BO) and Venture Capital (VC) sub-samples individually.
-This restriction ensures consistency between fund cash flows and the U.S.\ $q$-investment factor benchmarks used throughout the analysis.
-For each model specification, we report asymptotic standard errors (SE$_A$) from the SHAC framework alongside $hv$-block cross-validation fold dispersions (SD$_{CV}$), defined as the standard deviation of parameter estimates across hold-out folds.
-We analyze BO and VC as two distinct asset classes with fundamentally different risk profiles and report both equal-weighted (EW) and value-weighted (FW) estimates across a grid of compounding Horizons.
-Throughout this section, $t_A$ denotes the $t$-ratio based on asymptotic standard errors; $\mathrm{SR}_{CV}$ (stability ratio) denotes the ratio of the full-sample estimate to the cross-validation fold dispersion, i.e., $\mathrm{SR}_{CV} := \hat{\theta} / \mathrm{SD}_{CV}$\footnote{All R code and data are available in an online repository: \url{https://github.com/quant-unit/Fundwise_SDF/tree/master/r_project}.}.
-As emphasized in Remark~\ref{rem:cv_diagnostic}, $\mathrm{SR}_{CV}$ is a stability diagnostic and should not be interpreted as a test statistic with a known null distribution.
-
-\paragraph{Summary BO data.}
-The Buyout (North America) sample contains 933 distinct funds spreading over 36 vintage years.
-The vintage year distribution is as follows: 1985 (2), 1986 (3), 1987 (5), 1988 (6), 1990 (2), 1991 (3), 1992 (6), 1993 (5), 1994 (14), 1995 (11), 1996 (13), 1997 (14), 1998 (32), 1999 (27), 2000 (34), 2001 (21), 2002 (14), 2003 (21), 2004 (24), 2005 (44), 2006 (50), 2007 (49), 2008 (45), 2009 (19), 2010 (31), 2011 (25), 2012 (39), 2013 (36), 2014 (44), 2015 (35), 2016 (57), 2017 (35), 2018 (45), 2019 (65), 2020 (34), 2021 (23).
-The region distribution is as follows: Americas (4), Asia (16), Canada (1), Central and East Europe (2), Europe (6), Japan (1), Midwest (2), North America (461), South America (2), Southeast (1), Southwest (1), US (433), West Europe (1).
-The strategy distribution is as follows: Buyout (933).
-The fund currency distribution is as follows: USD (933).
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.9\textwidth]{empirical/cumcashflowsBO.pdf}
-	\caption{\textbf{Cumulative cash flows:} J-curves by vintage year for BO funds in Preqin dataset scaled by fund commitment. To reduce the reliance on large unrealized NAVs, vintage years younger than 2010 are excluded (green lines).}
-	\label{fig:preqin_cashflows_bo}
-\end{figure}
-
-\paragraph{Summary VC data.}
-The Venture Capital (North America) sample contains 968 distinct funds spreading over 38 vintage years.
-The vintage year distribution is as follows: 1982 (1), 1985 (3), 1986 (4), 1987 (2), 1988 (1), 1989 (1), 1990 (4), 1991 (1), 1992 (7), 1993 (6), 1994 (6), 1995 (8), 1996 (14), 1997 (16), 1998 (28), 1999 (44), 2000 (70), 2001 (45), 2002 (28), 2003 (18), 2004 (31), 2005 (34), 2006 (44), 2007 (48), 2008 (38), 2009 (18), 2010 (18), 2011 (23), 2012 (21), 2013 (32), 2014 (33), 2015 (37), 2016 (40), 2017 (50), 2018 (52), 2019 (64), 2020 (45), 2021 (33).
-The region distribution is as follows: Asia (10), Australasia (1), Canada (1), China (10), Europe (3), India (2), Mexico (1), Midwest (2), North America (267), Northeast (2), Southwest (1), Thailand (1), US (664), West (1).
-The strategy distribution is as follows: Early Stage (274), Early Stage: Seed (47), Early Stage: Start-up (26), Expansion / Late Stage (127), Venture (General) (472), Venture Debt (22).
-The fund currency distribution is as follows: USD (968).
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.9\textwidth]{empirical/cumcashflowsVC.pdf}
-	\caption{\textbf{Cumulative cash flows:} J-curves by vintage year for VC funds in Preqin dataset scaled by fund commitment. To reduce the reliance on large unrealized NAVs, vintage years younger than 2010 are excluded (green lines).}
-	\label{fig:preqin_cashflows_vc}
-\end{figure}
-
-
-\subsection{The impact of unseasoned funds and reported NAVs}
-\label{sec:empirical_vintage_cutoffs_bovc}
-
-Figure~\ref{fig:max_vintage_BOVC_MKT} presents the vintage-year cutoff sensitivity analysis separately for BO and VC under value weighting.
-The same upward-drift pattern documented for PE is clearly present in both sub-samples: as more recent, unseasoned vintages are included, the estimated market beta increases monotonically.
-For BO under value weighting, $\hat{\beta}_{\mathrm{MKT}}$ rises from approximately 1.23 with a 2011 vintage cutoff to roughly 2.42 with the full sample (2021); notably, most of the increase is concentrated in vintages after 2016, where $\hat{\beta}_{\mathrm{MKT}}$ jumps sharply from 1.53 (2016 cutoff) to 2.34 (2017 cutoff), reflecting the disproportionate influence of young, unrealized funds.
-For VC, the drift is similarly dramatic: the FW estimate climbs from approximately 1.57 (2011 cutoff) to 2.33 with the full sample.
-As with PE, discounting all final NAVs by 50\% substantially flattens the upward trend: the BO FW estimate range compresses to 1.09--1.65, and the VC FW range to 1.41--1.54, confirming that the drift is attributable to the outsized mechanical reliance on subjectively reported Net Asset Values for young funds.
-These findings reinforce the sample restriction to the 2010 maximum vintage year applied throughout the remainder of this section.
-
-\begin{figure}[htbp]
-	\centering
-	\begin{minipage}{0.5\textwidth}
-		\centering
-		\includegraphics[width=0.9\textwidth]{empirical_bovc_us/max_vintage_BO_US_MKT_combined_NC}
-	\end{minipage}\hfill
-	\begin{minipage}{0.5\textwidth}
-		\centering
-		\includegraphics[width=0.9\textwidth]{empirical_bovc_us/max_vintage_VC_US_MKT_combined_NC}
-	\end{minipage}
-	\caption{\textbf{Sensitivity analysis ($MKT$ factor):} Single-factor model for BO (left) and VC (right) under value weighting, using VYP with different vintage-year cutoffs (asymptotic estimates). For each asset class, the left chart shows the standard baseline (full NAV as final cash flow), while the right chart applies a 50\% discount to all final NAVs.}
-	\label{fig:max_vintage_BOVC_MKT}
-\end{figure}
-
-
-\subsection{NAV discount sensitivity analysis}
-\label{sec:empirical_nav_discount_bovc}
-
-To further quantify the sensitivity of factor loading estimates to terminal Net Asset Value treatment, we conduct a systematic NAV discount analysis on the seasoned sample (maximum vintage year 2010).
-Figure~\ref{fig:nav_disc_BOVC_MKT} reports single-factor MKT estimates under five NAV treatments: the baseline (full reported NAV as final cash flow), 25\%, 50\%, and 75\% constant discounts applied to all final NAVs, and a complete NAV write-off (100\% discount).
-
-For BO, the estimated market beta decreases monotonically with the NAV discount.
-At the 0-year Horizon under EW, $\hat{\beta}_{\mathrm{MKT}}$ drops from 1.26 (no discount) to 1.19 (25\% discount), 1.12 (50\%), 1.03 (75\%), and 0.94 (100\% write-off); under FW, the corresponding range is 1.20 to 0.98.
-At the 15-year Horizon, the EW estimate ranges from 0.81 (no discount) to 0.55 (100\% write-off), while the FW estimate spans 0.84 to 0.62.
-The qualitative conclusion is robust across all NAV treatments: the single-factor market model remains economically plausible and stable.
-
-For VC under EW, the pattern is analogous but the sensitivity is more muted in percentage terms due to the higher baseline beta: the 0-year estimate declines from 1.88 (no discount) to 1.84 (25\%), 1.80 (50\%), 1.77 (75\%), and 1.74 (100\%); at the 15-year Horizon, from 1.30 (no discount) to 1.09 (100\% write-off).
-Under FW, the sensitivity is more pronounced, particularly at longer Horizons: the 0-year estimate ranges from 1.59 to 1.34, while the 15-year estimate declines from 1.07 to 0.73.
-
-This analysis demonstrates that terminal NAV treatment has a material but bounded effect on estimated factor loadings.
-The monotonic relationship confirms the intuition that reported NAVs mechanically inflate estimated betas: funds whose final cash flow is a subjective valuation rather than a realized exit price appear more systematically risky because their NAVs partially co-move with public market indices.
-Importantly, even under the extreme assumption of a complete NAV write-off, the qualitative conclusions of this section remain unchanged: BO maintains a market beta near or slightly below unity, while VC retains a substantially higher systematic exposure.
-We do not impose a model-based residual-value adjustment, as this would constitute a separate research agenda; instead, the range spanned by the five NAV treatments provides a transparent envelope of estimation uncertainty attributable to terminal value measurement.
-
-\begin{figure}[htbp]
-	\centering
-	\begin{minipage}{0.5\textwidth}
-		\centering
-		\includegraphics[width=0.9\textwidth]{empirical_bovc_us/nav_disc_BO_US_MKT_combined_NC}
-	\end{minipage}\hfill
-	\begin{minipage}{0.5\textwidth}
-		\centering
-		\includegraphics[width=0.9\textwidth]{empirical_bovc_us/nav_disc_VC_US_MKT_combined_NC}
-	\end{minipage}
-	\caption{\textbf{NAV discount sensitivity ($MKT$ factor):} Single-factor model for BO (left) and VC (right) using VYP and maximum vintage year 2010. Each panel shows asymptotic estimates under five NAV treatments: full NAV as final cash flow, 25\%, 50\%, 75\% constant discounts, and 100\% NAV write-off.}
-	\label{fig:nav_disc_BOVC_MKT}
-\end{figure}
-
-
-\subsection{Single market-factor models}
+\subsection{Baseline: single market-factor models}
 \label{sec:empirical_single_bovc}
 
 Tables~\ref{tab:empirical_bo_mkt}--\ref{tab:empirical_vc_mkt} and Figure~\ref{fig:empirical_BOVC_MKT} report the single-factor MKT model for BO and VC across Horizons from 0 to 30 years.
-As expected from the broader PE results, the market beta declines with the compounding Horizon for both asset classes.
+As anticipated by the simulation study, the market beta declines with the compounding Horizon for both asset classes.
 
-For BO, the estimates are close to their PE counterparts: under EW, $\hat{\beta}_{\mathrm{MKT}}$ ranges from approximately 1.22--1.27 at short Horizons (0--5~years) and decreases to 0.67 at 25--30~years; under FW, the corresponding range is 1.20--1.21 down to 0.69.
+For BO under EW, $\hat{\beta}_{\mathrm{MKT}}$ ranges from approximately 1.22--1.27 at short Horizons (0--5~years) and decreases to 0.67 at 25--30~years; under FW, the corresponding range is 1.20--1.21 down to 0.69.
 The divergence between asymptotic and cross-validation diagnostics persists: asymptotic $t$-ratios ($t_A$) are moderate at short Horizons (e.g., 1.10 under EW at 0~years) and decline further at longer Horizons, while the cross-validation stability ratios remain high throughout ($\mathrm{SR}_{CV}$ ranging from 3.75 to 10.65 under EW and from 2.63 to 8.68 under FW), indicating robust stability across data subsets.
 
 For VC, the market beta is substantially higher across all Horizons, consistent with venture capital's greater sensitivity to systematic risk.
 Under EW, $\hat{\beta}_{\mathrm{MKT}}$ reaches approximately 1.97--2.00 at 2.5--5~years and converges toward 1.04--1.13 beyond 25~years; under FW, the corresponding range is 1.64--1.68 down to 0.82--0.86.
 Despite the higher parameter variability reflected in larger asymptotic standard errors (SE$_A$ of 1.2--1.8), the cross-validation stability diagnostics indicate robust estimates ($\mathrm{SR}_{CV}$ of 3.59--4.46 under EW; 3.54--7.01 under FW), although somewhat lower than the BO stability ratios due to the more heterogeneous VC fund universe.
-The converged long-horizon estimates (BO $\approx 0.67$, VC $\approx 1.0$--$1.1$ under EW) are economically plausible: BO funds, which invest in mature companies with stable cash flows, exhibit market exposure comparable to or slightly below that of broad PE, while VC funds, which back early-stage ventures with highly uncertain outcomes, retain a substantially higher beta even at seasoned Horizons.
+The converged long-horizon estimates (BO $\approx 0.67$, VC $\approx 1.0$--$1.1$ under EW) are economically plausible: BO funds, which invest in mature companies with stable cash flows, exhibit market exposure near or slightly below unity, while VC funds, which back early-stage ventures with highly uncertain outcomes, retain a substantially higher beta even at seasoned Horizons.
 
 \begin{figure}[htbp]
 	\centering
@@ -1599,7 +1649,7 @@ The converged long-horizon estimates (BO $\approx 0.67$, VC $\approx 1.0$--$1.1$
 \end{table}
 
 
-\subsection{Two-factor $\alpha+MKT$ models}
+\subsection{Robustness: two-factor $\alpha+MKT$ models}
 \label{sec:empirical_alpha_bovc}
 
 Tables~\ref{tab:empirical_bo_alpha}--\ref{tab:empirical_vc_alpha} and Figure~\ref{fig:empirical_BOVC_Alpha} present the two-factor MKT~+~$\alpha$ model for BO and VC.
@@ -1800,7 +1850,7 @@ The $q^5$-factor models exhibit a pervasive pattern of sign reversals: second-fa
 This fragility is not confined to a single factor or asset class; it appears across all eight specifications (four factors $\times$ two asset classes), ruling out the chance that an individual $q^5$ factor might robustly augment the market model.
 
 \paragraph{BO--VC decomposition.}
-Analyzing Buyout and Venture Capital separately provides a more informative test of model stability than reporting aggregate PE results alone.
+Analyzing Buyout and Venture Capital separately provides a more informative test of model stability than pooling all private equity funds into a single sample.
 BO and VC represent fundamentally different investment strategies: Buyout targets mature companies with leveraged balance sheets and stable cash flows, while Venture Capital finances early-stage firms with highly uncertain, option-like payoff profiles.
 Despite these differences, both sub-samples exhibit the same diagnostic pattern: robust single-factor significance, alpha-induced destabilization, and second-factor fragility.
 The fact that this pattern appears across two asset classes with different risk characteristics suggests that the multi-factor instability is a finite-sample identification problem, not an artifact of pooling heterogeneous fund types.
@@ -1872,6 +1922,8 @@ The key mechanism is a tradeoff between:
 (i) a \emph{population target shift} induced by NFV terms through the Timing Risk Premium (TRP), and
 (ii) a \emph{finite-sample stabilization effect} from averaging imperfectly correlated pricing errors across discounting dates.
 
+Throughout this appendix, we specialize to the quadratic loss $L(x) = x^2$ and set $w_i = 1$, so that the population criterion reduces to $Q_H(\theta) = \mathbb{E}[(\bar{\epsilon}_i^{(H)}(\theta))^2]$.
+
 To keep these objects distinct, we proceed in four steps.
 First, we define the horizon-specific population criterion and its pseudo-true minimizer.
 Second, we isolate the exact source of the population moment bias at $\theta_0$.
@@ -1916,11 +1968,12 @@ and the horizon-specific pseudo-true parameter is defined as its population mini
 	\;:=\;
 	\arg\min_\theta Q_H(\theta).
 \end{equation}
+(Since this appendix works with $Q_H = \mathbb{E}[(\bar{\epsilon}_i^{(H)})^2]$ directly, $\theta_H^\dagger$ minimizes $Q_H$; in the main text, the sign-negated criterion $-\mathbb{E}[L(\cdot)]$ is maximized, but the first-order conditions are identical.)
 
 The notation $\theta_H^\dagger$ emphasizes that this object is the target of the \emph{population nonlinear least-squares criterion}.
 It is not defined as the zero of the averaged population moment, and those two objects need not coincide in general.
 
-When $H=0$ (equivalently, when the estimator uses only the benchmark NPV discounting date), Assumption~\ref{ass:unconditional_unbiased} implies that the population criterion is centered at the structural parameter $\theta_0$.
+When $H=0$ (equivalently, when the estimator uses only the benchmark NPV discounting date), the deal-level exact-pricing restriction (Equation~\eqref{eq:deal_pricing}), whose unconditional counterpart $\mathbb{E}[\delta_{i,j}] = 0$ follows by iterated expectations, implies that the population criterion is centered at the structural parameter $\theta_0$.
 Hence, under correct specification,
 \[
 \theta_0^\dagger = \theta_0.
@@ -1940,12 +1993,14 @@ It is convenient to define the horizon-specific population moment bias at the st
 	\bar{\epsilon}_i^{(H)}(\theta_0)
 	\right].
 \end{equation}
+Here, the expectation integrates over SDF and pricing-error randomness, holding the fund structure (number of deals $J_i$, investment dates, and horizon set $\mathcal{T}_{i,H}$) fixed.
+For a representative fund, $b_H$ is therefore understood as the conditional-on-structure population mean of $\bar{\epsilon}_i^{(H)}(\theta_0)$.
 The next subsection shows that $b_H$ is driven exactly by the NFV component of the Timing Risk Premium.
 
 \subsection{Population moment bias at $\theta_0$}
 \label{sec:appendix_bv_moment_bias}
 
-Starting from the average pricing error (Equation~\ref{eq:average_pricing_error}) and the deal-level decomposition (Equation~\ref{eq:deal_pricing_error}), we can write
+Starting from the average pricing error (Equation~\eqref{eq:average_pricing_error}) and the deal-level decomposition (Equation~\eqref{eq:deal_pricing_error}), we can write
 \begin{equation}
 	\label{eq:avg_eps_expand}
 	\bar{\epsilon}_i^{(H)}(\theta_0)
@@ -1999,7 +2054,8 @@ Because we now compute the unconditional expectation rather than conditioning on
 \end{equation}
 
 Under correct specification, $\mathbb{E}[\delta_{i,j}] = 0$, so only the covariance term remains.
-The key observation is that this covariance is exactly zero when $\tau \leq t_{i,j}^{\mathrm{Inv}}$ (part (1) of Lemma~\ref{lem:deal_level_timing}).
+Note that the covariance in \eqref{eq:cov_decomp} is unconditional, whereas Lemma~\ref{lem:deal_level_timing} works with conditional moments. The link is standard: the law of total covariance gives $\mathrm{Cov}(X, Y) = \mathbb{E}[\mathrm{Cov}(X, Y \mid \mathcal{F})] + \mathrm{Cov}(\mathbb{E}[X \mid \mathcal{F}], \mathbb{E}[Y \mid \mathcal{F}])$; when iterated through $\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$, the second term involves the (zero) conditional mean of $\delta_{i,j}$.
+The key observation is that this unconditional covariance vanishes when $\tau \leq t_{i,j}^{\mathrm{Inv}}$, because iterated expectations through $\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$ kill it, as in part~(1) of Lemma~\ref{lem:deal_level_timing}.
 When $\tau \leq t_{i,j}^{\mathrm{Inv}}$, the SDF ratio $\Psi_{t_{i,j}^{\mathrm{Inv}}}/\Psi_\tau$ is determined entirely by realized factors up to time $t_{i,j}^{\mathrm{Inv}}$, making it $\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$-measurable and allowing us to pass it outside the inner conditional expectation. Iterated expectations through $\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$ therefore give
 \begin{equation}
 	\label{eq:cov_zero_early}
@@ -2015,7 +2071,7 @@ When $\tau \leq t_{i,j}^{\mathrm{Inv}}$, the SDF ratio $\Psi_{t_{i,j}^{\mathrm{I
 		\delta_{i,j}
 		\mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}
 		\right]
-	}_{= 0 \text{ by Eq.~\ref{eq:deal_pricing}}}
+	}_{= 0 \text{ by Equation~\eqref{eq:deal_pricing}}}
 	\right]
 	= 0.
 \end{equation}
@@ -2042,36 +2098,15 @@ Hence only NFV terms contribute to $b_H$.
 \end{lemma}
 
 \begin{proof}
-	The result follows directly from Equation~\ref{eq:avg_eps_expectation}, the covariance decomposition in Equation~\ref{eq:cov_decomp}, the condition $\mathbb{E}[\delta_{i,j}] = 0$, and the iterated-expectations argument (Equation~\ref{eq:cov_zero_early}) for all pairs $(\tau,j)$ satisfying $\tau \le t_{i,j}^{\mathrm{Inv}}$.
+	The result follows directly from \eqref{eq:avg_eps_expectation}, the covariance decomposition in \eqref{eq:cov_decomp}, the condition $\mathbb{E}[\delta_{i,j}] = 0$, and the iterated-expectations argument (\eqref{eq:cov_zero_early}) for all pairs $(\tau,j)$ satisfying $\tau \le t_{i,j}^{\mathrm{Inv}}$.
 \end{proof}
 
 \paragraph{Misspecification.}
-Under model misspecification, $\mathbb{E}[\delta_{i,j}] \neq 0$ and the second term in Equation~\ref{eq:cov_decomp} no longer vanishes.
+Under model misspecification, $\mathbb{E}[\delta_{i,j}] \neq 0$ and the second term in \eqref{eq:cov_decomp} no longer vanishes.
 In that case, the averaged population moment contains both:
 (i) the TRP covariance term, and
 (ii) an additional mean-shift term $\mathbb{E}[\Psi_{t_{i,j}^{\mathrm{Inv}}}/\Psi_\tau] \cdot \mathbb{E}[\delta_{i,j}]$.
 Since this non-zero baseline permeates the NFV terms $\tau > t_{i,j}^{\mathrm{Inv}}$, it does not wash out with horizon averaging. Instead, the persistent misspecification bias bounds the average pricing error firmly away from zero, regardless of how large the compounding horizon $H$ gets. Thus, under misspecification, $\mathcal{T}$-averaging no longer trades off only a small TRP-induced target shift against variance reduction; it also propagates a persistent baseline pricing-error component.
-
-\subsection{Interpretation of NFV-based alpha}
-\label{sec:appendix_bv_alpha_interpretation}
-
-This subsection provides an auxiliary interpretation of NFV-based pricing errors for ex-post benchmarking. Unlike the baseline exact-pricing restriction in Equation~\ref{eq:deal_pricing}, the decomposition below introduces an abnormal-performance component and is therefore used only as an interpretive device, not to define the structural estimation target.
-
-\begin{remark}[Measured Alpha vs.\ True Skill]
-	\label{rem:alpha_decomp}
-	Specifically, we can mathematically decompose the expected NFV pricing error into two distinct components:
-	\begin{align}
-		\label{eq:alpha_decomp}
-		\underbrace{\mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{\tau}} \delta_{i,j} \mid \mathcal{F}_{\tau} \right]}_{\text{Measured Alpha}} 
-		&= 
-		\underbrace{\mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}} \frac{a_{i,j}^{\text{Skill}}}{R_{f, t_{i,j}^{\mathrm{Inv}} \to t_{i,j}^{\mathrm{Future}}}} \mid \mathcal{F}_{\tau} \right]}_{\text{True Skill}}
-		\\ \nonumber
-		&+ 
-		\underbrace{\mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}} \mathrm{Cov} \left( \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}}, \delta_{i,j} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right) \mid \mathcal{F}_{\tau} \right]}_{\text{Timing Risk Premium}}
-	\end{align}
-	where $R_f$ is the gross risk-free return over the holding period and $a_{i,j}^{\text{Skill}}$ is the deal's expected pricing error at inception (deal-level abnormal return, distinct from the SDF intercept $\alpha$).
-	Even if a manager has no skill ($a_{i,j}^{\text{Skill}} = 0$), the measured alpha will include the Timing Risk Premium.
-\end{remark}
 
 \subsection{From population moment bias to target shift}
 \label{sec:appendix_bv_target_shift}
@@ -2091,15 +2126,9 @@ A first-order Taylor expansion of $\nabla_\theta Q_H(\theta)$ around $\theta_0$ 
 	=
 	\nabla_\theta Q_H(\theta_0)
 	+
-	\mathcal{H}_H(\bar{\theta}_H)\,
+	\nabla_\theta^2 Q_H(\bar{\theta}_H)\,
 	(\theta_H^\dagger - \theta_0),
 \end{equation}
-where
-\[
-\mathcal{H}_H(\bar{\theta}_H)
-:=
-\nabla_\theta^2 Q_H(\bar{\theta}_H)
-\]
 for some intermediate point $\bar{\theta}_H$ between $\theta_0$ and $\theta_H^\dagger$.
 Rearranging yields
 \begin{equation}
@@ -2107,7 +2136,7 @@ Rearranging yields
 	\theta_H^\dagger - \theta_0
 	=
 	-
-	\mathcal{H}_H(\bar{\theta}_H)^{-1}
+	\bigl[\nabla_\theta^2 Q_H(\bar{\theta}_H)\bigr]^{-1}
 	\nabla_\theta Q_H(\theta_0).
 \end{equation}
 
@@ -2126,12 +2155,12 @@ the target shift is governed by the interaction between:
 (i) the horizon-specific population moment bias $b_H$, and
 (ii) the sensitivity of the averaged pricing error to $\theta$.
 
-Equation~\ref{eq:theta_shift} makes precise the sense in which the TRP affects the population target:
+Equation~\eqref{eq:theta_shift} makes precise the sense in which the TRP affects the population target:
 the covariance terms identified in Lemma~\ref{lem:bH_TRP} perturb the gradient of the population criterion at $\theta_0$, thereby moving the minimizer from $\theta_0$ to $\theta_H^\dagger$.
 
 \begin{remark}[Magnitude of the target shift]
 	\label{rem:target_shift_magnitude}
-	For $\tau > t_{i,j}^{\mathrm{Inv}}$, the covariance term in Equation~\ref{eq:bH_TRP} satisfies the generic bound
+	For $\tau > t_{i,j}^{\mathrm{Inv}}$, the covariance term in \eqref{eq:bH_TRP} satisfies the generic bound
 	\[
 	\left|
 	\mathrm{Cov}\!\left(
@@ -2278,7 +2307,7 @@ This yields the central interpretation of the simulation results:
 for small to intermediate horizons, the stabilization benefit of $\mathcal{T}$-averaging dominates the incremental TRP cost;
 for sufficiently long horizons, the marginal gain from additional averaging weakens while the accumulation of NFV terms increases the scope for target shift.
 The empirically optimal horizon therefore need not be $H=0$ and need not be arbitrarily large.
-Instead, the optimal horizon is \emph{interior} and \emph{DGP-dependent}. The sweet spot occurs roughly around the typical fund lifetime, at which point the variance-reduction benefit offsets the targeted shift induced by the Timing Risk Premium.
+Instead, the optimal horizon is \emph{interior} and \emph{DGP-dependent}. The sweet spot occurs roughly around the typical fund lifetime, at which point the variance-reduction benefit offsets the target shift induced by the Timing Risk Premium.
 
 \begin{remark}[Why we do not impose a global monotonicity theorem]
 	We do not claim that each MSE component is globally monotone in $H$ without additional restrictions.
@@ -2296,6 +2325,28 @@ Instead, the optimal horizon is \emph{interior} and \emph{DGP-dependent}. The sw
 The main message is therefore not that the TRP ``washes out'' as $H$ grows.
 Rather, $\mathcal{T}$-averaging works by trading off a controlled population target shift against a potentially large reduction in finite-sample estimation error.
 Under the baseline DGP, the latter effect dominates over an economically relevant range of horizons, which is why the simulation study favors horizons near the fund lifetime rather than the NPV-only benchmark.
+
+\subsection{Interpretation of NFV-based alpha}
+\label{sec:appendix_bv_alpha_interpretation}
+
+This subsection provides an auxiliary interpretation of NFV-based pricing errors for ex-post benchmarking. Unlike the baseline exact-pricing restriction in Equation~\eqref{eq:deal_pricing}, the decomposition below introduces an abnormal-performance component and is therefore used only as an interpretive device, not to define the structural estimation target.
+
+\begin{remark}[Measured Alpha vs.\ True Skill]
+	\label{rem:alpha_decomp}
+	The decomposition follows from the conditional covariance identity applied as in Lemma~\ref{lem:deal_level_timing}(3), writing $\delta_{i,j} = a_{i,j}^{\text{Skill}} + (\delta_{i,j} - a_{i,j}^{\text{Skill}})$, where $a_{i,j}^{\text{Skill}} := \mathbb{E}[\delta_{i,j} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}]$ is the deal's abnormal return at inception.
+	Specifically, we can decompose the expected NFV pricing error into two distinct components:
+	\begin{align}
+		\label{eq:alpha_decomp}
+		\underbrace{\mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{\tau}} \delta_{i,j} \mid \mathcal{F}_{\tau} \right]}_{\text{Measured Alpha}} 
+		&= 
+		\underbrace{\mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}} \frac{a_{i,j}^{\text{Skill}}}{R_{f, t_{i,j}^{\mathrm{Inv}} \to t_{i,j}^{\mathrm{Future}}}} \mid \mathcal{F}_{\tau} \right]}_{\text{True Skill}}
+		\\ \nonumber
+		&+ 
+		\underbrace{\mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}} \mathrm{Cov} \left( \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}}, \delta_{i,j} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right) \mid \mathcal{F}_{\tau} \right]}_{\text{Timing Risk Premium}}
+	\end{align}
+	where $R_f$ is the gross risk-free return over the holding period and $a_{i,j}^{\text{Skill}}$ is the deal-level abnormal return, distinct from the SDF intercept $\alpha$.
+	Even if a manager has no skill ($a_{i,j}^{\text{Skill}} = 0$), the measured alpha will include the Timing Risk Premium.
+\end{remark}
 
 \section{Comparison to \cite{DLP12}}
 \label{sec:dlp_results_comparison}
