@@ -732,7 +732,7 @@ Q_{n,H}(\theta) - Q_H(\theta)
 \]
 \end{proposition}
 
-\begin{proof}
+\begin{proof}[Outline of Proof]
 The result follows from a uniform law of large numbers for NED random fields on \(\alpha\)-mixing bases; see, for example, \citet[Theorem~6]{JP09}. The bounded-lifetime and bounded-within-vintage assumptions ensure that cross-sectional overlap remains local in vintage-year distance, while the moment and equicontinuity conditions deliver uniform stochastic control over \(\theta \in \Theta\).
 \end{proof}
 
@@ -762,7 +762,7 @@ Under Assumptions~\ref{as:portfolio}, \ref{as:vya}, \ref{as:compact_theta}, \ref
 \]
 \end{proposition}
 
-\begin{proof}
+\begin{proof}[Outline of Proof]
 The claim follows from the standard extremum-estimator argument of \citet[Theorem~2.1]{NM94}. Proposition~\ref{prop:ulln_H} yields uniform convergence of \(Q_{n,H}\) to \(Q_H\), Assumption~\ref{as:identification_H} provides a unique maximizer, and compactness of \(\Theta\) (Assumption~\ref{as:compact_theta}) together with continuity of the discount-factor mapping \(\Psi_{\tau,t}(\theta)\) and the loss function deliver the remaining conditions.
 \end{proof}
 
@@ -776,63 +776,88 @@ Suppose, in addition, that \(H=0\) and that the pooled inception-only pricing re
 \]
 \end{corollary}
 
-Corollary~\ref{cor:consistency_structural} isolates the special case in which the estimator converges to the structural SDF parameter. This separation is useful empirically because it prevents the reader from conflating consistency of the extremum estimator with structural validity of a horizon-averaged criterion.
+Corollary~\ref{cor:consistency_structural} isolates the special case in which the estimator converges to the structural SDF parameter. 
+This separation is useful empirically because it prevents the reader from conflating consistency of the extremum estimator with structural validity of a horizon-averaged criterion.
 
 \subsubsection{Central limit theorem}
 
-The asymptotic distribution is likewise centered at the horizon-specific target.
+Building on the consistency result in Proposition~\ref{prop:consistency_H}, we now establish the asymptotic distribution of the estimator. 
+Like consistency, the central limit theorem is formulated around the horizon-specific target \(\theta_H^\dagger\). 
+This requires a standard local-convergence condition on the sample Hessian.
+
+\begin{assume}[Local Hessian convergence]
+	\label{as:hessian_lln_H}
+	For each fixed $H$, there exists an open neighborhood $\mathcal N_H$ of
+	$\theta_H^\dagger$ such that
+	\[
+	\sup_{\theta \in \mathcal N_H}
+	\left\|
+	\nabla_{\theta\theta} Q_{n,H}(\theta)
+	-
+	\nabla_{\theta\theta} Q_H(\theta)
+	\right\|
+	\xrightarrow{p}
+	0.
+	\]
+\end{assume}
+
+Assumption~\ref{as:hessian_lln_H} is the standard sample-Hessian convergence condition used in extremum-estimator central limit theorems \citep[e.g.,][]{NM94}. 
+In our increasing-domain framework, it follows from the same random-field LLN argument as Proposition~\ref{prop:ulln_H}, provided that the Hessian contributions inherit the required NED, moment, and stochastic-equicontinuity properties from the pricing errors $\bar\epsilon_i^{(H)}(\theta)$ and the loss function $L(\cdot)$.
 
 \begin{proposition}[Asymptotic normality around the horizon-specific target]
-\label{prop:clt_H}
-Under the conditions of Proposition~\ref{prop:consistency_H}, suppose additionally that:
-\begin{enumerate}
-    \item \(\theta_H^\dagger\) lies in the interior of \(\Theta\);
-    \item \(Q_H(\theta)\) is twice continuously differentiable in a neighborhood of \(\theta_H^\dagger\);
-    \item the Hessian
-    \[
-    \mathcal{H}_H
-    :=
-    \nabla_{\theta\theta} Q_H(\theta_H^\dagger)
-    \]
-    is nonsingular; and
-    \item a central limit theorem holds for the score contributions
-    \[
-    s_i^{(H)}(\theta)
-    :=
-    \nabla_\theta
-    L\!\left(
-    \bar{\epsilon}^{(H)}_i(\theta)
-    \right).
-    \]
-\end{enumerate}
-Then
-\[
-\sqrt{n}
-\left(
-\hat{\theta}_H - \theta_H^\dagger
-\right)
-\overset{d}{\longrightarrow}
-\mathcal N(0,\Sigma_H),
-\]
-where
-\[
-\Sigma_H
-=
-\mathcal{H}_H^{-1}\Lambda_H \mathcal{H}_H^{-1},
-\qquad
-\Lambda_H
-:=
-\lim_{n\to\infty}
-n \cdot
-\mathrm{Var}
-\!\left[
-\nabla_\theta Q_{n,H}(\theta_H^\dagger)
-\right].
-\]
+	\label{prop:clt_H}
+	Under the conditions of Proposition~\ref{prop:consistency_H} and Assumption~\ref{as:hessian_lln_H}, suppose additionally that:
+	\begin{enumerate}
+		\item \(\theta_H^\dagger\) lies in the interior of \(\Theta\);
+		\item \(Q_H(\theta)\) is twice continuously differentiable in a neighborhood of \(\theta_H^\dagger\);
+		\item the Hessian
+		\[
+		\mathcal{H}_H
+		:=
+		\nabla_{\theta\theta} Q_H(\theta_H^\dagger)
+		\]
+		is nonsingular; and
+		\item a central limit theorem holds for the score contributions
+		\[
+		s_i^{(H)}(\theta)
+		:=
+		\nabla_\theta
+		L\!\left(
+		\bar{\epsilon}^{(H)}_i(\theta)
+		\right).
+		\]
+	\end{enumerate}
+	Then
+	\[
+	\sqrt{n}
+	\left(
+	\hat{\theta}_H - \theta_H^\dagger
+	\right)
+	\overset{d}{\longrightarrow}
+	\mathcal N(0,\Sigma_H),
+	\]
+	where
+	\[
+	\Sigma_H
+	=
+	\mathcal{H}_H^{-1}\Lambda_H \mathcal{H}_H^{-1},
+	\qquad
+	\Lambda_H
+	:=
+	\lim_{n\to\infty}
+	n \cdot
+	\mathrm{Var}
+	\!\left[
+	\nabla_\theta Q_{n,H}(\theta_H^\dagger)
+	\right].
+	\]
 \end{proposition}
 
-\begin{proof}
-The result follows from the extremum-estimator CLT of \citet[Theorem~3.1]{NM94} combined with a central limit theorem for NED random fields under increasing-domain asymptotics; see \citet[Theorem~4]{JP12}. The nonstandard feature in the present application is the vintage-year dependence of the score contributions. Assumptions~\ref{as:vya} and \ref{as:ulln_H} deliver the weak dependence and moment conditions needed to apply the random-field CLT (where compactness of \(\Theta\) is inherited from Assumption~\ref{as:compact_theta}).
+
+
+\begin{proof}[Outline of Proof]
+The result follows from the extremum-estimator CLT of \citet[Theorem~3.1]{NM94} combined with a central limit theorem for NED random fields under increasing-domain asymptotics; see \citet[Theorem~4]{JP12}. 
+The nonstandard feature in the present application is the vintage-year dependence of the score contributions. Assumptions~\ref{as:vya} and \ref{as:ulln_H} deliver the weak dependence and moment conditions needed to apply the random-field CLT (where compactness of \(\Theta\) is inherited from Assumption~\ref{as:compact_theta}).
 \end{proof}
 
 \begin{corollary}[Structural asymptotic normality in the inception-only case]
@@ -858,6 +883,7 @@ For \(H>0\), Proposition~\ref{prop:clt_H} is centered at \(\theta_H^\dagger\), n
 \subsection{Large sample inference}
 \label{sec:asymptotic_inference}
 
+Building on the asymptotic normality established above, we now turn to the practical implementation of large-sample inference. 
 Proposition~\ref{prop:clt_H} implies the familiar sandwich form
 \[
 \Sigma_H
@@ -911,11 +937,15 @@ L\!\left(
 \bar{\epsilon}^{(H)}_i(\hat\theta_H)
 \right).
 \end{equation}
-When analytic derivatives are unavailable, the derivatives entering Equation~\eqref{eq:hessian_estimator_H} can be computed numerically. In practice, central finite differences are typically adequate, although automatic differentiation or quasi-Newton approximations may also be used. For a methodological paper, the exact numerical routine is secondary; what matters asymptotically is that \(\hat{\mathcal{H}}_H\) consistently estimates \(\mathcal{H}_H\).
+When analytic derivatives are unavailable, the derivatives entering Equation~\eqref{eq:hessian_estimator_H} can be computed numerically. 
+In practice, central finite differences are typically adequate, although automatic differentiation or quasi-Newton approximations may also be used. 
+For a methodological paper, the exact numerical routine is secondary; what matters asymptotically is that \(\hat{\mathcal{H}}_H\) consistently estimates \(\mathcal{H}_H\).
+In our empirical applications, we use the central difference approximations of \cite[Algorithm 2]{E17}.
 
 \paragraph{SHAC estimator of the long-run covariance matrix.}
 
-Because the score contributions exhibit vintage-year dependence, a heteroskedasticity- and autocorrelation-consistent covariance estimator is required. We use a spatial HAC estimator adapted to the vintage-year metric:
+Because the score contributions exhibit vintage-year dependence, a heteroskedasticity- and autocorrelation-consistent covariance estimator is required. 
+We use the spatial HAC estimator of \cite[Equation 2]{KS11} adapted to the vintage-year metric:
 \begin{equation}
 \label{eq:shac_H}
 \hat{\Lambda}_H
@@ -981,24 +1011,25 @@ This presentation is algebraically equivalent to the usual sandwich formula, but
 
 For linear hypotheses of the form
 \[
-\mathcal H_0: R\theta = r,
+\text{Hypothesis}_0: \mathcal{R}\theta = r,
 \qquad
-\mathcal H_1: R\theta \neq r,
+\text{Hypothesis}_1: \mathcal{R}\theta \neq r,
 \]
 the Wald statistic is
 \begin{equation}
 \label{eq:wald_H}
 W_H
 =
-(R\hat\theta_H-r)^\top
+(\mathcal{R} \hat\theta_H-r)^\top
 \left[
-R
+\mathcal{R}
 \widehat{\mathrm{Avar}}(\hat\theta_H)
-R^\top
+\mathcal{R}^\top
 \right]^{-1}
-(R\hat\theta_H-r),
+(\mathcal{R} \hat\theta_H-r),
 \end{equation}
-which is asymptotically \(\chi_q^2\) under \(\mathcal H_0\), where \(q\) is the number of linear restrictions.
+which is asymptotically $\chi_q^2$ under $\text{Hypothesis}_0$, where $q$ is the number of linear restrictions.
+% Here $\hat{\theta}$ is the $p \times 1$ parameter vector, $R$ is a $q \times p$ matrix, and $r$ is a $q \times 1$ vector. Usually, we select $R$ as the $p \times p$ identity matrix, and $r$ as $p \times 1$ vector (e.g., of zeros). Under the null hypothesis, $W_H$ is chi-squared distributed with $q$ degrees of freedom. As large values of $W$ indicate the rejection of $H_0$, the corresponding p-value is calculated as $1 - F_{\chi_q^2}(W)$ where $F_{\chi_q^2}$ is the cumulative distribution function of a chi-squared random variable with $q$ degrees of freedom.
 
 \begin{remark}[Interpretation of inference when \(H>0\)]
 \label{rem:wald_interpretation_H}
@@ -1016,7 +1047,9 @@ The relationship to the existing private-equity asset-pricing literature is best
 
 \subsubsection{Connection to \cite{DLP12}}
 
-The connection to \citet{DLP12} is especially close. Under the inception-only restriction, equal normalization, and quadratic loss, the LMD criterion coincides with the identity-weighted one-step cross-sectional GMM objective used in their framework.
+The connection to \citet{DLP12} is especially close. 
+Under the inception-only restriction, equal normalization, and quadratic loss, the LMD criterion coincides with the identity-weighted one-step cross-sectional GMM objective used in their framework.
+To bridge the gap, let us rewrite the $NPV_i$ from Equation \ref{eq:dlp12_minimization} in our more general SDF notation as $PV_i (\theta) = \sum_{t \in \left\{ t_{0,i}, t_{0,i} + 1, \dots \right\}} \Psi_{t_{0,i}, t}(\theta) CF_t$.
 
 \begin{proposition}[Connection to the \cite{DLP12} objective]
 \label{prop:dlp12_connection}
@@ -1070,18 +1103,25 @@ Writing the vector of pooled pricing errors as \(e(\theta) = (PV_1(\theta),\dots
 
 \subsubsection{Connection to \cite{KN16}}
 
-The relationship to \citet{KN16} is more indirect. Their estimator aggregates moments across funds first and then applies a quadratic form to the resulting time-series object. By contrast, the LMD criterion applies the loss function at the unit level and then averages across units. These two orderings of aggregation and loss evaluation are generally not equivalent.
+The relationship to \citet{KN16} is more indirect. Their estimator aggregates moments across funds first and then applies a quadratic form to the resulting time-series object. 
+By contrast, the LMD criterion applies the loss function at the unit level and then averages across units. These two orderings of aggregation and loss evaluation are generally not equivalent.
 
-For that reason, it is more accurate to describe \citet{KN16} as a closely related \emph{time-series GMM analogue} rather than as a literal special case of Equation~\eqref{eq:estimator}. The conceptual connection is still informative: both approaches estimate SDF parameters from pooled private-equity cash flows, but they differ in the population object they emphasize and in the source of asymptotic information.
+For that reason, it is more accurate to describe \citet{KN16} as a closely related \emph{time-series GMM analogue} rather than as a literal special case of Equation~\eqref{eq:estimator}. 
+The conceptual connection is still informative: both approaches estimate SDF parameters from pooled cash flows, but they differ in the population object they emphasize and in the source of asymptotic information.
 
 \begin{remark}[Why the distinction matters]
 \label{rem:kn16_distinction}
-The order in which pricing errors are aggregated is not innocuous. Applying the loss after aggregation emphasizes the behavior of a pooled moment vector, whereas applying the loss before aggregation emphasizes the cross-sectional distribution of unit-level pricing errors. As a result, the two criteria can differ in finite-sample robustness, identification strength, and asymptotic target.
+The order in which pricing errors are aggregated is not innocuous. 
+Applying the loss after aggregation emphasizes the behavior of a pooled moment vector, whereas applying the loss before aggregation emphasizes the cross-sectional distribution of unit-level pricing errors. 
+As a result, the two criteria can differ in finite-sample robustness, identification strength, and asymptotic target.
 \end{remark}
+
+Empirically, \citet{KN16} chose to estimate the SDF parameters based on synthetic public market cash flows to use their estimated SDF model as Generalized Public Market Equivalent (GPME) benchmarking device for private fund-level cash flows.
 
 \subsubsection{Positioning of the present estimator}
 
-The contribution of the present estimator is therefore not that it dominates prior approaches in every dimension. Rather, its advantage is methodological fit for the current application: it combines a transparent nonlinear least-squares objective with explicit control over the discounting horizon, accommodates pooled non-traded cash flows at the unit level, and admits an increasing-domain asymptotic framework that maps naturally to vintage-year variation.
+The contribution of the present estimator is therefore not that it dominates prior approaches in every dimension. 
+Rather, its advantage is methodological fit for the current application: it combines a transparent nonlinear least-squares objective with explicit control over the discounting horizon, accommodates pooled non-traded cash flows at the unit level, and admits an increasing-domain asymptotic framework that maps naturally to vintage-year variation.
 Table \ref{tab:comparison} summarizes the most prominent distinctions between the three approaches.
 
 \begin{table}[ht]
@@ -1155,11 +1195,11 @@ In rare instances, the Preqin taxonomy assigns geographic labels that are incons
 
 For this subset of BO and VC funds, we extract all (i) equal-weighted (hereafter EW) and (ii) value-weighted (hereafter FW, for fund-size-weighted) cash flow series.
 In the overall dataset, the minimum vintage year is 1982, and the maximum is 2021.
-We retain all vintage years, including recent ones.
-Section \ref{sec:empirical_vintage_cutoffs_bovc} assesses the impact of unseasoned fund NAVs on our empirical estimation results.
+We initially retain all vintage years, including recent ones.
+Section \ref{sec:empirical_vintage_cutoffs_bovc} assesses the impact of unseasoned fund Net Asset Values (NAVs) on our empirical estimation results.
 On this basis, we decide how many recent vintage years to remove to reduce reliance on unrealized NAVs.
 For the vintage years we keep, all liquidated and non-liquidated funds enter our estimation.
-For non-liquidated funds, we treat the latest net asset value as final cash flow.
+For non-liquidated funds, we treat the latest NAV as final cash flow.
 
 
 \paragraph{Buyout sample.}
@@ -2565,6 +2605,317 @@ Therefore, until substantially more granular and independent cross-sectional dat
 
 
 
+
+\section{Proofs for the horizon-specific asymptotic results}
+\label{app:proofs_asymptotics_H}
+
+This subsection supplies detailed proofs for Proposition~\ref{prop:ulln_H},
+Proposition~\ref{prop:consistency_H}, and Proposition~\ref{prop:clt_H}.
+For notational convenience, fix a horizon $H \ge 0$ throughout and write
+\[
+Z_i(\theta)
+:=
+L\!\left(\bar\epsilon_i^{(H)}(\theta)\right),
+\qquad
+Q_{n,H}(\theta)
+=
+-
+\frac{1}{n}
+\sum_{i=1}^n Z_i(\theta).
+\]
+Whenever convenient, re-index the observations by vintage year and within-vintage slot.
+That is, for vintage year $v=1,\dots,V$ and slot $\ell=1,\dots,n_v$, let
+$Z_{v,\ell}(\theta)$ denote the loss contribution of the $\ell$th unit in vintage year $v$.
+By Assumption~\ref{as:vya}(2), $n_v \le \bar n < \infty$ uniformly in $v$.
+Hence the sample can be embedded in the increasing strip
+\[
+\Lambda_V
+:=
+\{(v,\ell): v=1,\dots,V,\ \ell=1,\dots,\bar n\},
+\]
+where empty slots are padded with zeros. Because $\bar n$ is fixed while $V \to \infty$,
+this embedding preserves the order of the sample size, and Assumption~\ref{as:vya}(2)
+implies
+\[
+V \le n = \sum_{v=1}^V n_v \le \bar n V,
+\qquad\text{so that}\qquad
+n \asymp V.
+\]
+
+
+\begin{proof}[Proof of Proposition~\ref{prop:ulln_H}]
+	Let
+	\[
+	\bar Q_{n,H}(\theta)
+	:=
+	-
+	\frac{1}{n}
+	\sum_{i=1}^n \mathbb E\bigl[Z_i(\theta)\bigr].
+	\]
+	It suffices to show that
+	\[
+	\sup_{\theta\in\Theta}
+	\left|
+	Q_{n,H}(\theta)-\bar Q_{n,H}(\theta)
+	\right|
+	\xrightarrow{p}0,
+	\qquad
+	\sup_{\theta\in\Theta}
+	\left|
+	\bar Q_{n,H}(\theta)-Q_H(\theta)
+	\right|
+	\to 0,
+	\]
+	because then the triangle inequality yields the claim.
+	
+	We first verify the stochastic part. By Assumption~\ref{as:ulln_H}(1), the array
+	$\{\bar\epsilon_i^{(H)}(\theta): i=1,\dots,n\}$ is uniformly NED on an
+	$\alpha$-mixing vintage-year process $\{\eta_v\}_{v\ge 1}$.
+	Since $L(\cdot)$ is continuous and Lipschitz by Assumption~\ref{as:ulln_H}(2),
+	$Z_i(\theta)=L(\bar\epsilon_i^{(H)}(\theta))$ inherits the same NED structure,
+	uniformly in $\theta \in \Theta$.
+	Moreover, Assumption~\ref{as:ulln_H}(3) gives a uniform $L^p$ envelope for some $p>2$,
+	and Assumption~\ref{as:ulln_H}(4) gives stochastic equicontinuity in $\theta$.
+	Re-indexing by $(v,\ell)$ therefore produces an array of random fields on the strip
+	$\Lambda_V$ satisfying the primitive conditions of
+	\citet[Theorem~6]{JP09}.
+	Assumption~\ref{as:vya}(2)--(4) ensures that the field is observed over an increasing domain,
+	not an infill domain: the width of the strip is fixed, dependence is indexed by the vintage-year distance,
+	and bounded lifetimes prevent the effective dependence neighborhoods induced by overlapping cash-flow windows from expanding with $n$.
+	Hence
+	\[
+	\sup_{\theta\in\Theta}
+	\left|
+	\frac{1}{n}
+	\sum_{i=1}^n
+	\Bigl(Z_i(\theta)-\mathbb E[Z_i(\theta)]\Bigr)
+	\right|
+	\xrightarrow{p}0.
+	\]
+	Equivalently,
+	\[
+	\sup_{\theta\in\Theta}
+	\left|
+	Q_{n,H}(\theta)-\bar Q_{n,H}(\theta)
+	\right|
+	\xrightarrow{p}0.
+	\]
+	
+	It remains to pass from the sample-specific mean criterion $\bar Q_{n,H}(\theta)$ to the population target $Q_H(\theta)$ defined in Equation~\eqref{eq:population_criterion_H}.
+	By the ergodic homogeneity invoked immediately after Equation~\eqref{eq:population_criterion_H}, the Ces\`aro average of the expectations converges to the generic-unit expectation as $V\to\infty$; because $n\asymp V$, the same holds under $n$-normalization. Therefore,
+	\[
+	\sup_{\theta\in\Theta}
+	\left|
+	\bar Q_{n,H}(\theta)-Q_H(\theta)
+	\right|
+	\to 0.
+	\]
+	Combining the last two displays proves
+	\[
+	\sup_{\theta\in\Theta}
+	\left|
+	Q_{n,H}(\theta)-Q_H(\theta)
+	\right|
+	\xrightarrow{p}0.
+	\]
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{prop:consistency_H}]
+	We verify the hypotheses of the standard argmax theorem directly.
+	
+	\emph{Step 1: continuity of the population criterion.}
+	For each unit $i$, the map $\theta \mapsto \bar\epsilon_i^{(H)}(\theta)$ is continuous on $\Theta$
+	because $\mathcal T_{i,H}$ is finite and the discount-factor ratios $\Psi_{\tau,t}(\theta)$ are continuous in $\theta$.
+	Since $L(\cdot)$ is continuous, $\theta \mapsto Z_i(\theta)$ is continuous as well.
+	Assumption~\ref{as:ulln_H}(3) supplies an integrable envelope uniformly in $i$ and $\theta$,
+	so dominated convergence implies that
+	\[
+	Q_H(\theta)
+	=
+	-
+	\mathbb E\bigl[ Z_i(\theta) \bigr]
+	\]
+	is continuous on $\Theta$.
+	Because $\Theta$ is compact by Assumption~\ref{as:compact_theta},
+	$Q_H$ attains its maximum on $\Theta$; by Assumption~\ref{as:identification_H},
+	this maximizer is unique and equals $\theta_H^\dagger$.
+	
+	\emph{Step 2: uniform convergence.}
+	Proposition~\ref{prop:ulln_H} yields
+	\[
+	\sup_{\theta\in\Theta}
+	\left|
+	Q_{n,H}(\theta)-Q_H(\theta)
+	\right|
+	\xrightarrow{p}0.
+	\]
+	
+	\emph{Step 3: argmax identification.}
+	Because $\hat\theta_H$ maximizes $Q_{n,H}$ over $\Theta$,
+	for every $\theta\in\Theta$,
+	\[
+	Q_{n,H}(\hat\theta_H) \ge Q_{n,H}(\theta).
+	\]
+	In particular, with $\theta=\theta_H^\dagger$,
+	\[
+	Q_{n,H}(\hat\theta_H) \ge Q_{n,H}(\theta_H^\dagger).
+	\]
+	Subtracting and adding the population criterion gives
+	\begin{align*}
+		0
+		&\le
+		Q_H(\theta_H^\dagger)-Q_H(\hat\theta_H) \\
+		&\le
+		\bigl|Q_H(\theta_H^\dagger)-Q_{n,H}(\theta_H^\dagger)\bigr|
+		+
+		\bigl|Q_{n,H}(\hat\theta_H)-Q_H(\hat\theta_H)\bigr| \\
+		&\le
+		2
+		\sup_{\theta\in\Theta}
+		\left|
+		Q_{n,H}(\theta)-Q_H(\theta)
+		\right|,
+	\end{align*}
+	which converges to zero in probability.
+	Hence
+	\[
+	Q_H(\hat\theta_H)
+	\xrightarrow{p}
+	Q_H(\theta_H^\dagger).
+	\]
+	Now let $\{n_k\}$ be any subsequence. By compactness of $\Theta$, there exists a further subsequence,
+	still denoted $\{n_k\}$ for notational simplicity, such that $\hat\theta_H \to \bar\theta$ almost surely along that subsequence for some random $\bar\theta\in\Theta$.
+	By continuity of $Q_H$,
+	\[
+	Q_H(\hat\theta_H) \to Q_H(\bar\theta)
+	\qquad\text{almost surely along the subsequence.}
+	\]
+	Since the same subsequence satisfies
+	$Q_H(\hat\theta_H) \to Q_H(\theta_H^\dagger)$ in probability, it follows that
+	$Q_H(\bar\theta)=Q_H(\theta_H^\dagger)$ almost surely. By uniqueness of the maximizer,
+	$\bar\theta=\theta_H^\dagger$ almost surely.
+	Therefore every convergent subsequence of $\hat\theta_H$ has the same limit $\theta_H^\dagger$,
+	which proves
+	\[
+	\hat\theta_H \xrightarrow{p} \theta_H^\dagger.
+	\]
+	This is exactly the conclusion of \citet[Theorem~2.1]{NM94} specialized to the present criterion.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{prop:clt_H}]
+	Define the sample score and sample Hessian by
+	\[
+	S_{n,H}(\theta)
+	:=
+	\nabla_\theta Q_{n,H}(\theta)
+	=
+	-
+	\frac{1}{n}
+	\sum_{i=1}^n s_i^{(H)}(\theta),
+	\qquad
+	\mathcal H_{n,H}(\theta)
+	:=
+	\nabla_{\theta\theta} Q_{n,H}(\theta).
+	\]
+	Because $\theta_H^\dagger$ lies in the interior of $\Theta$ and
+	$\hat\theta_H \xrightarrow{p} \theta_H^\dagger$ by Proposition~\ref{prop:consistency_H},
+	$\hat\theta_H$ is an interior maximizer with probability approaching one.
+	Hence the first-order condition holds with probability approaching one:
+	\[
+	S_{n,H}(\hat\theta_H)=0.
+	\]
+	Applying a mean-value expansion of $S_{n,H}(\cdot)$ around $\theta_H^\dagger$ yields
+	\[
+	0
+	=
+	S_{n,H}(\theta_H^\dagger)
+	+
+	\mathcal H_{n,H}(\tilde\theta_H)
+	\bigl(\hat\theta_H-\theta_H^\dagger\bigr),
+	\]
+	where $\tilde\theta_H$ lies on the line segment joining $\hat\theta_H$ and $\theta_H^\dagger$.
+	Rearranging gives
+	\begin{equation}
+		\label{eq:appendix_asymptotic_linearization_H}
+		\sqrt{n}\,\bigl(\hat\theta_H-\theta_H^\dagger\bigr)
+		=
+		-
+		\mathcal H_{n,H}(\tilde\theta_H)^{-1}
+		\sqrt{n}\,S_{n,H}(\theta_H^\dagger).
+	\end{equation}
+	
+	We now analyze the two factors on the right-hand side.
+	
+	\emph{Step 1: asymptotic distribution of the score.}
+	By definition,
+	\[
+	\sqrt{n}\,S_{n,H}(\theta_H^\dagger)
+	=
+	-
+	\frac{1}{\sqrt{n}}
+	\sum_{i=1}^n s_i^{(H)}(\theta_H^\dagger).
+	\]
+	Assumption~4 of Proposition~\ref{prop:clt_H} imposes a central limit theorem for these score contributions.
+	In the present application, the required weak dependence is generated by the vintage-year random field, and the maintained NED and mixing conditions are exactly those covered by \citet[Theorem~4]{JP12} under increasing-domain asymptotics.
+	Therefore,
+	\[
+	\sqrt{n}\,S_{n,H}(\theta_H^\dagger)
+	\overset{d}{\longrightarrow}
+	\mathcal N(0,\Lambda_H),
+	\]
+	where
+	\[
+	\Lambda_H
+	=
+	\lim_{n\to\infty}
+	n\cdot\mathrm{Var}\!\left[\nabla_\theta Q_{n,H}(\theta_H^\dagger)\right].
+	\]
+	
+	\emph{Step 2: convergence of the sample Hessian.}
+	Because $\hat\theta_H \xrightarrow{p} \theta_H^\dagger$,
+	the intermediate point $\tilde\theta_H$ also satisfies
+	$\tilde\theta_H \xrightarrow{p} \theta_H^\dagger$.
+	Hence, with probability approaching one, $\tilde\theta_H \in \mathcal N_H$.
+	Assumption~\ref{as:hessian_lln_H} then gives
+	\[
+	\mathcal H_{n,H}(\tilde\theta_H)
+	-
+	\nabla_{\theta\theta} Q_H(\tilde\theta_H)
+	\xrightarrow{p}
+	0.
+	\]
+	Since $Q_H$ is twice continuously differentiable in a neighborhood of $\theta_H^\dagger$,
+	continuity of its Hessian and $\tilde\theta_H \xrightarrow{p} \theta_H^\dagger$ imply
+	\[
+	\nabla_{\theta\theta} Q_H(\tilde\theta_H)
+	\xrightarrow{p}
+	\nabla_{\theta\theta} Q_H(\theta_H^\dagger)
+	=
+	\mathcal H_H.
+	\]
+	Therefore,
+	\[
+	\mathcal H_{n,H}(\tilde\theta_H)
+	\xrightarrow{p}
+	\mathcal H_H.
+	\]
+	By assumption, $\mathcal H_H$ is nonsingular, so the continuous mapping theorem yields
+	\[
+	\mathcal H_{n,H}(\tilde\theta_H)^{-1}
+	\xrightarrow{p}
+	\mathcal H_H^{-1}.
+	\]
+	
+	\emph{Step 3: conclusion.}
+	Substituting the previous two steps into
+	Equation~\eqref{eq:appendix_asymptotic_linearization_H} and applying Slutsky's theorem gives
+	\[
+	\sqrt{n}\,\bigl(\hat\theta_H-\theta_H^\dagger\bigr)
+	\overset{d}{\longrightarrow}
+	\mathcal N\bigl(0,\,\mathcal H_H^{-1}\Lambda_H\mathcal H_H^{-1}\bigr).
+	\]
+	This is the extremum-estimator central limit theorem of \citet[Theorem~3.1]{NM94}, with the non-iid score CLT supplied by the increasing-domain NED random-field result of \citet[Theorem~4]{JP12}.
+\end{proof}
 
 
 
