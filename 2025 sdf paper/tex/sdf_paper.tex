@@ -136,9 +136,9 @@ Section \ref{sec:empirical_results_bovc} presents the empirical results for Buyo
 Section \ref{sec:conclusion} concludes.
 Appendix \ref{sec:appendix_bias_variance} analyzes the bias--variance tradeoff in the context of our SDF estimation problem.
 Appendix \ref{sec:dlp_results_comparison} compares our simulation and empirical results to their \cite{DLP12} counterparts.
+Appendix \ref{sec:proofs_asymptotics_H} provides mathematical proofs.
 
-
-\subsection{Related Literature}
+\section{Related literature}
 \label{sec:literature}
 
 For private equity funds, performance evaluation under the SDF framework remains an active research topic \citep{DLP12, KN16, KN24, giommetti2021risk, GN18, boyer2023discount,korteweg2024private} alongside an expanding list of applications across other private asset classes.
@@ -172,7 +172,7 @@ Here, the \cite{DLP12} approach relies on the identifying assumption that the mo
 Building on this, \cite{KN16} introduced the Generalized Public Market Equivalent (GPME) framework, shifting the estimation of the SDF to public market data while evaluating PE cash flows in a second step. 
 Importantly, \cite{KN16} were the first to apply a spatial heteroskedasticity and autocorrelation consistent (SHAC) covariance matrix estimator \citep{C99} to account for the economic distance (cash flow overlap) between PE funds, moving beyond simple cross-sectional bootstrapping.
 
-Further complementing this cash flow dimension, a strand of literature models the informational frictions and smoothing inherent in reported Net Asset Values (NAVs) \citep{BGK19, JLRS20, BGG20}. 
+Further complementing this cash flow dimension, a strand of literature models the informational frictions and smoothing inherent in reported Net Asset Values (NAVs) \citep{BGK19, JLRS20, brown2023nowcasting}. 
 Additionally, \cite{HSS23} leverage a similar generalized framework to evaluate private firms using credit market equivalents.
 Finally, for comprehensive methodological and empirical overviews of risk and return assessment in private equity, we refer to \cite{K19,korteweg2023risk}, who also discuss the popular \cite{D79} regression that employs lagged returns to correct for stale valuations.
 
@@ -188,7 +188,7 @@ Section~\ref{sec:fundwise_lmd_estimator} uses this insight to introduce a genera
 Section~\ref{sec:asymptotic_framework} builds an increasing-domain asymptotic framework to accommodate the spatial dependence of overlapping vintage years, and Section~\ref{sec:asymptotic_inference} describes large-sample inference. 
 A detailed comparison demonstrating how this LMD estimator nests the framework of \cite{DLP12} as a special case and relates to \cite{KN16} is provided in Section~\ref{sec:comparison_to_similar_estimators}.
 
-\subsection{Asset Pricing for Pooled Cash Flows}
+\subsection{Asset pricing for pooled cash flows}
 \label{sec:asset_pricing_pooled}
 
 \begin{table}[ht]
@@ -484,9 +484,10 @@ where $w_i$ normalizes fund-level pricing errors before the loss is applied; it 
 The set $\mathcal{T}_i$ controls which discounting dates enter the averaged pricing error $\bar{\epsilon}_i(\theta)$ in Equation~\eqref{eq:average_pricing_error} (see Figure \ref{fig:npvs}). 
 Averaging over multiple dates in $\mathcal{T}_i$ was originally motivated by the ``exploding alpha'' problem first described by \cite{DLP12}: when the initial cash flow is very small, an arbitrarily large alpha can discount all subsequent cash flows close to zero, rendering the beta factors irrelevant and distorting estimation. Averaging over $\mathcal{T}_i$ mitigates this degeneracy.
 The relevant horizon family is parameterized as
-\begin{equation*}
+\begin{equation}
+	\label{eq:t_cal_horizon}
     \mathcal{T}_{i,H} = \left\{t_i^0,t_i^0+1,\dots,\min(t_i^0+12H,T_i^{\max})\right\}, \qquad H\ge 0.
-\end{equation*}
+\end{equation}
 
 This formulation encompasses two economically distinct cases:
 \begin{itemize}
@@ -1184,30 +1185,22 @@ Third, we use a simulation study to validate and calibrate these choices.
 Finally, Section~\ref{sec:empirical_results_bovc} presents the resulting empirical estimates for Buyout and Venture Capital funds.
 
 
-\subsection{Data}
+\subsection{Private data}
 \label{sec:data}
 
-We use the Preqin cash flow data set as of 14th April 2022, which is well known in the academic private equity literature \citep{HJK14,brown2015different,KN16,ACGP18}.
+We use the Preqin cash flow dataset as of 14th April 2022, which is well known in the academic private equity literature \citep{HJK14,brown2015different,KN16,ACGP18}.
 To keep the empirical analysis clear and concise, we filter the dataset for Buyout (BO) and Venture Capital (VC) funds.
 We only keep funds with fund currency US Dollar (USD) and region equal to North America.
 In rare instances, the Preqin taxonomy assigns geographic labels that are inconsistent with the North America region filter (e.g., a fund classified under a sub-regional or country-level tag that nonetheless passes the broader filter). Because all retained funds are denominated in USD, these classification inconsistencies do not introduce foreign-exchange contamination.
 
 
-For this subset of BO and VC funds, we extract all (i) equal-weighted (hereafter EW) and (ii) value-weighted (hereafter FW, for fund-size-weighted) cash flow series.
+For this subset of BO and VC funds, we extract all (i) equal-weighted (hereafter EW) and (ii) value-weighted (hereafter FW, for fund-size-weighted) cash flow series (cf.\ Figures \ref{fig:preqin_cashflows_bo} and \ref{fig:preqin_cashflows_vc}).
 In the overall dataset, the minimum vintage year is 1982, and the maximum is 2021.
 We initially retain all vintage years, including recent ones.
 Section \ref{sec:empirical_vintage_cutoffs_bovc} assesses the impact of unseasoned fund Net Asset Values (NAVs) on our empirical estimation results.
 On this basis, we decide how many recent vintage years to remove to reduce reliance on unrealized NAVs.
 For the vintage years we keep, all liquidated and non-liquidated funds enter our estimation.
 For non-liquidated funds, we treat the latest NAV as final cash flow.
-
-
-\paragraph{Buyout sample.}
-The Buyout (North America) sample contains 933 distinct funds spanning 36 vintage years.
-The vintage year distribution is as follows: 1985 (2), 1986 (3), 1987 (5), 1988 (6), 1990 (2), 1991 (3), 1992 (6), 1993 (5), 1994 (14), 1995 (11), 1996 (13), 1997 (14), 1998 (32), 1999 (27), 2000 (34), 2001 (21), 2002 (14), 2003 (21), 2004 (24), 2005 (44), 2006 (50), 2007 (49), 2008 (45), 2009 (19), 2010 (31), 2011 (25), 2012 (39), 2013 (36), 2014 (44), 2015 (35), 2016 (57), 2017 (35), 2018 (45), 2019 (65), 2020 (34), 2021 (23).
-The region distribution is as follows: Americas (4), Asia (16), Canada (1), Central and East Europe (2), Europe (6), Japan (1), Midwest (2), North America (461), South America (2), Southeast (1), Southwest (1), US (433), West Europe (1).
-The strategy distribution is as follows: Buyout (933).
-The fund currency distribution is as follows: USD (933).
 
 \begin{figure}[ht]
 	\centering
@@ -1216,13 +1209,6 @@ The fund currency distribution is as follows: USD (933).
 	\label{fig:preqin_cashflows_bo}
 \end{figure}
 
-\paragraph{Venture Capital sample.}
-The Venture Capital (North America) sample contains 968 distinct funds spanning 38 vintage years.
-The vintage year distribution is as follows: 1982 (1), 1985 (3), 1986 (4), 1987 (2), 1988 (1), 1989 (1), 1990 (4), 1991 (1), 1992 (7), 1993 (6), 1994 (6), 1995 (8), 1996 (14), 1997 (16), 1998 (28), 1999 (44), 2000 (70), 2001 (45), 2002 (28), 2003 (18), 2004 (31), 2005 (34), 2006 (44), 2007 (48), 2008 (38), 2009 (18), 2010 (18), 2011 (23), 2012 (21), 2013 (32), 2014 (33), 2015 (37), 2016 (40), 2017 (50), 2018 (52), 2019 (64), 2020 (45), 2021 (33).
-The region distribution is as follows: Asia (10), Australasia (1), Canada (1), China (10), Europe (3), India (2), Mexico (1), Midwest (2), North America (267), Northeast (2), Southwest (1), Thailand (1), US (664), West (1).
-The strategy distribution is as follows: Early Stage (274), Early Stage: Seed (47), Early Stage: Start-up (26), Expansion / Late Stage (127), Venture (General) (472), Venture Debt (22).
-The fund currency distribution is as follows: USD (968).
-
 \begin{figure}[ht]
 	\centering
 	\includegraphics[width=0.9\textwidth]{empirical/cumcashflowsVC.pdf}
@@ -1230,14 +1216,72 @@ The fund currency distribution is as follows: USD (968).
 	\label{fig:preqin_cashflows_vc}
 \end{figure}
 
+\paragraph{Buyout sample.}
+The Buyout (North America) sample contains 933 distinct funds spanning 36 vintage years.
+The vintage year distribution is as follows: 1985 (2), 1986 (3), 1987 (5), 1988 (6), 1990 (2), 1991 (3), 1992 (6), 1993 (5), 1994 (14), 1995 (11), 1996 (13), 1997 (14), 1998 (32), 1999 (27), 2000 (34), 2001 (21), 2002 (14), 2003 (21), 2004 (24), 2005 (44), 2006 (50), 2007 (49), 2008 (45), 2009 (19), 2010 (31), 2011 (25), 2012 (39), 2013 (36), 2014 (44), 2015 (35), 2016 (57), 2017 (35), 2018 (45), 2019 (65), 2020 (34), 2021 (23).
+The region distribution is as follows: Americas (4), Asia (16), Canada (1), Central and East Europe (2), Europe (6), Japan (1), Midwest (2), North America (461), South America (2), Southeast (1), Southwest (1), US (433), West Europe (1).
+The strategy distribution is as follows: Buyout (933).
+The fund currency distribution is as follows: USD (933).
+
+
+
+\paragraph{Venture Capital sample.}
+The Venture Capital (North America) sample contains 968 distinct funds spanning 38 vintage years.
+The vintage year distribution is as follows: 1982 (1), 1985 (3), 1986 (4), 1987 (2), 1988 (1), 1989 (1), 1990 (4), 1991 (1), 1992 (7), 1993 (6), 1994 (6), 1995 (8), 1996 (14), 1997 (16), 1998 (28), 1999 (44), 2000 (70), 2001 (45), 2002 (28), 2003 (18), 2004 (31), 2005 (34), 2006 (44), 2007 (48), 2008 (38), 2009 (18), 2010 (18), 2011 (23), 2012 (21), 2013 (32), 2014 (33), 2015 (37), 2016 (40), 2017 (50), 2018 (52), 2019 (64), 2020 (45), 2021 (33).
+The region distribution is as follows: Asia (10), Australasia (1), Canada (1), China (10), Europe (3), India (2), Mexico (1), Midwest (2), North America (267), Northeast (2), Southwest (1), Thailand (1), US (664), West (1).
+The strategy distribution is as follows: Early Stage (274), Early Stage: Seed (47), Early Stage: Start-up (26), Expansion / Late Stage (127), Venture (General) (472), Venture Debt (22).
+The fund currency distribution is as follows: USD (968).
+
+
+
+\subsection{SDF models and public data}
+\label{sec:model_selection}
+
+We test a simple linear SDF model similar to \cite{DLP12}
+\begin{equation}
+	\label{eq:linear_sdf}
+	\Psi_{\tau,t}^{\mathrm{SL}} (\theta) = 
+	\frac{\prod_{h=0}^{\tau}\ \left(1 + \alpha + r_{f,h} + \sum_m\ \beta_m \ F_{m,h} \right)}{\prod_{h=0}^{t}\ \left(1 + \alpha + r_{f,h} + \sum_m\ \beta_m\ F_{m,h} \right)}
+\end{equation}
+and an exponential affine SDF model adapted from \cite{KN16}
+\begin{equation}
+	\label{eq:expaff_SDF}
+	\Psi_{\tau,t}^{\mathrm{EA}} (\theta) = 
+	\exp
+	\left[
+	-\sum_{h=\tau+1}^{t} 
+	\left(
+	\alpha + \log (1 + r_{f,h}) + \sum_{m \in M} \beta_{m} \cdot \log (1 + F_{m,h})
+	\right)
+	\right]
+\end{equation}
+with monthly (arithmetic) risk-free return $r_f$, monthly (arithmetic) zero-net-investment portfolio returns $F_m$, and parameter vector $\theta=(\alpha,\beta)$.
+Throughout both the simulation and the empirical application, all factor returns and fund cash flows are observed at monthly frequency.
+
+The public market factors that enter our SDF draw on the US dataset of the recently popularized $q^5$ investment factor model sourced from \url{http://global-q.org/factors.html} \citep{HXZ15,hou2021augmented}. 
+Their five-factor model includes the market excess return (MKT), a size factor (ME), an investment factor (IA), a return on equity factor (ROE), and an expected growth factor (EG).
+The maximum date in the  $q^5$ investment factor dataset is 2024-12-31.
+
+
+To avoid overfitting, we restrict our analysis to six simple SDF models that contain \{MKT\} alone or \{MKT\} plus \{ME or IA or ROE or EG or Alpha\}.
+In Equation \ref{eq:estimator}, we use the quadratic loss function $L(x)=x^2$.
+
+
+\begin{remark}[Alpha Bounds]
+	\label{rem:restricted_alpha}
+	In our optimization procedure, we limit the Alpha factor $\alpha$ to the range of $[-2\%, +2\%]$ per month to avoid the ``exploding alpha" issue documented in \cite[Footnote 8]{DLP12}: "Note that one needs to put an upper bound on $\alpha$ when performing the optimization in equation (3). This is to exclude the possibility that $\alpha$ tends to infinity."
+	In this degenerate scenario, an infinite alpha can almost perfectly price any cash flow stream (except its first component), rendering the beta risk factors irrelevant. 
+\end{remark}
+
 
 \subsection{The impact of unseasoned funds and reported NAVs}
 \label{sec:empirical_vintage_cutoffs_bovc}
 
-Figure~\ref{fig:max_vintage_BOVC_MKT} presents the vintage-year cutoff sensitivity analysis separately for BO and VC under value weighting.
+Figure~\ref{fig:max_vintage_BOVC_MKT} presents the vintage-year cutoff sensitivity analysis separately for BO and VC under fund-value weighting (FW).
 A clear upward-drift pattern is present in both sub-samples: as more recent, unseasoned vintages are included, the estimated market beta increases monotonically.
-For BO under value weighting, $\hat{\beta}_{\mathrm{MKT}}$ rises from approximately 1.23 with a 2011 vintage cutoff to roughly 2.42 with the full sample (2021); notably, most of the increase is concentrated in vintages after 2016, where $\hat{\beta}_{\mathrm{MKT}}$ jumps sharply from 1.53 (2016 cutoff) to 2.34 (2017 cutoff), reflecting the disproportionate influence of young, unrealized funds.
-For VC, the drift is similarly dramatic: the FW estimate climbs from approximately 1.57 (2011 cutoff) to 2.33 with the full sample.
+For BO under value weighting, $\hat{\beta}_{\mathrm{MKT}}$ at the 0-year Horizon (see Remark~\ref{rem:horizon_def}) rises from approximately 1.23 with a 2011 vintage cutoff to roughly 2.42 with the full sample (2021).
+Notably, most of the increase is concentrated in vintages after 2016, where $\hat{\beta}_{\mathrm{MKT}}$ jumps sharply from 1.53 (2016 cutoff) to 2.34 (2017 cutoff), reflecting the disproportionate influence of young, unrealized funds.
+For VC, the drift is similarly dramatic: the FW estimate at the 0-year Horizon climbs from approximately 1.57 (2011 cutoff) to 2.33 with the full sample.
 Discounting all final NAVs by 50\% substantially flattens the upward trend: the BO FW estimate range compresses to 1.09--1.65, and the VC FW range to 1.41--1.54, confirming that the drift is attributable to the outsized mechanical reliance on subjectively reported Net Asset Values for young funds.
 These findings reinforce the sample restriction to the 2010 maximum vintage year applied throughout the remainder of this section.
 
@@ -1255,6 +1299,14 @@ These findings reinforce the sample restriction to the 2010 maximum vintage year
 	\label{fig:max_vintage_BOVC_MKT}
 \end{figure}
 
+\begin{remark}[Definition of Horizon]
+	\label{rem:horizon_def}
+	Throughout the empirical section, we use the term \emph{Horizon} $H$ to denote the maximum compounding horizon in years used in the set of discounting dates $\mathcal{T}$ (cf.\ Equation \ref{eq:t_cal_horizon}). 
+	Formally, starting from the fund inception date $t_i^0$, estimating a model with a Horizon $H$ implies that the estimator minimizes the average pricing error over the set of discounting dates $\mathcal{T}_{i,H} = \{t_i^0, t_i^0+1, \dots, \min(t_i^0+12H, T_i^{\max}) \}$, formally denoted as $\bar{\epsilon}_{i}^{(H)}$.
+	Note that the Horizon has as upper bound the max cash flow date per fund or portfolio in our empirical application.
+	This Horizon in years serves as x-axis in all subsequent empirical and simulation charts.
+\end{remark}
+
 
 \subsection{NAV discount sensitivity analysis}
 \label{sec:empirical_nav_discount_bovc}
@@ -1263,7 +1315,7 @@ To further quantify the sensitivity of factor loading estimates to terminal Net 
 Figure~\ref{fig:nav_disc_BOVC_MKT} reports single-factor MKT estimates under five NAV treatments: the baseline (full reported NAV as final cash flow), 25\%, 50\%, and 75\% constant discounts applied to all final NAVs, and a complete NAV write-off (100\% discount).
 
 For BO, the estimated market beta decreases monotonically with the NAV discount.
-At the 0-year Horizon (see Remark~\ref{rem:horizon_def}) under EW, $\hat{\beta}_{\mathrm{MKT}}$ drops from 1.26 (no discount) to 1.19 (25\% discount), 1.12 (50\%), 1.03 (75\%), and 0.94 (100\% write-off); under FW, the corresponding range is 1.20 to 0.98.
+At the 0-year Horizon under EW, $\hat{\beta}_{\mathrm{MKT}}$ drops from 1.26 (no discount) to 1.19 (25\% discount), 1.12 (50\%), 1.03 (75\%), and 0.94 (100\% write-off); under FW, the corresponding range is 1.20 to 0.98.
 At the 15-year Horizon, the EW estimate ranges from 0.81 (no discount) to 0.55 (100\% write-off), while the FW estimate spans 0.84 to 0.62.
 The qualitative conclusion is robust across all NAV treatments: the single-factor market model remains economically plausible and stable.
 
@@ -1272,8 +1324,9 @@ Under FW, the sensitivity is more pronounced, particularly at longer Horizons: t
 
 This analysis demonstrates that terminal NAV treatment has a material but bounded effect on estimated factor loadings.
 The monotonic relationship confirms the intuition that reported NAVs mechanically inflate estimated betas: funds whose final cash flow is a subjective valuation rather than a realized exit price appear more systematically risky because their NAVs partially co-move with public market indices.
-Importantly, even under the extreme assumption of a complete NAV write-off, the qualitative conclusions of this section remain unchanged: BO maintains a market beta near or slightly below unity, while VC retains a substantially higher systematic exposure.
-We do not impose a model-based residual-value adjustment, as this would constitute a separate research agenda; instead, the range spanned by the five NAV treatments provides a transparent envelope of estimation uncertainty attributable to terminal value measurement.
+Importantly, even under the extreme assumption of a complete NAV write-off, the first qualitative conclusions of this subsection can be summarized as follows: BO maintains a market beta near or below unity, while VC retains a substantially higher systematic exposure.
+We do not impose a model-based residual-value adjustment, as this would constitute a separate research agenda \citep{JLRS20,brown2023nowcasting}.
+Instead, the range spanned by the five NAV treatments provides a transparent envelope of estimation uncertainty attributable to terminal value measurement.
 
 \begin{figure}[htbp]
 	\centering
@@ -1290,121 +1343,8 @@ We do not impose a model-based residual-value adjustment, as this would constitu
 \end{figure}
 
 
-\subsection{Model and estimator specifications}
-\label{sec:model_selection}
-
-We test a simple linear SDF model similar to \cite{DLP12}
-\begin{equation}
-\label{eq:linear_sdf}
-\Psi_{\tau,t}^{\mathrm{SL}} (\theta) = 
-\frac{\prod_{h=0}^{\tau}\ \left(1 + \alpha + r_{f,h} + \sum_m\ \beta_m \ F_{m,h} \right)}{\prod_{h=0}^{t}\ \left(1 + \alpha + r_{f,h} + \sum_m\ \beta_m\ F_{m,h} \right)}
-\end{equation}
-and an exponential affine SDF model adapted from \cite{KN16}
-\begin{equation}
-\label{eq:expaff_SDF}
-\Psi_{\tau,t}^{\mathrm{EA}} (\theta) = 
-\exp
-\left[
--\sum_{h=\tau+1}^{t} 
-\left(
-\alpha + \log (1 + r_{f,h}) + \sum_{m \in M} \beta_{m} \cdot \log (1 + F_{m,h})
-\right)
-\right]
-\end{equation}
-with monthly (arithmetic) risk-free return $r_f=R_{rf}-1$, monthly (arithmetic) zero-net-investment portfolio returns $F_m$, and parameter vector $\theta=(\alpha,\beta)$.
-Throughout both the simulation and the empirical application, all factor returns and fund cash flows are observed at monthly frequency.
-
-The public market factors that enter our SDF draw on the US dataset of the recently popularized $q^5$ investment factor model sourced from \url{http://global-q.org/factors.html} \citep{HXZ15,hou2021augmented}. 
-Their five-factor model includes the market excess return (MKT), a size factor (ME), an investment factor (IA), a return on equity factor (ROE), and an expected growth factor (EG).
-The maximum date in the  $q^5$ investment factor dataset is 2024-12-31.
 
 
-To avoid overfitting, we restrict our analysis to six simple SDF models that contain \{MKT\} alone or \{MKT\} plus \{ME or IA or ROE or EG or Alpha\}.
-In Equation \ref{eq:estimator}, we use the quadratic loss function $L(x)=x^2$.
-
-\paragraph{Empirical design.}
-As the simulation study in Subsection~\ref{sec:simulation_study} will confirm, we use vintage-year portfolios (VYPs) to estimate simple linear SDF models for the Buyout (BO) and Venture Capital (VC) sub-samples individually, restricting the data to North American, USD-denominated funds from the Preqin dataset described in Subsection~\ref{sec:data}.
-This restriction ensures consistency between fund cash flows and the U.S.\ $q$-investment factor benchmarks used throughout the analysis.
-We analyze BO and VC as two distinct asset classes with fundamentally different risk profiles and report both equal-weighted (EW) and value-weighted (FW) estimates across a grid of compounding Horizons.
-For each model specification, we report asymptotic standard errors (SE$_A$) from the SHAC framework alongside $hv$-block cross-validation fold dispersions (SD$_{CV}$), defined as the standard deviation of parameter estimates across hold-out folds.
-Throughout the empirical analysis, $t_A$ denotes the $t$-ratio based on asymptotic standard errors; $\mathrm{SR}_{CV}$ (stability ratio) denotes the ratio of the full-sample estimate to the cross-validation fold dispersion, i.e., $\mathrm{SR}_{CV} := \hat{\theta} / \mathrm{SD}_{CV}$\footnote{All R code and data are available in an online repository: \url{https://github.com/quant-unit/Fundwise_SDF/tree/master/r_project}.}.
-As discussed in Remark~\ref{rem:cv_diagnostic}, $\mathrm{SR}_{CV}$ complements asymptotic inference as a stability diagnostic.
-
-To assess the parameter significance, we compute the asymptotic standard errors as outlined in Subsection \ref{sec:asymptotic_inference}.
-For the Bartlett kernel's bandwidth $b_n=D$ we select 12 years, i.e., funds with absolute vintage year differences larger than 12 years are assumed to be independent.
-
-
-
-
-
-
-
-\paragraph{Role of asymptotic inference in the empirical application.}
-
-The asymptotic results provide the benchmark large-sample approximation. At the same time, private-equity samples remain short in the vintage-year dimension, and model choice is often data-driven. For that reason, the empirical analysis complements asymptotic inference with out-of-sample validation and stability diagnostics. Framing the paper this way is preferable to dismissing asymptotics as unimportant: the asymptotic results remain the analytical baseline, but they are not the sole source of empirical credibility.
-
-
-
-Additionally, we assess the out-of-sample stability and model-selection properties of our SDF models.
-To account for the dependency between funds from adjacent vintage years caused by overlapping fund cash flows, we draw on $hv$-block cross-validation \citep{R00}.
-As \cite{R00} demonstrates, $hv$-block cross-validation is a consistent model-selection criterion for dependent data: the $h$-block gap between training and validation sets ensures approximate independence, while the $v$-block provides a sufficiently large validation sample within each fold.
-In our implementation, each cross-validation fold partitions the data into three disjoint groups:
-(i)~a \emph{validation set} ($v$-block) comprising funds from three consecutive vintage years (e.g., 2000, 2001, 2002), on which the out-of-sample pricing error is evaluated;
-(ii)~a \emph{buffer zone} ($h$-block) of three vintage years on each side of the $v$-block (e.g., 1997--1999 and 2003--2005), which is discarded entirely to break the dependence between training and validation data caused by overlapping fund cash flows; and
-(iii)~an \emph{estimation set} consisting of all remaining vintage years (e.g., 1985--1996 and 2006--end), on which the model parameters are estimated.
-This three-way split is repeated across rolling vintage-year windows, as detailed in Table~\ref{tab:hv_block_cv}.
-The number of active folds adapts dynamically to the selected maximum vintage year cutoff in any given estimation run.
-For instance, when estimating the full sample through 2021, we apply ten folds; when estimating a heavily seasoned sample truncated at 2010 to avoid reliance on subjective interim NAVs, the framework naturally truncates to seven active folds.
-
-\begin{remark}[Cross-validation as stability diagnostic]
-	\label{rem:cv_diagnostic}
-	The $hv$-block cross-validation quantities reported throughout this paper serve as \textbf{stability diagnostics and model-selection criteria} rather than inferential standard errors.
-	They summarize the fold-to-fold variation in parameter estimates under dependence-reducing sample splits and are informative about model sensitivity and effective parameter curvature, but they do not provide a valid null distribution for the full-sample estimator.
-	For formal statistical inference (standard errors and hypothesis tests), we rely on the SHAC-based asymptotic framework of Section~\ref{sec:asymptotic_inference}.
-	In practice, $hv$-block cross-validation complements the asymptotic analysis by (i) diagnosing model stability and out-of-sample performance without relying on asymptotics and (ii) flagging over-parameterized specifications that appear well-identified in-sample but collapse out-of-sample.
-\end{remark}
-
-\begin{remark}[Definition of Horizon]
-	\label{rem:horizon_def}
-	Throughout the empirical section, we use the term \emph{Horizon} $H$ to denote the maximum compounding horizon in years used in the set of discounting dates $\mathcal{T}$. 
-	Formally, starting from the fund inception date $t_i^0$, estimating a model with a Horizon $H$ implies that the estimator minimizes the average pricing error over the set of discounting dates $\mathcal{T}_{i,H} = \{t_i^0, t_i^0+1, \dots, \min(t_i^0+12H, T_i^{\max}) \}$, formally denoted as $\bar{\epsilon}_{i}^{(H)}$.
-	Note that the Horizon has as upper bound the max cash flow date per fund or portfolio in our empirical application.
-\end{remark}
-
-\begin{remark}[Alpha Bounds]
-	\label{rem:restricted_alpha}
-	In our optimization procedure, we limit the Alpha factor $\alpha$ to the range of $[-2\%, +2\%]$ per month to avoid the ``exploding alpha" issue documented in \cite[Footnote 8]{DLP12}: "Note that one needs to put an upper bound on $\alpha$ when performing the optimization in equation (3). This is to exclude the possibility that $\alpha$ tends to infinity."
-	In this degenerate scenario, an infinite alpha can almost perfectly price any cash flow stream, rendering the beta risk factors irrelevant. 
-\end{remark}
-
-
-\begin{table}[ht]
-	\centering
-	\resizebox{0.9\textwidth}{!}{%
-	\begin{tabular}{lllll}
-		\toprule
-		training.before & $h$-block.before & $v$-block & $h$-block.after & training.after \\ 
-		\midrule
-		estimation & remove & validation & remove & estimation \\ 
-		\midrule
-		\midrule
-		start-1984 & 1985,1986,1987 & 1988,1989,1990 & 1991,1992,1993 & 1994-end \\ 
-		start-1987 & 1988,1989,1990 & 1991,1992,1993 & 1994,1995,1996 & 1997-end \\ 
-		start-1990 & 1991,1992,1993 & 1994,1995,1996 & 1997,1998,1999 & 2000-end \\ 
-		start-1993 & 1994,1995,1996 & 1997,1998,1999 & 2000,2001,2002 & 2003-end \\ 
-		start-1996 & 1997,1998,1999 & 2000,2001,2002 & 2003,2004,2005 & 2006-end \\ 
-		start-1999 & 2000,2001,2002 & 2003,2004,2005 & 2006,2007,2008 & 2009-end \\ 
-		start-2002 & 2003,2004,2005 & 2006,2007,2008 & 2009,2010,2011 & 2012-end \\ 
-		start-2005 & 2006,2007,2008 & 2009,2010,2011 & 2012,2013,2014 & 2015-end \\ 
-		start-2008 & 2009,2010,2011 & 2012,2013,2014 & 2015,2016,2017 & 2018-end \\ 
-		start-2011 & 2012,2013,2014 & 2015,2016,2017 & 2018,2019,2020 & 2021-end \\ 
-		\midrule
-		\bottomrule
-	\end{tabular}
-	}
-	\caption{Partitions used for $hv$-block cross-validation. The number of active folds truncates dynamically based on the maximum vintage year cutoff of the specific estimation run.}
-	\label{tab:hv_block_cv}
-\end{table}
 
 
 \subsection{Simulation study}
@@ -1589,6 +1529,60 @@ Appendix~\ref{sec:appendix_bias_variance}, in particular Section~\ref{sec:append
 Accordingly, in the empirical application we use vintage-year portfolios, the simple linear SDF, emphasize one-factor MKT specifications, treat two-factor results as exploratory, and focus on Horizons around 12.5--15 years while also reporting sensitivity over a broader grid.
 
 
+\subsection{Role of asymptotic inference}
+
+To assess the parameter significance in the empirical application, we compute the asymptotic standard errors as outlined in Subsection \ref{sec:asymptotic_inference}.
+For the Bartlett kernel's bandwidth $b_n=D$ we select 12 years, i.e., funds with absolute vintage year differences larger than 12 years are assumed to be independent.
+The asymptotic results provide the benchmark large-sample approximation. 
+
+At the same time, private-equity samples remain small in the vintage-year and cross-sectional dimensions, and model choice is often data-driven. 
+For that reason, the empirical analysis complements asymptotic inference with out-of-sample validation and stability diagnostics. 
+To account for the dependency between funds from adjacent vintage years caused by overlapping fund cash flows, we draw on $hv$-block cross-validation \citep{R00}.
+As \cite{R00} demonstrates, $hv$-block cross-validation is a consistent model-selection criterion for dependent data: the $h$-block gap between training and validation sets ensures approximate independence, while the $v$-block provides a sufficiently large validation sample within each fold.
+In our implementation, each cross-validation fold partitions the data into three disjoint groups:
+(i)~a \emph{validation set} ($v$-block) comprising funds from three consecutive vintage years (e.g., 2000, 2001, 2002), on which the out-of-sample pricing error is evaluated;
+(ii)~a \emph{buffer zone} ($h$-block) of three vintage years on each side of the $v$-block (e.g., 1997--1999 and 2003--2005), which is discarded entirely to break the dependence between training and validation data caused by overlapping fund cash flows; and
+(iii)~an \emph{estimation set} consisting of all remaining vintage years (e.g., 1985--1996 and 2006--end), on which the model parameters are estimated.
+This three-way split is repeated across rolling vintage-year windows, as detailed in Table~\ref{tab:hv_block_cv}.
+The number of active folds adapts dynamically to the selected maximum vintage year cutoff in any given estimation run.
+For instance, when estimating the full sample through 2021, we apply ten folds; when estimating a heavily seasoned sample truncated at 2010 to avoid reliance on subjective interim NAVs, the framework naturally truncates to seven active folds.
+
+\begin{remark}[Cross-validation as stability diagnostic]
+	\label{rem:cv_diagnostic}
+	The $hv$-block cross-validation quantities reported throughout this paper serve as \textbf{stability diagnostics and model-selection criteria} rather than inferential standard errors.
+	They summarize the fold-to-fold variation in parameter estimates under dependence-reducing sample splits and are informative about model sensitivity and effective parameter curvature, but they do not provide a valid null distribution for the full-sample estimator.
+	For formal statistical inference (standard errors and hypothesis tests), we rely on the SHAC-based asymptotic framework of Section~\ref{sec:asymptotic_inference}.
+	In practice, $hv$-block cross-validation complements the asymptotic analysis by (i) diagnosing model stability and out-of-sample performance without relying on asymptotics and (ii) flagging over-parameterized specifications that appear well-identified in-sample but collapse out-of-sample.
+\end{remark}
+
+
+\begin{table}[ht]
+	\centering
+	\resizebox{0.9\textwidth}{!}{%
+		\begin{tabular}{lllll}
+			\toprule
+			training.before & $h$-block.before & $v$-block & $h$-block.after & training.after \\ 
+			\midrule
+			estimation & remove & validation & remove & estimation \\ 
+			\midrule
+			\midrule
+			start-1984 & 1985,1986,1987 & 1988,1989,1990 & 1991,1992,1993 & 1994-end \\ 
+			start-1987 & 1988,1989,1990 & 1991,1992,1993 & 1994,1995,1996 & 1997-end \\ 
+			start-1990 & 1991,1992,1993 & 1994,1995,1996 & 1997,1998,1999 & 2000-end \\ 
+			start-1993 & 1994,1995,1996 & 1997,1998,1999 & 2000,2001,2002 & 2003-end \\ 
+			start-1996 & 1997,1998,1999 & 2000,2001,2002 & 2003,2004,2005 & 2006-end \\ 
+			start-1999 & 2000,2001,2002 & 2003,2004,2005 & 2006,2007,2008 & 2009-end \\ 
+			start-2002 & 2003,2004,2005 & 2006,2007,2008 & 2009,2010,2011 & 2012-end \\ 
+			start-2005 & 2006,2007,2008 & 2009,2010,2011 & 2012,2013,2014 & 2015-end \\ 
+			start-2008 & 2009,2010,2011 & 2012,2013,2014 & 2015,2016,2017 & 2018-end \\ 
+			start-2011 & 2012,2013,2014 & 2015,2016,2017 & 2018,2019,2020 & 2021-end \\ 
+			\midrule
+			\bottomrule
+		\end{tabular}
+	}
+	\caption{Partitions used for $hv$-block cross-validation. The number of active folds truncates dynamically based on the maximum vintage year cutoff of the specific estimation run.}
+	\label{tab:hv_block_cv}
+\end{table}
 
 
 
@@ -1600,11 +1594,21 @@ Accordingly, in the empirical application we use vintage-year portfolios, the si
 \section{Empirical results for BO and VC data}
 \label{sec:empirical_results_bovc}
 
-This section presents the empirical SDF estimates for BO and VC.
-Our baseline specification is the single-factor MKT model estimated on vintage-year portfolios with a maximum vintage year of 2010, chosen to avoid reliance on unrealized NAVs (see Section~\ref{sec:empirical_vintage_cutoffs_bovc}).
-Two-factor models that add an alpha intercept serve as robustness and exploratory extensions.
-We report both EW and FW estimates across the full Horizon grid.
+This section presents the empirical SDF estimates for  Buyout (BO) and Venture Capital (VC) funds.
+As the simulation study in Subsection~\ref{sec:simulation_study} confirms, we use vintage-year portfolios (VYPs) to estimate simple linear SDF models for the BO and VC sub-samples individually.
+We restrict the data to North American, USD-denominated funds from the Preqin dataset described in Subsection~\ref{sec:data}.
+This restriction ensures consistency between fund cash flows and the U.S.\ $q$-investment factors used throughout the analysis.
+Moreover, we only consider funds with a maximum vintage year of 2010, to reduce the reliance on unrealized NAVs (see Section~\ref{sec:empirical_vintage_cutoffs_bovc}.
 
+We analyze BO and VC as two distinct asset classes with fundamentally different risk profiles and report both equal-weighted (EW) and value-weighted (FW) estimates across a grid of compounding Horizons.
+Our baseline specification is the single-factor MKT model estimated on vintage-year portfolios.
+Two-factor models that add an alpha intercept or a single $q$-investment factor serve as robustness and exploratory extensions.
+
+For each model specification, we report asymptotic standard errors (SE$_A$) from the SHAC framework alongside $hv$-block cross-validation fold dispersions (SD$_{CV}$), defined as the standard deviation of parameter estimates across hold-out folds.
+Throughout the empirical analysis, $t_A$ denotes the $t$-ratio based on asymptotic standard errors; $\mathrm{SR}_{CV}$ (stability ratio) denotes the ratio of the full-sample estimate to the cross-validation fold dispersion, i.e., $\mathrm{SR}_{CV} := \hat{\theta} / \mathrm{SD}_{CV}$.
+As discussed in Remark~\ref{rem:cv_diagnostic}, $\mathrm{SR}_{CV}$ complements asymptotic inference as a stability diagnostic.
+
+All R code and data (including the previous simulations) are available in an online repository: \url{https://github.com/quant-unit/Fundwise_SDF/tree/master/r_project}.
 
 \subsection{Baseline: single market-factor models}
 \label{sec:empirical_single_bovc}
@@ -1885,7 +1889,7 @@ We conclude that the $q^5$-factor two-factor models do not improve upon the sing
 \subsection{Interpretation}
 \label{sec:empirical_interpretation}
 
-The empirical results for Buyout and Venture Capital funds demonstrate consistent model reliability across both asset classes and weighting schemes.
+The empirical results for Buyout and Venture Capital funds demonstrate consistent model reliability challenges across both asset classes and weighting schemes.
 
 \paragraph{Single-factor MKT models are the most robust specification.}
 The single-factor market model produces economically plausible and statistically significant estimates for both BO and VC.
@@ -1917,7 +1921,7 @@ These results show that the finite-sample challenges identified by our simulatio
 Our findings yield a clear recommendation for applied researchers and practitioners.
 In our sample, semiparametric SDF estimation for private equity cash flows is substantially more reliable when restricted to single-factor market models estimated on seasoned, vintage-year portfolios at an extended compounding Horizon of approximately 15~years.
 Multi-factor models and alpha intercepts, while theoretically appealing, cannot be reliably estimated with the cross-sectional sample sizes currently available in private equity databases.
-Only a substantial expansion of the available data, either through longer time series of fully seasoned funds or through larger cross-sections within each vintage year, would provide the statistical power necessary to disentangle multiple systematic risk exposures from finite-sample noise.
+Only a substantial expansion of the available data, either through longer time series of fully seasoned funds or, even better, through larger cross-sections within each vintage year, would provide the statistical power necessary to disentangle multiple systematic risk exposures from finite-sample noise.
 
 
 
@@ -1939,18 +1943,19 @@ Given that virtually all multi-factor models in our empirical analysis fail to y
 Researchers must exercise caution even then, ensuring that data-driven model selection (e.g., via $hv$-block cross-validation) does not yield economically implausible outcomes.
 
 Expanding the SDF framework to robustly accommodate multiple risk factors requires imposing additional economic or statistical structure. 
-Future research could further explore parametric assumptions for the cash flow generating process \citep{ACGP18} or extract intra-period information from reported Net Asset Values \citep{GSW20,BGG20}. 
+Future research could further explore parametric assumptions for the cash flow generating process \citep{ACGP18} or extract intra-period information from reported Net Asset Values \citep{brown2023nowcasting}. 
 Methodologically, addressing the high estimator variance demands statistical techniques suited for sparse, high-dimensional settings. 
 Approaches such as LASSO, ridge regression, or model averaging to regularize non-market coefficients, as well as ensemble learning methods that combine multiple weak learners, present promising paths forward.
 
-Another vital avenue for future work involves explicitly modeling complex fee structures and carried interest within the data generating process. 
+Another vital avenue for future work involves explicitly modeling financial engineering, complex fee structures and carried interest within the data generating process. 
 This would enable the estimation of gross-versus-net-of-fee SDFs, providing sharper evaluation models for both General Partners (GPs) and Limited Partners (LPs). 
 Such structural refinements would naturally improve parameter accuracy and allow for a more rigorous analytical characterization of finite-sample bias. 
 Additionally, carefully integrating intermediate NAVs as proxies for unobservable true valuations could help alleviate the timing risk premium bias inherent to terminal value concepts, though this requires downweighting actual cash distributions in favor of subjective accounting metrics.
 
 Finally, we highlight the critical role of the compounding Horizon in empirical asset pricing for private markets. 
-Our simulation study demonstrates that utilizing a future value framework, i.e., averaging pricing errors over a broad set of discounting dates $\mathcal{T}$, yields vastly superior finite-sample properties compared to traditional net present value approaches. 
-The bias is minimized when the set of discounting dates corresponds approximately to the typical fund lifecycle. 
+Reporting estimates on a future-value-based horizon grid yields an additional array of alternative parameter estimates that can be compared to the traditional NPV-based results of the \cite{DLP12} method.
+Our simulation study demonstrates that utilizing this future-value framework, i.e., averaging pricing errors over a broad set of discounting dates $\mathcal{T}$, yields vastly superior finite-sample properties compared to traditional net present value approaches. 
+The simulation bias is minimized when the set of discounting dates corresponds approximately to the typical fund lifecycle. 
 Developing a formal theoretical or empirical mechanism to endogenously determine the optimal configuration of $\mathcal{T}$ for a given fund sample and macroeconomic environment remains an important objective for future research.
 
 
@@ -2607,7 +2612,7 @@ Therefore, until substantially more granular and independent cross-sectional dat
 
 
 \section{Proofs for the horizon-specific asymptotic results}
-\label{app:proofs_asymptotics_H}
+\label{sec:proofs_asymptotics_H}
 
 This subsection supplies detailed proofs for Proposition~\ref{prop:ulln_H},
 Proposition~\ref{prop:consistency_H}, and Proposition~\ref{prop:clt_H}.
