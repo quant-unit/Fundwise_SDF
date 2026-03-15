@@ -216,6 +216,9 @@ analyze_simulation_bias <- function(results, scenarios, verbose = TRUE) {
                 rel_bias_MKT_pct = rel_bias_MKT,
                 rel_bias_second_pct = rel_bias_second,
 
+                # Optimization value / Error
+                value = if ("value" %in% names(row)) as.numeric(row$value) else NA_real_,
+
                 # Additional DGP info
                 dgp_investment_period = dgp$investment_period,
                 dgp_max_holding_period = dgp$max_holding_period,
@@ -416,7 +419,7 @@ save_bias_summary <- function(
     agg_df <- tryCatch(
         {
             aggregate(
-                cbind(bias_MKT, bias_second, rel_bias_MKT_pct, rel_bias_second_pct) ~ scenario_id,
+                cbind(bias_MKT, bias_second, rel_bias_MKT_pct, rel_bias_second_pct, value) ~ scenario_id,
                 data = bias_df,
                 FUN = function(x) mean(x, na.rm = TRUE),
                 na.action = na.pass
@@ -425,7 +428,7 @@ save_bias_summary <- function(
         error = function(e) {
             # Fallback: aggregate columns individually
             groups <- unique(bias_df[, "scenario_id", drop = FALSE])
-            cols_to_agg <- c("bias_MKT", "bias_second", "rel_bias_MKT_pct", "rel_bias_second_pct")
+            cols_to_agg <- c("bias_MKT", "bias_second", "rel_bias_MKT_pct", "rel_bias_second_pct", "value")
             result <- groups
             for (col in cols_to_agg) {
                 if (col %in% names(bias_df)) {

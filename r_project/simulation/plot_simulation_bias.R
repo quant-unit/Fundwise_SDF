@@ -57,6 +57,7 @@ plot_simulation_bias <- function(
     # -------------------------------------------------------------------------
     # Read and prepare data
     # -------------------------------------------------------------------------
+    bias_file <- trimws(bias_file)
     bias_data <- read.csv(bias_file, stringsAsFactors = FALSE)
     
     bias_data <- bias_data[bias_data$max_month != 1, ]
@@ -538,7 +539,7 @@ file <- "simulation/data_out_2026_new/bias_analysis/2026-02-24_185813_bias_by_sc
 file <- "simulation/data_out_2026_new/bias_analysis/2026-03-02_113958_bias_by_scenario_horizon.csv"
 file <- "simulation/data_out_2026_new/bias_analysis/2026-03-03_190312_bias_by_scenario_horizon.csv"
 file <- "simulation/data_out_2026_new/bias_analysis/2026-03-12_174621_bias_by_scenario_horizon.csv"
-file <- "simulation/data_out_2026_new/bias_analysis/2026-03-14_134119_bias_by_scenario_horizon.csv"
+file <- "simulation/data_out_2026_new/bias_analysis/2026-03-14_220349_bias_by_scenario_horizon.csv"
 
 
 

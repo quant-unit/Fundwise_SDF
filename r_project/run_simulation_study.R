@@ -329,7 +329,8 @@ run_simulation_study <- function(
                             cbind(
                                 bias_MKT, bias_second,
                                 est_beta_MKT, est_second,
-                                true_beta_MKT, true_second
+                                true_beta_MKT, true_second,
+                                value
                             ) ~ scenario_id + max_month,
                             data = bias_summary,
                             FUN = function(x) mean(x, na.rm = TRUE),
@@ -361,7 +362,8 @@ run_simulation_study <- function(
                         cols_mean <- c(
                             "bias_MKT", "bias_second",
                             "est_beta_MKT", "est_second",
-                            "true_beta_MKT", "true_second"
+                            "true_beta_MKT", "true_second",
+                            "value"
                         )
 
                         result <- groups

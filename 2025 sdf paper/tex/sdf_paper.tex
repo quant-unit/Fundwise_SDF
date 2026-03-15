@@ -89,14 +89,10 @@ The authors alone are responsible for the content and writing of the paper.
 
 
 \abstract{
-	This paper introduces a unified semiparametric framework for estimating stochastic discount factors (SDF) on non-traded cash flow streams, providing a generalized objective-function perspective that nests the approach of \cite{DLP12} and conceptually relates to the time-series method of \cite{KN16}.
-	Our nonlinear least-mean-distance estimator is accompanied by a spatial asymptotic inference framework that accounts for the near-epoch dependence of overlapping private equity funds. 
-	Using Monte Carlo simulations, we demonstrate that the non-negligible finite-sample estimation error observed at short horizons can be controlled and effectively stabilized by averaging pricing errors over an extended set of compounding dates, and by aggregating cross-sectional data into seasoned vintage-year portfolios. 
-	Empirically, we analyze a comprehensive private equity dataset covering Buyout (BO) and Venture Capital (VC) funds and reveal two critical data constraints: 
-	First, including recent, unseasoned vintages severely inflates market beta estimates due to an outsized mechanical reliance on reported net asset values. 
-	When constraining the sample to heavily seasoned funds at an MSE-minimizing 15-year horizon, we estimate an attenuated market beta of 0.81 and 0.84 for equal- and value-weighted Buyout portfolios, respectively, and 1.30 and 1.07 for Venture Capital.
-	Second, multi-factor models and abnormal performance ($\alpha$) intercepts prove fundamentally fragile due to severe finite-sample noise. 
-	Consequently, we conclude that in our sample, single-factor market models are substantially more stable than multi-factor specifications, and we recommend restricting semiparametric SDF evaluation to such models until substantially more seasoned, cross-sectional private market data becomes available.
+We develop a semiparametric framework for estimating stochastic discount factors from pooled non-traded cash flows. 
+The framework generalizes the inception-based approach of \cite{DLP12}, clarifies its relation to \cite{KN16}, and accommodates dependence induced by overlapping funds. 
+We show that horizon choice creates a finite-sample bias-variance tradeoff: averaging pricing errors over additional compounding dates can substantially improve estimator stability, even though longer horizons alter the population pricing restriction. 
+We apply the framework to private equity and discuss its implications for risk adjustment and model specification in empirical work with sparse, illiquid cash-flow data.
 }
 
 
@@ -104,35 +100,71 @@ The authors alone are responsible for the content and writing of the paper.
 \section{Introduction}
 \label{sec:introduction}
 
-Private equity has outgrown its niche, sitting today on more than \$13 trillion in assets under management \citep{McKinsey2024}, yet rigorous asset-pricing tools have not kept pace with this ascent.
-The empirical analysis and risk assessment of private equity and other non-traded cash flows remain fundamentally challenging due to the absence of market-based valuations and the inherent frictions of private markets (i.e., under incomplete information). 
-Unlike public assets with trusted and tradeable valuations (in liquid secondary markets), private equity fund investments generate irregular, infrequently observed cash flows for which standard return-based asset pricing techniques are unsuitable.
+Private equity (PE) has grown into a major asset class, with more than \$13 trillion in assets under management \citep{McKinsey2024}. 
+Yet rigorous asset-pricing tools for private markets remain comparatively underdeveloped. The central difficulty is that private equity investments do not generate reliable traded-return series. 
+Instead, the econometrician observes irregular capital calls, distributions, and reported net asset values (NAVs), often over long horizons and under substantial informational frictions. 
+As a result, standard return-based asset-pricing methods that are routine in public markets are difficult to apply in private markets, where the relevant pricing restrictions are expressed in discounted cash flows rather than in observed returns.
 
-To evaluate such irregular fund cash flows, the pioneering works of \cite{DLP12} and \cite{KN16} introduced highly influential stochastic discount factor (SDF) estimators that have become the gold standard in private market asset pricing.
-The profound impact of their methodologies is evident from their widespread adoption, as the \cite{DLP12} and \cite{KN16} estimators are heavily utilized to price a wide array of non-traded assets, spanning private equity, venture capital and real estate to infrastructure and collateralized loan obligations. 
-Building on these major contributions, we propose a unified semiparametric framework that recovers the \cite{DLP12} estimator as a special case and clarifies the mathematical connection to the \cite{KN16} approach.
-The core benefit of our unified framework lies in generalizing the set of discounting dates, which ultimately allows researchers to identify, comprehend, and control the small-sample bias inherent to cash-flow-based SDF pricing.
+Semiparametric stochastic discount factor (SDF) methods provide a natural response to this measurement problem. 
+The seminal contribution of \citet{DLP12} shows how to estimate abnormal performance and systematic risk exposure from pooled private-equity cash flows by imposing a zero-net-present-value restriction at fund inception. 
+\citet{KN16} develop a closely related framework that links private-equity cash flows to public-market benchmarks while emphasizing the role of fund overlap and cross-sectional dependence. 
+These approaches have become central tools in empirical work on private assets because they avoid the strong distributional assumptions required by fully parametric models and can be implemented directly on cash-flow data.
 
-Our nonlinear least squares estimator stems from the class of Least-Mean-Distance (LMD) estimators, which are easier to handle than traditional Generalized Method of Moments (GMM) approaches \citep{PP97}.
-Our LMD estimator both simplifies and extends the GMM methodology of \cite{DLP12}, and we provide the spatial asymptotic inference framework that was missing in the original paper.
-The asymptotic inference formulations rely on the concept of spatial (near-epoch) dependence between funds as proposed by \cite{KN16}.
-In this context, it is paramount to quantify the economic distance between funds by a measure like absolute vintage year difference or cash flow overlap\footnote{Note that this economic inter-fund \emph{distance} is conceptually distinct from the statistical ``distance'' minimized by the Least-Mean-Distance estimator.}.
+At the same time, existing semiparametric approaches leave open an important practical question: how do cash-flow-based SDF estimators behave in the finite samples researchers actually observe? 
+Private-equity panels are typically sparse, nonlinear, and heavily overlapping across funds and vintages. 
+In addition, recent vintages often contain large reported NAV components, so empirical conclusions may reflect continuation values and sample construction as much as underlying risk. 
+In such settings, conclusions about alpha, market exposure, or multifactor structure may depend not only on economics, but also on horizon choice, estimator variance, and the treatment of cross-fund dependence.
 
-For a typically sized dataset of private equity funds, we document a severe finite-sample bias in cash-flow-based SDF estimators like \cite{DLP12} and \cite{KN16} that inherently arises from the non-linearity of the estimating equations.
-While this bias can be mitigated by increasing the cross-sectional sample size, such data is rarely available.
-Instead, we demonstrate that by generalizing the estimator to average pricing errors over multiple, non-optimal discounting dates, researchers can deliberately introduce a ``Timing Risk Premium" that effectively offsets this finite-sample bias, dramatically improving the estimates in small samples (in our simulation study).
+This paper studies semiparametric cash-flow-based SDF estimation when the econometrician is not restricted to discounting all pooled cash flows back to fund inception. 
+Our starting point is simple. In typical private-equity samples, inception-only pricing errors can be highly unstable because the estimating equations are nonlinear and the effective cross-sectional sample size is limited. 
+A natural response is to average pricing errors over additional compounding dates rather than evaluate all discounted cash flows only at inception. 
+However, this is not merely a statistical refinement. Once pricing errors are evaluated at horizons beyond inception, the estimator generally targets a different population object.
+Horizon choice therefore creates a bias--variance tradeoff: longer horizons can improve finite-sample stability, but they also alter the underlying population pricing restriction through what we term a timing-risk-premium component.
 
-In the empirical application of our new estimator, we evaluate simple linear SDF models utilizing the well-known Preqin cash flow database across a grid of compounding horizons.
-While evaluating multi-factor models proves unreasonable given high estimator variance, our single-factor market models yield stable and economically meaningful estimates for both Buyout and Venture Capital funds. 
-At an MSE-minimizing 15-year horizon upon seasoned vintage years, we estimate a market beta of 0.81 and 0.84 for equal- and value-weighted Buyout portfolios, and 1.30 and 1.07 for Venture Capital, respectively (for a single-factor model without $\alpha$ intercept). 
-While our rigorous asymptotic inference framework yields conservative standard errors, $hv$-block cross-validation stability diagnostics indicate that these market beta estimates are robust across data subsets. 
-We document that the inherent estimator variance limiting multi-factor approaches can only be partially overcome by forming portfolios with a larger number of cross-sectional units per vintage year, highlighting a fundamental data constraint in modern private market asset pricing.
+The paper's first contribution is conceptual. 
+We derive a generalized pooled-cash-flow pricing framework that makes explicit how the choice of discounting date affects the estimand. 
+This formulation nests the inception-only criterion of \citet{DLP12} as a special case. 
+It also clarifies the relation to \citet{KN16}: their estimator is closely connected to our framework, but it is not obtained as a literal special case because the order of aggregation differs. 
+Framing the problem in this way makes explicit a distinction that, to our knowledge, has not been formalized in the semiparametric private-equity SDF literature: a horizon may improve finite-sample performance without preserving the original inception-based pricing restriction.
 
-The paper is structured as follows. 
-Section \ref{sec:literature} reviews the related literature.
-Section \ref{sec:spatial_sdf_methodology} introduces our semiparametric LMD estimator and its corresponding asymptotic inference framework.
-Section \ref{sec:empirical_application} details the empirical implementation choices and validates the framework through a simulation study.
-Section \ref{sec:empirical_results_bovc} presents the empirical results for Buyout and Venture Capital funds, evaluating both single- and multi-factor SDF models.
+Our second contribution is methodological. 
+We formulate the estimator as a nonlinear least-mean-distance (LMD) problem for pooled, non-traded cash flows \citep{PP97}. 
+This objective-function representation is useful because it makes the role of horizon choice transparent, accommodates alternative weighting schemes, and yields a clean comparison to existing semiparametric estimators. 
+Building on this representation, we develop an increasing-domain asymptotic framework for inference under dependence induced by overlapping funds and adjacent vintages. 
+In private-equity applications, cross-sectional units are neither independent nor naturally ordered in calendar time alone; dependence is tied to economic proximity, such as vintage-year distance and overlap in cash-flow histories. 
+Our asymptotic framework is designed for precisely that setting.
+
+The paper's central tension has two distinct margins. 
+On one margin, inception-only discounting preserves the original zero-net-present-value pricing restriction but can produce unstable estimates in realistic private-equity samples. 
+On the other margin, averaging pricing errors over additional compounding dates can materially improve finite-sample performance, but it does so by changing the population pricing restriction. 
+Our goal is not to treat horizon choice as a purely mechanical implementation detail, but to characterize this tradeoff explicitly and provide guidance on how researchers should navigate it in empirical work.
+
+We study this problem in three steps. 
+First, we derive the generalized pooled-cash-flow objective and the corresponding asymptotic framework. 
+Second, we use simulations calibrated to private-equity-like cash-flow environments to evaluate how horizon choice affects finite-sample bias and variance. 
+Third, we implement the estimator in the Preqin cash-flow database for North American U.S.-dollar buyout (BO) and venture-capital (VC) funds and assess specification stability using both asymptotic inference and $hv$-block cross-validation diagnostics \citep{R00} tailored to overlapping cash-flow dependence.
+
+Our empirical results yield three main messages. 
+First, including recent vintages with large NAV components can mechanically inflate measured market exposure, underscoring the importance of sample construction in private-equity asset pricing. 
+Second, parsimonious single-factor market specifications applied to seasoned vintages produce materially more stable estimates than richer alternatives. 
+Third, alpha terms and additional factors remain difficult to estimate reliably in currently available private-equity data, even when asymptotic inference is supplemented with cross-validation diagnostics. 
+Taken together, these results suggest that current cash-flow panels are informative about coarse market exposure in seasoned buyout and venture-capital portfolios, but considerably less informative about abnormal performance or more elaborate factor structures.
+
+These findings matter for more than estimator design. 
+A large literature asks whether private-equity funds outperform public benchmarks and how their risks should be measured (comprehensively summarized by \cite{K19,korteweg2023risk}). 
+Our results suggest that these questions cannot be separated from the identification limits imposed by sparse, overlapping, and partially NAV-based cash-flow panels. 
+The message of the paper is therefore not simply that one estimator dominates another.
+Rather, semiparametric SDF estimation in private markets requires an explicit choice of target, an explicit treatment of dependence, and a disciplined assessment of which models current data can credibly support.
+
+The paper contributes to the literature on private-market performance measurement and risk adjustment in three ways. 
+Relative to \citet{DLP12}, we generalize the inception-only pricing restriction and provide an asymptotic inference framework tailored to overlapping funds. 
+Relative to \citet{KN16}, we show that both approaches are built on closely related cash-flow pricing restrictions, but that different aggregation and weighting choices imply different sample objectives and estimators.
+More broadly, the paper contributes to the growing literature on asset-pricing inference with illiquid, non-traded, and intermittently valued cash-flow streams, where the key challenge is not only estimation, but also determining which economically meaningful objects can be identified with available data.
+
+The remainder of the paper proceeds as follows. 
+Section \ref{sec:literature} reviews the related literature. Section \ref{sec:spatial_sdf_methodology} develops the generalized semiparametric estimator and the corresponding asymptotic inference framework. 
+Section \ref{sec:empirical_application} studies finite-sample behavior in simulation and discusses implementation choices. 
+Section \ref{sec:empirical_results_bovc} presents the empirical application to buyout and venture-capital funds. 
 Section \ref{sec:conclusion} concludes.
 Appendix \ref{sec:appendix_bias_variance} analyzes the bias--variance tradeoff in the context of our SDF estimation problem.
 Appendix \ref{sec:dlp_results_comparison} compares our simulation and empirical results to their \cite{DLP12} counterparts.
@@ -168,25 +200,26 @@ with $NPV$ for the $i$th fund
 	\right)
 } 
 \]
+with fund inception date $t_{0,i}$, risk-free rate $r_{f, s}$ and excess market return $r_{\mathrm{market}}$.
 Here, the \cite{DLP12} approach relies on the identifying assumption that the model is correctly specified, so that $\mathbb{E}[NPV_i(\theta_0)] = 0$.
 Building on this, \cite{KN16} introduced the Generalized Public Market Equivalent (GPME) framework, shifting the estimation of the SDF to public market data while evaluating PE cash flows in a second step. 
 Importantly, \cite{KN16} were the first to apply a spatial heteroskedasticity and autocorrelation consistent (SHAC) covariance matrix estimator \citep{C99} to account for the economic distance (cash flow overlap) between PE funds, moving beyond simple cross-sectional bootstrapping.
 
 Further complementing this cash flow dimension, a strand of literature models the informational frictions and smoothing inherent in reported Net Asset Values (NAVs) \citep{BGK19, JLRS20, brown2023nowcasting}. 
 Additionally, \cite{HSS23} leverage a similar generalized framework to evaluate private firms using credit market equivalents.
-Finally, for comprehensive methodological and empirical overviews of risk and return assessment in private equity, we refer to \cite{K19,korteweg2023risk}, who also discuss the popular \cite{D79} regression that employs lagged returns to correct for stale valuations.
+Finally, for comprehensive methodological and empirical overviews of risk and return assessment in private equity, we refer to \cite{K19,korteweg2023risk}, who also discuss the popular \cite{D79} time-series regression that employs lagged returns to correct for stale valuations.
 
-Our paper's unified LMD framework contributes to this semiparametric literature by providing a loss-function formulation that encompasses the \cite{DLP12} approach and contextualizes the \cite{KN16} time-series analogue while supplying the rigorous increasing-domain asymptotic inference missing in earlier work (drawing on the spatial theory of \cite{PP97}, \cite{KS11}, and \cite{JP12}). 
-While \cite{GSW20} highlighted that NPV-based measures are biased relative to per-period returns, we explicitly formalize this discrepancy as a ``Timing Risk Premium'', a concept linked to recent findings on discount-rate risk in secondary markets \citep{boyer2023discount}.
+Our paper's LMD framework contributes to this semiparametric literature by providing a loss-function formulation that encompasses the \cite{DLP12} approach and contextualizes the \cite{KN16} time-series analogue while supplying the rigorous increasing-domain asymptotic inference missing in earlier work (drawing on the spatial theory of \cite{PP97}, \cite{KS11}, and \cite{JP12}). 
+While \cite{GSW20} highlighted that NPV-based measures are biased relative to per-period returns, we explicitly formalize this discrepancy as a ``timing risk premium'', a concept related to recent literature on discount-rate risk in secondary markets \citep{boyer2023discount}.
 
 \section{Methodology}
 \label{sec:spatial_sdf_methodology}
 
-We now formalize a unified semiparametric framework for SDF estimation with pooled cash flows. 
-Section~\ref{sec:asset_pricing_pooled} establishes the theoretical asset-pricing conditions and highlights how the choice of discounting date induces a Timing Risk Premium. 
-Section~\ref{sec:fundwise_lmd_estimator} uses this insight to introduce a generalized Least-Mean-Distance (LMD) estimator that endogenizes the discounting dates. 
+We now formalize a semiparametric framework for SDF estimation with pooled cash flows. 
+Section~\ref{sec:asset_pricing_pooled} establishes the theoretical asset-pricing conditions and highlights how the choice of discounting date induces a ``timing risk premium". 
+Section~\ref{sec:fundwise_lmd_estimator} uses this insight to introduce a generalized least-mean-distance estimator that endogenizes the discounting dates. 
 Section~\ref{sec:asymptotic_framework} builds an increasing-domain asymptotic framework to accommodate the spatial dependence of overlapping vintage years, and Section~\ref{sec:asymptotic_inference} describes large-sample inference. 
-A detailed comparison demonstrating how this LMD estimator nests the framework of \cite{DLP12} as a special case and relates to \cite{KN16} is provided in Section~\ref{sec:comparison_to_similar_estimators}.
+Section Section~\ref{sec:comparison_to_similar_estimators} demonstrates how this LMD estimator nests the framework of \cite{DLP12} as a special case and relates to \cite{KN16}.
 
 \subsection{Asset pricing for pooled cash flows}
 \label{sec:asset_pricing_pooled}
@@ -275,6 +308,7 @@ where the deal-level pricing error is defined by
 	\frac{\Psi_{t_{i,j,k}^{\mathrm{Div}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}}
 	\mathrm{Div}_{i,j,k}
 \end{equation}
+and the multi-period SDF $\Psi_t = \prod_{u=1}^t M_u$ discounts a time-$t$ cash flow to time 0 (and $\Psi_0 = 1$).
 
 The next result characterizes how this deal-level pricing restriction depends on the choice of discounting or compounding date.
 
@@ -298,7 +332,7 @@ Suppose Equation~\eqref{eq:deal_pricing} holds.
 	\end{equation}
 	which need not equal zero.
 
-	\item Under the same pre-investment timing as Part~(1), suppose additionally that the pricing error is compounded forward to a date $t_{i,j}^{\mathrm{Future}} > t_{i,j}^{\mathrm{Inv}}$. If $\tau < t_{i,j}^{\mathrm{Inv}} < t_{i,j}^{\mathrm{Future}}$, then 
+	\item Under the same pre-investment timing as Part~(1), suppose additionally that the pricing error is compounded forward to a date $t_{i,j}^{\mathrm{Future}} > t_{i,j}^{\mathrm{Inv}}$. If $\tau \leq t_{i,j}^{\mathrm{Inv}} < t_{i,j}^{\mathrm{Future}}$, then 
 	define the NFV-type moment
 	\[
 	m_{i,j}^{\mathrm{NFV}}(\tau,t_{i,j}^{\mathrm{Future}})
@@ -354,11 +388,30 @@ For part (3), using the law of iterated expectations with an intermediate condit
 where we used the conditional covariance identity and Equation~\eqref{eq:deal_pricing}.
 \end{proof}
 
-Part~(3) shows that compounding deal cash flows to a future date generally destroys the zero conditional moment restriction because the resulting expression contains a covariance between the pricing error and future SDF realizations. 
+Part~(3) of Lemma \ref{lem:deal_level_timing} shows that compounding deal cash flows to a future date generally destroys the zero conditional moment restriction because the resulting expression contains a covariance between the pricing error and future SDF realizations. 
 We refer to this non-zero expected value as the \emph{timing wedge}. 
-Economically, this wedge represents a \textbf{Timing Risk Premium}, i.e., the required compensation for the discount-rate risk borne during the interim illiquidity period between investment and realization.
-Accordingly, NFV-type moments are inappropriate as primitive ex-ante pricing moments unless this timing term is modeled explicitly.
-They can still be informative for ex-post benchmarking, but the resulting performance measure must then be interpreted as a composite object that mixes true abnormal performance (skill) with timing-related compensation.
+Economically, it is the time-$\tau$ price of an investment-date covariance term between continuation SDF realizations and the discounted divestment cash flows over the illiquid holding period. 
+We label this component the \textbf{Timing Risk Premium (TRP)} because it captures compensation for systematic timing exposure, i.e., exposure to the states in which realization occurs and discount rates are realized.
+
+To facilitate the economic interpretation of the TRP, let us briefly analyze Equation \ref{eq:future_value_bias_derivation} with only one divestment cash flow per deal ($K_{i,j}=1$).
+In this case, the covariance term reads 
+\[
+\mathrm{Cov} \left( \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}},\
+\mathrm{Inv}_{i,j} +
+\frac{\Psi_{t_{i,j,k}^{\mathrm{Div}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}}
+\mathrm{Div}_{i,j,k} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right)
+=
+\mathrm{Cov} \left( 
+\prod_{u=t_{i,j}^{\mathrm{Inv}}+1}^{t_{i,j}^{\mathrm{Future}}} M_u, 	\
+\mathrm{Div}_{i,j,k} 
+\prod_{u=t_{i,j}^{\mathrm{Inv}}+1}^{t_{i,j,k}^{\mathrm{Div}}} M_u
+\mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right)
+\]
+Thus, for $K_{i,j}=1$, the covariance is naturally expected to be largest when $t_{i,j}^{\mathrm{Future}}$ is equal to $t_{i,j,k}^{\mathrm{Div}}$, since the continuation SDF and the discounted divestment payoff then load on the same SDF path. 
+This ranking is not automatic, however, and requires additional restrictions on the post-divestment SDF dynamics (e.g, ${\Psi_{t_{i,j}^{\mathrm{Future}}}} / {\Psi_{t_{i,j}^{\mathrm{Div}}}}$ being conditionally mean-independent of $\mathcal{F}_{t_{i,j}^{\mathrm{Div}}}$ given  $\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$).
+
+To conclude our analysis of Part 3 of Lemma \ref{lem:deal_level_timing}, NFV-type moments are inappropriate as primitive ex-ante pricing moments unless the TRP term is modeled explicitly.
+They can still be informative for ex-post benchmarking, but the resulting performance measure must then be interpreted as a composite object that mixes true abnormal performance (skill) with a systematic timing exposure-related compensation (TRP).
 
 \begin{proposition}
 	\label{theo:inception_value}
@@ -448,14 +501,14 @@ In this subsection, we define a generalized fund-level criterion that averages p
 This nests the inception-only NPV criterion of \cite{DLP12} as a special case and allows us to study how horizon averaging trades structural validity against finite-sample regularization. 
 Throughout, only pooled fund cash flows are observed, whereas the deal-level decomposition from Section~\ref{sec:asset_pricing_pooled} remains a latent theoretical device.
 
-The stochastic discount factor $\Psi_{\tau,t}$ is used to calculate the time-$\tau$ price $P_{\tau,t,i}$ of a \textbf{single} time-$t$ cash flow of any given PE fund $i$
+The stochastic discount factor $\Psi_{\tau,t} = \Psi_{t} / \Psi_{\tau}$ is used to calculate the time-$\tau$ price $P_{\tau,t,i}$ of a \textbf{single} time-$t$ cash flow of any given PE fund $i$
 \begin{equation}
 \label{eq:price}
 P_{\tau,t,i} := \Psi_{\tau,t} \cdot CF_{i,t}
 = \frac{\Psi_{t}}{\Psi_{\tau}} \cdot CF_{i,t}
 \qquad \forall \quad \tau,t,i
 \end{equation}
-with multi-period SDF $\Psi_t = \prod_{k=1}^t M_k$ and $\Psi_0 = 1$.
+with again multi-period SDF $\Psi_t = \prod_{u=1}^t M_u$ and $\Psi_0 = 1$.
 As SDFs are commonly parameterized by a vector $\theta \in \mathbb{R}^{p}$, i.e., $\Psi_{\tau,t} \equiv \Psi_{\tau,t} (\theta)$, our goal is to find an estimation method for the true parameter vector $\theta_0$.
 
 For each fund $i$ and all points $\tau$ within a common fund lifetime, the empirical pricing error $\epsilon_{\tau,i}(\theta)$ of \textbf{all} fully realized fund cash flows is calculated as a time-$\tau$ revaluation of the entire cash-flow stream
@@ -1947,8 +2000,8 @@ Future research could further explore parametric assumptions for the cash flow g
 Methodologically, addressing the high estimator variance demands statistical techniques suited for sparse, high-dimensional settings. 
 Approaches such as LASSO, ridge regression, or model averaging to regularize non-market coefficients, as well as ensemble learning methods that combine multiple weak learners, present promising paths forward.
 
-Another vital avenue for future work involves explicitly modeling financial engineering, complex fee structures and carried interest within the data generating process. 
-This would enable the estimation of gross-versus-net-of-fee SDFs, providing sharper evaluation models for both General Partners (GPs) and Limited Partners (LPs). 
+Another vital avenue for future work involves explicitly modeling funding rounds, financial engineering, complex fee structures and carried interest within the data generating process. 
+This would enable the estimation of company-level and gross-versus-net-of-fee SDFs, providing sharper evaluation models for both General Partners (GPs) and Limited Partners (LPs). 
 Such structural refinements would naturally improve parameter accuracy and allow for a more rigorous analytical characterization of finite-sample bias. 
 Additionally, carefully integrating intermediate NAVs as proxies for unobservable true valuations could help alleviate the timing risk premium bias inherent to terminal value concepts, though this requires downweighting actual cash distributions in favor of subjective accounting metrics.
 
@@ -2407,6 +2460,9 @@ This subsection provides an auxiliary interpretation of NFV-based pricing errors
 \section{Comparison to \cite{DLP12}}
 \label{sec:dlp_results_comparison}
 
+This section aligns our simulation and empirical designs with the original methodology of \cite{DLP12} to ensure direct comparability. 
+Accordingly, we focus our analysis on estimates derived from NPV-based discounting (Horizon $H=0$).
+
 \subsection{Comparison to simulation results}
 \label{sec:dlp_simulation}
 
@@ -2428,12 +2484,13 @@ The most effective modification is shortening the maximum deal holding period fr
 Combining this holding-period restriction with deterministic investment timing (S9) yields a similar beta estimate ($\hat{\beta}=0.88$) and alpha bias ($0.32\%$), with the deterministic timing contributing only a modest additional effect.
 By limiting the compounding duration, both scenarios restrict the geometric growth of idiosyncratic errors, reducing the frequency of degenerate alpha estimates and partially restoring the accuracy of the market beta.
 Tightening the alpha upper bound $\bar{\alpha}$ also dramatically affects results: at $\bar{\alpha}=1\%$ (S6), 32\% of draws hit the bound, and beta is close to the benchmark ($\hat{\beta}=0.87$), but at the cost of artificially constraining the alpha search space.
-Combining all modifications---holding-period restrictions, deterministic timing, and a tighter alpha bound of $\bar{\alpha}=1\%$ (S10)---produces our closest approximation to the benchmark. 
+Interestingly, \cite{DLP12} report in their footnote 8 that they use a much higher upper limit for $\alpha$: ``In our application, putting an upper bound of 100\% per year suffices to avoid this numerical issue."
+Combining all modifications, i.e., holding-period restrictions, deterministic timing, and a tighter alpha bound of $\bar{\alpha}=1\%$ (S10), produces our closest approximation to the benchmark. 
 Under this configuration, the beta estimate improves to $0.93$ and the alpha bias falls to $0.27\%$, though 10\% of draws still hit the alpha bound.
 However, even under this most favorable scenario (S10), our estimator still exhibits substantially more beta attenuation ($\hat{\beta}=0.93$ vs.\ $0.98$) and alpha bias ($0.27\%$ vs.\ $0.05\%$) than the \cite{DLP12} benchmark.
 This sensitivity reveals a fundamental tension in the two-factor model: the alpha term absorbs residual nonlinearity that the linear SDF cannot capture, and bounding it arbitrarily distorts the beta estimate.
 
-Overall, the large remaining discrepancy between our simulation results and those of \cite{DLP12}, even after adopting their shifted lognormal errors and simulated market returns, suggests that the favorable small-sample properties reported in \cite{DLP12} may be overly optimistic when the alpha upper bound is set more liberally ($\bar{\alpha}=2\%$/month in our default configuration vs.\ $\bar{\alpha}=1\%$/month in \cite{DLP12}).
+Overall, the large remaining discrepancy between our simulation results and those of \cite{DLP12}, even after adopting their shifted lognormal errors and simulated market returns, implies that we were unable not reproduce the favorable small-sample properties reported in \cite{DLP12}.
 Across all scenarios with $\sigma=30\%$, the beta estimates range from $0.62$ to $0.93$, well below the \cite{DLP12} benchmark of $0.98$, confirming the estimator's sensitivity to the interplay between idiosyncratic noise, compounding Horizon, and alpha bounds.
 
 
@@ -2481,6 +2538,7 @@ Across all scenarios with $\sigma=30\%$, the beta estimates range from $0.62$ to
 
 In this section, we evaluate the empirical stability of single- and multi-factor SDF specifications by estimating these models on our dataset (for the US-Dollar North America subsample with maximum vintage 2010) and comparing the results directly with the benchmark estimates published by \cite{DLP12}.
 A key distinction is the underlying private market dataset: we use the Preqin cash flow database, which is also employed by \cite{KN16} and \cite{ACGP18}, whereas \cite{DLP12} rely on the Thomson Venture Economics (TVE) fund-level dataset, which suffers from well-documented data quality issues such as forward-filling of stale KPIs \citep{HJK14}.
+The cash flow summary of \cite[Table~3]{DLP12} indicates fund-value weighted vintage-year portfolios.
 \cite[Table~5]{DLP12} report results for Buyout (BO) and Venture Capital (VC) funds using both a two-factor model (S\&P~500 MKT + $\alpha$) and the \cite{FF93} four-factor model (MKT, SMB, HML, and $\alpha$).
 In their two-factor specification, VC exhibits a market beta of 2.73 and a highly negative annualized alpha of $-12.3\%$, while BO yields a market beta of 1.31 and an annualized alpha of $-4.8\%$.
 These strongly negative alpha estimates can be at least partially attributed to the aforementioned data errors in TVE.
@@ -2520,7 +2578,7 @@ Therefore, until substantially more granular and independent cross-sectional dat
 
 
 
-\begin{table}[ht]
+\begin{table}[H]
 	\centering
 	\caption{Estimation Results: 1-, 2-, 3-, and 4-Factor Models for Buyout and Venture Capital}
 	\label{tab:driessen_comparison_bo_vc}
@@ -2574,7 +2632,7 @@ Therefore, until substantially more granular and independent cross-sectional dat
 
 
 
-\begin{table}[ht]
+\begin{table}[H]
 	\centering
 	\caption{Estimation Results: 1-, 2-, 3-, and 4-Factor Models for Private Equity}
 	\label{tab:driessen_comparison_pe}
