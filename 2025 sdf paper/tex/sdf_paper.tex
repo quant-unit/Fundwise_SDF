@@ -116,10 +116,11 @@ In addition, recent vintages often contain large reported NAV components, so emp
 In such settings, conclusions about alpha, market exposure, or multifactor structure may depend not only on economics, but also on horizon choice, estimator variance, and the treatment of cross-fund dependence.
 
 This paper studies semiparametric cash-flow-based SDF estimation when the econometrician is not restricted to discounting all pooled cash flows back to fund inception. 
-Our starting point is simple. In typical private-equity samples, inception-only pricing errors can be highly unstable because the estimating equations are nonlinear and the effective cross-sectional sample size is limited. 
+Our starting point is simple. 
+In typical private-equity samples, inception-only pricing errors can be highly unstable because the estimating equations are nonlinear and the effective cross-sectional sample size is limited. 
 A natural response is to average pricing errors over additional compounding dates rather than evaluate all discounted cash flows only at inception. 
-However, this is not merely a statistical refinement. Once pricing errors are evaluated at horizons beyond inception, the estimator generally targets a different population object.
-Horizon choice therefore creates a bias--variance tradeoff: longer horizons can improve finite-sample stability, but they also alter the underlying population pricing restriction through what we term a timing-risk-premium component.
+But this is not merely a statistical refinement. Once pricing errors are evaluated at horizons beyond inception, the estimator generally targets a different population object. 
+Horizon choice therefore creates a tradeoff between finite-sample stabilization and population target shift: longer horizons can improve finite-sample behavior by smoothing the sample criterion, but they also change the underlying population pricing restriction through what we term a timing-risk-premium component.
 
 The paper's first contribution is conceptual. 
 We derive a generalized pooled-cash-flow pricing framework that makes explicit how the choice of discounting date affects the estimand. 
@@ -166,9 +167,11 @@ Section \ref{sec:literature} reviews the related literature. Section \ref{sec:sp
 Section \ref{sec:empirical_application} studies finite-sample behavior in simulation and discusses implementation choices. 
 Section \ref{sec:empirical_results_bovc} presents the empirical application to buyout and venture-capital funds. 
 Section \ref{sec:conclusion} concludes.
-Appendix \ref{sec:appendix_bias_variance} analyzes the bias--variance tradeoff in the context of our SDF estimation problem.
+
+Appendix \ref{sec:appendix_bias_variance} analyzes the target shift and finite-sample stabilization under $\mathcal{T}$-averaging.
 Appendix \ref{sec:dlp_results_comparison} compares our simulation and empirical results to their \cite{DLP12} counterparts.
 Appendix \ref{sec:proofs_asymptotics_H} provides mathematical proofs.
+
 
 \section{Related literature}
 \label{sec:literature}
@@ -1257,14 +1260,14 @@ For non-liquidated funds, we treat the latest NAV as final cash flow.
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.9\textwidth]{empirical/cumcashflowsBO.pdf}
+	\includegraphics[width=0.9\textwidth]{empirical_bovc_us/cumcashflowsBO.pdf}
 	\caption{\textbf{Cumulative cash flows:} J-curves by vintage year for BO funds in Preqin dataset scaled by fund commitment. Post-2010 vintage years are shown as green lines. Based on the sensitivity analysis in Section~\ref{sec:empirical_vintage_cutoffs_bovc}, these vintages are excluded from the empirical estimates in Section~\ref{sec:empirical_results_bovc} to limit reliance on unrealized NAVs.}
 	\label{fig:preqin_cashflows_bo}
 \end{figure}
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.9\textwidth]{empirical/cumcashflowsVC.pdf}
+	\includegraphics[width=0.9\textwidth]{empirical_bovc_us/cumcashflowsVC.pdf}
 	\caption{\textbf{Cumulative cash flows:} J-curves by vintage year for VC funds in Preqin dataset scaled by fund commitment. Post-2010 vintage years are shown as green lines. Based on the sensitivity analysis in Section~\ref{sec:empirical_vintage_cutoffs_bovc}, these vintages are excluded from the empirical estimates in Section~\ref{sec:empirical_results_bovc} to limit reliance on unrealized NAVs.}
 	\label{fig:preqin_cashflows_vc}
 \end{figure}
@@ -1569,7 +1572,7 @@ By averaging pricing errors over multiple future dates, effectively incorporatin
 Interestingly, this ``variance reduction technique'' improves the mean estimate far more than it reduces standard errors. 
 While estimator variance traces a shallow U-shape with a minimum near the 15-year Horizon (see Table \ref{tab:sim_q5_summary}) for fund with a lifetime of 15 years, this reduction is secondary to the striking stabilization of the parameter bias.
 However, our simulations for shorter fund lifetimes indicate that determining the optimal horizon requires tailored simulation designs rather than a simple heuristic assuming the optimal horizon always coincides with the fund's life.
-We further analyze these puzzling results from a theoretical perspective in Appendix \ref{sec:appendix_bias_variance}, detailing the \emph{bias--variance tradeoff} and the role of the Timing Risk Premium.
+We further analyze these puzzling results from a theoretical perspective in Appendix \ref{sec:appendix_bias_variance}, detailing the finite-sample stabilization under $\mathcal{T}$-averaging and the role of the Timing Risk Premium.
 
 \paragraph{Simulation conclusion:}
 To conclude, our simulation study rationalizes two key practices from the \cite{DLP12} paper: (i) vintage-year portfolio formation helps to improve estimator precision, and (ii) increasing the number of funds per vintage seems more effective in controlling estimator variance than increasing the number of vintages (for i.i.d.\ error terms). 
@@ -1577,7 +1580,7 @@ Our second finding provides an empirical rationale for the choice of \cite{DLP12
 However, our correctly specified scenarios cannot support the assumption of \cite{KN16} that (iii) the exponential affine SDF is superior to the simple linear SDF in a multi-period framework; in fact, their finite-sample bias and variance profiles are remarkably similar.
 Our simulation study also suggests that (iv) averaging pricing errors over multiple dates substantially reduces the severe short-Horizon bias inherent to the original procedure of \cite{DLP12}, which discounts all cash flows exclusively to the fund inception date.
 Ultimately, selecting a set of compounding dates $\mathcal{T}$ that spans a significant portion of the fund lifecycle appears to decrease finite-sample bias (and to a lesser extent, variance) more effectively than all other measures combined.
-Appendix~\ref{sec:appendix_bias_variance}, in particular Section~\ref{sec:appendix_bv_alpha_interpretation}, explains the theoretical foundation of this observation by showing how NFV-induced timing terms can shift the population target while still improving finite-sample performance through the bias--variance tradeoff.
+Appendix~\ref{sec:appendix_bias_variance}, in particular Section~\ref{sec:appendix_bv_alpha_interpretation}, explains the theoretical foundation of this observation by showing how NFV-induced timing terms can shift the population target while still improving finite-sample performance.
 
 Accordingly, in the empirical application we use vintage-year portfolios, the simple linear SDF, emphasize one-factor MKT specifications, treat two-factor results as exploratory, and focus on Horizons around 12.5--15 years while also reporting sensitivity over a broader grid.
 
@@ -2023,21 +2026,23 @@ Developing a formal theoretical or empirical mechanism to endogenously determine
 % Appendix
 \appendix
 
-\section{Bias--Variance Tradeoff of $\mathcal{T}$-Averaging}
+\section{Target shift and finite-sample stabilization under $\mathcal{T}$-averaging}
 \label{sec:appendix_bias_variance}
 
 This appendix clarifies why $\mathcal{T}$-averaging can improve finite-sample performance even though, for $H>0$, it generally shifts the population target away from the structural parameter $\theta_0$.
 The key mechanism is a tradeoff between:
-(i) a \emph{population target shift} induced by NFV terms through the Timing Risk Premium (TRP), and
+(i) a \emph{population target shift} induced by post-investment timing terms through the Timing Risk Premium (TRP), and
 (ii) a \emph{finite-sample stabilization effect} from averaging imperfectly correlated pricing errors across discounting dates.
 
-Throughout this appendix, we specialize to the quadratic loss $L(x) = x^2$ and set $w_i = 1$, so that the population criterion reduces to $Q_H(\theta) = \mathbb{E}[(\bar{\epsilon}_i^{(H)}(\theta))^2]$.
+Throughout this appendix, we specialize to the quadratic loss $L(x)=x^2$ and set $w_i=1$, so that the population objective reduces to a nonlinear least-squares criterion.
+To keep the notation transparent, all moment calculations in this appendix are stated conditional on a fixed fund structure for a generic fund $i$ (that is, conditional on $J_i$, the relevant investment dates, and the horizon set $\mathcal{T}_{i,H}$), while expectations continue to integrate over SDF and pricing-error randomness.
+The corresponding unconditional population statements follow by taking an outer expectation over the distribution of fund structures.
 
-To keep these objects distinct, we proceed in four steps.
-First, we define the horizon-specific population criterion and its pseudo-true minimizer.
-Second, we isolate the exact source of the population moment bias at $\theta_0$.
-Third, we connect that moment bias to the shift in the population criterion's minimizer.
-Fourth, we present an exact MSE decomposition and then interpret the simulation results through a second-order finite-sample lens.
+To keep the different objects distinct, we proceed in four steps.
+First, we define the horizon-specific population criterion and pseudo-true minimizer.
+Second, we identify the exact source of the averaged population moment shift at $\theta_0$.
+Third, we show how that moment shift enters the gradient of the population criterion and thereby affects the pseudo-true parameter.
+Fourth, we present an exact MSE decomposition and then interpret the simulation evidence through a second-order finite-sample lens.
 
 \subsection{Setup and horizon-specific population target}
 \label{sec:appendix_bv_setup}
@@ -2045,9 +2050,9 @@ Fourth, we present an exact MSE decomposition and then interpret the simulation 
 For a given maximum compounding horizon $H$, let
 \[
 \mathcal{T}_{i,H}
-\;:=\;
+:=
 \left\{
-t_i^0, t_i^0+1, \dots, \min(t_i^0+12H, T_i^{\max})
+t_i^0,t_i^0+1,\dots,\min(t_i^0+12H,T_i^{\max})
 \right\},
 \]
 where $T_i^{\max}$ denotes the largest discounting date available for fund $i$.
@@ -2055,9 +2060,9 @@ Define the horizon-averaged pricing error by
 \begin{equation}
 	\label{eq:avg_eps_H}
 	\bar{\epsilon}_i^{(H)}(\theta)
-	\;:=\;
-	\frac{1}{|\mathcal{T}_{i,H}|}
-	\sum_{\tau \in \mathcal{T}_{i,H}}
+	:=
+	\frac{1}{\mathrm{card}(\mathcal{T}_{i,H})}
+	\sum_{\tau\in\mathcal{T}_{i,H}}
 	\epsilon_{\tau,i}(\theta).
 \end{equation}
 
@@ -2065,78 +2070,103 @@ The associated population criterion is
 \begin{equation}
 	\label{eq:QH}
 	Q_H(\theta)
-	\;:=\;
+	:=
 	\mathbb{E}\!\left[
 	\bigl(\bar{\epsilon}_i^{(H)}(\theta)\bigr)^2
 	\right],
 \end{equation}
-and the horizon-specific pseudo-true parameter is defined as its population minimizer:
+and the horizon-specific pseudo-true parameter is defined by
 \begin{equation}
 	\label{eq:pseudotrue}
 	\theta_H^\dagger
-	\;:=\;
-	\arg\min_\theta Q_H(\theta).
+	:=
+	\arg\min_{\theta} Q_H(\theta),
 \end{equation}
-(Since this appendix works with $Q_H = \mathbb{E}[(\bar{\epsilon}_i^{(H)})^2]$ directly, $\theta_H^\dagger$ minimizes $Q_H$; in the main text, the sign-negated criterion $-\mathbb{E}[L(\cdot)]$ is maximized, but the first-order conditions are identical.)
-
-The notation $\theta_H^\dagger$ emphasizes that this object is the target of the \emph{population nonlinear least-squares criterion}.
+whenever the minimizer exists and is unique.
+For notational simplicity, the conditioning on the fixed fund structure is suppressed in $Q_H(\theta)$ and in subsequent expectations.
+Thus, $\theta_H^\dagger$ is the target of the \emph{population nonlinear least-squares criterion}.
 It is not defined as the zero of the averaged population moment, and those two objects need not coincide in general.
 
-When $H=0$ (equivalently, when the estimator uses only the benchmark NPV discounting date), the deal-level exact-pricing restriction (Equation~\eqref{eq:deal_pricing}), whose unconditional counterpart $\mathbb{E}[\delta_{i,j}] = 0$ follows by iterated expectations, implies that the population criterion is centered at the structural parameter $\theta_0$.
-Hence, under correct specification,
+When $H=0$, the estimator uses only the benchmark NPV discounting date $\tau=t_i^0$.
+Because no fund has cash flows before inception and every deal satisfies $t_i^0\le t_{i,j}^{\mathrm{Inv}}$, part~(1) of Lemma~\ref{lem:deal_level_timing} implies that, under correct specification,
 \[
-\theta_0^\dagger = \theta_0.
+\mathbb{E}\!\left[
+\bar{\epsilon}_i^{(0)}(\theta_0)
+\right]
+=
+0.
 \]
-For $H>0$, the inclusion of NFV terms generally perturbs the population criterion, so that
+If, in addition, the benchmark population criterion $Q_0(\theta)$ is uniquely minimized at $\theta_0$, then
 \[
-\theta_H^\dagger \neq \theta_0
+\theta_0^\dagger=\theta_0.
+\]
+For $H>0$, the inclusion of post-investment timing terms generally perturbs the population criterion, so that
+\[
+\theta_H^\dagger\neq \theta_0
 \qquad\text{in general.}
 \]
 
-It is convenient to define the horizon-specific population moment bias at the structural parameter:
+It is convenient to define the horizon-specific averaged population moment at the structural parameter, conditional on the fund structure of a generic fund $i$:
 \begin{equation}
 	\label{eq:bH_def}
-	b_H
-	\;:=\;
+	b_{H,i}
+	:=
 	\mathbb{E}\!\left[
 	\bar{\epsilon}_i^{(H)}(\theta_0)
+	\,\middle|\,
+	J_i,\mathcal{T}_{i,H},\{t_{i,j}^{\mathrm{Inv}}\}_{j=1}^{J_i}
 	\right].
 \end{equation}
-Here, the expectation integrates over SDF and pricing-error randomness, holding the fund structure (number of deals $J_i$, investment dates, and horizon set $\mathcal{T}_{i,H}$) fixed.
-For a representative fund, $b_H$ is therefore understood as the conditional-on-structure population mean of $\bar{\epsilon}_i^{(H)}(\theta_0)$.
-The next subsection shows that $b_H$ is driven exactly by the NFV component of the Timing Risk Premium.
-
-\subsection{Population moment bias at $\theta_0$}
+The next subsection shows that, under correct specification, $b_{H,i}$ is generated exactly by the post-investment TRP terms.
+The corresponding unconditional object is $\mathbb{E}[b_{H,i}]$.
+\subsection{Exact source of the averaged population moment at $\theta_0$}
 \label{sec:appendix_bv_moment_bias}
 
-Starting from the average pricing error (Equation~\eqref{eq:average_pricing_error}) and the deal-level decomposition (Equation~\eqref{eq:deal_pricing_error}), we can write
+Starting from the average pricing error in Equation~\eqref{eq:average_pricing_error} and the deal-level decomposition in Equation~\eqref{eq:deal_pricing_error}, we can write
 \begin{equation}
 	\label{eq:avg_eps_expand}
 	\bar{\epsilon}_i^{(H)}(\theta_0)
-	= \frac{1}{|\mathcal{T}_{i,H}|}
-	\sum_{\tau \in \mathcal{T}_{i,H}}
+	=
+	\frac{1}{\mathrm{card}(\mathcal{T}_{i,H})}
+	\sum_{\tau\in\mathcal{T}_{i,H}}
 	\epsilon_{\tau,i}(\theta_0)
-	= \frac{1}{|\mathcal{T}_{i,H}|}
-	\sum_{\tau \in \mathcal{T}_{i,H}}
+	=
+	\frac{1}{\mathrm{card}(\mathcal{T}_{i,H})}
+	\sum_{\tau\in\mathcal{T}_{i,H}}
 	\sum_{j=1}^{J_i}
 	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}\,
 	\delta_{i,j}.
 \end{equation}
-
-Taking the unconditional expectation yields
+Taking expectations yields
 \begin{equation}
 	\label{eq:avg_eps_expectation}
-	b_H
-	= \frac{1}{|\mathcal{T}_{i,H}|}
-	\sum_{\tau \in \mathcal{T}_{i,H}}
+	b_{H,i}
+	=
+	\frac{1}{\mathrm{card}(\mathcal{T}_{i,H})}
+	\sum_{\tau\in\mathcal{T}_{i,H}}
 	\sum_{j=1}^{J_i}
 	\mathbb{E}\!\left[
 	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}\,
 	\delta_{i,j}
+	\,\middle|\,
+	J_i,\mathcal{T}_{i,H},\{t_{i,j}^{\mathrm{Inv}}\}_{j=1}^{J_i}
 	\right].
 \end{equation}
 
-Because we now compute the unconditional expectation rather than conditioning on the deal investment date $\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$, we can decompose each $(\tau, j)$ term via the standard covariance identity $\mathbb{E}[XY] = \mathrm{Cov}(X,Y) + \mathbb{E}[X]\mathbb{E}[Y]$:
+For each $(\tau,j)$ term, use the identity
+\[
+\mathbb{E}[XY]
+=
+\mathrm{Cov}(X,Y)+\mathbb{E}[X]\mathbb{E}[Y]
+\]
+with
+\[
+X=
+\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau},
+\qquad
+Y=\delta_{i,j}.
+\]
+This gives
 \begin{equation}
 	\label{eq:cov_decomp}
 	\mathbb{E}\!\left[
@@ -2144,91 +2174,156 @@ Because we now compute the unconditional expectation rather than conditioning on
 	\delta_{i,j}
 	\right]
 	=
-	\underbrace{
-		\mathrm{Cov}\!\left(
-		\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau},\,
-		\delta_{i,j}
-		\right)
-	}_{\mathrm{TRP}_{\tau,j}}
-	+
-	\underbrace{
-		\mathbb{E}\!\left[
-		\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}
-		\right]
-	}_{> 0}
-	\cdot
-	\underbrace{
-		\mathbb{E}[\delta_{i,j}]
-	}_{= 0}.
-\end{equation}
-
-Under correct specification, $\mathbb{E}[\delta_{i,j}] = 0$, so only the covariance term remains.
-Note that the covariance in \eqref{eq:cov_decomp} is unconditional, whereas Lemma~\ref{lem:deal_level_timing} works with conditional moments. The link is standard: the law of total covariance gives $\mathrm{Cov}(X, Y) = \mathbb{E}[\mathrm{Cov}(X, Y \mid \mathcal{F})] + \mathrm{Cov}(\mathbb{E}[X \mid \mathcal{F}], \mathbb{E}[Y \mid \mathcal{F}])$; when iterated through $\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$, the second term involves the (zero) conditional mean of $\delta_{i,j}$.
-The key observation is that this unconditional covariance vanishes when $\tau \leq t_{i,j}^{\mathrm{Inv}}$, because iterated expectations through $\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$ kill it, as in part~(1) of Lemma~\ref{lem:deal_level_timing}.
-When $\tau \leq t_{i,j}^{\mathrm{Inv}}$, the SDF ratio $\Psi_{t_{i,j}^{\mathrm{Inv}}}/\Psi_\tau$ is determined entirely by realized factors up to time $t_{i,j}^{\mathrm{Inv}}$, making it $\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$-measurable and allowing us to pass it outside the inner conditional expectation. Iterated expectations through $\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$ therefore give
-\begin{equation}
-	\label{eq:cov_zero_early}
 	\mathrm{Cov}\!\left(
-	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau},\,
+	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau},
 	\delta_{i,j}
 	\right)
-	=
+	+
+	\mathbb{E}\!\left[
+	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}
+	\right]
+	\mathbb{E}[\delta_{i,j}].
+\end{equation}
+
+Under correct specification, Equation~\eqref{eq:deal_pricing} implies
+\[
+\mathbb{E}[\delta_{i,j}]
+=
+\mathbb{E}\!\left[
+\mathbb{E}[\delta_{i,j}\mid\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}]
+\right]
+=
+0.
+\]
+Hence only the covariance term remains.
+
+Now consider $\tau\le t_{i,j}^{\mathrm{Inv}}$.
+Because $\Psi_{t_{i,j}^{\mathrm{Inv}}}/\Psi_\tau$ is then $\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$-measurable,
+\begin{align}
 	\mathbb{E}\!\left[
 	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}\,
-	\underbrace{
-		\mathbb{E}\!\left[
-		\delta_{i,j}
-		\mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}
-		\right]
-	}_{= 0 \text{ by Equation~\eqref{eq:deal_pricing}}}
+	\delta_{i,j}
 	\right]
-	= 0.
-\end{equation}
-Hence only NFV terms contribute to $b_H$.
+	&=
+	\mathbb{E}\!\left[
+	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}\,
+	\mathbb{E}\!\left[
+	\delta_{i,j}\mid\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}
+	\right]
+	\right]
+	\label{eq:iterated_zero_preinv}
+	\\
+	&=
+	0.
+	\nonumber
+\end{align}
+Since $\mathbb{E}[\delta_{i,j}]=0$, Equation~\eqref{eq:iterated_zero_preinv} also implies
+\[
+\mathrm{Cov}\!\left(
+\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau},
+\delta_{i,j}
+\right)
+=
+0
+\qquad
+\text{for all }\tau\le t_{i,j}^{\mathrm{Inv}}.
+\]
 
-\begin{lemma}[Exact source of the population moment bias]
+We therefore obtain the following exact characterization.
+
+\begin{lemma}[Exact source of the averaged population moment at $\theta_0$]
 	\label{lem:bH_TRP}
 	Under correct specification,
 	\begin{equation}
 		\label{eq:bH_TRP}
-		b_H
+		b_{H,i}
 		=
-		\frac{1}{|\mathcal{T}_{i,H}|}
-		\sum_{\tau \in \mathcal{T}_{i,H}}
+		\frac{1}{\mathrm{card}(\mathcal{T}_{i,H})}
+		\sum_{\tau\in\mathcal{T}_{i,H}}
 		\sum_{j=1}^{J_i}
-		\mathbf{1}\{\tau > t_{i,j}^{\mathrm{Inv}}\}
-		\,
+		\mathbf{1}\{\tau>t_{i,j}^{\mathrm{Inv}}\}\,
 		\mathrm{Cov}\!\left(
-		\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau},\,
+		\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau},
 		\delta_{i,j}
+		\,\middle|\,
+		J_i,\mathcal{T}_{i,H},\{t_{i,j}^{\mathrm{Inv}}\}_{j=1}^{J_i}
 		\right).
 	\end{equation}
-	In particular, the NPV terms contribute zero population bias, and the horizon-specific population moment bias is generated entirely by NFV terms through the Timing Risk Premium.
+	In particular, benchmark NPV terms contribute zero to $b_{H,i}$, and the averaged population moment at $\theta_0$ is shifted only by post-investment timing terms.
 \end{lemma}
 
 \begin{proof}
-	The result follows directly from \eqref{eq:avg_eps_expectation}, the covariance decomposition in \eqref{eq:cov_decomp}, the condition $\mathbb{E}[\delta_{i,j}] = 0$, and the iterated-expectations argument (\eqref{eq:cov_zero_early}) for all pairs $(\tau,j)$ satisfying $\tau \le t_{i,j}^{\mathrm{Inv}}$.
+	The result follows from Equation~\eqref{eq:avg_eps_expectation}, the decomposition in Equation~\eqref{eq:cov_decomp}, the fact that $\mathbb{E}[\delta_{i,j}]=0$ under correct specification, and the iterated-expectations argument in Equation~\eqref{eq:iterated_zero_preinv} for all pairs $(\tau,j)$ satisfying $\tau\le t_{i,j}^{\mathrm{Inv}}$.
 \end{proof}
 
 \paragraph{Misspecification.}
-Under model misspecification, $\mathbb{E}[\delta_{i,j}] \neq 0$ and the second term in \eqref{eq:cov_decomp} no longer vanishes.
-In that case, the averaged population moment contains both:
-(i) the TRP covariance term, and
-(ii) an additional mean-shift term $\mathbb{E}[\Psi_{t_{i,j}^{\mathrm{Inv}}}/\Psi_\tau] \cdot \mathbb{E}[\delta_{i,j}]$.
-Since this non-zero baseline permeates the NFV terms $\tau > t_{i,j}^{\mathrm{Inv}}$, it does not wash out with horizon averaging. Instead, the persistent misspecification bias bounds the average pricing error firmly away from zero, regardless of how large the compounding horizon $H$ gets. Thus, under misspecification, $\mathcal{T}$-averaging no longer trades off only a small TRP-induced target shift against variance reduction; it also propagates a persistent baseline pricing-error component.
+Under model misspecification, $\mathbb{E}[\delta_{i,j}]\neq 0$, and the second term in Equation~\eqref{eq:cov_decomp} no longer vanishes.
+In that case, the conditional averaged population moment at $\theta_0$ contains both
+(i) the covariance term associated with the TRP and
+(ii) an additional mean component
+\[
+\mathbb{E}\!\left[
+\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}
+\right]
+\mathbb{E}[\delta_{i,j}].
+\]
+Without further sign or decay restrictions, horizon averaging need not eliminate that additional component.
+Accordingly, the clean correct-specification interpretation of $\mathcal{T}$-averaging as a tradeoff between a TRP-induced target shift and variance reduction no longer applies without qualification.
 
-\subsection{From population moment bias to target shift}
+\subsection{From averaged moment shift to pseudo-true target shift}
 \label{sec:appendix_bv_target_shift}
 
-Lemma~\ref{lem:bH_TRP} characterizes the average pricing moment at $\theta_0$.
-To connect this to the parameter target, recall that the pseudo-true parameter $\theta_H^\dagger$ is defined by the first-order condition
+Lemma~\ref{lem:bH_TRP} identifies the exact source of the conditional averaged population moment $b_{H,i}$ at $\theta_0$.
+To connect that result to the parameter target, define
+\[
+g_{i,H}(\theta)
+:=
+\nabla_\theta \bar{\epsilon}_i^{(H)}(\theta),
+\]
+and assume that differentiation can be interchanged with expectation.
+To connect that result to the parameter target, define
+\[
+g_{i,H}(\theta)
+:=
+\nabla_\theta \bar{\epsilon}_i^{(H)}(\theta),
+\]
+and assume that differentiation can be interchanged with expectation.
+Then
+\begin{equation}
+	\label{eq:grad_QH}
+	\nabla_\theta Q_H(\theta)
+	=
+	2\,
+	\mathbb{E}\!\left[
+	\bar{\epsilon}_i^{(H)}(\theta)\,
+	g_{i,H}(\theta)
+	\right].
+\end{equation}
+Evaluating at $\theta_0$ and decomposing the expectation around the conditional mean $b_{H,i}$ yields
+\begin{equation}
+	\label{eq:grad_decomp}
+	\nabla_\theta Q_H(\theta_0)
+	=
+	2\,\mathbb{E}[b_{H,i}\,g_{i,H}(\theta_0)]
+	+
+	2\,\mathbb{E}\!\left[
+	\bigl(\bar{\epsilon}_i^{(H)}(\theta_0)-b_{H,i}\bigr)
+	g_{i,H}(\theta_0)
+	\right].
+\end{equation}
+where for scalar $X$ and vector $Y$, $\mathrm{Cov}(X,Y):=\mathbb{E}[(X-\mathbb{E}[X])(Y-\mathbb{E}[Y])]$.
+
+Equation~\eqref{eq:grad_decomp} makes two points precise.
+First, the TRP-driven conditional moment shift $b_{H,i}$ is one component of the criterion tilt at $\theta_0$.
+Second, the pseudo-true target depends not only on that conditional mean shift, but also on the residual co-movement between the averaged pricing error and its parameter sensitivity.
+
+Assume now that $Q_H$ is twice continuously differentiable on an open convex neighborhood containing the line segment between $\theta_0$ and $\theta_H^\dagger$, and that its Hessian is nonsingular throughout that set.
+Since $\theta_H^\dagger$ satisfies
 \begin{equation}
 	\label{eq:FOC_QH}
-	\nabla_\theta Q_H(\theta_H^\dagger) = 0.
+	\nabla_\theta Q_H(\theta_H^\dagger)=0,
 \end{equation}
-
-Assume that $Q_H$ is twice continuously differentiable in a neighborhood of $\theta_0$ and that its Hessian is nonsingular there.
-A first-order Taylor expansion of $\nabla_\theta Q_H(\theta)$ around $\theta_0$ gives
+a first-order Taylor expansion around $\theta_0$ gives
 \begin{equation}
 	\label{eq:FOC_taylor}
 	0
@@ -2236,73 +2331,58 @@ A first-order Taylor expansion of $\nabla_\theta Q_H(\theta)$ around $\theta_0$ 
 	\nabla_\theta Q_H(\theta_0)
 	+
 	\nabla_\theta^2 Q_H(\bar{\theta}_H)\,
-	(\theta_H^\dagger - \theta_0),
+	(\theta_H^\dagger-\theta_0),
 \end{equation}
 for some intermediate point $\bar{\theta}_H$ between $\theta_0$ and $\theta_H^\dagger$.
-Rearranging yields
+Hence
 \begin{equation}
 	\label{eq:theta_shift}
-	\theta_H^\dagger - \theta_0
+	\theta_H^\dagger-\theta_0
 	=
 	-
 	\bigl[\nabla_\theta^2 Q_H(\bar{\theta}_H)\bigr]^{-1}
 	\nabla_\theta Q_H(\theta_0).
 \end{equation}
 
-Since
-\begin{equation}
-	\label{eq:grad_QH}
-	\nabla_\theta Q_H(\theta_0)
-	=
-	2\,
-	\mathbb{E}\!\left[
-	\bar{\epsilon}_i^{(H)}(\theta_0)\,
-	\nabla_\theta \bar{\epsilon}_i^{(H)}(\theta_0)
-	\right],
-\end{equation}
-the target shift is governed by the interaction between:
-(i) the horizon-specific population moment bias $b_H$, and
-(ii) the sensitivity of the averaged pricing error to $\theta$.
+Combining Equations~\eqref{eq:grad_decomp} and \eqref{eq:theta_shift}, the pseudo-true target shift is driven by the full gradient tilt of the population criterion at $\theta_0$.
+Lemma~\ref{lem:bH_TRP} therefore identifies an exact channel through which the TRP moves the population target, but $b_{H,i}$ alone does not fully characterize $\theta_H^\dagger-\theta_0$ unless additional restrictions are imposed.
 
-Equation~\eqref{eq:theta_shift} makes precise the sense in which the TRP affects the population target:
-the covariance terms identified in Lemma~\ref{lem:bH_TRP} perturb the gradient of the population criterion at $\theta_0$, thereby moving the minimizer from $\theta_0$ to $\theta_H^\dagger$.
-
-\begin{remark}[Magnitude of the target shift]
+\begin{remark}[A generic magnitude bound]
 	\label{rem:target_shift_magnitude}
-	For $\tau > t_{i,j}^{\mathrm{Inv}}$, the covariance term in \eqref{eq:bH_TRP} satisfies the generic bound
+	For each post-investment term $\tau>t_{i,j}^{\mathrm{Inv}}$, Cauchy--Schwarz yields
 	\[
 	\left|
 	\mathrm{Cov}\!\left(
-	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau},\,
+	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau},
 	\delta_{i,j}
 	\right)
 	\right|
 	\le
 	\sigma\!\left(
 	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}
-	\right)
-	\sigma(\delta_{i,j}),
+	\right)\,
+	\sigma(\delta_{i,j}).
 	\]
-	by Cauchy--Schwarz.
-	In Hansen--Jagannathan style, the variability of the SDF ratio is disciplined by the volatility of admissible pricing kernels over the corresponding horizon.
-	Moreover, the averaging operator contributes the factor $1/|\mathcal{T}_{i,H}|$.
-	Thus, although the target shift need not be zero for $H>0$, its magnitude is economically constrained when the TRP covariances are moderate.
+	Moreover, the averaging operator contributes the factor
+	$1/\mathrm{card}(\mathcal{T}_{i,H})$ in Equation~\eqref{eq:bH_TRP}.
+	Thus, large target shifts require either highly volatile SDF ratios, highly dispersed deal-level pricing errors, or strong alignment between these objects.
 \end{remark}
 
 \subsection{Exact MSE decomposition}
 \label{sec:appendix_bv_mse}
 
-We now separate the horizon-specific target shift from sampling error around that target.
-For any $H$, the estimator satisfies the exact identity
+Let $\hat{\theta}_H$ denote the sample extremum estimator associated with the sample analogue of $Q_H$.
+For any horizon $H$, the identity
 \begin{equation}
 	\label{eq:exact_decomp_start}
-	\hat{\theta}_H - \theta_0
+	\hat{\theta}_H-\theta_0
 	=
-	(\hat{\theta}_H - \theta_H^\dagger)
+	(\hat{\theta}_H-\theta_H^\dagger)
 	+
-	(\theta_H^\dagger - \theta_0).
+	(\theta_H^\dagger-\theta_0)
 \end{equation}
-Taking squared norms and expectations gives the following decomposition.
+holds exactly.
+Taking squared norms and expectations over the sampling distribution gives the following decomposition.
 
 \begin{proposition}[Exact MSE decomposition around the structural parameter]
 	\label{prop:exact_mse}
@@ -2310,20 +2390,21 @@ Taking squared norms and expectations gives the following decomposition.
 	\begin{align}
 		\label{eq:exact_mse}
 		\mathbb{E}\!\left[
-		\|\hat{\theta}_H - \theta_0\|^2
+		\|\hat{\theta}_H-\theta_0\|^2
 		\right]
 		&=
-		\|\theta_H^\dagger - \theta_0\|^2
+		\|\theta_H^\dagger-\theta_0\|^2
 		+
-		2(\theta_H^\dagger - \theta_0)^\top
+		2(\theta_H^\dagger-\theta_0)^\top
 		\mathbb{E}\!\left[
-		\hat{\theta}_H - \theta_H^\dagger
-		\right] \nonumber\\
+		\hat{\theta}_H-\theta_H^\dagger
+		\right]
+		\nonumber\\
 		&\qquad
 		+
 		\left\|
 		\mathbb{E}\!\left[
-		\hat{\theta}_H - \theta_H^\dagger
+		\hat{\theta}_H-\theta_H^\dagger
 		\right]
 		\right\|^2
 		+
@@ -2336,20 +2417,27 @@ Taking squared norms and expectations gives the following decomposition.
 \begin{proof}
 	Write
 	\[
-	\hat{\theta}_H - \theta_0
+	\hat{\theta}_H-\theta_0
 	=
-	(\hat{\theta}_H - \theta_H^\dagger)
+	(\hat{\theta}_H-\theta_H^\dagger)
 	+
-	(\theta_H^\dagger - \theta_0),
+	(\theta_H^\dagger-\theta_0),
 	\]
-	expand the squared norm, and then use
+	and expand the squared norm.
+	Next, since $\theta_H^\dagger$ is nonrandom,
+	\[
+	\mathrm{Var}(\hat{\theta}_H-\theta_H^\dagger)
+	=
+	\mathrm{Var}(\hat{\theta}_H),
+	\]
+	so
 	\[
 	\mathbb{E}\!\left[
-	\|\hat{\theta}_H - \theta_H^\dagger\|^2
+	\|\hat{\theta}_H-\theta_H^\dagger\|^2
 	\right]
 	=
 	\left\|
-	\mathbb{E}[\hat{\theta}_H - \theta_H^\dagger]
+	\mathbb{E}[\hat{\theta}_H-\theta_H^\dagger]
 	\right\|^2
 	+
 	\mathrm{tr}\!\left(
@@ -2359,103 +2447,109 @@ Taking squared norms and expectations gives the following decomposition.
 	\]
 \end{proof}
 
-Proposition~\ref{prop:exact_mse} isolates four conceptually distinct objects:
+Proposition~\ref{prop:exact_mse} separates four conceptually distinct objects:
 \begin{enumerate}
-	\item the \emph{population target shift} $\|\theta_H^\dagger - \theta_0\|^2$,
-	\item the \emph{cross-term} linking target shift and sampling bias,
-	\item the \emph{finite-sample bias around the pseudo-true parameter}
-	$\|\mathbb{E}[\hat{\theta}_H - \theta_H^\dagger]\|^2$,
+	\item the \emph{population target shift} $\|\theta_H^\dagger-\theta_0\|^2$,
+	\item the \emph{interaction term}
+	$2(\theta_H^\dagger-\theta_0)^\top \mathbb{E}[\hat{\theta}_H-\theta_H^\dagger]$,
+	which links the target shift to the estimator's finite-sample bias around the pseudo-true parameter and can be either positive or negative,
+	\item the \emph{squared finite-sample bias around the pseudo-true parameter}
+	$\|\mathbb{E}[\hat{\theta}_H-\theta_H^\dagger]\|^2$,
 	\item the \emph{sampling variance} $\mathrm{tr}(\mathrm{Var}(\hat{\theta}_H))$.
 \end{enumerate}
 
 This decomposition is exact.
-What remains heuristic is the way these terms move with $H$, to which we now turn.
+What remains model-dependent is how these terms move with $H$.
 
 \paragraph{Heuristic link to second-order finite-sample bias.}
-For nonlinear extremum estimators, standard second-order expansions imply that
+For nonlinear extremum estimators, standard higher-order expansions imply that
 \[
-\mathbb{E}[\hat{\theta}_H - \theta_H^\dagger] = O(n^{-1}),
+\mathbb{E}[\hat{\theta}_H-\theta_H^\dagger]
+=
+O(n^{-1}),
 \]
-with a constant depending on higher-order moments of the score and curvature; see, e.g., \citet{nagar1959bias, rilstone1996second, newey2004higher, bao2007finite}.
-In the present setting, those higher-order terms are naturally amplified when the objective contributions are noisy.
+with a constant that depends on higher-order moments of the score and on local curvature; see, e.g., \citet{nagar1959bias, rilstone1996second, newey2004higher, bao2007finite}.
+In the present setting, those constants are naturally affected by the volatility and dependence structure of the objective contributions.
 This suggests the following heuristic channel:
-reducing the volatility of $\bar{\epsilon}_i^{(H)}(\theta)$ tends to reduce the second-order finite-sample bias around $\theta_H^\dagger$.
+if $\mathcal{T}$-averaging reduces the volatility of $\bar{\epsilon}_i^{(H)}(\theta)$ without introducing a large target shift, it can improve finite-sample performance even when $H>0$.
 
-A convenient way to express the volatility of the horizon-averaged pricing error is
+A convenient representation is
 \begin{equation}
 	\label{eq:var_matrix}
 	\mathrm{Var}\!\left(
 	\bar{\epsilon}_i^{(H)}(\theta)
 	\right)
 	=
-	a_{i,H}^\top \Sigma_{i,H}(\theta)\, a_{i,H},
+	a_{i,H}^\top
+	\Sigma_{i,H}(\theta)
+	a_{i,H},
 \end{equation}
-where $a_{i,H}$ is the $|\mathcal{T}_{i,H}| \times 1$ averaging vector with entries $1/|\mathcal{T}_{i,H}|$, and $\Sigma_{i,H}(\theta)$ is the covariance matrix of the vector
+where $a_{i,H}$ is the $\mathrm{card}(\mathcal{T}_{i,H})\times 1$ averaging vector with entries $1/\mathrm{card}(\mathcal{T}_{i,H})$, and $\Sigma_{i,H}(\theta)$ is the covariance matrix of the vector
 \[
 \bigl(
 \epsilon_{\tau,i}(\theta)
-\bigr)_{\tau \in \mathcal{T}_{i,H}}.
+\bigr)_{\tau\in\mathcal{T}_{i,H}}.
 \]
-When the pricing errors at different discounting dates are positively but imperfectly correlated, averaging across $\tau$ reduces this variance relative to relying on a single date.
-This is the basic sense in which $\mathcal{T}$-averaging stabilizes the criterion in finite samples.
+
+\begin{remark}[A simple variance-reduction benchmark]
+	Suppose, for illustration, that
+	$\mathrm{Var}(\epsilon_{\tau,i}(\theta))=\sigma^2(\theta)$
+	for all $\tau\in\mathcal{T}_{i,H}$ and that every pair of distinct dates has the same correlation $\rho(\theta)$.
+	If $m=\mathrm{card}(\mathcal{T}_{i,H})$ and the implied equicorrelation covariance matrix is positive semidefinite, i.e.\ $\rho(\theta)\ge -1/(m-1)$, then
+	\[
+	\mathrm{Var}\!\left(
+	\bar{\epsilon}_i^{(H)}(\theta)
+	\right)
+	=
+	\sigma^2(\theta)\left(
+	\rho(\theta)+\frac{1-\rho(\theta)}{m}
+	\right).
+	\]
+	Whenever $\rho(\theta)<1$, this variance is strictly below $\sigma^2(\theta)$, and mild negative correlation lowers it even further.
+	This special case illustrates the basic stabilization mechanism:
+	with comparable marginal variances and less-than-perfect dependence, averaging lowers the variance of the objective contribution relative to a representative single-date moment.
+\end{remark}
 
 \subsection{Interpretation and reconciliation with the simulation study}
 \label{sec:appendix_bv_interpretation}
 
 The simulation evidence in Section~\ref{sec:simulation_study} can now be interpreted through Proposition~\ref{prop:exact_mse}.
 
-At short horizons, the estimator relies on a small number of highly volatile pricing moments.
-This makes the nonlinear criterion unstable and can generate substantial finite-sample bias around the benchmark target.
-As $H$ increases, averaging combines additional pricing moments that are correlated, but not perfectly so, thereby smoothing the objective and reducing finite-sample estimation error.
+At short horizons, the estimator relies on a small number of volatile pricing moments.
+This can make the nonlinear criterion unstable and can generate substantial finite-sample bias around the benchmark target.
+As $H$ increases, averaging combines additional pricing moments that are correlated, but not perfectly so, and this can smooth the sample criterion and improve finite-sample behavior.
 
-Against this benefit stands the population target shift documented in Lemma~\ref{lem:bH_TRP}:
-once $H$ is large enough to include NFV terms, the criterion is no longer centered at $\theta_0$.
-The resulting TRP-induced shift is economically meaningful but, under the baseline calibration, remains modest relative to the initial finite-sample distortion at very short horizons.
+Against this benefit stands the population target shift characterized above.
+Once $H$ is large enough to include post-investment timing terms, the criterion is generally no longer minimized at $\theta_0$.
+The resulting TRP-induced shift can be economically meaningful, but under the baseline calibration it is modest relative to the large finite-sample distortions observed at very short horizons.
 
 This yields the central interpretation of the simulation results:
-for small to intermediate horizons, the stabilization benefit of $\mathcal{T}$-averaging dominates the incremental TRP cost;
-for sufficiently long horizons, the marginal gain from additional averaging weakens while the accumulation of NFV terms increases the scope for target shift.
-The empirically optimal horizon therefore need not be $H=0$ and need not be arbitrarily large.
-Instead, the optimal horizon is \emph{interior} and \emph{DGP-dependent}. The sweet spot occurs roughly around the typical fund lifetime, at which point the variance-reduction benefit offsets the target shift induced by the Timing Risk Premium.
+for small to intermediate horizons, the stabilization benefit of $\mathcal{T}$-averaging can dominate the incremental target shift;
+for sufficiently long horizons, the marginal gain from additional averaging may weaken while the scope for target shift grows.
+Accordingly, the MSE-minimizing horizon need not be $H=0$ and need not be arbitrarily large.
+Instead, it is generally \emph{interior} and \emph{DGP-dependent}.
 
 \begin{remark}[Why we do not impose a global monotonicity theorem]
 	We do not claim that each MSE component is globally monotone in $H$ without additional restrictions.
 	In particular, the aggregate TRP contribution may contain offsetting covariance terms, and the effect of averaging on estimator variance depends on the covariance structure of the pricing moments and on the local geometry of the nonlinear criterion.
-	For this reason, the appendix establishes the exact decomposition and the source of the target shift, while the existence and location of the empirically optimal horizon are documented in the simulation study rather than asserted as a universal theorem.
+	For that reason, the appendix establishes the exact decomposition and the exact source of the averaged population moment shift, while the existence and location of the empirically relevant interior optimum are documented in the simulation study rather than asserted as a universal theorem.
 \end{remark}
 
-\begin{remark}[Connection to the GMM and misspecification literatures]
-	The role of $\mathcal{T}$-averaging is closely related to two familiar ideas.
+\begin{remark}[Connection to GMM and misspecification]
+	The role of $\mathcal{T}$-averaging is related to two familiar ideas.
 	First, from a GMM perspective, averaging combines multiple imperfectly correlated pricing moments, which can improve finite-sample stability when those moments contain useful information.
-	Second, from the perspective of estimation under misspecified moments, NFV terms can be viewed as informative but weakly biased components: they perturb the population target, yet may still reduce overall MSE when the induced target shift is small relative to the finite-sample stabilization they provide.
+	Second, from the perspective of misspecified moments, post-investment timing terms can be viewed as informative but potentially biased moment components: they perturb the population target, yet may still lower overall MSE when the induced target shift is small relative to the finite-sample stabilization they provide.
 \end{remark}
 
 \paragraph{Summary.}
-The main message is therefore not that the TRP ``washes out'' as $H$ grows.
-Rather, $\mathcal{T}$-averaging works by trading off a controlled population target shift against a potentially large reduction in finite-sample estimation error.
-Under the baseline DGP, the latter effect dominates over an economically relevant range of horizons, which is why the simulation study favors horizons near the fund lifetime rather than the NPV-only benchmark.
+The main message is not that the TRP ``washes out'' as $H$ grows.
+Rather, $\mathcal{T}$-averaging trades off a population target shift against a potentially large reduction in finite-sample estimation error.
+Under the baseline DGP, the latter effect dominates over an economically relevant range of horizons, which is why the simulation study favors intermediate horizons rather than the NPV-only benchmark.
 
-\subsection{Interpretation of NFV-based alpha}
-\label{sec:appendix_bv_alpha_interpretation}
 
-This subsection provides an auxiliary interpretation of NFV-based pricing errors for ex-post benchmarking. Unlike the baseline exact-pricing restriction in Equation~\eqref{eq:deal_pricing}, the decomposition below introduces an abnormal-performance component and is therefore used only as an interpretive device, not to define the structural estimation target.
 
-\begin{remark}[Measured Alpha vs.\ True Skill]
-	\label{rem:alpha_decomp}
-	The decomposition follows from the conditional covariance identity applied as in Lemma~\ref{lem:deal_level_timing}(3), writing $\delta_{i,j} = a_{i,j}^{\text{Skill}} + (\delta_{i,j} - a_{i,j}^{\text{Skill}})$, where $a_{i,j}^{\text{Skill}} := \mathbb{E}[\delta_{i,j} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}]$ is the deal's abnormal return at inception.
-	Specifically, we can decompose the expected NFV pricing error into two distinct components:
-	\begin{align}
-		\label{eq:alpha_decomp}
-		\underbrace{\mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{\tau}} \delta_{i,j} \mid \mathcal{F}_{\tau} \right]}_{\text{Measured Alpha}} 
-		&= 
-		\underbrace{\mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}} \frac{a_{i,j}^{\text{Skill}}}{R_{f, t_{i,j}^{\mathrm{Inv}} \to t_{i,j}^{\mathrm{Future}}}} \mid \mathcal{F}_{\tau} \right]}_{\text{True Skill}}
-		\\ \nonumber
-		&+ 
-		\underbrace{\mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}} \mathrm{Cov} \left( \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}}, \delta_{i,j} \mid \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}} \right) \mid \mathcal{F}_{\tau} \right]}_{\text{Timing Risk Premium}}
-	\end{align}
-	where $R_f$ is the gross risk-free return over the holding period and $a_{i,j}^{\text{Skill}}$ is the deal-level abnormal return, distinct from the SDF intercept $\alpha$.
-	Even if a manager has no skill ($a_{i,j}^{\text{Skill}} = 0$), the measured alpha will include the Timing Risk Premium.
-\end{remark}
+
+
 
 \section{Comparison to \cite{DLP12}}
 \label{sec:dlp_results_comparison}
@@ -2984,6 +3078,9 @@ n \asymp V.
 
 
 
+
+
+%\input{bonus/npv_benchmarks.tex}
 %\input{empirical_bovc_global.tex}
 %\input{empirical_pe_global.tex}
 

@@ -1,0 +1,122 @@
+\section{NFV-based benchmarking alpha as a composite object}
+\label{sec:appendix_bv_alpha_interpretation}
+
+This appendix section provides an auxiliary interpretation of NFV-based pricing errors for ex-post benchmarking.
+Unlike the baseline structural restriction in Equation~\eqref{eq:deal_pricing}, the decomposition below allows for a nonzero conditional abnormal component at deal inception and is therefore used only as an interpretive device, not to define the structural estimation target.
+
+\begin{remark}[Measured alpha versus conditional abnormal performance]
+	\label{rem:alpha_decomp}
+	Fix a deal $j$ of fund $i$ and suppose $\tau\le t_{i,j}^{\mathrm{Inv}}<t_{i,j}^{\mathrm{Future}}$.
+	Define the deal-level conditional abnormal component at inception by
+	\[
+	a_{i,j}^{\mathrm{skill}}
+	:=
+	\mathbb{E}\!\left[
+	\delta_{i,j}\mid
+	\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}
+	\right].
+	\]
+	Write
+	\[
+	\delta_{i,j}
+	=
+	a_{i,j}^{\mathrm{skill}}
+	+
+	u_{i,j},
+	\qquad
+	\mathbb{E}\!\left[
+	u_{i,j}\mid
+	\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}
+	\right]
+	=
+	0.
+	\]
+	Then the conditional expectation of the NFV-type moment can be decomposed as
+	\begin{align}
+		\label{eq:alpha_decomp_general}
+		\mathbb{E}\!\left[
+		\frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_\tau}\,
+		\delta_{i,j}
+		\,\middle|\,
+		\mathcal{F}_\tau
+		\right]
+		&=
+		\mathbb{E}\!\left[
+		\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}
+		\left(
+		\mathbb{E}\!\left[
+		\frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}}
+		\,\middle|\,
+		\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}
+		\right]
+		a_{i,j}^{\mathrm{skill}}
+		\right)
+		\,\middle|\,
+		\mathcal{F}_\tau
+		\right]
+		\nonumber\\
+		&\qquad
+		+
+		\mathbb{E}\!\left[
+		\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}\,
+		\mathrm{Cov}\!\left(
+		\frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}},
+		\delta_{i,j}
+		\,\middle|\,
+		\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}
+		\right)
+		\,\middle|\,
+		\mathcal{F}_\tau
+		\right].
+	\end{align}
+	
+	If, in addition, the gross risk-free return over the holding period is defined by
+	\[
+	\mathbb{E}\!\left[
+	\frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}}
+	\,\middle|\,
+	\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}
+	\right]
+	=
+	\frac{1}{R_{f,t_{i,j}^{\mathrm{Inv}}\to t_{i,j}^{\mathrm{Future}}}},
+	\]
+	then Equation~\eqref{eq:alpha_decomp_general} becomes
+	\begin{align}
+		\label{eq:alpha_decomp}
+		\underbrace{
+			\mathbb{E}\!\left[
+			\frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_\tau}\,
+			\delta_{i,j}
+			\,\middle|\,
+			\mathcal{F}_\tau
+			\right]
+		}_{\text{Measured NFV alpha}}
+		&=
+		\underbrace{
+			\mathbb{E}\!\left[
+			\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}\,
+			\frac{a_{i,j}^{\mathrm{skill}}}{R_{f,t_{i,j}^{\mathrm{Inv}}\to t_{i,j}^{\mathrm{Future}}}}
+			\,\middle|\,
+			\mathcal{F}_\tau
+			\right]
+		}_{\text{Conditional abnormal component}}
+		\nonumber\\
+		&\qquad
+		+
+		\underbrace{
+			\mathbb{E}\!\left[
+			\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}\,
+			\mathrm{Cov}\!\left(
+			\frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}},
+			\delta_{i,j}
+			\,\middle|\,
+			\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}
+			\right)
+			\,\middle|\,
+			\mathcal{F}_\tau
+			\right]
+		}_{\text{Timing Risk Premium}}.
+	\end{align}
+	Thus, an NFV-based ex-post alpha generally mixes a conditional abnormal component with a timing-related covariance component.
+	Even when $a_{i,j}^{\mathrm{skill}}=0$, the measured NFV alpha can still be nonzero because of the Timing Risk Premium.
+\end{remark}
