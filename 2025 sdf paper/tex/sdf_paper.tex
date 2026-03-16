@@ -87,14 +87,12 @@ The authors alone are responsible for the content and writing of the paper.
 \end{center}
 
 
-
 \abstract{
-We study semiparametric estimation of stochastic discount factors from pooled non-traded cash flows. 
-The framework generalizes the inception-based approach of \cite{DLP12} and accommodates dependence induced by overlapping cash flow streams. 
-We show that horizon choice creates a tradeoff between structural fidelity and finite-sample stability: averaging pricing errors over additional compounding dates can substantially improve estimator stability, even though longer horizons alter the population pricing restriction. 
-We apply the framework to private equity and use it to study identification and model stability in sparse, illiquid cash-flow panels.
+	We study identification and semiparametric estimation of stochastic discount factors from pooled non-traded cash flows. 
+	The framework generalizes the inception-based approach of \cite{DLP12} and accommodates dependence induced by overlapping cash-flow streams. 
+	We show that horizon choice creates a tradeoff between structural fidelity and finite-sample stability: averaging pricing errors over additional compounding dates can materially stabilize estimation, but generally shifts the population pricing restriction. 
+	In private-equity cash-flow panels, the framework yields more stable evidence on broad market exposure in seasoned portfolios than on abnormal performance or richer factor decompositions.
 }
-
 
 
 %% main text
@@ -141,6 +139,10 @@ The paper's central tension has two distinct margins.
 On one margin, inception-only discounting preserves the original zero-net-present-value pricing restriction but can produce unstable estimates in realistic private-equity samples. 
 On the other margin, averaging pricing errors over additional compounding dates can materially improve finite-sample performance, but it does so by changing the population pricing restriction. 
 Our goal is not to treat horizon choice as a purely mechanical implementation detail, but to characterize this tradeoff explicitly and provide guidance on how researchers should navigate it in empirical work.
+
+In that sense, this is an identification and stability paper for private-market asset pricing. 
+It studies how estimator design, especially the discounting Horizon, jointly determines the population object being estimated and the finite-sample stability with which it can be recovered. 
+In the private-equity panels we study, this framework yields more stable evidence on broad market exposure than on abnormal performance or richer factor decompositions.
 
 We study this identification and stability problem in three steps. 
 First, we derive the generalized pooled-cash-flow objective and the corresponding asymptotic framework. 
