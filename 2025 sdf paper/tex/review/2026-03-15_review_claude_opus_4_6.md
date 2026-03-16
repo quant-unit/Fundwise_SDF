@@ -163,7 +163,9 @@ Your simulations currently read as a calibration exercise for implementation cho
 
 - **Two-factor models are fragile** not because the second factor is economically irrelevant, but because the cross-section of vintage-year portfolios does not contain enough independent variation to separate correlated factor exposures. The sign reversals across horizons are a symptom of weak identification, not evidence against multi-factor pricing.
 
-Each of these is currently in your paper, but buried in simulation commentary. Pull them out as explicit propositions about identification strength—informal propositions backed by simulation evidence rather than formal theorems, but stated with the same clarity.
+Each of these is currently in your paper, but buried in simulation commentary. Pull them out as explicit propositions about identification strength—informal propositions backed by simulation evidence rather than formal theorems, but stated with the same clarity. 
+
+How to do this best in a minimal-invasive approach?
 
 ### 4. Make the Empirical Section an Identification Map
 
@@ -238,3 +240,298 @@ This abstract tells the reader exactly what they will learn and why it matters�
 Everything substantive in the current paper survives. The LMD framework remains as the estimation vehicle. The TRP remains as the theoretical insight. The simulations remain as the finite-sample evidence. The empirical application remains as the real-data assessment. What changes is the interpretive lens: instead of "here is a new estimator and what it finds," the paper says "here is what these methods can and cannot identify, and here is why."
 
 This reframing also addresses the referee concern (from my earlier report) that the empirical results are "largely negative." In an identification paper, showing that something is not identified is a positive finding. The applied researcher who learns that alpha is not separately identified from market exposure in these data has learned something valuable—potentially more valuable than a specific alpha estimate that happens to be statistically significant in one sample.
+
+---
+
+WHICH JOURNAL TO SUBMIT ????
+
+This is an important question, and I want to give you an honest, strategically useful answer rather than a polite one.
+
+Let me assess fit along several dimensions: scope, methodology balance, contribution type, competitive positioning, and realistic acceptance probability.
+
+---
+
+# How I classify the paper
+
+Before recommending journals, it helps to be precise about what the paper is.
+
+The paper sits at the intersection of three areas:
+
+**Econometric methodology**
+Semiparametric estimation, increasing-domain asymptotics, spatial dependence, nonlinear extremum estimators.
+
+**Private-market asset pricing**
+SDF estimation from non-traded cash flows, PE performance measurement, NAV contamination.
+
+**Finite-sample identification and stability diagnostics**
+Simulation-based evidence on bias-variance tradeoffs, cross-validation under dependence, model selection.
+
+The paper is not primarily any one of these. It is a methods-for-applications paper with a strong simulation component and a diagnostic empirical exercise. That profile matters a lot for journal fit.
+
+---
+
+# Where the key reference papers were published
+
+This anchors realistic expectations.
+
+| Paper | Journal |
+|-------|---------|
+| Driessen, Lin, Phalippou (2012) | **JFQA** |
+| Korteweg and Nagel (2016) | **JF** |
+| Ang, Chen, Goetzmann, Phalippou (2018) | **JF** |
+| Boyer, Nadauld, Vorkink, Weisbach (2023) | **JF** |
+| Brown, Ghysels, Gredil (2023) | **RFS** |
+| Franzoni, Nowak, Phalippou (2012) | **JF** |
+| Harris, Jenkinson, Kaplan (2014) | **JF** |
+| Cordell, Roberts, Schwert (2023) | **JF** |
+| Jeffers, Lyu, Posenau (2024) | **JFE** |
+| Li, Xu, Zhang (2016) | **JFQA** |
+| Farnsworth, Ferson, Jackson, Todd (2002) | **JBus** |
+| Gourieroux and Monfort (2007) | **JFnE** |
+| Bertholon, Monfort, Pegoraro (2008) | **JFnE** |
+| Kim and Sun (2011) | **J. Econometrics** |
+| Conley (1999) | **J. Econometrics** |
+| Jenish and Prucha (2009, 2012) | **J. Econometrics** |
+
+Two observations:
+
+First, the direct predecessor — Driessen et al. (2012) — was published in JFQA, not a top-3 journal. That is actually a useful signal: JFQA is a natural home for this type of contribution.
+
+Second, the papers that reached JF or JFE on PE asset pricing typically either introduced a fundamentally new framework or delivered major new empirical findings. Your paper's contribution is more incremental and diagnostic, which is not a criticism but an honest assessment of where it sits.
+
+---
+
+# Journal-by-journal assessment
+
+## Tier 1: Natural fits
+
+### 1. Journal of Financial Econometrics (JFnE)
+
+**This is probably the single best fit for the paper as currently written.**
+
+Why:
+- JFnE explicitly publishes "development of novel tools and techniques, and their applications to financial problems."
+- The paper's mix of semiparametric estimation theory, spatial HAC inference, simulation evidence, and financial application is exactly what JFnE values.
+- Reference papers like Gourieroux and Monfort (2007) and Bertholon et al. (2008) — which you cite — were published here.
+- JFnE readers are comfortable with notation-heavy estimation papers.
+- The asymptotic theory, which is a liability at more empirically oriented journals, is a strength here.
+- The finite-sample simulation study is valued as a contribution in its own right at JFnE.
+- JFnE does not require a big new empirical finding; methodological novelty with an application is enough.
+
+Risks:
+- JFnE will hold you to a high econometric standard on the asymptotics.
+- A referee may ask whether the increasing-domain CLT adds genuinely new econometric content beyond applying Jenish and Prucha to a new setting.
+- The PE application may be viewed as specialized unless you frame the methodology as applicable to other non-traded asset classes.
+
+Probability of a favorable outcome: **Moderate to good**, perhaps 25-35% conditional on a clean submission. This is competitive but realistic for JFnE.
+
+### 2. JFQA
+
+**JFQA is a strong natural fit, especially given that Driessen et al. (2012) was published there.**
+
+Why:
+- Direct intellectual lineage: you generalize the foundational JFQA paper.
+- JFQA publishes methodological contributions with applications in asset pricing.
+- The paper's length and technical depth are consistent with JFQA norms.
+- The identification/stability framing I recommended earlier would play well at JFQA.
+- JFQA has published PE/alternative-asset papers before.
+
+Risks:
+- JFQA is now quite competitive, with acceptance rates around 5-7%.
+- A referee may view the contribution as incremental over Driessen et al. (2012) plus Korteweg and Nagel (2016).
+- The diagnostic/negative empirical findings may not feel like enough of a new result for JFQA unless reframed sharply.
+- The asymptotic theory may be viewed as more elaborate than necessary for the empirical conclusions.
+
+Probability: **Moderate**, perhaps 15-25%. Realistic but not easy. The paper needs to convince the editor that it is more than a technical refinement of Driessen et al.
+
+### 3. Review of Finance (RF)
+
+**RF is a strong option, particularly if you want a respected general-finance journal.**
+
+Why:
+- RF publishes solid methodological and empirical finance papers.
+- PE asset pricing is well within scope.
+- RF is more receptive than top-3 to papers that are methodologically interesting but not blockbuster in empirical findings.
+- The identification/stability framing would resonate with RF's audience.
+
+Risks:
+- RF referees may be less technically sophisticated on the econometric side, so the asymptotic theory may need to be streamlined.
+- RF wants clear economic implications, so the "what can we learn from PE cash flows" angle needs to be front and center.
+
+Probability: **Moderate**, perhaps 20-30%. Good fit if the paper is well-positioned.
+
+---
+
+## Tier 2: Plausible with repositioning
+
+### 4. Journal of Business and Economic Statistics (JBES)
+
+**JBES could work if you reposition the paper toward the econometric contribution.**
+
+Why:
+- JBES publishes applied econometric methods papers with empirical illustrations.
+- The finite-sample analysis, SHAC inference, cross-validation under dependence, and simulation design are valued at JBES.
+- JBES readers appreciate careful Monte Carlo analysis and practical guidance for implementation.
+
+Risks:
+- The PE-specific framing may be too narrow for JBES unless you frame the methodology as applicable to any non-traded asset class.
+- JBES will want the econometric contribution to be clearly separable from the application.
+- You would likely need to deemphasize the PE-specific empirical results and emphasize the general estimation framework.
+
+Probability: **15-20%** with repositioning. Less natural than JFnE or JFQA but plausible.
+
+### 5. Journal of Empirical Finance
+
+**JEmpFin could work if you shift emphasis toward the empirical findings.**
+
+Why:
+- JEmpFin is receptive to applied asset-pricing papers with methodological awareness.
+- The NAV sensitivity analysis, identification diagnostics, and BO/VC comparison would be valued.
+- JEmpFin readers care about practical guidance for empirical researchers.
+
+Risks:
+- The asymptotic theory is much more than JEmpFin typically publishes.
+- You would need to move most of the theory to appendices and lead with empirics.
+- JEmpFin may view the paper as too technical.
+
+Probability: **20-25%** if streamlined toward empirics. Lower prestige than JFQA but higher acceptance probability.
+
+### 6. Critical Finance Review (CFR)
+
+**CFR could work if you frame the paper as challenging conventional PE alpha estimates.**
+
+Why:
+- CFR publishes methodologically rigorous papers that challenge conventional wisdom.
+- The "identification limits of PE alpha" angle fits CFR's editorial identity.
+- CFR is receptive to shorter, sharper papers with a clear point.
+
+Risks:
+- The paper is currently much too long for CFR.
+- CFR would want you to lead with the challenge to existing PE alpha findings and treat the methodology as supporting evidence.
+- You would need a very different presentation.
+
+Probability: **10-15%** with major restructuring. High-risk, high-reward if the editor is interested.
+
+---
+
+## Tier 3: Possible but less natural
+
+### 7. RFS (Review of Financial Studies)
+
+Why it could work:
+- RFS has published PE methodology papers, including Brown et al. (2023).
+- If the paper's identification contribution is viewed as genuinely advancing how the field thinks about PE risk measurement, RFS could be interested.
+
+Why it probably will not work in current form:
+- RFS is extremely competitive.
+- The empirical findings are diagnostic rather than revealing a new economic result.
+- The paper would need to be significantly shorter and sharper.
+- A desk reject is likely unless the editor sees a clear advance over Korteweg and Nagel (2016).
+
+Probability: **5-10%**. High risk of desk reject.
+
+### 8. Journal of Econometrics
+
+Why it could work:
+- The increasing-domain asymptotics, NED random-field arguments, and SHAC inference are within scope.
+- Reference papers by Jenish and Prucha, Conley, and Kim and Sun were published here.
+
+Why it probably will not work:
+- JoE wants the econometric contribution to be the primary contribution.
+- The PE application would need to be treated as an illustration, not the main event.
+- The econometric novelty may be viewed as an application of existing tools to a new setting rather than a new econometric result.
+
+Probability: **5-10%**. Only viable if you strip out most of the PE content and lead with the estimation theory.
+
+### 9. Management Science
+
+- Possible but unusual for this type of paper.
+- MS publishes some PE papers but wants broader management/decision implications.
+- The methodological depth would need to be reduced substantially.
+- Probability: **5-10%**.
+
+---
+
+## Tier 4: Fallback options
+
+### 10. Quantitative Finance
+- Technically within scope.
+- Less prestige but reasonable acceptance probability.
+- Good fit for the technical content.
+
+### 11. Journal of Financial Data Science
+- You already published Tausch and Pietz (2024) here.
+- The code-availability and reproducibility aspects would be valued.
+- But this would undervalue the theoretical contribution.
+
+### 12. Journal of Banking and Finance
+- Broad scope, reasonable fit.
+- Less prestige but higher acceptance probability.
+- The paper would need to be shorter and more empirically focused.
+
+---
+
+# My honest ranking
+
+If I had to advise you on where to submit, here is my ordering based on fit, realistic acceptance probability, and career value.
+
+| Rank | Journal | Fit | Acceptance probability | Notes |
+|------|---------|-----|----------------------|-------|
+| 1 | **JFnE** | Excellent | 25-35% | Best methodological fit |
+| 2 | **JFQA** | Very good | 15-25% | Natural home given Driessen et al. |
+| 3 | **Review of Finance** | Good | 20-30% | Good fallback, respected |
+| 4 | **JBES** | Good with repositioning | 15-20% | Needs econometric emphasis |
+| 5 | **J. Empirical Finance** | Good with repositioning | 20-25% | Needs empirical emphasis |
+| 6 | **CFR** | Niche fit | 10-15% | Needs major restructuring |
+| 7 | **RFS** | Stretch | 5-10% | High desk-reject risk |
+
+---
+
+# Strategic recommendation
+
+My recommended submission strategy would be:
+
+## Option A: Aim high, prepare for revision
+Submit to **JFQA** first, with the identification/stability reframing.
+- If R&R: great.
+- If reject with constructive feedback: revise and send to JFnE or RF.
+
+## Option B: Maximize expected value
+Submit to **JFnE** directly.
+- Best fit for the paper as written.
+- Highest probability of a constructive review process.
+- JFnE is well-respected in the financial econometrics community.
+- Your paper's technical depth is a strength there, not a liability.
+
+## Option C: Dual-track strategy
+If the paper can be split:
+- A shorter, sharper identification/stability paper for **JFQA** or **RF**, focused on the horizon tradeoff and empirical identification limits.
+- A companion technical paper on the increasing-domain asymptotics and SHAC inference for **JFnE** or **JBES**.
+
+This is aggressive and only worthwhile if the two papers can stand alone.
+
+---
+
+# What I would actually do
+
+If this were my paper, I would:
+
+1. **Reframe around identification/stability** as discussed in the previous conversation.
+2. **Tighten to around 40-45 pages** including appendices.
+3. **Submit to JFQA first.**
+4. **If rejected, revise for JFnE.**
+
+The reasoning: JFQA is the natural home given Driessen et al. (2012), and the identification/stability framing is strong enough to be competitive. But JFnE is the safety option where the paper's technical profile is a genuine advantage rather than a potential liability.
+
+---
+
+# One more thing
+
+Whichever journal you target, the single most important revision for journal fit is the one we already discussed: **reframe the paper as an identification paper, not a factor-discovery paper.** That reframing helps at every journal on this list.
+
+At JFQA, it avoids the "what is the true PE factor structure" trap.
+At JFnE, it positions the horizon tradeoff as a methodological insight.
+At RF, it frames diagnostic empirical findings as a contribution.
+At JBES, it emphasizes the econometric content of identification analysis.
+
+The substance of the paper barely needs to change. What needs to change is how the paper presents itself.

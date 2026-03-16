@@ -619,6 +619,363 @@ If revising, I would do these 5 things first:
 4. **Recast simulation section as finite-sample identification analysis.**
 5. **Rewrite the conclusion so the central claim is about what current private-market cash-flow panels can and cannot identify.**
 
+
+
 ---
 
-If you want, I can do the next step and actually **rewrite your Introduction and Abstract in this identification/stability framing**, in near-submission-ready prose.
+WHICH JOURNAL TO SUBMIT ????
+
+Yes. Based on the draft as written, there are several journals that may be a **better fit than JFQA**, depending on what version of the paper you want to submit.
+
+## Short answer
+
+If you keep the paper in its current form — method-heavy, identification/stability-focused, with private-equity application but somewhat limited “new economic result” — then the best fits are likely:
+
+### Strongest fit candidates
+- **Review of Finance (RoF)**
+- **Journal of Financial Econometrics (JFEC)**
+- **Journal of Empirical Finance (JEmpFin)**
+- **Financial Management**
+- **Journal of Alternative Investments** or more specialized private-capital outlets, if you want practitioner impact
+
+### If you sharpen the econometrics/identification angle
+- **Journal of Financial Econometrics**
+- **Journal of Econometrics** or **Econometric Theory / ECTA-adjacent field econ journals** only if you substantially strengthen the econometric contribution and de-emphasize the private-equity application
+
+### If you sharpen the finance/application angle
+- **Review of Finance**
+- **Management Science** (possible, but only with stronger positioning around decision-usefulness / model selection / illiquid assets)
+- **Review of Asset Pricing Studies (RAPS)** could be an interesting fit if framed more as asset-pricing methodology and identification
+
+---
+
+# My ranking by likely fit
+
+## 1. Journal of Financial Econometrics — probably the best overall fit
+This is the journal I would point to first.
+
+### Why it fits
+Your paper is fundamentally about:
+- semiparametric estimation,
+- pseudo-true parameters,
+- finite-sample vs structural tradeoffs,
+- dependence-robust inference,
+- identification under sparse non-traded cash-flow data.
+
+That is very JFEC-friendly. The journal is much more willing than JFQA to publish a paper whose main value is:
+- clarifying the estimand,
+- showing identification limitations,
+- proposing a flexible estimation framework,
+- and combining theory + simulation + applied finance context.
+
+### Why it may fit better than JFQA
+JFQA usually wants a stronger finance payoff:
+- new asset-pricing fact,
+- new economic mechanism,
+- or clearer mainstream corporate-finance/asset-pricing result.
+
+Your paper’s strongest contribution is more **econometric-finance methodology** than a headline finance result.
+
+### What would strengthen JFEC fit
+- Emphasize pseudo-targets and identification
+- Tighten the asymptotic results
+- Clarify horizon selection as tuning/regularization
+- Reduce any over-claiming on PE factor structure
+
+### Verdict
+**Best fit if you want the paper judged on its real strengths.**
+
+---
+
+## 2. Review of Finance — best high-prestige field-journal fit
+If you want a high-end finance outlet outside the top-4 US journals, RoF may be more receptive than JFQA.
+
+### Why it fits
+RoF often publishes papers that are:
+- technical,
+- careful,
+- methodologically sophisticated,
+- especially in asset pricing and private markets.
+
+Your private-equity application, identification focus, and careful empirical caution could play well there.
+
+### Concern
+RoF still wants a strong finance message. If the paper reads too much like “a new estimator plus asymptotics,” that may weaken fit. But if you reframe it as:
+
+> “what private-market cash-flow panels can stably identify about risk adjustment and abnormal performance”
+
+then RoF becomes more plausible.
+
+### Verdict
+**Good fit if you sharpen the finance interpretation and identification message.**
+
+---
+
+## 3. Review of Asset Pricing Studies — underrated but potentially very good fit
+This may actually be a very natural home if the paper is revised toward asset-pricing identification rather than private-equity “results.”
+
+### Why it fits
+RAPS likes:
+- asset-pricing methodology,
+- measurement problems,
+- identification issues,
+- new empirical tools for nonstandard data.
+
+Your paper is really about how SDF restrictions behave in an illiquid/non-traded setting. That is conceptually aligned.
+
+### Concern
+You may need to connect more strongly to general asset-pricing inference, not just PE. Right now the application is private equity. RAPS may want the contribution to feel broader:
+- illiquid assets,
+- private credit,
+- real estate,
+- infrastructure,
+- human capital claims, etc.
+
+### Verdict
+**Potentially excellent fit if you broaden the asset-pricing framing beyond PE.**
+
+---
+
+## 4. Journal of Empirical Finance — very realistic and good fit
+If you want a strong probability of landing well and the paper is mainly empirical-methodological, JEmpFin is very plausible.
+
+### Why it fits
+The paper has:
+- substantial empirical content,
+- simulations,
+- applied asset pricing,
+- methodological contribution,
+- relevance to private-market performance measurement.
+
+JEmpFin is more open than JFQA to papers whose main contribution is:
+- empirical methodology,
+- stability/identification,
+- model evaluation in difficult datasets.
+
+### Why it may be better than JFQA
+You would face less resistance on “but where is the big economic finding?”
+
+### Verdict
+**Very good fit, especially if your goal is a fair hearing and a solid publication outcome.**
+
+---
+
+## 5. Financial Management — decent fit if you lean into practical implications
+If you stress:
+- how researchers and institutional investors should do PE risk adjustment,
+- why alpha estimates are unstable,
+- why seasoned samples and parsimonious models matter,
+then this could work.
+
+### Why it fits
+Financial Management often accepts papers with:
+- solid empirical and methodological contribution,
+- clear implications for practice,
+- less need for a “big theory” result than JFQA.
+
+### Concern
+You’d want to simplify some of the asymptotic theory and make the paper more applied.
+
+### Verdict
+**Good fallback if you want a broader applied-finance audience.**
+
+---
+
+# More specialized / alternative outlets
+
+## 6. Journal of Alternative Investments
+This is not a substitute for JFQA in prestige, but it may be valuable if your target audience is:
+- PE practitioners,
+- fund-of-funds,
+- institutional allocators,
+- benchmarking specialists.
+
+### Why it fits
+The practical implications are strong:
+- alpha is hard to identify,
+- NAV treatment matters,
+- horizon choice matters,
+- market beta inference is more stable than multifactor/alpha inference.
+
+### Verdict
+**Good practitioner-impact outlet, weaker academic prestige.**
+
+---
+
+## 7. Private Capital / PE-oriented outlets or edited volumes
+Only if your objective is audience rather than journal rank. I would not default here because the paper is stronger than that.
+
+---
+
+# Journals that are possible but require a different version of the paper
+
+## 8. Management Science
+Possible, but not with the paper exactly as written.
+
+### To fit
+You’d need to emphasize:
+- decision under illiquidity,
+- model selection in sparse panels,
+- evaluation of non-traded investment strategies,
+- methodological contribution with managerial/institutional relevance.
+
+### Problem
+Current draft is closer to finance econometrics than Mgmt Sci style.
+
+### Verdict
+**Possible but would require reframing.**
+
+---
+
+## 9. Journal of Banking and Finance
+This is also plausible.
+
+### Why it fits
+- empirical finance,
+- alternative assets,
+- methodological work with applications.
+
+### Verdict
+**A reasonable mid-tier field option.**
+
+---
+
+## 10. Journal of Corporate Finance
+Less natural than JEmpFin or JFEC, unless you reposition toward:
+- private equity as corporate financing channel,
+- LP/GP performance measurement,
+- implications for capital allocation.
+
+### Verdict
+**Possible but not the cleanest fit.**
+
+---
+
+# Journals that are less good fits unless the paper changes a lot
+
+## JFQA
+You asked “better suited than JFQA,” so let me be blunt:
+- JFQA is not impossible,
+- but it is probably not the cleanest fit.
+
+### Why not ideal
+The paper’s strongest contribution is not a crisp new finance fact.
+It is:
+- estimator design,
+- identification,
+- stability,
+- pseudo-targets,
+- simulation-backed caution.
+
+JFQA may ask for a stronger clean finance result than your evidence is designed to deliver.
+
+---
+
+## Journal of Finance / JFE / RFS
+Unlikely unless the paper is radically sharpened and the empirical contribution becomes much bigger.
+
+You would need something like:
+- a much more general illiquid-asset pricing framework,
+- very strong theoretical novelty,
+- and a field-wide empirical consequence beyond PE.
+
+---
+
+## Journal of Econometrics
+Only if you push hard toward a genuine econometrics paper.
+
+That would require:
+- much more formal theory,
+- less PE-specific exposition,
+- stronger novelty in the asymptotics or extremum estimation under overlap/random fields,
+- perhaps less empirical section.
+
+As written, it is finance-econometrics, not straight econometrics.
+
+---
+
+# My practical ranking for your current draft
+
+If I rank likely fit × quality match × realistic outcome:
+
+### Tier 1 best fits
+1. **Journal of Financial Econometrics**
+2. **Review of Finance**
+3. **Review of Asset Pricing Studies**
+
+### Tier 2 strong realistic outlets
+4. **Journal of Empirical Finance**
+5. **Journal of Banking and Finance**
+6. **Financial Management**
+
+### Tier 3 more specialized/practitioner
+7. **Journal of Alternative Investments**
+
+---
+
+# If you ask me what I would do
+
+## If you want the paper judged on its true contribution:
+Submit to **Journal of Financial Econometrics**.
+
+Why:
+- your paper is really about identification, estimands, finite-sample behavior, and inference under difficult data;
+- JFEC readers/referees are more likely to appreciate that;
+- the paper does not need to pretend to discover PE’s true factor structure.
+
+## If you want a more prestigious finance-field swing:
+Try **Review of Finance** after revising the framing.
+
+## If you want a solid, sensible finance outlet with decent acceptance odds:
+Try **Journal of Empirical Finance**.
+
+---
+
+# One more important point: your best journal depends on which version of the paper you want to write
+
+## Version A: econometric-finance identification paper
+Emphasize:
+- pseudo-true parameter
+- target shift
+- finite-sample stabilization
+- horizon as regularization
+- identification limits
+
+Best journals:
+- **JFEC**
+- **RAPS**
+- maybe **RoF**
+
+## Version B: private-equity empirical methods paper
+Emphasize:
+- PE benchmarking
+- alpha instability
+- NAV contamination
+- seasoned-vintage sample design
+- stable market beta inference
+
+Best journals:
+- **JEmpFin**
+- **JBF**
+- **Financial Management**
+- **RoF** if very polished
+
+## Version C: pure econometrics paper
+Emphasize:
+- LMD estimation under random-field dependence
+- horizon-indexed extremum estimators
+- pseudo-target asymptotics
+- SHAC under overlapping non-traded panels
+
+Best journals:
+- **Journal of Econometrics** only if heavily reworked
+
+---
+
+If you want, I can next do one of two very useful things:
+
+1. **Give you a journal-by-journal probability/fit table**  
+   (JFQA, JFEC, RoF, RAPS, JEmpFin, JBF, FM, etc.)
+
+2. **Tell you how to revise the paper differently for JFEC vs RoF vs JEmpFin**  
+   so you can choose a submission strategy.
