@@ -89,10 +89,10 @@ The authors alone are responsible for the content and writing of the paper.
 
 
 \abstract{
-We develop a semiparametric framework for estimating stochastic discount factors from pooled non-traded cash flows. 
+We study semiparametric estimation of stochastic discount factors from pooled non-traded cash flows. 
 The framework generalizes the inception-based approach of \cite{DLP12} and accommodates dependence induced by overlapping cash flow streams. 
-We show that horizon choice creates a finite-sample bias-variance-like tradeoff: averaging pricing errors over additional compounding dates can substantially improve estimator stability, even though longer horizons alter the population pricing restriction. 
-We apply the framework to private equity and discuss its implications for identification and model specification in empirical work with sparse, illiquid cash-flow data.
+We show that horizon choice creates a tradeoff between structural fidelity and finite-sample stability: averaging pricing errors over additional compounding dates can substantially improve estimator stability, even though longer horizons alter the population pricing restriction. 
+We apply the framework to private equity and use it to study identification and model stability in sparse, illiquid cash-flow panels.
 }
 
 
@@ -111,25 +111,25 @@ The seminal contribution of \citet{DLP12} shows how to estimate abnormal perform
 \citet{KN16} develop a closely related framework that links private-equity cash flows to public-market benchmarks while emphasizing the role of fund overlap and cross-sectional dependence. 
 These approaches have become central tools in empirical work on private assets because they avoid the strong distributional assumptions required by fully parametric models and can be implemented directly on cash-flow data.
 
-At the same time, existing semiparametric approaches leave open an important practical question: how do cash-flow-based SDF estimators behave in the finite samples researchers actually observe? 
+At the same time, existing semiparametric approaches leave open an important practical question: how do cash-flow-based SDF estimators behave in the finite samples researchers actually observe, and which economically meaningful objects can those samples identify with stability? 
 Private-equity panels are typically sparse, nonlinear, and heavily overlapping across funds and vintages. 
 In addition, recent vintages often contain large reported NAV components, so empirical conclusions may reflect continuation values and sample construction as much as underlying risk. 
 In such settings, conclusions about alpha, market exposure, or multifactor structure may depend not only on economics, but also on horizon choice, estimator variance, and the treatment of cross-fund dependence.
 
-This paper studies semiparametric cash-flow-based SDF estimation when the econometrician is not restricted to discounting all pooled cash flows back to fund inception. 
+This paper studies this identification problem in semiparametric cash-flow-based SDF estimation when the econometrician is not restricted to discounting all pooled cash flows back to fund inception. 
 Our starting point is simple. 
 In typical private-equity samples, inception-only pricing errors can be highly unstable because the estimating equations are nonlinear and the effective cross-sectional sample size is limited. 
 A natural response is to average pricing errors over additional compounding dates rather than evaluate all discounted cash flows only at inception. 
 But this is not merely a statistical refinement. Once pricing errors are evaluated at horizons beyond inception, the estimator generally targets a different population object. 
 Horizon choice therefore creates a tradeoff between finite-sample stabilization and population target shift: longer horizons can improve finite-sample behavior by smoothing the sample criterion, but they also change the underlying population pricing restriction through what we term a timing-risk-premium component.
 
-The paper's first contribution is conceptual. 
+The paper's first contribution is to characterize identification in this setting. 
 We derive a generalized pooled-cash-flow pricing framework that makes explicit how the choice of discounting date affects the estimand. 
 This formulation nests the inception-only criterion of \citet{DLP12} as a special case. 
 It also clarifies the relation to \citet{KN16}: their estimator is closely connected to our framework, but it is not obtained as a literal special case because the order of aggregation differs. 
 Framing the problem in this way makes explicit a distinction that, to our knowledge, has not been formalized in the semiparametric private-equity SDF literature: a horizon may improve finite-sample performance without preserving the original inception-based pricing restriction.
 
-Our second contribution is methodological. 
+Our second contribution is methodological in service of that identification problem. 
 We formulate the estimator as a nonlinear least-mean-distance (LMD) problem for pooled, non-traded cash flows \citep{PP97}. 
 This objective-function representation is useful because it makes the role of horizon choice transparent, accommodates alternative weighting schemes, and yields a clean comparison to existing semiparametric estimators. 
 Building on this representation, we develop an increasing-domain asymptotic framework for inference under dependence induced by overlapping funds and adjacent vintages. 
@@ -142,14 +142,14 @@ On one margin, inception-only discounting preserves the original zero-net-presen
 On the other margin, averaging pricing errors over additional compounding dates can materially improve finite-sample performance, but it does so by changing the population pricing restriction. 
 Our goal is not to treat horizon choice as a purely mechanical implementation detail, but to characterize this tradeoff explicitly and provide guidance on how researchers should navigate it in empirical work.
 
-We study this problem in three steps. 
+We study this identification and stability problem in three steps. 
 First, we derive the generalized pooled-cash-flow objective and the corresponding asymptotic framework. 
 Second, we use simulations calibrated to private-equity-like cash-flow environments to evaluate how horizon choice affects finite-sample bias and variance. 
 Third, we implement the estimator in the Preqin cash-flow database for North American U.S.-dollar buyout (BO) and venture-capital (VC) funds and assess specification stability using both asymptotic inference and $hv$-block cross-validation diagnostics \citep{R00} tailored to overlapping cash-flow dependence.
 
 Our empirical results yield three main messages, all of which we interpret as diagnostics about identification under currently available private-equity cash-flow panels rather than as definitive statements about the population factor structure of private equity. 
 First, including recent vintages with large NAV components can mechanically inflate measured market exposure, underscoring the importance of sample construction in private-equity asset pricing. 
-Second, within our sample, parsimonious single-factor market specifications applied to seasoned vintages are substantially more stable than richer alternatives. 
+Second, within our sample, parsimonious single-factor market specifications applied to seasoned vintages are the most stable among the specifications we consider. 
 Third, $\alpha$ terms and additional factors are only weakly identified in the available data and become highly sensitive to Horizon choice and finite-sample noise, even when asymptotic inference is supplemented with cross-validation diagnostics. 
 Taken together, these results suggest that, in our sample and under our semiparametric design, current cash-flow panels support more stable inference about broad market exposure in seasoned buyout and venture-capital portfolios than about abnormal performance or richer factor decompositions.
 
@@ -1385,7 +1385,7 @@ A clear upward-drift pattern is present in both sub-samples: as more recent, uns
 For BO under value weighting, $\hat{\beta}_{\mathrm{MKT}}$ at the 0-year Horizon (see Remark~\ref{rem:horizon_def}) rises from approximately 1.23 with a 2011 vintage cutoff to roughly 2.42 with the full sample (2021).
 Notably, most of the increase is concentrated in vintages after 2016, where $\hat{\beta}_{\mathrm{MKT}}$ jumps sharply from 1.53 (2016 cutoff) to 2.34 (2017 cutoff), reflecting the disproportionate influence of young, unrealized funds.
 For VC, the drift is similarly dramatic: the FW estimate at the 0-year Horizon climbs from approximately 1.57 (2011 cutoff) to 2.33 with the full sample.
-Discounting all final NAVs by 50\% substantially flattens the upward trend: the BO FW estimate range compresses to 1.09--1.65, and the VC FW range to 1.41--1.54, confirming that the drift is attributable to the outsized mechanical reliance on subjectively reported Net Asset Values for young funds.
+Discounting all final NAVs by 50\% substantially flattens the upward trend: the BO FW estimate range compresses to 1.09--1.65, and the VC FW range to 1.41--1.54, consistent with the view that the drift is partly attributable to the outsized mechanical reliance on subjectively reported Net Asset Values for young funds.
 These findings reinforce the sample restriction to the 2010 maximum vintage year applied throughout the remainder of this section.
 
 \begin{figure}[htbp]
@@ -1420,13 +1420,13 @@ Figure~\ref{fig:nav_disc_BOVC_MKT} reports single-factor MKT estimates under fiv
 For BO, the estimated market beta decreases monotonically with the NAV discount.
 At the 0-year Horizon under EW, $\hat{\beta}_{\mathrm{MKT}}$ drops from 1.26 (no discount) to 1.19 (25\% discount), 1.12 (50\%), 1.03 (75\%), and 0.94 (100\% write-off); under FW, the corresponding range is 1.20 to 0.98.
 At the 15-year Horizon, the EW estimate ranges from 0.81 (no discount) to 0.55 (100\% write-off), while the FW estimate spans 0.84 to 0.62.
-The qualitative conclusion is robust across all NAV treatments: the single-factor market model remains economically plausible and stable.
+The qualitative conclusion is robust across all NAV treatments: the single-factor market model remains economically plausible and comparatively stable.
 
 For VC under EW, the pattern is analogous but the sensitivity is more muted in percentage terms due to the higher baseline beta: the 0-year estimate declines from 1.88 (no discount) to 1.84 (25\%), 1.80 (50\%), 1.77 (75\%), and 1.74 (100\%); at the 15-year Horizon, from 1.30 (no discount) to 1.09 (100\% write-off).
 Under FW, the sensitivity is more pronounced, particularly at longer Horizons: the 0-year estimate ranges from 1.59 to 1.34, while the 15-year estimate declines from 1.07 to 0.73.
 
 This analysis demonstrates that terminal NAV treatment has a material but bounded effect on estimated factor loadings.
-The monotonic relationship confirms the intuition that reported NAVs mechanically inflate estimated betas: funds whose final cash flow is a subjective valuation rather than a realized exit price appear more systematically risky because their NAVs partially co-move with public market indices.
+The monotonic relationship is consistent with the intuition that reported NAVs mechanically inflate estimated betas: funds whose final cash flow is a subjective valuation rather than a realized exit price appear more systematically risky because their NAVs partially co-move with public market indices.
 Importantly, even under the extreme assumption of a complete NAV write-off, the first qualitative conclusions of this subsection can be summarized as follows: BO maintains a market beta near or below unity, while VC retains a substantially higher systematic exposure.
 We do not impose a model-based residual-value adjustment, as this would constitute a separate research agenda \citep{JLRS20,brown2023nowcasting}.
 Instead, the range spanned by the five NAV treatments provides a transparent envelope of estimation uncertainty attributable to terminal value measurement.
@@ -1454,13 +1454,13 @@ Instead, the range spanned by the five NAV treatments provides a transparent env
 \label{sec:simulation_study}
 
 
-Our Monte Carlo experiments examine the bias and variance of our estimation methodology in finite samples.\footnote{As with any simulation study, it investigates the ability to identify the assumed data generating process rather than validating the corresponding SDF model itself.}
+Our Monte Carlo experiments examine the finite-sample behavior of our estimation methodology through bias and variance.\footnote{As with any simulation study, it investigates the ability to identify the assumed data generating process rather than validating the corresponding SDF model itself.}
 Specifically, we investigate five key dimensions of the estimation framework:
 (i) the finite-sample efficiency gains of forming vintage-year portfolios versus using individual funds;
 (ii) the tradeoff between expanding the time-series dimension (number of vintage years) and the cross-sectional dimension (funds per vintage);
 (iii) the robustness of the estimates to the functional specification of the SDF (simple linear vs.\ exponential affine);
 (iv) the behavior of multivariate identification under idiosyncratic noise using two-factor models; and
-(v) as our main overarching topic, the optimal choice of the maximum compounding Horizon (i.e., the set of discounting dates $\mathcal{T}$).
+(v) as the central design choice in the paper, the optimal choice of the maximum compounding Horizon (i.e., the set of discounting dates $\mathcal{T}$).
 
 We use historical $q$-investment factors from 1986 to 2005 and simulate 20 funds for each of these 20 vintage years.
 This means we condition our simulation analysis on realized $q$-investment factors paths (see the Macro-Conditioning Kernel discussion in Section \ref{sec:asset_pricing_pooled}).
@@ -1538,8 +1538,8 @@ In the two-factor case, the market beta bias is actually minimized later, around
 
 However, a salient difference emerges at extremely short compounding Horizons.
 At a 1-month Horizon (resembling an NPV-only discounting framework), the exponential affine formulation deteriorates much more severely in both models, manifesting a larger upward bias (e.g., in the single-factor case, $\hat{\beta}_{\mathrm{MKT}} = 1.21$ vs.\ $1.13$) and elevated variance ($0.39$ vs.\ $0.27$) compared to the linear model.
-Overall, the perceived superiority of exponential affine SDFs \citep{GM07,BMP08} does not translate into empirical finite-sample advantages in our framework.
-The simple linear model actually appears slightly better behaved.
+Overall, the simulation evidence does not indicate a systematic finite-sample advantage of exponential affine SDFs \citep{GM07,BMP08} in our framework.
+If anything, the simple linear model appears slightly better behaved in the reported designs.
 
 \begin{figure}[H]
 	\centering
@@ -1596,7 +1596,7 @@ Figure \ref{fig:sim_lifetimes} illustrates how the optimal Horizon shifts in res
 As anticipated, the intercept of the alpha parameter decreases for shorter fund lifetimes relative to our baseline scenario of a five-year investment period and a ten-year maximum holding period. 
 Specifically, for the shortest examined fund lifetime of two years (comprising a one-year investment period and a one-year maximum holding period), the beta bias is minimized at a 12.5-year Horizon, while the alpha bias is minimized at a 5-year Horizon. 
 Similarly, for a fund with a two-year investment period and a two-year maximum holding period, the minimum beta bias occurs at a 15-year Horizon, and the minimum alpha bias at a 7.5-year Horizon. 
-Consequently, these results demonstrate that for funds with short lifespans, the optimal Horizon extends significantly beyond the fund's actual lifetime.
+Consequently, these results suggest that for funds with short lifespans, the Horizon that minimizes bias can extend significantly beyond the fund's actual lifetime.
 
 \begin{figure}[H]
 	\centering
@@ -1607,27 +1607,26 @@ Consequently, these results demonstrate that for funds with short lifespans, the
 
 \paragraph{Size of set $\mathcal{T}$ (Maximum Compounding Horizon):}
 
-Our most critical simulation finding relates to the optimal choice of the maximum compounding Horizon, i.e., the size of the set of discounting dates $\mathcal{T}$.
+A central simulation finding concerns the choice of the maximum compounding Horizon, i.e., the size of the set of discounting dates $\mathcal{T}$.
 From a purely theoretical perspective (cf.\ Section \ref{sec:asset_pricing_pooled}), discounting all cash flows exclusively to the fund inception date, corresponding to a zero-month or NPV-only Horizon in our notation, should yield unconditionally unbiased estimates under the deal-level exact-pricing restriction (Equation~\eqref{eq:deal_pricing}).
 This minimal choice for $\mathcal{T}$ corresponds exactly to the established \cite{DLP12} framework.
 
-However, our diverse simulation results reveal a puzzling disconnect between asymptotic theory and finite-sample performance: extending the set of discounting dates deep into the fund lifecycle drastically improves the estimator's precision.
-Across almost all model specifications (see Figures \ref{fig:sim_q_factors} and \ref{fig:sim_exp_aff}), bias is minimized not at the theoretical 0-year Horizon, but rather around a 12.5 to 15-year compounding Horizon.
+However, our simulation results highlight a tension between structural fidelity and finite-sample recoverability: extending the set of discounting dates into the fund lifecycle can materially stabilize the estimator in the reported designs.
+Across most model specifications (see Figures \ref{fig:sim_q_factors} and \ref{fig:sim_exp_aff}), bias is minimized not at the theoretical 0-year Horizon, but rather around a 12.5 to 15-year compounding Horizon.
 At extremely short Horizons, idiosyncratic cash flow noise interacts non-linearly with the estimation procedure, inducing severe bias in factor loadings.
-By averaging pricing errors over multiple future dates, effectively incorporating the Timing Risk Premium, our approach acts as finite-sample stabilization device.
+Averaging pricing errors over multiple future dates therefore acts as a finite-sample stabilization device, while also introducing the timing component discussed in Section~\ref{sec:asset_pricing_pooled}.
 
-Interestingly, this ``variance reduction technique'' improves the mean estimate far more than it reduces standard errors. 
+In the reported designs, this stabilization improves the mean estimate far more than it reduces standard errors. 
 While estimator variance traces a shallow U-shape with a minimum near the 15-year Horizon (see Table \ref{tab:sim_q5_summary}) for fund with a lifetime of 15 years, this reduction is secondary to the striking stabilization of the parameter bias.
 However, our simulations for shorter fund lifetimes indicate that determining the optimal horizon requires tailored simulation designs rather than a simple heuristic assuming the optimal horizon always coincides with the fund's life.
 We further analyze these puzzling results from a theoretical perspective in Appendix \ref{sec:appendix_bias_variance}, detailing the finite-sample stabilization under $\mathcal{T}$-averaging and the role of the Timing Risk Premium.
 
 \paragraph{Simulation conclusion:}
-To conclude, our simulation study rationalizes two key practices from the \cite{DLP12} paper: (i) vintage-year portfolio formation helps to improve estimator precision, and (ii) increasing the number of funds per vintage seems more effective in controlling estimator variance than increasing the number of vintages (for i.i.d.\ error terms). 
-Our second finding provides an empirical rationale for the choice of \cite{DLP12} to employ infill asymptotics that let the number of underlying funds per vintage tend to infinity.
-However, our correctly specified scenarios cannot support the assumption of \cite{KN16} that (iii) the exponential affine SDF is superior to the simple linear SDF in a multi-period framework; in fact, their finite-sample bias and variance profiles are remarkably similar.
-Our simulation study also suggests that (iv) averaging pricing errors over multiple dates substantially reduces the severe short-Horizon bias inherent to the original procedure of \cite{DLP12}, which discounts all cash flows exclusively to the fund inception date.
-Ultimately, selecting a set of compounding dates $\mathcal{T}$ that spans a significant portion of the fund lifecycle appears to decrease finite-sample bias (and to a lesser extent, variance) more effectively than all other measures combined.
-Appendix~\ref{sec:appendix_bias_variance} explains the theoretical foundation of this observation by showing how NFV-induced timing terms can shift the population target while still improving finite-sample performance.
+To conclude, our simulation study supports several implementation choices used in the empirical application. 
+First, vintage-year portfolio formation helps improve estimator precision relative to single-fund estimation. 
+Second, in the reported designs, increasing the number of funds per vintage appears more effective in controlling estimator variance than increasing the number of vintages (for i.i.d.\ error terms). 
+Third, the simulation evidence does not indicate a clear finite-sample advantage of the exponential affine SDF over the simple linear SDF in this multi-period framework. 
+Fourth, averaging pricing errors over multiple dates materially reduces the short-Horizon bias of the inception-only criterion in the reported designs, even though Appendix~\ref{sec:appendix_bias_variance} shows that this stabilization comes with a horizon-specific target shift.
 
 Accordingly, in the empirical application we use vintage-year portfolios, the simple linear SDF, emphasize one-factor MKT specifications, treat two-factor results as exploratory, and focus on Horizons around 12.5--15 years while also reporting sensitivity over a broader grid.
 
@@ -1697,11 +1696,11 @@ For instance, when estimating the full sample through 2021, we apply ten folds; 
 \section{Empirical results for BO and VC data}
 \label{sec:empirical_results_bovc}
 
-This section presents the empirical SDF estimates for  Buyout (BO) and Venture Capital (VC) funds.
+This section presents the empirical SDF estimates for Buyout (BO) and Venture Capital (VC) funds and uses them to assess which specifications are stably identified in the current cash-flow panel.
 As the simulation study in Subsection~\ref{sec:simulation_study} confirms, we use vintage-year portfolios (VYPs) to estimate simple linear SDF models for the BO and VC sub-samples individually.
 We restrict the data to North American, USD-denominated funds from the Preqin dataset described in Subsection~\ref{sec:data}.
 This restriction ensures consistency between fund cash flows and the U.S.\ $q$-investment factors used throughout the analysis.
-Moreover, we only consider funds with a maximum vintage year of 2010, to reduce the reliance on unrealized NAVs (see Section~\ref{sec:empirical_vintage_cutoffs_bovc}.
+Moreover, we only consider funds with a maximum vintage year of 2010, to reduce the reliance on unrealized NAVs (see Section~\ref{sec:empirical_vintage_cutoffs_bovc}).
 
 We analyze BO and VC as two distinct asset classes with fundamentally different risk profiles and report both equal-weighted (EW) and value-weighted (FW) estimates across a grid of compounding Horizons.
 Our baseline specification is the single-factor MKT model estimated on vintage-year portfolios.
@@ -1720,11 +1719,11 @@ Tables~\ref{tab:empirical_bo_mkt}--\ref{tab:empirical_vc_mkt} and Figure~\ref{fi
 As anticipated by the simulation study, the market beta declines with the compounding Horizon for both asset classes.
 
 For BO under EW, $\hat{\beta}_{\mathrm{MKT}}$ ranges from approximately 1.22--1.27 at short Horizons (0--5~years) and decreases to 0.67 at 25--30~years; under FW, the corresponding range is 1.20--1.21 down to 0.69.
-The divergence between asymptotic and cross-validation diagnostics persists: asymptotic $t$-ratios ($t_A$) are moderate at short Horizons (e.g., 1.10 under EW at 0~years) and decline further at longer Horizons, while the cross-validation stability ratios remain high throughout ($\mathrm{SR}_{CV}$ ranging from 3.75 to 10.65 under EW and from 2.63 to 8.68 under FW), indicating robust stability across data subsets.
+The divergence between asymptotic and cross-validation diagnostics persists: asymptotic $t$-ratios ($t_A$) are moderate at short Horizons (e.g., 1.10 under EW at 0~years) and decline further at longer Horizons, while the cross-validation stability ratios remain high throughout ($\mathrm{SR}_{CV}$ ranging from 3.75 to 10.65 under EW and from 2.63 to 8.68 under FW), indicating comparatively stable estimates across data subsets.
 
 For VC, the market beta is substantially higher across all Horizons, consistent with venture capital's greater sensitivity to systematic risk.
 Under EW, $\hat{\beta}_{\mathrm{MKT}}$ reaches approximately 1.97--2.00 at 2.5--5~years and converges toward 1.04--1.13 beyond 25~years; under FW, the corresponding range is 1.64--1.68 down to 0.82--0.86.
-Despite the higher parameter variability reflected in larger asymptotic standard errors (SE$_A$ of 1.2--1.8), the cross-validation stability diagnostics indicate robust estimates ($\mathrm{SR}_{CV}$ of 3.59--4.46 under EW; 3.54--7.01 under FW), although somewhat lower than the BO stability ratios due to the more heterogeneous VC fund universe.
+Despite the higher parameter variability reflected in larger asymptotic standard errors (SE$_A$ of 1.2--1.8), the cross-validation stability diagnostics indicate comparatively stable estimates ($\mathrm{SR}_{CV}$ of 3.59--4.46 under EW; 3.54--7.01 under FW), although somewhat lower than the BO stability ratios due to the more heterogeneous VC fund universe.
 The converged long-horizon estimates (BO $\approx 0.67$, VC $\approx 1.0$--$1.1$ under EW) are economically plausible: BO funds, which invest in mature companies with stable cash flows, exhibit market exposure near or slightly below unity, while VC funds, which back early-stage ventures with highly uncertain outcomes, retain a substantially higher beta even at seasoned Horizons.
 
 \begin{figure}[htbp]
@@ -1811,19 +1810,19 @@ The converged long-horizon estimates (BO $\approx 0.67$, VC $\approx 1.0$--$1.1$
 \label{sec:empirical_alpha_bovc}
 
 Tables~\ref{tab:empirical_bo_alpha}--\ref{tab:empirical_vc_alpha} and Figure~\ref{fig:empirical_BOVC_Alpha} present the two-factor MKT~+~$\alpha$ model for BO and VC.
-The results show the pathological behavior anticipated by the simulation study: once an unconstrained alpha intercept is introduced, the estimation destabilizes and the MKT loading collapses.
+The results show the instability anticipated by the simulation study: once an alpha intercept is introduced, separation between the intercept and the MKT loading weakens materially.
 
-For BO, the alpha term absorbs a substantial share of the explanatory power: under EW, $\hat{\alpha}$ ranges from 0.003 to 0.006 per month and the MKT coefficient oscillates erratically between 0.41 and 1.01, with no stable convergence across Horizons; under FW, $\hat{\alpha}$ is persistently around 0.005--0.008 per month while the MKT loading collapses to values between 0.10 and 0.32.
+For BO, the alpha term absorbs a substantial share of the variation that otherwise loads on the market factor: under EW, $\hat{\alpha}$ ranges from 0.003 to 0.006 per month and the MKT coefficient oscillates between 0.41 and 1.01, with no stable convergence across Horizons; under FW, $\hat{\alpha}$ is persistently around 0.005--0.008 per month while the MKT loading falls to values between 0.10 and 0.32.
 The asymptotic standard errors are highly erratic, with several entries at or very near zero interspersed with values exceeding 25.
-Cross-validation fold dispersions for $\hat{\beta}_{\mathrm{MKT}}$ are large (0.09--0.49 under EW; 0.65--0.74 under FW), confirming that the collapsed point estimates are unstable across data subsets.
+Cross-validation fold dispersions for $\hat{\beta}_{\mathrm{MKT}}$ are large (0.09--0.49 under EW; 0.65--0.74 under FW), indicating that these point estimates are highly sensitive to the sample split.
 
-For VC, the two-factor model exhibits a distinctive and economically puzzling pattern.
+For VC, the two-factor model exhibits a different but similarly unstable pattern.
 At short Horizons (0--0.1~years under EW), the alpha term reaches its upper bound ($\hat{\alpha} = 0.020$/month) and the MKT coefficient drops to approximately 0.47, resembling the BO and PE behavior.
 However, as the Horizon increases beyond 5~years, the MKT loading rises steadily to values exceeding 2.3, while the alpha estimate turns progressively negative, reaching $-0.009$/month beyond 25~years.
-This reversal is unique to VC and likely reflects the extreme idiosyncratic risk inherent to early-stage ventures: at long Horizons, the optimizer increasingly attributes the high compounded returns of surviving VC funds to market co-movement rather than alpha, while the negative alpha compensates for selection effects among the funds that underperformed.
+We interpret this reversal as further evidence that the two-parameter decomposition is highly sensitive to Horizon choice and sample composition in VC.
 Under FW, the instability is somewhat attenuated ($\hat{\alpha}$ remains close to zero at short Horizons; $\hat{\beta}_{\mathrm{MKT}} \approx 1.73$), but the overall fragility persists, with asymptotic standard errors exceeding 7--11 across most Horizons.
 
-The BO and VC two-factor results therefore corroborate the conclusion drawn for PE: single-factor MKT models are the most statistically robust specification for private equity SDF estimation in our sample, given the limited cross-section of vintage-year portfolios.
+The BO and VC two-factor results therefore reinforce the conclusion drawn for PE: among the specifications considered here, single-factor MKT models are the most stable for private-equity SDF estimation in our sample.
 
 \begin{figure}[htbp]
 	\centering
@@ -1970,8 +1969,8 @@ The MKT loading in the VC two-factor models varies substantially across specific
 \paragraph{Summary.}
 The $q^5$-factor results for BO and VC confirm the fragility of multi-factor SDF estimation documented in the preceding MKT~+~$\alpha$ analysis.
 While some second-factor loadings attain statistical significance at isolated Horizons (particularly ME for BO and short-Horizon IA for VC), none of the four non-market factors produces a stable, economically interpretable loading across the full Horizon spectrum.
-The pervasive sign reversals and the extreme sensitivity of point estimates to the compounding Horizon indicate that these results are driven by finite-sample noise rather than genuine systematic risk exposures.
-We conclude that the $q^5$-factor two-factor models do not improve upon the single-factor MKT benchmark for either asset class.
+The pervasive sign reversals and the extreme sensitivity of point estimates to the compounding Horizon are more consistent with weak identification and Horizon sensitivity in the current sample than with a stably identified second factor.
+We therefore do not view the $q^5$-factor two-factor models as providing comparably stable evidence relative to the single-factor MKT benchmark for either asset class.
 
 \begin{figure}[H]
 	\centering
@@ -2035,10 +2034,9 @@ A broader and more independent cross-section (through longer panels of seasoned 
 \section{Conclusion}
 \label{sec:conclusion}
 
-Our generalized Least-Mean-Distance framework provides a flexible theoretical foundation for estimating Stochastic Discount Factor (SDF) models using non-traded cash flows.
-However, our Monte Carlo simulations reveal that semiparametric estimators in this setting face severe finite-sample challenges. 
-Specifically, we demonstrate that the foundational \cite{DLP12} estimator exhibits substantially greater bias and variance than previously recognized, particularly concerning the estimation of abnormal performance ($\alpha$). 
-Our framework shows that this finite-sample bias can be dramatically mitigated by averaging pricing errors across multiple future dates spanning the fund lifecycle, while estimator variance is most effectively controlled by increasing the number of cross-sectional units ($n$).
+Our generalized Least-Mean-Distance framework provides a flexible way to study identification and estimation of Stochastic Discount Factor (SDF) models using non-traded cash flows.
+The central theoretical result is that horizon choice is part of the estimand: inception-only discounting preserves the structural pooled pricing restriction, whereas horizon averaging can improve finite-sample stability while shifting the population target. 
+Our Monte Carlo simulations show that this tradeoff is economically relevant in the reported designs. Short-Horizon criteria can be highly unstable, particularly when abnormal performance ($\alpha$) is estimated jointly with market exposure, whereas averaging pricing errors across multiple dates can materially improve finite-sample recoverability.
 
 In the data-sparse private-equity domain, where estimation relies on a limited cross-section of vintage-year portfolios, our empirical application shows that large-sample asymptotic approximations should be interpreted with caution.
 The asymptotic theory remains valuable as an organizing benchmark and as motivation for dependence-robust variance estimation, but in the empirical sample its implications are often dominated by finite-sample distortions.
@@ -2067,10 +2065,10 @@ This would enable the estimation of company-level and gross-versus-net-of-fee SD
 Such structural refinements would naturally improve parameter accuracy and allow for a more rigorous analytical characterization of finite-sample bias. 
 Additionally, carefully integrating intermediate NAVs as proxies for unobservable true valuations could help alleviate the timing risk premium bias inherent to terminal value concepts, though this requires downweighting actual cash distributions in favor of subjective accounting metrics.
 
-Finally, we highlight the critical role of the compounding Horizon in empirical asset pricing for private markets. 
+Finally, we highlight the important role of the compounding Horizon in empirical asset pricing for private markets. 
 Reporting estimates on a future-value-based horizon grid yields an additional array of alternative parameter estimates that can be compared to the traditional NPV-based results of the \cite{DLP12} method.
-Our simulation study demonstrates that utilizing this future-value framework, i.e., averaging pricing errors over a broad set of discounting dates $\mathcal{T}$, yields vastly superior finite-sample properties compared to traditional net present value approaches. 
-The simulation bias is minimized when the set of discounting dates corresponds approximately to the typical fund lifecycle. 
+Our simulation study shows that utilizing this future-value framework, i.e., averaging pricing errors over a broad set of discounting dates $\mathcal{T}$, can materially improve finite-sample stability relative to traditional net present value approaches in the reported designs. 
+In the baseline simulations, bias is minimized at intermediate Horizons, around 12.5--15 years, rather than at the inception-only benchmark. 
 Developing a formal theoretical or empirical mechanism to endogenously determine the optimal configuration of $\mathcal{T}$ for a given fund sample and macroeconomic environment remains an important objective for future research.
 
 
@@ -2701,33 +2699,33 @@ However, \cite{DLP12} note that the four-factor model does not significantly imp
 
 Table~\ref{tab:driessen_comparison_bo_vc} and Table~\ref{tab:driessen_comparison_pe} present our empirical results for the single-factor (MKT), two-factor ($\alpha$, MKT), three-factor (MKT, SMB, HML), and four-factor ($\alpha$, MKT, SMB, HML) \cite{FF93} models for BO, VC, and PE at Horizon~0, using the conservatively restricted sample with a maximum vintage-year cutoff of 2010.
 
-We begin with the single-factor MKT model to establish a reliable baseline.
+We begin with the single-factor MKT model to establish a stable baseline.
 Under this specification, market betas are consistently positive and theoretically plausible: the cross-validation fold averages ($\hat{\beta}_{\mathrm{MKT}}$) are 1.23 for BO, 1.78 for VC, and 1.21 for PE under equal weighting (EW). 
 The CV standard deviations verify that these estimates are highly stable across data subsets (e.g., CV standard deviations of 0.12 for BO and 0.09 for PE under EW).
-This result provides solid empirical backing that private equity returns exhibit strong, persistent co-movement with the broader market.
+This result provides stable sample evidence that private equity cash flows co-move with the broader market.
 
-However, when explicitly allowing for an abnormal performance $\alpha$ intercept alongside the market factor, the estimation immediately collapses.
+However, when explicitly allowing for an abnormal performance $\alpha$ intercept alongside the market factor, the estimation becomes substantially less stable.
 In the two-factor model ($\alpha$, MKT), the alpha parameter becomes highly sensitive to random, fund-specific noise compounded over a fund's lifetime.
 Even when restricting the sample to mature vintages, private equity datasets contain relatively few funds per year. 
-As a result, there are simply not enough cross-sectional observations to adequately average out this idiosyncratic noise.
-Consequently, the optimizer overwhelmingly assigns inflated, positive alpha premiums (often hitting or nearing the 2\% monthly bound, e.g., $\hat{\alpha} = 0.020$ for VC under EW and $0.008$ for BO under FW), while the market betas are artificially driven toward zero (e.g., $\hat{\beta}_{\mathrm{MKT}} = 0.14$ for BO and $0.18$ for PE under FW).
+As a result, the effective cross-section is limited relative to the dimensionality of the nonlinear criterion.
+Consequently, the optimizer often assigns inflated, positive alpha premiums (often hitting or nearing the 2\% monthly bound, e.g., $\hat{\alpha} = 0.020$ for VC under EW and $0.008$ for BO under FW), while the market betas are driven toward zero (e.g., $\hat{\beta}_{\mathrm{MKT}} = 0.14$ for BO and $0.18$ for PE under FW).
 While asymptotic standard errors correspondingly explode or round to zero, the CV standard deviations reveal the actual parameter variation across data subsets. 
-For instance, the cross-validation fold dispersion for the MKT estimate exceeds $0.6$ for both BO and PE under FW, confirming that the collapsed point estimates are highly sensitive to the sample and untrustworthy.
+For instance, the cross-validation fold dispersion for the MKT estimate exceeds $0.6$ for both BO and PE under FW, confirming that the point estimates are highly sensitive to the sample and do not support strong interpretation.
 
-This pathological behavior extends directly to the multi-factor models.
+This instability pattern extends directly to the multi-factor models.
 When estimating the three-factor model (MKT, SMB, HML) \emph{without} an alpha term, the estimates roughly mirror the MKT-only model (e.g., BO $\hat{\beta}_{\mathrm{MKT}} = 1.35$ under EW), and the CV analysis shows reasonable out-of-sample stability, even though the asymptotic standard errors are vast.
 The SMB loading is consistently positive for BO and PE, but predominantly negative or near zero for VC. 
 Notably, this sign for VC generally \emph{reverses} the pattern reported by \cite{DLP12}, who find a strongly positive VC SMB loading ($\hat{\beta}_{\mathrm{SMB}}=1.83$). 
-The discrepancy likely reflects differences in the underlying datasets (Preqin vs.\ TVE) and sample periods, underscoring the severe fragility of multi-factor estimates in private equity.
+The discrepancy likely reflects differences in the underlying datasets (Preqin vs.\ TVE) and sample periods, underscoring the sensitivity of multi-factor estimates in private equity.
 
-But once the alpha term is reintroduced in the four-factor model ($\alpha$, MKT, SMB, HML), the framework fails for the same reasons as the two-factor model.
+But once the alpha term is reintroduced in the four-factor model ($\alpha$, MKT, SMB, HML), the same instability reappears.
 Because the alpha term absorbs the bulk of the remaining variance, the other factor loadings swing erratically: the asymptotic MKT coefficient for BO drops substantially (to $0.25$ under FW), while SMB and HML loadings reach extreme values.
 The pervasive asymptotic standard errors of exactly $(0.000)$ in these models often coincide with the estimates hitting the boundary constraints. 
-The CV analysis exposes this reality: rather than being estimated with zero error, the parameters swing erratically across hold-out sets, with CV standard deviations for the factor loadings routinely exceeding $0.4$, indicating that the multi-factor models are highly unreliable when alpha is included.
+The CV analysis exposes this reality: rather than being estimated with zero error, the parameters swing erratically across hold-out sets, with CV standard deviations for the factor loadings routinely exceeding $0.4$, indicating that the multi-factor models are not stably estimated when alpha is included.
 
-In conclusion, our empirical evaluation provides a strong, objective corroboration of the simulation-based warnings from Section~\ref{sec:simulation_study}: with the limited cross-section of only 20--40 vintage-year portfolios currently available in commercial private equity databases, any generalized SDF model attempting to simultaneously extract multiple pricing factors alongside an explicit alpha parameter is severely under-identified given the available cross-section. 
-The inclusion of an unconstrained or loosely constrained abnormal performance term confounds the signal with cross-sectional noise, significantly destabilizing the factor model estimates.
-Therefore, until substantially more granular and independent cross-sectional data becomes cleanly available, we conclude that the single-factor market model remains the most robust and estimable specification for private equity SDF performance evaluation in our implementations.
+In conclusion, our empirical evaluation is consistent with the simulation-based warning from Section~\ref{sec:simulation_study}: with the limited cross-section of only 20--40 vintage-year portfolios currently available in commercial private equity databases, generalized SDF models that attempt to separately estimate multiple pricing factors alongside an explicit alpha parameter appear too weakly identified in this sample to support stable inference. 
+The inclusion of an unconstrained or loosely constrained abnormal performance term confounds the signal with cross-sectional noise and materially destabilizes the factor model estimates.
+Therefore, until substantially more granular and independent cross-sectional data becomes cleanly available, the single-factor market model remains the most stable specification among those we estimate for private-equity SDF performance evaluation.
 
 
 

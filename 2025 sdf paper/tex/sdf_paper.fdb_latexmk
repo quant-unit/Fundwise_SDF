@@ -1,8 +1,8 @@
 # Fdb version 3
-["bibtex sdf_paper"] 1773144965 "sdf_paper.aux" "sdf_paper.bbl" "sdf_paper" 1773144965
+["bibtex sdf_paper"] 1773669519 "sdf_paper.aux" "sdf_paper.bbl" "sdf_paper" 1773669519
   "/usr/local/texlive/2017/texmf-dist/bibtex/bst/base/apalike.bst" 1480098433 24635 604dafcc79f521a11ea73e506e1fbd98 ""
-  "ref.bib" 1772661214 117359 196ea151560e3bc680cdf93b598adccc ""
-  "sdf_paper.aux" 1773144964 22903 1333d95253c624c1569ed7c78b16350f ""
+  "ref.bib" 1773491237 117758 1158152b99feac39b81ab8aeaa0ef96e ""
+  "sdf_paper.aux" 1773665384 23347 9f0cd912db379d3a8249d51144ffb24d ""
   (generated)
   "sdf_paper.bbl"
   "sdf_paper.blg"
