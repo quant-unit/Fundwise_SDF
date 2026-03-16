@@ -175,7 +175,7 @@ Section \ref{sec:conclusion} concludes.
 
 Appendix \ref{sec:appendix_bias_variance} analyzes the target shift and finite-sample stabilization under $\mathcal{T}$-averaging.
 Appendix \ref{sec:dlp_results_comparison} compares our simulation and empirical results to their \cite{DLP12} counterparts.
-Online Appendix \ref{sec:proofs_asymptotics_H} provides mathematical proofs.
+Online Appendix \ref{sec:proofs_asymptotics_H} provides the regularity conditions, inference details, and mathematical proofs.
 
 
 \section{Related literature}
@@ -226,7 +226,7 @@ While \cite{GSW20} highlighted that NPV-based measures are biased relative to pe
 We now formalize a semiparametric framework for SDF estimation with pooled cash flows. 
 Section~\ref{sec:asset_pricing_pooled} establishes the theoretical asset-pricing conditions and highlights how the choice of discounting date induces a ``timing risk premium". 
 Section~\ref{sec:fundwise_lmd_estimator} uses this insight to introduce a generalized least-mean-distance estimator that endogenizes the discounting dates. 
-Section~\ref{sec:asymptotic_framework} builds an increasing-domain asymptotic framework to accommodate the spatial dependence of overlapping vintage years, and Section~\ref{sec:asymptotic_inference} describes large-sample inference. 
+Section~\ref{sec:asymptotic_framework} summarizes the increasing-domain asymptotic benchmark and SHAC inference used to interpret the empirical results under overlapping vintage-year dependence. 
 Section~\ref{sec:comparison_to_similar_estimators} demonstrates how this LMD estimator nests the framework of \cite{DLP12} as a special case and relates to \cite{KN16}.
 
 \subsection{Asset pricing for pooled cash flows}
@@ -503,7 +503,7 @@ As we demonstrate in later sections, averaging pricing errors over extended hori
 		$R, r$ & Linear constraint matrix and vector \\
 		\bottomrule
 	\end{tabular}
-	\caption{Key notation for the LMD estimator and asymptotic inference (Sections \ref{sec:fundwise_lmd_estimator}--\ref{sec:asymptotic_inference}).}
+	\caption{Key notation for the LMD estimator and asymptotic benchmark (Sections \ref{sec:fundwise_lmd_estimator}--\ref{sec:asymptotic_framework}).}
 	\label{tab:notation_estimator}
 \end{table}
 
@@ -615,8 +615,10 @@ where $L: \mathbb{R}^{1} \rightarrow \mathbb{R}^1$ denotes a loss function, e.g.
 Throughout the paper, the weighted average fund pricing error $\bar{\epsilon}_i \equiv \bar{\epsilon}_i(\theta)$ is regarded as a nonlinear random function of the SDF parameter $\theta$.
 
 
-\subsection{Asymptotic framework}
+\subsection{Asymptotic benchmark and SHAC inference}
 \label{sec:asymptotic_framework}
+
+The asymptotic theory plays a supporting role in the paper. It provides a large-sample benchmark for the horizon-indexed criterion actually being estimated. It also clarifies the population object associated with each horizon and motivates the dependence-robust covariance estimator used later in the empirical analysis. Because the available private-equity panels remain small and heavily overlapping, we do not treat asymptotic approximations as the primary source of empirical credibility in finite samples.
 
 The large-sample analysis is stated for the horizon-indexed estimator
 \begin{equation}
@@ -634,29 +636,7 @@ L\!\left(
 \bar{\epsilon}^{(H)}_i(\theta)
 \right),
 \end{equation}
-where
-\[
-\bar{\epsilon}^{(H)}_i(\theta)
-:=
-w_i
-\cdot
-\frac{1}{\mathrm{card}(\mathcal T_{i,H})}
-\sum_{\tau \in \mathcal T_{i,H}}
-\epsilon_{\tau,i}(\theta)
-\]
-and
-\[
-\mathcal T_{i,H}
-=
-\left\{
-t_i^0,t_i^0+1,\dots,\min(t_i^0+12H,T_i^{\max})
-\right\}.
-\]
-Throughout this subsection, the horizon parameter \(H \ge 0\) is fixed while \(n \to \infty\).
-
-The notation in Equation~\eqref{eq:estimator_H} makes explicit that the estimator and its probability limit generally depend on the chosen horizon \(H\). This distinction is essential in the present setting because the pooled inception-based pricing restriction yields a structural zero-moment condition only for \(H=0\), whereas horizon averaging with \(H>0\) may introduce the timing wedge discussed in Section~\ref{sec:asset_pricing_pooled}.
-
-\paragraph{Population criterion and target parameter.}
+where \(\bar{\epsilon}^{(H)}_i(\theta)\) denotes the horizon-averaged pricing error based on \(\mathcal T_{i,H}\) from Section~\ref{sec:fundwise_lmd_estimator}. Throughout this subsection, the horizon parameter \(H \ge 0\) is fixed while \(n \to \infty\). The notation makes explicit that both the estimator and its probability limit generally depend on \(H\).
 
 Define the horizon-specific population objective by
 \begin{equation}
@@ -670,10 +650,9 @@ Q_H(\theta)
 L\!\left(
 \bar{\epsilon}^{(H)}_i(\theta)
 \right)
-\right].
+\right],
 \end{equation}
-Under the ergodicity implied by the increasing-domain framework (Assumption~\ref{as:vya}), the Ces\`aro average $n^{-1}\sum_{i=1}^n \mathbb{E}[L(\bar{\epsilon}_i^{(H)}(\theta))]$ converges to the single-unit expectation as $V\to\infty$.
-The corresponding population target is the unique maximizer
+and let the corresponding population target be
 \begin{equation}
 \label{eq:pseudotrue_target}
 \theta_H^\dagger
@@ -683,141 +662,14 @@ The corresponding population target is the unique maximizer
 
 \begin{remark}[Structural versus horizon-specific target]
 \label{rem:structural_vs_pseudotrue}
-The asymptotic theory below is intentionally formulated around \(\theta_H^\dagger\), not around \(\theta_0\). This distinction is substantive rather than cosmetic. For \(H=0\), the pooled inception-only criterion coincides with the structural pricing restriction of Section~\ref{sec:asset_pricing_pooled}, and hence \(\theta_0^\dagger=\theta_0\). For \(H>0\), the criterion generally targets a pseudo-true parameter \(\theta_H^\dagger \neq \theta_0\), because averaging over \(\tau>t_i^0\) may embed the timing wedge at the population level.
+The asymptotic benchmark is intentionally formulated around \(\theta_H^\dagger\), not around \(\theta_0\). For \(H=0\), the pooled inception-only criterion coincides with the structural pricing restriction of Section~\ref{sec:asset_pricing_pooled}, and hence \(\theta_0^\dagger=\theta_0\). For \(H>0\), the criterion generally targets a pseudo-true parameter \(\theta_H^\dagger \neq \theta_0\), because averaging over \(\tau>t_i^0\) may embed the timing wedge at the population level.
 \end{remark}
 
-This formulation keeps the asymptotic statements aligned with the estimator actually implemented in the empirical analysis. It also cleanly separates two conceptually distinct questions: (i) the large-sample behavior of the estimator relative to its own criterion, and (ii) the economic interpretation of that criterion relative to the structural parameter \(\theta_0\).
+We use increasing-domain asymptotics indexed by vintage years, with local overlap dependence and bounded within-vintage clustering; the full regularity conditions are stated in Online Appendix~\ref{sec:proofs_asymptotics_H}. Under those conditions, the estimator fits the semiparametric extremum framework of \citet{PP97} and \citet{NM94}, while the required uniform law of large numbers and random-field central limit theorem follow from \citet{JP09,JP12}.
 
-\subsubsection{Vintage-year increasing-domain asymptotics}
-
-By the value-additivity principle \citep{HR87}, the SDF restriction can be formulated for pooled cash flows at different aggregation levels. In the empirical implementation, we form vintage-year portfolios as cross-sectional units, because this reduces idiosyncratic fund-level noise while preserving economically meaningful variation across macro environments.
-
-\begin{assume}
-\label{as:portfolio}
-For each vintage year \(v\), we pool fund cash flows to form \(n_v\) portfolios, so that
-\[
-n = \sum_{v=1}^V n_v.
-\]
-The boundary cases are: (i) single-fund portfolios and (ii) one portfolio per vintage year. Both equal-weighted and value-weighted portfolio constructions are admissible.
-\end{assume}
-
-Without loss of generality, we continue to refer to the resulting cross-sectional units as funds. Let \(v_i := \mathrm{YEAR}(t_i^0)\) denote the vintage year of unit \(i\).
-
-The pricing error \(\bar{\epsilon}^{(H)}_i(\theta)\) is indexed by both unit identity and vintage year. Accordingly, the data are naturally represented as an increasing-domain random field rather than as a standard iid cross-section or a conventional long time series. Economically, dependence arises because adjacent vintage years are exposed to overlapping macroeconomic conditions and partially overlapping realized cash-flow windows.
-
-\begin{assume}[Vintage-year increasing-domain asymptotics]
-\label{as:vya}
-As \(n \to \infty\):
-\begin{enumerate}
-    \item The number of distinct vintage years satisfies \(V \to \infty\).
-    \item The number of units per vintage year is uniformly bounded: there exists \(\bar n < \infty\) such that \(n_v \le \bar n\) for all \(v\).
-    \item Fund lifetimes are uniformly bounded: there exists \(\bar T < \infty\) such that \(T_i^{\max} - t_i^0 \le \bar T\) for all \(i\).
-    \item The economic distance between units \(i\) and \(j\) is measured by
-    \[
-    d_{i,j}
-    =
-    |v_i - v_j|
-    +
-    \rho_0 \mathbf{1}_{\{i \neq j\}},
-    \qquad
-    \rho_0 > 0.
-    \]
-\end{enumerate}
-\end{assume}
-
-Assumption~\ref{as:vya} imposes increasing-domain asymptotics and rules out infill asymptotics in the sense of \citet{JP12}. The role of \(\rho_0>0\) is to prevent the field from becoming asymptotically dense at a fixed location. This is economically natural here: asymptotic information is generated by observing additional vintage years, not by observing an ever denser sample from a fixed macroeconomic environment.
-
-A useful implication of Assumption~\ref{as:vya}(2) is that the total number of observations \(n\) and the number of vintages \(V\) are of the same order. Indeed,
-\[
-V
-\le
-n
-=
-\sum_{v=1}^V n_v
-\le
-\bar n V,
-\]
-so \(n \asymp V\). Consequently, \(\sqrt{n}\)- and \(\sqrt{V}\)-rates are asymptotically equivalent up to a constant factor. Put differently, statistical information grows with the span of vintage years rather than with within-vintage clustering.
-
-This increasing-domain perspective differs from the infill framework of \citet{DLP12}, who fix the number of portfolios and let the number of underlying funds per portfolio diverge. Their asymptotic device is appropriate for consistency conditional on a fixed macroeconomic environment. By contrast, the present framework is designed for unconditional identification and inference when new vintages generate new realizations of macroeconomic conditions.
-
-\subsubsection{Uniform convergence of the criterion}
-
-The first step is a uniform law of large numbers for the horizon-specific sample criterion \(Q_{n,H}(\theta)\).
-
-\begin{assume}[Parameter space]
-\label{as:compact_theta}
-The parameter space $\Theta \subset \mathbb{R}^p$ is compact.
-\end{assume}
-
-\begin{assume}[Primitive regularity conditions for uniform convergence]
-\label{as:ulln_H}
-For each fixed \(H\):
-\begin{enumerate}
-    \item The array
-    \[
-    \left\{
-    \bar{\epsilon}^{(H)}_i(\theta)
-    :
-    i=1,\dots,n
-    \right\}
-    \]
-    is near-epoch dependent (NED) on an \(\alpha\)-mixing vintage-year process \(\{\eta_v\}_{v\ge 1}\), uniformly in \(\theta \in \Theta\) (that is, the NED approximation constants are bounded uniformly over \(\theta \in \Theta\) and \(i\)).
-    \item The loss function \(L(\cdot)\) is continuous and Lipschitz on the relevant support.
-    \item There exists \(p>2\) such that
-    \[
-    \sup_{\theta \in \Theta}
-    \mathbb E
-    \left[
-    \left|
-    L\!\left(\bar{\epsilon}^{(H)}_i(\theta)\right)
-    \right|^p
-    \right]
-    <
-    \infty
-    \]
-    uniformly in \(i\).
-    \item The criterion is stochastically equicontinuous in \(\theta\).
-\end{enumerate}
-\end{assume}
-
-Assumption~\ref{as:ulln_H} is stated at a deliberately primitive level: dependence is imposed on the underlying horizon-specific pricing errors, and the loss inherits the required regularity through continuity and Lipschitz continuity. This is preferable to assuming a law of large numbers directly for the transformed criterion because it ties the statistical assumptions more closely to the economic structure of the data.
-
-\begin{proposition}[Uniform law of large numbers]
-\label{prop:ulln_H}
-Under Assumptions~\ref{as:portfolio}, \ref{as:vya}, and \ref{as:ulln_H},
-\[
-\sup_{\theta \in \Theta}
-\left|
-Q_{n,H}(\theta) - Q_H(\theta)
-\right|
-\xrightarrow{p}
-0.
-\]
-\end{proposition}
-
-\begin{proof}[Outline of Proof]
-The result follows from a uniform law of large numbers for NED random fields on \(\alpha\)-mixing bases; see, for example, \citet[Theorem~6]{JP09}. The bounded-lifetime and bounded-within-vintage assumptions ensure that cross-sectional overlap remains local in vintage-year distance, while the moment and equicontinuity conditions deliver uniform stochastic control over \(\theta \in \Theta\).
-\end{proof}
-
-Economically, Proposition~\ref{prop:ulln_H} says that when the sample spans sufficiently many distinct vintages, the empirical criterion stabilizes around its population counterpart. This remains true whether the horizon is structural (\(H=0\)) or regularized (\(H>0\)); what changes across horizons is the population target itself.
-
-\subsubsection{Consistency}
-
-
-\begin{assume}[Identification of the horizon-specific target]
-\label{as:identification_H}
-For each fixed \(H\), the population criterion \(Q_H(\theta)\) has a unique maximizer
-\[
-\theta_H^\dagger
-=
-\arg\max_{\theta \in \Theta} Q_H(\theta).
-\]
-\end{assume}
-
-\begin{proposition}[Consistency]
+\begin{proposition}[Consistency around the horizon-specific target]
 \label{prop:consistency_H}
-Under Assumptions~\ref{as:portfolio}, \ref{as:vya}, \ref{as:compact_theta}, \ref{as:ulln_H}, and \ref{as:identification_H},
+Under the regularity conditions stated in Online Appendix~\ref{sec:proofs_asymptotics_H},
 \[
 \hat{\theta}_H
 \xrightarrow{p}
@@ -826,190 +678,28 @@ Under Assumptions~\ref{as:portfolio}, \ref{as:vya}, \ref{as:compact_theta}, \ref
 \]
 \end{proposition}
 
-\begin{proof}[Outline of Proof]
-The claim follows from the standard extremum-estimator argument of \citet[Theorem~2.1]{NM94}. Proposition~\ref{prop:ulln_H} yields uniform convergence of \(Q_{n,H}\) to \(Q_H\), Assumption~\ref{as:identification_H} provides a unique maximizer, and compactness of \(\Theta\) (Assumption~\ref{as:compact_theta}) together with continuity of the discount-factor mapping \(\Psi_{\tau,t}(\theta)\) and the loss function deliver the remaining conditions.
-\end{proof}
-
-\begin{corollary}[Structural consistency under inception-only pricing]
-\label{cor:consistency_structural}
-Suppose, in addition, that \(H=0\) and that the pooled inception-only pricing restriction of Proposition~\ref{theo:inception_value} holds at the structural parameter \(\theta_0\). Then
-\[
-\theta_0^\dagger = \theta_0
-\qquad \text{and hence} \qquad
-\hat{\theta}_0 \xrightarrow{p} \theta_0.
-\]
-\end{corollary}
-
-Corollary~\ref{cor:consistency_structural} isolates the special case in which the estimator converges to the structural SDF parameter. 
-This separation is useful empirically because it prevents the reader from conflating consistency of the extremum estimator with structural validity of a horizon-averaged criterion.
-
-\subsubsection{Central limit theorem}
-
-Building on the consistency result in Proposition~\ref{prop:consistency_H}, we now establish the asymptotic distribution of the estimator. 
-Like consistency, the central limit theorem is formulated around the horizon-specific target \(\theta_H^\dagger\). 
-This requires a standard local-convergence condition on the sample Hessian.
-
-\begin{assume}[Local Hessian convergence]
-	\label{as:hessian_lln_H}
-	For each fixed $H$, there exists an open neighborhood $\mathcal N_H$ of
-	$\theta_H^\dagger$ such that
-	\[
-	\sup_{\theta \in \mathcal N_H}
-	\left\|
-	\nabla_{\theta\theta} Q_{n,H}(\theta)
-	-
-	\nabla_{\theta\theta} Q_H(\theta)
-	\right\|
-	\xrightarrow{p}
-	0.
-	\]
-\end{assume}
-
-Assumption~\ref{as:hessian_lln_H} is the standard sample-Hessian convergence condition used in extremum-estimator central limit theorems \citep[e.g.,][]{NM94}. 
-In our increasing-domain framework, it follows from the same random-field LLN argument as Proposition~\ref{prop:ulln_H}, provided that the Hessian contributions inherit the required NED, moment, and stochastic-equicontinuity properties from the pricing errors $\bar\epsilon_i^{(H)}(\theta)$ and the loss function $L(\cdot)$.
+This is the horizon-indexed analogue of the standard extremum-estimator consistency result of \citet{NM94}. For \(H=0\), the probability limit coincides with the structural parameter \(\theta_0\); for \(H>0\), consistency is around the horizon-specific pseudo-target \(\theta_H^\dagger\).
 
 \begin{proposition}[Asymptotic normality around the horizon-specific target]
-	\label{prop:clt_H}
-	Under the conditions of Proposition~\ref{prop:consistency_H} and Assumption~\ref{as:hessian_lln_H}, suppose additionally that:
-	\begin{enumerate}
-		\item \(\theta_H^\dagger\) lies in the interior of \(\Theta\);
-		\item \(Q_H(\theta)\) is twice continuously differentiable in a neighborhood of \(\theta_H^\dagger\);
-		\item the Hessian
-		\[
-		\mathcal{H}_H
-		:=
-		\nabla_{\theta\theta} Q_H(\theta_H^\dagger)
-		\]
-		is nonsingular; and
-		\item a central limit theorem holds for the score contributions
-		\[
-		s_i^{(H)}(\theta)
-		:=
-		\nabla_\theta
-		L\!\left(
-		\bar{\epsilon}^{(H)}_i(\theta)
-		\right).
-		\]
-	\end{enumerate}
-	Then
-	\[
-	\sqrt{n}
-	\left(
-	\hat{\theta}_H - \theta_H^\dagger
-	\right)
-	\overset{d}{\longrightarrow}
-	\mathcal N(0,\Sigma_H),
-	\]
-	where
-	\[
-	\Sigma_H
-	=
-	\mathcal{H}_H^{-1}\Lambda_H \mathcal{H}_H^{-1},
-	\qquad
-	\Lambda_H
-	:=
-	\lim_{n\to\infty}
-	n \cdot
-	\mathrm{Var}
-	\!\left[
-	\nabla_\theta Q_{n,H}(\theta_H^\dagger)
-	\right].
-	\]
-\end{proposition}
-
-
-
-\begin{proof}[Outline of Proof]
-The result follows from the extremum-estimator CLT of \citet[Theorem~3.1]{NM94} combined with a central limit theorem for NED random fields under increasing-domain asymptotics; see \citet[Theorem~4]{JP12}. 
-The nonstandard feature in the present application is the vintage-year dependence of the score contributions. Assumptions~\ref{as:vya} and \ref{as:ulln_H} deliver the weak dependence and moment conditions needed to apply the random-field CLT (where compactness of \(\Theta\) is inherited from Assumption~\ref{as:compact_theta}).
-\end{proof}
-
-\begin{corollary}[Structural asymptotic normality in the inception-only case]
-\label{cor:clt_structural}
-Under the additional conditions of Corollary~\ref{cor:consistency_structural},
+\label{prop:clt_H}
+Under the regularity conditions stated in Online Appendix~\ref{sec:proofs_asymptotics_H},
 \[
 \sqrt{n}
 \left(
-\hat{\theta}_0 - \theta_0
+\hat{\theta}_H - \theta_H^\dagger
 \right)
 \overset{d}{\longrightarrow}
-\mathcal N(0,\Sigma_0).
-\]
-\end{corollary}
-
-\begin{remark}[Interpretation of the asymptotic center]
-\label{rem:interpretation_center}
-For \(H>0\), Proposition~\ref{prop:clt_H} is centered at \(\theta_H^\dagger\), not at \(\theta_0\). Therefore, large-sample inference in the horizon-averaged case pertains to the pseudo-true parameter defined by the criterion itself. Structural interpretation relative to \(\theta_0\) requires the target-shift analysis developed later in the paper.
-\end{remark}
-
-
-
-\subsection{Large sample inference}
-\label{sec:asymptotic_inference}
-
-Building on the asymptotic normality established above, we now turn to the practical implementation of large-sample inference. 
-Proposition~\ref{prop:clt_H} implies the familiar sandwich form
-\[
+\mathcal N(0,\Sigma_H),
+\qquad
 \Sigma_H
 =
 \mathcal{H}_H^{-1}\Lambda_H \mathcal{H}_H^{-1}.
 \]
-We now describe consistent estimators of the two building blocks \(\mathcal{H}_H\) and \(\Lambda_H\).
+\end{proposition}
 
-\paragraph{Score contributions.}
+This combines the extremum-estimator expansion of \citet{NM94} with the increasing-domain random-field CLT of \citet{JP12}. As with consistency, the special case \(H=0\) is centered at the structural parameter \(\theta_0\), whereas for \(H>0\) the asymptotic center is the pseudo-target \(\theta_H^\dagger\).
 
-It is useful to define the score contribution of unit \(i\) explicitly as
-\begin{equation}
-\label{eq:score_contribution_H}
-s_i^{(H)}(\theta)
-:=
-\nabla_\theta
-L\!\left(
-\bar{\epsilon}^{(H)}_i(\theta)
-\right)
-=
-L'\!\left(
-\bar{\epsilon}^{(H)}_i(\theta)
-\right)
-\cdot
-\nabla_\theta \bar{\epsilon}^{(H)}_i(\theta).
-\end{equation}
-For the quadratic loss \(L(x)=x^2\), Equation~\eqref{eq:score_contribution_H} simplifies to
-\[
-s_i^{(H)}(\theta)
-=
-2
-\bar{\epsilon}^{(H)}_i(\theta)
-\nabla_\theta \bar{\epsilon}^{(H)}_i(\theta).
-\]
-This explicit definition makes clear that the long-run covariance matrix \(\Lambda_H\) is the covariance of the criterion score, not the covariance of the pricing errors themselves.
-
-\paragraph{Hessian estimator.}
-
-A sample analogue of the Hessian is
-\begin{equation}
-\label{eq:hessian_estimator_H}
-\hat{\mathcal{H}}_H
-:=
-\nabla_{\theta\theta} Q_{n,H}(\hat\theta_H)
-=
--
-\frac{1}{n}
-\sum_{i=1}^n
-\nabla_{\theta\theta}
-L\!\left(
-\bar{\epsilon}^{(H)}_i(\hat\theta_H)
-\right).
-\end{equation}
-When analytic derivatives are unavailable, the derivatives entering Equation~\eqref{eq:hessian_estimator_H} can be computed numerically. 
-In practice, central finite differences are typically adequate, although automatic differentiation or quasi-Newton approximations may also be used. 
-For a methodological paper, the exact numerical routine is secondary; what matters asymptotically is that \(\hat{\mathcal{H}}_H\) consistently estimates \(\mathcal{H}_H\).
-In our empirical applications, we use the central difference approximations of \cite[Algorithm 2]{E17}.
-
-\paragraph{SHAC estimator of the long-run covariance matrix.}
-
-Because the score contributions exhibit vintage-year dependence, a heteroskedasticity- and autocorrelation-consistent covariance estimator is required. 
-We use the spatial HAC estimator of \cite[Equation 2]{KS11} adapted to the vintage-year metric:
+For large-sample inference, let \(s_i^{(H)}(\theta):=\nabla_\theta L(\bar{\epsilon}^{(H)}_i(\theta))\) denote the score contribution and \(\hat{\mathcal{H}}_H:=\nabla_{\theta\theta} Q_{n,H}(\hat\theta_H)\) the sample Hessian. We estimate the long-run score covariance with the spatial HAC estimator of \citet{KS11} adapted to the vintage-year metric:
 \begin{equation}
 \label{eq:shac_H}
 \hat{\Lambda}_H
@@ -1028,28 +718,7 @@ K\!\left(
 \frac{d_{i,j}}{b_V}
 \right),
 \end{equation}
-where \(d_{i,j}\) is the vintage-year distance from Assumption~\ref{as:vya} and \(K(\cdot)\) is a symmetric kernel satisfying the standard SHAC regularity conditions.
-
-A convenient choice is the Bartlett kernel
-\[
-K_{BT}(x)
-=
-\max(0,1-|x|).
-\]
-The associated bandwidth sequence \(b_V\) should satisfy
-\begin{equation}
-\label{eq:bandwidth_conditions}
-b_V \to \infty,
-\qquad
-\frac{b_V}{V} \to 0,
-\end{equation}
-which is the standard condition ensuring consistent long-run covariance estimation under weak dependence. Equation~\eqref{eq:bandwidth_conditions} is a population-theoretic requirement. In empirical work, one may implement a finite truncation rule for \(b_V\) and assess robustness across reasonable bandwidth choices.
-
-This distinction between theory and implementation is important. A fixed bandwidth may be useful in a finite sample and can be justified as an approximation when dependence becomes negligible beyond a small vintage-year lag. However, under generic weak dependence, consistency of SHAC is established under a diverging bandwidth sequence such as Equation~\eqref{eq:bandwidth_conditions}.
-
-\paragraph{Asymptotic covariance matrix, standard errors, and Wald tests.}
-
-The estimated asymptotic covariance matrix is
+where \(d_{i,j}\) is the vintage-year distance metric and \(b_V\) is the SHAC bandwidth; the full assumptions and implementation details are given in Online Appendix~\ref{sec:proofs_asymptotics_H}. The resulting asymptotic covariance matrix is
 \begin{equation}
 \label{eq:avar_H}
 \widehat{\mathrm{Avar}}(\hat\theta_H)
@@ -1059,46 +728,16 @@ The estimated asymptotic covariance matrix is
 \hat{\Lambda}_H
 \hat{\mathcal{H}}_H^{-1}.
 \end{equation}
-Accordingly, the vector of asymptotic standard errors is
-\begin{equation}
-\label{eq:se_H}
-\mathrm{SE}(\hat\theta_H)
-=
-\sqrt{
-\mathrm{diag}
-\left[
-\widehat{\mathrm{Avar}}(\hat\theta_H)
-\right]
-}.
-\end{equation}
-This presentation is algebraically equivalent to the usual sandwich formula, but it is more transparent because the \(1/n\) scaling is stated directly at the covariance-matrix level.
+Asymptotic standard errors then follow in the usual way $\mathrm{SE}(\hat\theta_H)=\sqrt{\mathrm{diag}\left[\widehat{\mathrm{Avar}}(\hat\theta_H\right]}$.
 
-For linear hypotheses of the form
-\[
-\text{Hypothesis}_0: \mathcal{R}\theta = r,
-\qquad
-\text{Hypothesis}_1: \mathcal{R}\theta \neq r,
-\]
-the Wald statistic is
-\begin{equation}
-\label{eq:wald_H}
-W_H
-=
-(\mathcal{R} \hat\theta_H-r)^\top
-\left[
-\mathcal{R}
-\widehat{\mathrm{Avar}}(\hat\theta_H)
-\mathcal{R}^\top
-\right]^{-1}
-(\mathcal{R} \hat\theta_H-r),
-\end{equation}
-which is asymptotically $\chi_q^2$ under $\text{Hypothesis}_0$, where $q$ is the number of linear restrictions.
-% Here $\hat{\theta}$ is the $p \times 1$ parameter vector, $R$ is a $q \times p$ matrix, and $r$ is a $q \times 1$ vector. Usually, we select $R$ as the $p \times p$ identity matrix, and $r$ as $p \times 1$ vector (e.g., of zeros). Under the null hypothesis, $W_H$ is chi-squared distributed with $q$ degrees of freedom. As large values of $W$ indicate the rejection of $H_0$, the corresponding p-value is calculated as $1 - F_{\chi_q^2}(W)$ where $F_{\chi_q^2}$ is the cumulative distribution function of a chi-squared random variable with $q$ degrees of freedom.
+
 
 \begin{remark}[Interpretation of inference when \(H>0\)]
 \label{rem:wald_interpretation_H}
-When \(H>0\), the standard errors and Wald tests in Equations~\eqref{eq:se_H} and \eqref{eq:wald_H} are asymptotically valid for the pseudo-true parameter \(\theta_H^\dagger\). They should therefore be interpreted as inference on the horizon-specific criterion minimizer, not automatically as structural tests about \(\theta_0\).
+When \(H>0\), inference based on Equation~\eqref{eq:avar_H} pertains to the pseudo-true parameter \(\theta_H^\dagger\). It therefore serves as a large-sample benchmark for stability diagnostics and model comparison, not as a direct structural test about \(\theta_0\).
 \end{remark}
+
+Even when finite-sample inference is weak, this asymptotic benchmark still matters for interpretation. It defines the population object associated with each horizon-indexed criterion, makes the distinction between the structural parameter \(\theta_0\) and the horizon-specific pseudo-target \(\theta_H^\dagger\) precise, and motivates the SHAC covariance estimator as the appropriate large-sample reference under overlap dependence. In the empirical sections, we use this benchmark to interpret, rather than override, the simulation and cross-validation evidence.
 
 
 
@@ -1635,7 +1274,7 @@ Accordingly, in the empirical application we use vintage-year portfolios, the si
 
 \subsection{Role of asymptotic inference}
 
-To assess the parameter significance in the empirical application, we compute the asymptotic standard errors as outlined in Subsection \ref{sec:asymptotic_inference}.
+To assess the parameter significance in the empirical application, we compute the asymptotic standard errors as outlined in Subsection \ref{sec:asymptotic_framework}.
 For the Bartlett kernel's bandwidth $b_n=D$ we select 12 years, i.e., funds with absolute vintage year differences larger than 12 years are assumed to be independent.
 The asymptotic results provide the benchmark large-sample approximation. 
 
@@ -1655,7 +1294,7 @@ For instance, when estimating the full sample through 2021, we apply ten folds; 
 	\label{rem:cv_diagnostic}
 	The $hv$-block cross-validation quantities reported throughout this paper serve as \textbf{stability diagnostics and model-selection criteria} rather than inferential standard errors.
 	They summarize the fold-to-fold variation in parameter estimates under dependence-reducing sample splits and are informative about model sensitivity and effective parameter curvature, but they do not provide a valid null distribution for the full-sample estimator.
-	For formal statistical inference (standard errors and hypothesis tests), we rely on the SHAC-based asymptotic framework of Section~\ref{sec:asymptotic_inference}.
+	For formal statistical inference (standard errors and hypothesis tests), we rely on the SHAC-based asymptotic benchmark of Section~\ref{sec:asymptotic_framework}.
 	In practice, $hv$-block cross-validation complements the asymptotic analysis by (i) diagnosing model stability and out-of-sample performance without relying on asymptotics and (ii) flagging over-parameterized specifications that appear well-identified in-sample but collapse out-of-sample.
 \end{remark}
 
@@ -2822,14 +2461,35 @@ Therefore, until substantially more granular and independent cross-sectional dat
 
 
 
-\section{\emph{Online Appendix:} Proofs for the horizon-specific asymptotic results}
+\section{\emph{Online Appendix:} Asymptotic conditions, inference details, and proofs for the horizon-specific results}
 \label{sec:proofs_asymptotics_H}
 
 
 
-This subsection supplies detailed proofs for Proposition~\ref{prop:ulln_H},
-Proposition~\ref{prop:consistency_H}, and Proposition~\ref{prop:clt_H}.
-For notational convenience, fix a horizon $H \ge 0$ throughout and write
+\noindent
+This appendix collects the full regularity conditions, the auxiliary uniform law of large numbers, the implementation details for large-sample inference, and the proofs omitted from Section~\ref{sec:asymptotic_framework}. Throughout, fix a horizon $H \ge 0$.
+
+\subsection{Asymptotic setup and assumptions}
+
+The large-sample benchmark is built around the horizon-averaged pricing error
+\[
+\bar{\epsilon}^{(H)}_i(\theta)
+:=
+w_i
+\cdot
+\frac{1}{\mathrm{card}(\mathcal T_{i,H})}
+\sum_{\tau \in \mathcal T_{i,H}}
+\epsilon_{\tau,i}(\theta)
+\]
+with
+\[
+\mathcal T_{i,H}
+=
+\left\{
+t_i^0,t_i^0+1,\dots,\min(t_i^0+12H,T_i^{\max})
+\right\},
+\]
+and the corresponding loss contribution
 \[
 Z_i(\theta)
 :=
@@ -2841,25 +2501,156 @@ Q_{n,H}(\theta)
 \frac{1}{n}
 \sum_{i=1}^n Z_i(\theta).
 \]
-Whenever convenient, re-index the observations by vintage year and within-vintage slot.
-That is, for vintage year $v=1,\dots,V$ and slot $\ell=1,\dots,n_v$, let
-$Z_{v,\ell}(\theta)$ denote the loss contribution of the $\ell$th unit in vintage year $v$.
-By Assumption~\ref{as:vya}(2), $n_v \le \bar n < \infty$ uniformly in $v$.
-Hence the sample can be embedded in the increasing strip
+
+By the value-additivity principle \citep{HR87}, the SDF restriction can be formulated for pooled cash flows at different aggregation levels. In the empirical implementation, we form vintage-year portfolios as cross-sectional units, because this reduces idiosyncratic fund-level noise while preserving economically meaningful variation across macro environments.
+
+\begin{assume}
+\label{as:portfolio}
+For each vintage year \(v\), we pool fund cash flows to form \(n_v\) portfolios, so that
+\[
+n = \sum_{v=1}^V n_v.
+\]
+The boundary cases are: (i) single-fund portfolios and (ii) one portfolio per vintage year. Both equal-weighted and value-weighted portfolio constructions are admissible.
+\end{assume}
+
+Without loss of generality, we continue to refer to the resulting cross-sectional units as funds. Let \(v_i := \mathrm{YEAR}(t_i^0)\) denote the vintage year of unit \(i\). The pricing error \(\bar{\epsilon}^{(H)}_i(\theta)\) is therefore indexed by both unit identity and vintage year, so the data are naturally represented as an increasing-domain random field rather than as a standard iid cross-section or a conventional long time series. Economically, dependence arises because adjacent vintage years are exposed to overlapping macroeconomic conditions and partially overlapping realized cash-flow windows.
+
+\begin{assume}[Vintage-year increasing-domain asymptotics]
+\label{as:vya}
+As \(n \to \infty\):
+\begin{enumerate}
+    \item The number of distinct vintage years satisfies \(V \to \infty\).
+    \item The number of units per vintage year is uniformly bounded: there exists \(\bar n < \infty\) such that \(n_v \le \bar n\) for all \(v\).
+    \item Fund lifetimes are uniformly bounded: there exists \(\bar T < \infty\) such that \(T_i^{\max} - t_i^0 \le \bar T\) for all \(i\).
+    \item The economic distance between units \(i\) and \(j\) is measured by
+    \[
+    d_{i,j}
+    =
+    |v_i - v_j|
+    +
+    \rho_0 \mathbf{1}_{\{i \neq j\}},
+    \qquad
+    \rho_0 > 0.
+    \]
+\end{enumerate}
+\end{assume}
+
+Assumption~\ref{as:vya} imposes increasing-domain asymptotics and rules out infill asymptotics in the sense of \citet{JP12}. The role of \(\rho_0>0\) is to prevent the field from becoming asymptotically dense at a fixed location. This is economically natural here: asymptotic information is generated by observing additional vintage years, not by observing an ever denser sample from a fixed macroeconomic environment.
+
+A useful implication of Assumption~\ref{as:vya}(2) is that the total number of observations \(n\) and the number of vintages \(V\) are of the same order. Indeed,
+\[
+V
+\le
+n
+=
+\sum_{v=1}^V n_v
+\le
+\bar n V,
+\]
+so \(n \asymp V\). Consequently, \(\sqrt{n}\)- and \(\sqrt{V}\)-rates are asymptotically equivalent up to a constant factor. Put differently, statistical information grows with the span of vintage years rather than with within-vintage clustering.
+
+Whenever convenient, re-index the observations by vintage year and within-vintage slot. That is, for vintage year $v=1,\dots,V$ and slot $\ell=1,\dots,n_v$, let $Z_{v,\ell}(\theta)$ denote the loss contribution of the $\ell$th unit in vintage year $v$. By Assumption~\ref{as:vya}(2), $n_v \le \bar n < \infty$ uniformly in $v$. Hence the sample can be embedded in the increasing strip
 \[
 \Lambda_V
 :=
 \{(v,\ell): v=1,\dots,V,\ \ell=1,\dots,\bar n\},
 \]
-where empty slots are padded with zeros. Because $\bar n$ is fixed while $V \to \infty$,
-this embedding preserves the order of the sample size, and Assumption~\ref{as:vya}(2)
-implies
+where empty slots are padded with zeros. Because $\bar n$ is fixed while $V \to \infty$, this embedding preserves the order of the sample size, and Assumption~\ref{as:vya}(2) implies
 \[
 V \le n = \sum_{v=1}^V n_v \le \bar n V,
 \qquad\text{so that}\qquad
 n \asymp V.
 \]
 
+This increasing-domain perspective differs from the infill framework of \citet{DLP12}, who fix the number of portfolios and let the number of underlying funds per portfolio diverge. Their asymptotic device is appropriate for consistency conditional on a fixed macroeconomic environment. By contrast, the present framework is designed for unconditional identification and inference when new vintages generate new realizations of macroeconomic conditions.
+
+\begin{assume}[Parameter space]
+\label{as:compact_theta}
+The parameter space $\Theta \subset \mathbb{R}^p$ is compact.
+\end{assume}
+
+\begin{assume}[Primitive regularity conditions for uniform convergence]
+\label{as:ulln_H}
+For each fixed \(H\):
+\begin{enumerate}
+    \item The array
+    \[
+    \left\{
+    \bar{\epsilon}^{(H)}_i(\theta)
+    :
+    i=1,\dots,n
+    \right\}
+    \]
+    is near-epoch dependent (NED) on an \(\alpha\)-mixing vintage-year process \(\{\eta_v\}_{v\ge 1}\), uniformly in \(\theta \in \Theta\) (that is, the NED approximation constants are bounded uniformly over \(\theta \in \Theta\) and \(i\)).
+    \item The loss function \(L(\cdot)\) is continuous and Lipschitz on the relevant support.
+    \item There exists \(p>2\) such that
+    \[
+    \sup_{\theta \in \Theta}
+    \mathbb E
+    \left[
+    \left|
+    L\!\left(\bar{\epsilon}^{(H)}_i(\theta)\right)
+    \right|^p
+    \right]
+    <
+    \infty
+    \]
+    uniformly in \(i\).
+    \item The criterion is stochastically equicontinuous in \(\theta\).
+\end{enumerate}
+\end{assume}
+
+Assumption~\ref{as:ulln_H} is stated at a deliberately primitive level: dependence is imposed on the underlying horizon-specific pricing errors, and the loss inherits the required regularity through continuity and Lipschitz continuity. This is preferable to assuming a law of large numbers directly for the transformed criterion because it ties the statistical assumptions more closely to the economic structure of the data.
+
+\begin{assume}[Identification of the horizon-specific target]
+\label{as:identification_H}
+For each fixed \(H\), the population criterion \(Q_H(\theta)\) has a unique maximizer
+\[
+\theta_H^\dagger
+:=
+\arg\max_{\theta \in \Theta} Q_H(\theta).
+\]
+\end{assume}
+
+\begin{assume}[Local Hessian convergence]
+\label{as:hessian_lln_H}
+For each fixed $H$, there exists an open neighborhood $\mathcal N_H$ of $\theta_H^\dagger$ such that
+\[
+\sup_{\theta \in \mathcal N_H}
+\left\|
+\nabla_{\theta\theta} Q_{n,H}(\theta)
+-
+\nabla_{\theta\theta} Q_H(\theta)
+\right\|
+\xrightarrow{p}
+0.
+\]
+\end{assume}
+
+Assumption~\ref{as:hessian_lln_H} is the standard sample-Hessian convergence condition used in extremum-estimator central limit theorems \citep[e.g.,][]{NM94}. In our increasing-domain framework, it follows from the same random-field LLN argument as Proposition~\ref{prop:ulln_H}, provided that the Hessian contributions inherit the required NED, moment, and stochastic-equicontinuity properties from the pricing errors $\bar\epsilon_i^{(H)}(\theta)$ and the loss function $L(\cdot)$.
+
+Together, these conditions supply the formal underpinning for the compact benchmark stated in Section~\ref{sec:asymptotic_framework}. They pin down the population object associated with each fixed horizon, justify the increasing-domain normalization indexed by vintage years, and provide the regularity needed for the SHAC-based large-sample covariance approximation.
+
+\subsection{Auxiliary uniform law of large numbers}
+
+The first technical step is a uniform law of large numbers for the horizon-specific sample criterion \(Q_{n,H}(\theta)\).
+
+\begin{proposition}[Uniform law of large numbers]
+\label{prop:ulln_H}
+Under Assumptions~\ref{as:portfolio}, \ref{as:vya}, and \ref{as:ulln_H},
+\[
+\sup_{\theta \in \Theta}
+\left|
+Q_{n,H}(\theta) - Q_H(\theta)
+\right|
+\xrightarrow{p}
+0.
+\]
+\end{proposition}
+
+A short route to Proposition~\ref{prop:ulln_H} is to apply a uniform law of large numbers for NED random fields on \(\alpha\)-mixing bases; see, for example, \citet[Theorem~6]{JP09}. The bounded-lifetime and bounded-within-vintage assumptions ensure that cross-sectional overlap remains local in vintage-year distance, while the moment and equicontinuity conditions deliver uniform stochastic control over \(\theta \in \Theta\).
+
+Economically, Proposition~\ref{prop:ulln_H} says that when the sample spans sufficiently many distinct vintages, the empirical criterion stabilizes around its population counterpart. This remains true whether the horizon is structural (\(H=0\)) or regularized (\(H>0\)); what changes across horizons is the population target itself.
 
 \begin{proof}[Proof of Proposition~\ref{prop:ulln_H}]
 	Let
@@ -2937,6 +2728,10 @@ n \asymp V.
 	\xrightarrow{p}0.
 	\]
 \end{proof}
+
+\subsection{Proof of consistency}
+
+Proposition~\ref{prop:consistency_H} is the horizon-indexed analogue of the standard extremum-estimator consistency result of \citet[Theorem~2.1]{NM94}. Proposition~\ref{prop:ulln_H} supplies the required uniform convergence, Assumption~\ref{as:identification_H} provides a unique maximizer, and compactness of \(\Theta\) together with continuity of the pricing-error map delivers the remaining regularity.
 
 \begin{proof}[Proof of Proposition~\ref{prop:consistency_H}]
 	We verify the hypotheses of the standard argmax theorem directly.
@@ -3020,6 +2815,22 @@ n \asymp V.
 	This is exactly the conclusion of \citet[Theorem~2.1]{NM94} specialized to the present criterion.
 \end{proof}
 
+\begin{corollary}[Structural consistency under inception-only pricing]
+\label{cor:consistency_structural}
+Suppose, in addition, that \(H=0\) and that the pooled inception-only pricing restriction of Proposition~\ref{theo:inception_value} holds at the structural parameter \(\theta_0\). Then
+\[
+\theta_0^\dagger = \theta_0
+\qquad \text{and hence} \qquad
+\hat{\theta}_0 \xrightarrow{p} \theta_0.
+\]
+\end{corollary}
+
+Corollary~\ref{cor:consistency_structural} isolates the special case in which the estimator converges to the structural SDF parameter. This separation is useful empirically because it prevents the reader from conflating consistency of the extremum estimator with structural validity of a horizon-averaged criterion.
+
+\subsection{Proof of asymptotic normality}
+
+Building on Proposition~\ref{prop:consistency_H}, the central limit theorem is centered at the horizon-specific target \(\theta_H^\dagger\). The argument combines the extremum-estimator expansion of \citet[Theorem~3.1]{NM94} with a central limit theorem for NED random fields under increasing-domain asymptotics; see \citet[Theorem~4]{JP12}. The nonstandard feature is the vintage-year dependence of the score contributions.
+
 \begin{proof}[Proof of Proposition~\ref{prop:clt_H}]
 	Define the sample score and sample Hessian by
 	\[
@@ -3073,7 +2884,7 @@ n \asymp V.
 	\frac{1}{\sqrt{n}}
 	\sum_{i=1}^n s_i^{(H)}(\theta_H^\dagger).
 	\]
-	Assumption~4 of Proposition~\ref{prop:clt_H} imposes a central limit theorem for these score contributions.
+	Under the regularity conditions collected in this appendix, a central limit theorem holds for these score contributions.
 	In the present application, the required weak dependence is generated by the vintage-year random field, and the maintained NED and mixing conditions are exactly those covered by \citet[Theorem~4]{JP12} under increasing-domain asymptotics.
 	Therefore,
 	\[
@@ -3134,6 +2945,133 @@ n \asymp V.
 	\]
 	This is the extremum-estimator central limit theorem of \citet[Theorem~3.1]{NM94}, with the non-iid score CLT supplied by the increasing-domain NED random-field result of \citet[Theorem~4]{JP12}.
 \end{proof}
+
+\begin{corollary}[Structural asymptotic normality in the inception-only case]
+\label{cor:clt_structural}
+Under the additional conditions of Corollary~\ref{cor:consistency_structural},
+\[
+\sqrt{n}
+\left(
+\hat{\theta}_0 - \theta_0
+\right)
+\overset{d}{\longrightarrow}
+\mathcal N(0,\Sigma_0).
+\]
+\end{corollary}
+
+\begin{remark}[Interpretation of the asymptotic center]
+\label{rem:interpretation_center}
+For \(H>0\), Proposition~\ref{prop:clt_H} is centered at \(\theta_H^\dagger\), not at \(\theta_0\). Therefore, large-sample inference in the horizon-averaged case pertains to the pseudo-true parameter defined by the criterion itself. Structural interpretation relative to \(\theta_0\) requires the target-shift analysis developed later in the paper.
+\end{remark}
+
+\subsection{Inference details for score, Hessian, bandwidth, and SHAC implementation}
+
+This subsection records the implementation details omitted from the compressed main-text discussion in Section~\ref{sec:asymptotic_framework}.
+
+\paragraph{Score contributions.}
+
+It is useful to define the score contribution of unit \(i\) explicitly as
+\begin{equation}
+\label{eq:score_contribution_H}
+s_i^{(H)}(\theta)
+:=
+\nabla_\theta
+L\!\left(
+\bar{\epsilon}^{(H)}_i(\theta)
+\right)
+=
+L'\!\left(
+\bar{\epsilon}^{(H)}_i(\theta)
+\right)
+\cdot
+\nabla_\theta \bar{\epsilon}^{(H)}_i(\theta).
+\end{equation}
+For the quadratic loss \(L(x)=x^2\), Equation~\eqref{eq:score_contribution_H} simplifies to
+\[
+s_i^{(H)}(\theta)
+=
+2
+\bar{\epsilon}^{(H)}_i(\theta)
+\nabla_\theta \bar{\epsilon}^{(H)}_i(\theta).
+\]
+This explicit definition makes clear that the long-run covariance matrix \(\Lambda_H\) is the covariance of the criterion score, not the covariance of the pricing errors themselves.
+
+\paragraph{Hessian estimator.}
+
+A sample analogue of the Hessian is
+\begin{equation}
+\label{eq:hessian_estimator_H}
+\hat{\mathcal{H}}_H
+:=
+\nabla_{\theta\theta} Q_{n,H}(\hat\theta_H)
+=
+-
+\frac{1}{n}
+\sum_{i=1}^n
+\nabla_{\theta\theta}
+L\!\left(
+\bar{\epsilon}^{(H)}_i(\hat\theta_H)
+\right).
+\end{equation}
+When analytic derivatives are unavailable, the derivatives entering Equation~\eqref{eq:hessian_estimator_H} can be computed numerically. In practice, central finite differences are typically adequate, although automatic differentiation or quasi-Newton approximations may also be used. For a methodological paper, the exact numerical routine is secondary; what matters asymptotically is that \(\hat{\mathcal{H}}_H\) consistently estimates \(\mathcal{H}_H\). In our empirical applications, we use the central difference approximations of \cite[Algorithm 2]{E17}.
+
+\paragraph{SHAC estimator of the long-run covariance matrix.}
+
+Because the score contributions exhibit vintage-year dependence, a heteroskedasticity- and autocorrelation-consistent covariance estimator is required. We use the spatial HAC estimator of \cite[Equation 2]{KS11} adapted to the vintage-year metric in Equation~\eqref{eq:shac_H}, where \(d_{i,j}\) is the vintage-year distance from Assumption~\ref{as:vya} and \(K(\cdot)\) is a symmetric kernel satisfying the standard SHAC regularity conditions.
+
+A convenient choice is the Bartlett kernel
+\[
+K_{BT}(x)
+=
+\max(0,1-|x|).
+\]
+The associated bandwidth sequence \(b_V\) should satisfy
+\begin{equation}
+\label{eq:bandwidth_conditions}
+b_V \to \infty,
+\qquad
+\frac{b_V}{V} \to 0,
+\end{equation}
+which is the standard condition ensuring consistent long-run covariance estimation under weak dependence. Equation~\eqref{eq:bandwidth_conditions} is a population-theoretic requirement. In empirical work, one may implement a finite truncation rule for \(b_V\) and assess robustness across reasonable bandwidth choices.
+
+This distinction between theory and implementation is important. A fixed bandwidth may be useful in a finite sample and can be justified as an approximation when dependence becomes negligible beyond a small vintage-year lag. However, under generic weak dependence, consistency of SHAC is established under a diverging bandwidth sequence such as Equation~\eqref{eq:bandwidth_conditions}.
+
+\paragraph{Asymptotic covariance matrix, standard errors, and Wald tests.}
+
+Building on Equation~\eqref{eq:avar_H}, the vector of asymptotic standard errors is
+\begin{equation}
+\label{eq:se_H}
+\mathrm{SE}(\hat\theta_H)
+=
+\sqrt{
+\mathrm{diag}
+\left[
+\widehat{\mathrm{Avar}}(\hat\theta_H)
+\right]
+}.
+\end{equation}
+This presentation is algebraically equivalent to the usual sandwich formula, but it is more transparent because the \(1/n\) scaling is stated directly at the covariance-matrix level.
+
+For linear hypotheses of the form
+\[
+\text{Hypothesis}_0: \mathcal{R}\theta = r,
+\qquad
+\text{Hypothesis}_1: \mathcal{R}\theta \neq r,
+\]
+the Wald statistic is
+\begin{equation}
+\label{eq:wald_H}
+W_H
+=
+(\mathcal{R} \hat\theta_H-r)^\top
+\left[
+\mathcal{R}
+\widehat{\mathrm{Avar}}(\hat\theta_H)
+\mathcal{R}^\top
+\right]^{-1}
+(\mathcal{R} \hat\theta_H-r),
+\end{equation}
+which is asymptotically $\chi_q^2$ under $\text{Hypothesis}_0$, where $q$ is the number of linear restrictions.
 
 
 
