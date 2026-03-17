@@ -191,13 +191,13 @@ While these methods can uncover latent factors or deal-level dynamics, they typi
 
 Consequently, semiparametric approaches have gained prominence, starting with the seminal cross-sectional GMM framework of \cite{DLP12}. 
 They estimate a linear factor model that minimizes the squared pricing errors of PE vintage year portfolios, explicitly evaluating discounted cash flows at fund inception.
-In a nutshell, the \cite{DLP12} estimator determines the estimated alpha and beta parameters of a linear factor model by minimizing the squared net present value (NPV) of all $n$ fund cash flows in a least-squares optimization problem:
+In a nutshell, the \cite{DLP12} estimator determines the estimated alpha and beta parameters of a linear factor model by minimizing the squared net present value (NPV) of all $n$ fund portfolio cash flows in a least-squares optimization problem:
 \begin{equation}
 	\label{eq:dlp12_minimization}
  	\left(\hat{\alpha}, \hat{\beta} \right) = 
  	\arg \min_{\alpha,\beta} \sum_{i=1}^n \left[ {NPV}_i(\alpha,\beta) \right]^2
 \end{equation}
-with $NPV$ for the $i$th fund
+with $NPV$ for the $i$th fund portfolio
 \[
 {NPV}_i(\alpha,\beta) =
 \sum_{t \in \left\{ t_{0,i}, t_{0,i} + 1, \dots \right\}}
@@ -210,15 +210,75 @@ with $NPV$ for the $i$th fund
 \]
 with fund inception date $t_{0,i}$, risk-free rate $r_{f, s}$ and excess market return $r_{\mathrm{market}}$.
 Here, the \cite{DLP12} approach relies on the identifying assumption that the model is correctly specified, so that $\mathbb{E}[NPV_i(\theta_0)] = 0$.
-Building on this, \cite{KN16} introduced the Generalized Public Market Equivalent (GPME) framework, shifting the estimation of the SDF to public market data while evaluating PE cash flows in a second step. 
+
+Interestingly, \cite{DLP09wp}, in an earlier working paper version, explicitly study the \textbf{small-sample properties} of the $NPV$ approach. 
+They show that the sum of squared $NPV$s is not globally convex and then propose two alternative ``GMM-style'' criteria: a log-transformed specification based on the difference between the log present values of investments and dividends, and a PME-style ratio specification akin to \cite{KS05} that minimizes the distance between the ratio of these present values and one. 
+
+In contrast to \cite{DLP12}, \cite{DLP09wp} base their estimator on $\mathcal{M}$ NPV moments in a least-squares optimization problem:
+\begin{equation}
+	\label{eq:dlp09_minimization}
+	\left(\hat{\alpha}, \hat{\beta} \right) = 
+	\arg \min_{\alpha,\beta} \sum_{x=1}^{\mathcal{M}} \left[ \overline{NPV}_x(\alpha,\beta) \right]^2
+\end{equation}
+with $\overline{NPV}$ moment
+\[
+\overline{NPV}_x(\alpha,\beta) =
+\frac{1}{n_x}
+\sum_{i=1}^{n_x}
+\sum_{t \in \left\{ t_{0,i}, t_{0,i} + 1, \dots \right\}}
+\frac{\mathrm{CashFlow}_{i,t}}{
+	\prod_{s=t_{0,i}+1}^{t}
+	\left( 
+	1 + r_{f, s} + \alpha + \beta r_{\mathrm{market}, s}
+	\right)
+} 
+\]
+where the number of funds per moment $n_x$ tends to infinity.
+
+In this specific asymptotic setting, \cite{DLP09wp} argue that both transformations preserve asymptotic consistency but introduce a small-sample nonlinearity bias, with the log specification generating a downward bias for $\alpha$ and the ratio specification an upward bias. Their simulations further suggest that the log transformation yields the smaller small-sample bias of the two.
+
+% Extend / better formulate
+They use then...
+\[
+\frac{\mathbb{E}\!\left[\overline{PV}_i^D(\theta_0)\right]}{\mathbb{E}\!\left[\overline{PV}_i^I(\theta_0)\right]}
+- 1
+\]
+
+% Extend / better formulate
+Their finite-sample issues stem from the fact that they use $\overline{PV}$ instead of $PV$...
+
+% Extend / better formulate
+To see the source of this finite-sample recentering, let $PV_i^D(\theta)$ and $PV_i^I(\theta)$ denote the discounted present values of divestments and investments for a given portfolio $i$, so that $NPV_i(\theta)=PV_i^D(\theta)-PV_i^I(\theta)$. Then at $\theta_0$,
+
+% This is not what they do, but would be better ... why?
+\begin{equation}
+\mathbb{E}\!\left[\frac{PV_i^D(\theta_0)}{PV_i^I(\theta_0)}\right]
+- 1
+=
+\mathbb{E}\!\left[\frac{NPV_i(\theta_0)}{PV_i^I(\theta_0)}\right]
+=
+\mathrm{Cov} \left( NPV_i(\theta_0) , \frac{1}{PV_i^I(\theta_0)} \right)
+\end{equation}
+
+% Rewrite to match with the above
+Hence, the inception restriction $\mathbb{E}[NPV_i(\theta_0)]=0$ does not by itself imply that the finite-sample PME ratio is centered at one. 
+Under the \cite{DLP09wp} cross-sectional asymptotic scheme, however, the ratio is formed from portfolio averages: as the number of projects within a fund-of-funds grows, $PV_i^D(\theta)$ and $PV_i^I(\theta)$ converge to their portfolio-level expectations, so the ratio converges to one at $\theta_0$ whenever the inception-based population restriction holds.
+In that sense, \cite{DLP09wp} analyze a ``nonlinearity bias in small samples" rather than a distinct population pseudo-target.
+This differs from our horizon-specific case, where the pseudo-target $\theta_H^\dagger$ arises because changing the set of discounting dates changes the population criterion itself and may embed the timing wedge.
+Note that the two \cite{DLP09wp} alternatives can only be applied when investment and divestment cash flows can be observed separately (and labeled accurately).
+
+
+Building on the SDF-pricing idea, \cite{KN16} introduced the Generalized Public Market Equivalent (GPME) framework, shifting the estimation of the SDF to public market data while evaluating PE cash flows in a second step. 
 Importantly, \cite{KN16} were the first to apply a spatial heteroskedasticity and autocorrelation consistent (SHAC) covariance matrix estimator \citep{C99} to account for the economic distance (cash flow overlap) between PE funds, moving beyond simple cross-sectional bootstrapping.
 
-Further complementing this cash flow dimension, a strand of literature models the informational frictions and smoothing inherent in reported Net Asset Values (NAVs) \citep{BGK19, JLRS20, brown2023nowcasting}. 
+Further complementing the cash-flow pricing dimension, a strand of literature models the informational frictions and smoothing inherent in reported Net Asset Values (NAVs) \citep{BGK19, JLRS20, brown2023nowcasting}. 
 Additionally, \cite{HSS23} leverage a similar generalized framework to evaluate private firms using credit market equivalents.
 Finally, for comprehensive methodological and empirical overviews of risk and return assessment in private equity, we refer to \cite{K19,korteweg2023risk}, who also discuss the popular \cite{D79} time-series regression that employs lagged returns to correct for stale valuations.
 
 Our paper's LMD framework contributes to this semiparametric literature by providing a loss-function formulation that encompasses the \cite{DLP12} approach and contextualizes the \cite{KN16} time-series analogue while supplying the rigorous increasing-domain asymptotic inference missing in earlier work (drawing on the spatial theory of \cite{PP97}, \cite{KS11}, and \cite{JP12}). 
 While \cite{GSW20} highlighted that NPV-based measures are biased relative to per-period returns, we explicitly formalize this discrepancy as a ``timing risk premium'', a concept related to recent literature on discount-rate risk in secondary markets \citep{boyer2023discount}.
+
+% Related conceptually, \citet{APR18} study pseudo-true SDFs in conditional traded-asset pricing models, where the pseudo-true parameter minimizes a conditional Hansen-Jagannathan distance and can be characterized through local factors or their mimicking portfolios. That paper is relevant for our framing because it emphasizes that pseudo-true targets in asset pricing are criterion-dependent objects under misspecification rather than automatically structural parameters. Our setting differs, however, in that the horizon-specific pseudo-target \(\theta_H^\dagger\) arises here because the pooled cash-flow criterion itself changes with the discounting horizon; the central issue is target shift induced by post-inception timing terms in non-traded private-equity cash flows, not selection of a best-fitting misspecified conditional SDF in traded-return data.
 
 \section{Methodology}
 \label{sec:spatial_sdf_methodology}
@@ -749,6 +809,8 @@ Our Least-Mean-Distance (LMD) estimator belongs to the broad class of semiparame
 The relationship to the existing private-equity asset-pricing literature is best understood at the level of objective functions and aggregation schemes. The estimator is most closely connected to \citet{DLP12}, while it is more loosely related to the time-series-like GMM construction of \citet{KN16}. The relevant point is not that all three estimators are identical, but rather that they occupy nearby positions in the same semiparametric estimation landscape.
 
 \subsubsection{Connection to \cite{DLP12}}
+
+\textcolor{orange}{Cross-sectional asymptotics: each vintage year portfolio needs to tend to finite many funds!}
 
 The connection to \citet{DLP12} is especially close. 
 Under the inception-only restriction, equal normalization, and quadratic loss, the LMD criterion coincides with the identity-weighted one-step cross-sectional GMM objective used in their framework.
