@@ -101,7 +101,7 @@ The authors alone are responsible for the content and writing of the paper.
 
 Private equity (PE) has grown into a major asset class, with more than \$13 trillion in assets under management \citep{McKinsey2024}. 
 Yet rigorous asset-pricing tools for private markets remain comparatively underdeveloped. The central difficulty is that private equity investments do not generate reliable traded-return series. 
-Instead, the econometrician observes irregular capital calls, distributions, and reported net asset values (NAVs), often over long horizons and under substantial informational frictions. 
+Instead, the econometrician observes irregular capital calls, distributions, and reported Net Asset Values (NAVs), often over long horizons and under substantial informational frictions. 
 As a result, standard return-based asset-pricing methods that are routine in public markets are difficult to apply in private markets, where the relevant pricing restrictions are expressed in discounted cash flows rather than in observed returns.
 
 Semiparametric stochastic discount factor (SDF) methods provide a natural response to this measurement problem. 
@@ -119,7 +119,7 @@ Our starting point is simple.
 In typical private-equity samples, inception-only pricing errors can be highly unstable because the estimating equations are nonlinear and the effective cross-sectional sample size is limited. 
 A natural response is to average pricing errors over additional compounding dates rather than evaluate all discounted cash flows only at inception. 
 But this is not merely a statistical refinement. Once pricing errors are evaluated at horizons beyond inception, the estimator generally targets a different population object. 
-Horizon choice therefore creates a tradeoff between finite-sample stabilization and population target shift: longer horizons can improve finite-sample behavior by smoothing the sample criterion, but they also change the underlying population pricing restriction through what we term a timing-risk-premium component.
+Horizon choice therefore creates a tradeoff between finite-sample stabilization and population target shift: longer horizons can improve finite-sample behavior by smoothing the sample criterion, but they also change the underlying population pricing restriction through what we term a Timing Risk Premium component.
 
 The paper's first contribution is to characterize identification in this setting. 
 We derive a generalized pooled-cash-flow pricing framework that makes explicit how the choice of discounting date affects the estimand. 
@@ -128,7 +128,7 @@ It also clarifies the relation to \citet{KN16}: their estimator is closely conne
 Framing the problem in this way makes explicit a distinction that, to our knowledge, has not been formalized in the semiparametric private-equity SDF literature: a horizon may improve finite-sample performance without preserving the original inception-based pricing restriction.
 
 Our second contribution is methodological in service of that identification problem. 
-We formulate the estimator as a nonlinear least-mean-distance (LMD) problem for pooled, non-traded cash flows \citep{PP97}. 
+We formulate the estimator as a nonlinear Least-Mean-Distance (LMD) problem for pooled, non-traded cash flows \citep{PP97}. 
 This objective-function representation is useful because it makes the role of horizon choice transparent, accommodates alternative weighting schemes, and yields a clean comparison to existing semiparametric estimators. 
 Building on this representation, we develop an increasing-domain asymptotic framework for inference under dependence induced by overlapping funds and adjacent vintages. 
 In private-equity applications, cross-sectional units are neither independent nor naturally ordered in calendar time alone; dependence is tied to economic proximity, such as vintage-year distance and overlap in cash-flow histories. 
@@ -219,7 +219,7 @@ Additionally, \cite{HSS23} leverage a similar generalized framework to evaluate 
 Finally, for comprehensive methodological and empirical overviews of risk and return assessment in private equity, we refer to \cite{K19,korteweg2023risk}, who also discuss the popular \cite{D79} time-series regression that employs lagged returns to correct for stale valuations.
 
 Our paper's LMD framework contributes to this semiparametric literature by providing a loss-function formulation that encompasses the \cite{DLP12} approach and contextualizes the \cite{KN16} time-series analogue while supplying the rigorous increasing-domain asymptotic inference missing in earlier work (drawing on the spatial theory of \cite{PP97}, \cite{KS11}, and \cite{JP12}). 
-While \cite{GSW20} highlighted that NPV-based measures are biased relative to per-period returns, we explicitly formalize this discrepancy as a ``timing risk premium'', a concept related to recent literature on discount-rate risk in secondary markets \citep{boyer2023discount}.
+While \cite{GSW20} highlighted that NPV-based measures are biased relative to per-period returns, we explicitly formalize this discrepancy as a ``Timing Risk Premium'', a concept related to recent literature on discount-rate risk in secondary markets \citep{boyer2023discount}.
 
 % Related conceptually, \citet{APR18} study pseudo-true SDFs in conditional traded-asset pricing models, where the pseudo-true parameter minimizes a conditional Hansen-Jagannathan distance and can be characterized through local factors or their mimicking portfolios. That paper is relevant for our framing because it emphasizes that pseudo-true targets in asset pricing are criterion-dependent objects under misspecification rather than automatically structural parameters. Our setting differs, however, in that the horizon-specific pseudo-target \(\theta_H^\dagger\) arises here because the pooled cash-flow criterion itself changes with the discounting horizon; the central issue is target shift induced by post-inception timing terms in non-traded private-equity cash flows, not selection of a best-fitting misspecified conditional SDF in traded-return data.
 
@@ -227,8 +227,8 @@ While \cite{GSW20} highlighted that NPV-based measures are biased relative to pe
 \label{sec:spatial_sdf_methodology}
 
 We now formalize a semiparametric framework for SDF estimation with pooled cash flows. 
-Section~\ref{sec:asset_pricing_pooled} establishes the theoretical asset-pricing conditions and highlights how the choice of discounting date induces a ``timing risk premium". 
-Section~\ref{sec:fundwise_lmd_estimator} uses this insight to introduce a generalized least-mean-distance estimator that endogenizes the discounting dates. 
+Section~\ref{sec:asset_pricing_pooled} establishes the theoretical asset-pricing conditions and highlights how the choice of discounting date induces a ``Timing Risk Premium". 
+Section~\ref{sec:fundwise_lmd_estimator} uses this insight to introduce a generalized Least-Mean-Distance estimator that endogenizes the discounting dates. 
 Section~\ref{sec:asymptotic_framework} summarizes the increasing-domain asymptotic benchmark and SHAC inference used to interpret the empirical results under overlapping vintage-year dependence. 
 Section~\ref{sec:comparison_to_similar_estimators} demonstrates how this LMD estimator nests the framework of \cite{DLP12} as a special case and relates to \cite{KN16}.
 
@@ -1737,7 +1737,7 @@ Approaches such as LASSO, ridge regression, or model averaging to regularize non
 Another vital avenue for future work involves explicitly modeling funding rounds, financial engineering, complex fee structures and carried interest within the data generating process. 
 This would enable the estimation of company-level and gross-versus-net-of-fee SDFs, providing sharper evaluation models for both General Partners (GPs) and Limited Partners (LPs). 
 Such structural refinements would naturally improve parameter accuracy and allow for a more rigorous analytical characterization of finite-sample bias. 
-Additionally, carefully integrating intermediate NAVs as proxies for unobservable true valuations could help alleviate the timing risk premium bias inherent to terminal value concepts, though this requires downweighting actual cash distributions in favor of subjective accounting metrics.
+Additionally, carefully integrating intermediate NAVs as proxies for unobservable true valuations could help alleviate the Timing Risk Premium bias inherent to terminal value concepts, though this requires downweighting actual cash distributions in favor of subjective accounting metrics.
 
 Finally, we highlight the important role of the compounding Horizon in empirical asset pricing for private markets. 
 Reporting estimates on a future-value-based horizon grid yields an additional array of alternative parameter estimates that can be compared to the traditional NPV-based results of the \cite{DLP12} method.
@@ -2315,7 +2315,7 @@ Under this configuration, the beta estimate improves to $0.93$ and the alpha bia
 However, even under this most favorable scenario (S10), our estimator still exhibits substantially more beta attenuation ($\hat{\beta}=0.93$ vs.\ $0.98$) and alpha bias ($0.27\%$ vs.\ $0.05\%$) than the \cite{DLP12} benchmark.
 This sensitivity reveals a fundamental tension in the two-factor model: the alpha term absorbs residual nonlinearity that the linear SDF cannot capture, and bounding it arbitrarily distorts the beta estimate.
 
-Overall, the large remaining discrepancy between our simulation results and those of \cite{DLP12}, even after adopting their shifted lognormal errors and simulated market returns, implies that we were unable not reproduce the favorable small-sample properties reported in \cite{DLP12}.
+Overall, the large remaining discrepancy between our simulation results and those of \cite{DLP12}, even after adopting their shifted lognormal errors and simulated market returns, implies that we were unable to reproduce the favorable small-sample properties reported in \cite{DLP12}.
 Across all scenarios with $\sigma=30\%$, the beta estimates range from $0.62$ to $0.93$, well below the \cite{DLP12} benchmark of $0.98$, confirming the estimator's sensitivity to the interplay between idiosyncratic noise, compounding Horizon, and alpha bounds.
 
 
