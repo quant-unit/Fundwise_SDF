@@ -214,58 +214,46 @@ Here, the \cite{DLP12} approach relies on the identifying assumption that the mo
 Interestingly, \cite{DLP09wp}, in an earlier working paper version, explicitly study the \textbf{small-sample properties} of the $NPV$ approach. 
 They show that the sum of squared $NPV$s is not globally convex and then propose two alternative ``GMM-style'' criteria: a log-transformed specification based on the difference between the log present values of investments and dividends, and a PME-style ratio specification akin to \cite{KS05} that minimizes the distance between the ratio of these present values and one. 
 
-In contrast to \cite{DLP12}, \cite{DLP09wp} base their estimator on $\mathcal{M}$ NPV moments in a least-squares optimization problem:
+To make the working-paper asymptotic argument explicit, let \(x=1,\dots,\mathcal{M}\) index the vintage-year portfolios used as moment conditions and let \(n_x\) denote the number of funds within portfolio \(x\). Their inception-based NPV criterion can then be written as
 \begin{equation}
 	\label{eq:dlp09_minimization}
 	\left(\hat{\alpha}, \hat{\beta} \right) = 
 	\arg \min_{\alpha,\beta} \sum_{x=1}^{\mathcal{M}} \left[ \overline{NPV}_x(\alpha,\beta) \right]^2
 \end{equation}
-with $\overline{NPV}$ moment
+with portfolio-level average
 \[
 \overline{NPV}_x(\alpha,\beta) =
 \frac{1}{n_x}
 \sum_{i=1}^{n_x}
-\sum_{t \in \left\{ t_{0,i}, t_{0,i} + 1, \dots \right\}}
-\frac{\mathrm{CashFlow}_{i,t}}{
-	\prod_{s=t_{0,i}+1}^{t}
-	\left( 
-	1 + r_{f, s} + \alpha + \beta r_{\mathrm{market}, s}
-	\right)
-} 
+NPV_{x,i}(\alpha,\beta),
 \]
-where the number of funds per moment $n_x$ tends to infinity.
+so that \(\overline{NPV}_x(\theta)=\overline{PV}_x^D(\theta)-\overline{PV}_x^I(\theta)\). The working-paper asymptotics let \(n_x \to \infty\) for each fixed portfolio \(x\).
 
 In this specific asymptotic setting, \cite{DLP09wp} argue that both transformations preserve asymptotic consistency but introduce a small-sample nonlinearity bias, with the log specification generating a downward bias for $\alpha$ and the ratio specification an upward bias. Their simulations further suggest that the log transformation yields the smaller small-sample bias of the two.
 
-% Extend / better formulate
-They use then...
+Denote the portfolio-level probability limits by \(\mu_x^D(\theta):=\mathbb{E}[\overline{PV}_x^D(\theta)]\) and \(\mu_x^I(\theta):=\mathbb{E}[\overline{PV}_x^I(\theta)]\). Then the PME population moment is
 \[
-\frac{\mathbb{E}\!\left[\overline{PV}_i^D(\theta_0)\right]}{\mathbb{E}\!\left[\overline{PV}_i^I(\theta_0)\right]}
-- 1
+\frac{\mu_x^D(\theta_0)}{\mu_x^I(\theta_0)} - 1
+=
+\frac{\mathbb{E}[\overline{NPV}_x(\theta_0)]}{\mu_x^I(\theta_0)}.
 \]
+Hence, whenever the inception-based restriction \(\mathbb{E}[\overline{NPV}_x(\theta_0)] = 0\) holds and \(\mu_x^I(\theta_0)>0\), the PME and NPV criteria share the same large-sample zero set. This is the sense in which \cite{DLP09wp} view the PME and log-PME transformations as asymptotically consistent under their cross-sectional scheme.
 
-% Extend / better formulate
-Their finite-sample issues stem from the fact that they use $\overline{PV}$ instead of $PV$...
-
-% Extend / better formulate
-To see the source of this finite-sample recentering, let $PV_i^D(\theta)$ and $PV_i^I(\theta)$ denote the discounted present values of divestments and investments for a given portfolio $i$, so that $NPV_i(\theta)=PV_i^D(\theta)-PV_i^I(\theta)$. Then at $\theta_0$,
-
-% This is not what they do, but would be better ... why?
-\begin{equation}
+The finite-sample issue is different. The implemented PME criterion uses the random ratio \(\overline{PV}_x^D(\theta)/\overline{PV}_x^I(\theta)-1\), and the expectation of this ratio need not equal the ratio of expectations. To see the resulting recentering heuristically, let \(PV_i^D(\theta)\) and \(PV_i^I(\theta)\) denote the discounted present values of dividends and investments for a generic finite-sample portfolio \(i\), so that \(NPV_i(\theta)=PV_i^D(\theta)-PV_i^I(\theta)\). Then at \(\theta_0\),
+\begin{equation*}
 \mathbb{E}\!\left[\frac{PV_i^D(\theta_0)}{PV_i^I(\theta_0)}\right]
 - 1
 =
 \mathbb{E}\!\left[\frac{NPV_i(\theta_0)}{PV_i^I(\theta_0)}\right]
 =
-\mathrm{Cov} \left( NPV_i(\theta_0) , \frac{1}{PV_i^I(\theta_0)} \right)
-\end{equation}
+\mathrm{Cov}\!\left(
+NPV_i(\theta_0),
+\frac{1}{PV_i^I(\theta_0)}
+\right),
+\end{equation*}
+where the last equality uses \(\mathbb{E}[NPV_i(\theta_0)] = 0\). This identity is only a heuristic description of the finite-sample recentering of ratio criteria; it is not the population moment condition underlying the \cite{DLP09wp} asymptotic argument.
 
-% Rewrite to match with the above
-Hence, the inception restriction $\mathbb{E}[NPV_i(\theta_0)]=0$ does not by itself imply that the finite-sample PME ratio is centered at one. 
-Under the \cite{DLP09wp} cross-sectional asymptotic scheme, however, the ratio is formed from portfolio averages: as the number of projects within a fund-of-funds grows, $PV_i^D(\theta)$ and $PV_i^I(\theta)$ converge to their portfolio-level expectations, so the ratio converges to one at $\theta_0$ whenever the inception-based population restriction holds.
-In that sense, \cite{DLP09wp} analyze a ``nonlinearity bias in small samples" rather than a distinct population pseudo-target.
-This differs from our horizon-specific case, where the pseudo-target $\theta_H^\dagger$ arises because changing the set of discounting dates changes the population criterion itself and may embed the timing wedge.
-Note that the two \cite{DLP09wp} alternatives can only be applied when investment and divestment cash flows can be observed separately (and labeled accurately).
+In that sense, \cite{DLP09wp} analyze a small-sample nonlinearity bias rather than a distinct population pseudo-target. This differs from our horizon-specific case, where the pseudo-target \(\theta_H^\dagger\) arises because changing the set of discounting dates changes the population criterion itself and may embed the timing wedge. Note that the two \cite{DLP09wp} alternatives can only be applied when investment and dividend cash flows can be observed separately and labeled accurately.
 
 
 Building on the SDF-pricing idea, \cite{KN16} introduced the Generalized Public Market Equivalent (GPME) framework, shifting the estimation of the SDF to public market data while evaluating PE cash flows in a second step. 
