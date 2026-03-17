@@ -747,11 +747,14 @@ Even when finite-sample inference is weak, this asymptotic benchmark still matte
 \subsection{Comparison to similar estimators}
 \label{sec:comparison_to_similar_estimators}
 
+Our Least-Mean-Distance (LMD) estimator belongs to the broad class of semiparametric nonlinear extremum estimators in the sense of \citet{PP97}. 
+Its main advantage in the present setting is that it accommodates pooled fund- or portfolio-level pricing errors, flexible horizon averaging through \(\mathcal T_{i,H}\), and increasing-domain asymptotics indexed by vintage years, all within a comparatively transparent objective function.
+
+The relationship to the existing private-equity asset-pricing literature is best understood at the level of objective functions and aggregation schemes. 
+The estimator is most closely connected to \citet{DLP12}, while it is more loosely related to the time-series-like GMM construction of \citet{KN16}. 
+The relevant point is not that all three estimators are identical, but rather that they occupy nearby positions in the same semiparametric estimation landscape.
+
 \textcolor{orange}{Goal: we want to show why different asymptotic assumptions matter in practice (not only in theory).}
-
-Our Least-Mean-Distance (LMD) estimator belongs to the broad class of semiparametric nonlinear extremum estimators in the sense of \citet{PP97}. Its main advantage in the present setting is that it accommodates pooled fund-level pricing errors, flexible horizon averaging through \(\mathcal T_{i,H}\), and increasing-domain asymptotics indexed by vintage years, all within a comparatively transparent objective function.
-
-The relationship to the existing private-equity asset-pricing literature is best understood at the level of objective functions and aggregation schemes. The estimator is most closely connected to \citet{DLP12}, while it is more loosely related to the time-series-like GMM construction of \citet{KN16}. The relevant point is not that all three estimators are identical, but rather that they occupy nearby positions in the same semiparametric estimation landscape.
 
 \subsubsection{Connection to \cite{DLP12}}
 
@@ -766,6 +769,7 @@ Suppose that:
     \item \(\mathcal T_i = \{t_i^0\}\) for all \(i\),
     \item \(w_i = 1\) for all \(i\), and
     \item \(L(x)=x^2\).
+    \item Unit $i$ is a vintage-year portfolio.
 \end{enumerate}
 Then the LMD estimator solves
 \[
@@ -810,6 +814,7 @@ Writing the vector of pooled pricing errors as \(e(\theta) = (PV_1(\theta),\dots
 
 \citet{DLP12} justify this inception-based estimator under a different asymptotic device than the one used here. 
 Their Theorem~1 fixes the number of fund-of-funds portfolios and lets the number of underlying projects or funds within each portfolio diverge, yielding consistency for the inception-only estimator under their maintained model. 
+They explain: ``It is important to note that our method and asymptotics are cross-sectional: We fix the number of FoFs, $N$, but we let the number of projects (or number of funds) per portfolio, $n_i$, go to infinity to analyze consistency of our estimator" \citep[p.\ 520]{DLP12}.
 Inference is then implemented via cross-sectional bootstrap, supplemented by block-bootstrap and pricing-error autocorrelation checks, rather than through an explicit overlap-dependent central limit theorem or SHAC covariance formula. 
 Relative to that setup, our framework preserves the exact \(H=0\) nesting result but lets the vintage-year domain itself expand, which is better aligned with unconditional identification, horizon comparisons, and overlap dependence when new vintages bring new realizations of macroeconomic conditions.
 
@@ -858,7 +863,7 @@ The finite-sample issue is different. The implemented PME criterion uses the ran
 \end{equation*}
 where the last equality uses \(\mathbb{E}[NPV_i(\theta_0)] = 0\). This identity is only a heuristic description of the finite-sample recentering of ratio criteria; it is not the population moment condition underlying the \cite{DLP09wp} asymptotic argument.
 
-In that sense, \cite{DLP09wp} analyze a small-sample nonlinearity bias rather than a distinct population pseudo-target. This differs from our horizon-specific case, where the pseudo-target \(\theta_H^\dagger\) arises because changing the set of discounting dates changes the population criterion itself and may embed the timing wedge. Note that the two \cite{DLP09wp} alternatives can only be applied when investment and dividend cash flows can be observed separately and labeled accurately.
+Because of their asymptotic construction, \cite{DLP09wp} analyze a small-sample nonlinearity bias rather than a distinct population pseudo-target. This differs from our horizon-specific case, where the pseudo-target \(\theta_H^\dagger\) arises because changing the set of discounting dates changes the population criterion itself and may embed the timing wedge. Note that the two \cite{DLP09wp} alternatives can only be applied when investment and dividend cash flows can be observed separately and labeled accurately.
 
 \subsubsection{Connection to \cite{KN16}}
 
@@ -915,7 +920,10 @@ The LMD criterion penalizes both mean mispricing and the cross-sectional dispers
 Thus, even abstracting from weighting choices, the two sample objectives generally differ and need not share the same pseudo-true parameter under misspecification.
 This distinction is reinforced in \citet{KN16}, where the private-equity pricing moment is excluded from the estimation criterion itself.
 Finally, the two approaches differ less in whether a large-time-span dimension is needed than in how that dimension is formalized. 
-\citet{KN16} require sufficiently many nonoverlapping time windows in an aggregated-moment GMM setting.
+\citet{KN16} require sufficiently many nonoverlapping time windows in an aggregated-moment GMM setting: ``application of the usual asymptotic results for GMM estimation requires large $T$---a large number of cross-sectional units is not sufficient.
+This can be seen most clearly in the extreme hypothetical case in which all VC payoffs are observed over the same time window. 
+In this case, the realization of the SDF is exactly the same for each cross-sectional unit. Asset pricing theory does not predict that the cross-sectional average of returns multiplied by this single realization of the SDF value equals one. 
+Instead, it predicts that the expected cross-product of the SDF and the return equals one" \citep[p.\ 1447]{KN16}. 
 Our framework lets the number of vintage years grow in an increasing-domain random-field setting with bounded within-vintage counts and bounded fund lifetimes.
 
 
