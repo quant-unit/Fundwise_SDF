@@ -1,12 +1,12 @@
 # Fdb version 3
-["bibtex sdf_paper"] 1773746764 "sdf_paper.aux" "sdf_paper.bbl" "sdf_paper" 1773746764
+["bibtex sdf_paper"] 1773771676 "sdf_paper.aux" "sdf_paper.bbl" "sdf_paper" 1773771676
   "/usr/local/texlive/2017/texmf-dist/bibtex/bst/base/apalike.bst" 1480098433 24635 604dafcc79f521a11ea73e506e1fbd98 ""
   "ref.bib" 1773697230 117690 15ee0b02a8b9f4aacaeaea2cd82c915d ""
-  "sdf_paper.aux" 1773745922 23733 e241f375641e9231bb9167a95743ff4b ""
+  "sdf_paper.aux" 1773770117 23776 01f3e1f8cb4f61edf491a101f5a08df7 ""
   (generated)
-  "sdf_paper.bbl"
   "sdf_paper.blg"
-["pdflatex"] 1773144964 "/Users/christausch/Library/Mobile Documents/com~apple~CloudDocs/Projects/Fundwise_SDF/2025 sdf paper/tex/sdf_paper.tex" "sdf_paper.pdf" "sdf_paper" 1773144964
+  "sdf_paper.bbl"
+["pdflatex"] 1773144964 "sdf_paper.tex" "sdf_paper.pdf" "sdf_paper" 1773144964
   "/Users/christausch/Library/Mobile Documents/com~apple~CloudDocs/Projects/Fundwise_SDF/2025 sdf paper/tex/sdf_paper.tex" 1773746738 201875 5215a5bd3fdc250fe0efd67c302e1556 ""
   "/usr/local/texlive/2017/texmf-dist/fonts/map/fontname/texfonts.map" 1480098670 3287 e6b82fe08f5336d4d5ebc73fb1152e87 ""
   "/usr/local/texlive/2017/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1480098698 1004 54797486969f23fa377b128694d548df ""
@@ -221,5 +221,5 @@
   "simulation/bias_comparison5.pdf" 1772561871 14176 8af708c4bbe0c995c03b86f005fa4ec2 ""
   (generated)
   "sdf_paper.pdf"
-  "sdf_paper.log"
   "sdf_paper.aux"
+  "sdf_paper.log"
