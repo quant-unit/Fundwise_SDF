@@ -175,7 +175,7 @@ Section \ref{sec:conclusion} concludes.
 
 Appendix \ref{sec:appendix_bias_variance} analyzes the target shift and finite-sample stabilization under $\mathcal{T}$-averaging.
 Appendix \ref{sec:dlp_results_comparison} compares our simulation and empirical results to their \cite{DLP12} counterparts.
-Online Appendix \ref{sec:proofs_asymptotics_H} provides the regularity conditions, inference details, and mathematical proofs.
+Appendix \ref{sec:proofs_asymptotics_H} provides the regularity conditions, inference details, and mathematical proofs.
 
 
 \section{Related literature}
@@ -822,68 +822,48 @@ The practical implication is that the \citet{DLP12} asymptotic sequence is stren
 Relative to that setup, our framework preserves the exact \(H=0\) nesting result but lets the vintage-year domain itself expand, which is better aligned with unconditional identification, horizon comparisons, and overlap dependence when new vintages bring new realizations of macroeconomic conditions.
 
 
-
-
 \subsubsection{Connection to \cite{KN16}}
 
-The relation to \citet{KN16} is closely related at the level of discounted cash-flow moments, but it is not a literal nesting result.
-Their estimator applies a GMM quadratic form to an aggregated mean moment vector of discounted private-equity and benchmark cash flows, whereas our LMD criterion applies the loss at the unit level before averaging.
-In their empirical implementation, the weighting matrix places zero weight on the private-equity pricing-error component, so the SDF parameters are identified by benchmark moments alone and the private-equity pricing error is evaluated after estimation.
+The relation to \citet{KN16} is closely related at the level of discounted cash-flow moments, but it is not a literal nesting result. 
+Their estimator applies a GMM quadratic form to an aggregated mean moment vector of discounted private-equity and benchmark cash flows, whereas our LMD criterion applies the loss at the unit level before averaging. 
+Furthermore, in their empirical implementation, \citet{KN16} use a weighting matrix that places zero weight on the private-equity pricing-error component. 
+This is a deliberate economic choice: their objective is to evaluate private equity strictly against a pure public-market benchmark. 
+By zeroing out the PE moment during parameter estimation, they force the SDF to perfectly price only the public equity markets and T-bills, ensuring that the performance benchmark reflects public market returns during the sample period and is not distorted by the PE cash flows themselves. 
+Only after the SDF parameters are pinned down by benchmark moments is the private-equity pricing error evaluated. 
 Accordingly, \citet{KN16} is best viewed as a closely related aggregated-moment GMM analogue rather than as a special case of Equation~\eqref{eq:estimator}.
 
-The difference can be formalized in a scalar bridge case.
-Let $m_i(\theta)$ denote a unit-level pricing error constructed from the same primitive discounted cash flows, and define
-\[
-Q_N^{\mathrm{LMD}}(\theta)
-:=
-\frac{1}{N}\sum_{i=1}^N m_i(\theta)^2,
-\qquad
-Q_N^{\mathrm{Agg}}(\theta)
-:=
-\bigl(\bar m_N(\theta)\bigr)^2,
-\qquad
-\bar m_N(\theta):=\frac{1}{N}\sum_{i=1}^N m_i(\theta).
-\]
-This scalar bridge case is used only to isolate the aggregation-order distinction in its simplest form.
-A vector analogue is immediate, but in the full \citet{KN16} setup it would additionally conflate aggregation order with moment selection and the weighting-matrix choice that excludes the private-equity pricing moment from parameter estimation.
+The difference in aggregation can be formalized in a scalar bridge case. Let $m_i(\theta)$ denote a unit-level pricing error constructed from the same primitive discounted cash flows, and define
+
+$$Q_N^{\mathrm{LMD}}(\theta) := \frac{1}{N}\sum_{i=1}^N m_i(\theta)^2, \qquad Q_N^{\mathrm{Agg}}(\theta) := \bigl(\bar m_N(\theta)\bigr)^2, \qquad \bar m_N(\theta):=\frac{1}{N}\sum_{i=1}^N m_i(\theta).$$
+
+This scalar bridge case is used only to isolate the aggregation-order distinction in its simplest form. A vector analogue is immediate, but in the full \citet{KN16} setup it would additionally conflate aggregation order with moment selection and the weighting-matrix choice that excludes the private-equity pricing moment from parameter estimation.
 
 \begin{proposition}[Loss before aggregation versus aggregation before loss]
 	\label{prop:kn16_bridge}
 	For every $\theta$,
-	\[
-	Q_N^{\mathrm{LMD}}(\theta)
-	=
-	Q_N^{\mathrm{Agg}}(\theta)
-	+
-	\frac{1}{N}\sum_{i=1}^N
-	\bigl(m_i(\theta)-\bar m_N(\theta)\bigr)^2.
-	\]
+	$$Q_N^{\mathrm{LMD}}(\theta) = Q_N^{\mathrm{Agg}}(\theta) + \frac{1}{N}\sum_{i=1}^N \bigl(m_i(\theta)-\bar m_N(\theta)\bigr)^2.$$
 	Hence $Q_N^{\mathrm{LMD}}(\theta)\ge Q_N^{\mathrm{Agg}}(\theta)$, with equality if and only if $m_i(\theta)=\bar m_N(\theta)$ for all $i$.
 \end{proposition}
 
 \begin{proof}
 	This is the standard variance decomposition:
-	\[
-	\frac{1}{N}\sum_{i=1}^N m_i(\theta)^2
-	=
-	\bigl(\bar m_N(\theta)\bigr)^2
-	+
-	\frac{1}{N}\sum_{i=1}^N
-	\bigl(m_i(\theta)-\bar m_N(\theta)\bigr)^2.
-	\qedhere
-	\]
+	$$\frac{1}{N}\sum_{i=1}^N m_i(\theta)^2 = \bigl(\bar m_N(\theta)\bigr)^2 + \frac{1}{N}\sum_{i=1}^N \bigl(m_i(\theta)-\bar m_N(\theta)\bigr)^2. \qedhere$$
 \end{proof}
 
-Proposition~\ref{prop:kn16_bridge} shows that the two criteria coincide only under restrictive homogeneity conditions.
-The LMD criterion penalizes both mean mispricing and the cross-sectional dispersion of unit-level pricing errors, whereas the aggregated-moment criterion penalizes mean mispricing alone.
-Thus, even abstracting from weighting choices, the two sample objectives generally differ and need not share the same pseudo-true parameter under misspecification.
+Proposition~\ref{prop:kn16_bridge} shows that the two criteria coincide only under restrictive homogeneity conditions. 
+The LMD criterion penalizes both mean mispricing and the cross-sectional dispersion of unit-level pricing errors, whereas the aggregated-moment criterion penalizes mean mispricing alone. 
+Economically, this variance decomposition highlights a fundamental difference in how the estimators handle volatile samples. 
+Because \citet{KN16} aggregates the pricing errors \textit{before} applying the loss function, their method allows large positive pricing errors in certain time windows to perfectly cancel out large negative errors in others. 
+In contrast, by applying the loss \textit{before} aggregation, our LMD method strictly penalizes high pricing-error volatility at the individual unit level. 
+Thus, even abstracting from weighting choices, the two sample objectives generally differ and need not share the same pseudo-true parameter under misspecification. 
 This distinction is reinforced in \citet{KN16}, where the private-equity pricing moment is excluded from the estimation criterion itself.
+
 The practical contrast is therefore not simply that \citet{KN16} need ``more time'' while we need ``more cross sections.'' 
 Rather, both approaches require new realizations of aggregate conditions, but they formalize that requirement differently. 
-\citet{KN16} require sufficiently many nonoverlapping time windows in an aggregated-moment GMM setting: ``application of the usual asymptotic results for GMM estimation requires large $T$---a large number of cross-sectional units is not sufficient.
+\citet{KN16} require sufficiently many nonoverlapping time windows in an aggregated-moment GMM setting: ``application of the usual asymptotic results for GMM estimation requires large $T$---a large number of cross-sectional units is not sufficient. 
 This can be seen most clearly in the extreme hypothetical case in which all VC payoffs are observed over the same time window. 
 In this case, the realization of the SDF is exactly the same for each cross-sectional unit. Asset pricing theory does not predict that the cross-sectional average of returns multiplied by this single realization of the SDF value equals one. 
-Instead, it predicts that the expected cross-product of the SDF and the return equals one" \citep[p.\ 1447]{KN16}. 
+Instead, it predicts that the expected cross-product of the SDF and the return equals one'' \citep[p.\ 1447]{KN16}. 
 In practice, this means that longer calendar samples help \citet{KN16} primarily when they create additional nonoverlapping payoff windows. 
 Our framework instead lets the number of vintage years grow in an increasing-domain random-field setting with bounded within-vintage counts and bounded fund lifetimes, so that new vintages supply additional macroeconomic realizations even when the number of funds per vintage remains limited.
 
@@ -927,6 +907,8 @@ This is the key contrast with our horizon-specific framework.
 In \cite{DLP09wp}, the transformed-\(NPV\) criterion stabilizes estimation while preserving the same large-sample target under portfolio-infill asymptotics. 
 In our setup, by contrast, changing \(H\) changes the set of discounting dates and hence the population criterion itself, so different Horizons can legitimately target different pseudo-true parameters \(\theta_H^\dagger\) even asymptotically. 
 The two \cite{DLP09wp} alternatives also require separate observation and accurate labeling of investment and dividend cash flows.
+
+
 
 
 \subsubsection{Positioning of the present estimator}
@@ -2541,7 +2523,7 @@ Therefore, until substantially more granular and independent cross-sectional dat
 
 
 
-\section{\emph{Online Appendix:} Asymptotic conditions, inference details, and proofs for the horizon-specific results}
+\section{Asymptotic conditions, inference details, and proofs for the horizon-specific results}
 \label{sec:proofs_asymptotics_H}
 
 
