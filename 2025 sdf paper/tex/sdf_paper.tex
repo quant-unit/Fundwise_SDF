@@ -750,11 +750,13 @@ Even when finite-sample inference is weak, this asymptotic benchmark still matte
 Our Least-Mean-Distance (LMD) estimator belongs to the broad class of semiparametric nonlinear extremum estimators in the sense of \citet{PP97}. 
 Its main advantage in the present setting is that it accommodates pooled fund- or portfolio-level pricing errors, flexible horizon averaging through \(\mathcal T_{i,H}\), and increasing-domain asymptotics indexed by vintage years, all within a comparatively transparent objective function.
 
-The relationship to the existing private-equity asset-pricing literature is best understood at the level of objective functions and aggregation schemes. 
-The estimator is most closely connected to \citet{DLP12}, while it is more loosely related to the time-series-like GMM construction of \citet{KN16}. 
-The relevant point is not that all three estimators are identical, but rather that they occupy nearby positions in the same semiparametric estimation landscape.
+The relationship to the existing private-equity asset-pricing literature is best understood along two distinct axes: the sample criterion on the one hand and the asymptotic source of identification on the other. 
+The first axis determines how pricing errors are aggregated and penalized in sample. 
+The second determines what empirical variation makes the estimator informative in large samples: more funds within a fixed set of portfolios as in \citet{DLP12}, more nonoverlapping calendar-time windows as in \citet{KN16}, or more vintage years in an increasing-domain setting as in our framework. 
+This second axis is what makes the comparison economically meaningful rather than merely technically different, because in private-equity cash-flow data the practical value of an estimator depends on which type of sample expansion actually supplies new information about aggregate states and discounting conditions.
 
-\textcolor{orange}{Goal: we want to show why different asymptotic assumptions matter in practice (not only in theory).}
+Our estimator is most closely connected to \citet{DLP12}, while it is more loosely related to the time-series-like GMM construction of \citet{KN16}. 
+The relevant point is not that all three estimators are identical, but rather that they occupy nearby positions in the same semiparametric estimation landscape while relying on different large-sample justifications.
 
 \subsubsection{Connection to \cite{DLP12}}
 
@@ -816,54 +818,11 @@ Writing the vector of pooled pricing errors as \(e(\theta) = (PV_1(\theta),\dots
 Their Theorem~1 fixes the number of fund-of-funds portfolios and lets the number of underlying projects or funds within each portfolio diverge, yielding consistency for the inception-only estimator under their maintained model. 
 They explain: ``It is important to note that our method and asymptotics are cross-sectional: We fix the number of FoFs, $N$, but we let the number of projects (or number of funds) per portfolio, $n_i$, go to infinity to analyze consistency of our estimator" \citep[p.\ 520]{DLP12}.
 Inference is then implemented via cross-sectional bootstrap, supplemented by block-bootstrap and pricing-error autocorrelation checks, rather than through an explicit overlap-dependent central limit theorem or SHAC covariance formula. 
+The practical implication is that the \citet{DLP12} asymptotic sequence is strengthened by adding more funds to existing vintage-year portfolios, thereby averaging out within-portfolio idiosyncratic noise, but it does not by itself create new realizations of aggregate states. 
 Relative to that setup, our framework preserves the exact \(H=0\) nesting result but lets the vintage-year domain itself expand, which is better aligned with unconditional identification, horizon comparisons, and overlap dependence when new vintages bring new realizations of macroeconomic conditions.
 
 
-\subsubsection{Connection to \cite{DLP09wp}}
 
-The earlier working-paper version, \cite{DLP09wp}, studies \textbf{small-sample refinements} of the same inception-based cross-sectional setup. 
-They show that the sum of squared $NPV$s is not globally convex and then propose two alternative ``GMM-style'' criteria: a log-transformed specification based on the difference between the log present values of investments and dividends, and a PME-style ratio specification akin to \cite{KS05} that minimizes the distance between the ratio of these present values and one. 
-
-To make the working-paper asymptotic argument explicit, let \(x=1,\dots,\mathcal{M}\) index the vintage-year portfolios used as moment conditions and let \(n_x\) denote the number of funds within portfolio \(x\). Their inception-based NPV criterion can then be written as
-\begin{equation}
-	\label{eq:dlp09_minimization}
-	\left(\hat{\alpha}, \hat{\beta} \right) = 
-	\arg \min_{\alpha,\beta} \sum_{x=1}^{\mathcal{M}} \left[ \overline{NPV}_x(\alpha,\beta) \right]^2
-\end{equation}
-with portfolio-level average
-\[
-\overline{NPV}_x(\alpha,\beta) =
-\frac{1}{n_x}
-\sum_{i=1}^{n_x}
-NPV_{x,i}(\alpha,\beta),
-\]
-where \(NPV_{x,i}\) denotes the fund-level inception NPV within portfolio \(x\), so that \(\overline{NPV}_x(\theta)=\overline{PV}_x^D(\theta)-\overline{PV}_x^I(\theta)\). The working-paper asymptotics let \(n_x \to \infty\) for each fixed portfolio \(x\).
-
-In this specific asymptotic setting, \cite{DLP09wp} argue that both transformations preserve asymptotic consistency but introduce a small-sample nonlinearity bias, with the log specification generating a downward bias for $\alpha$ and the ratio specification an upward bias. Their simulations further suggest that the log transformation yields the smaller small-sample bias of the two.
-
-Denote the portfolio-level population counterparts by \(\mu_x^D(\theta):=\mathbb{E}[\overline{PV}_x^D(\theta)]\) and \(\mu_x^I(\theta):=\mathbb{E}[\overline{PV}_x^I(\theta)]\). Then the PME population moment is
-\[
-\frac{\mu_x^D(\theta_0)}{\mu_x^I(\theta_0)} - 1
-=
-\frac{\mathbb{E}[\overline{NPV}_x(\theta_0)]}{\mu_x^I(\theta_0)}.
-\]
-Hence, whenever the inception-based restriction \(\mathbb{E}[\overline{NPV}_x(\theta_0)] = 0\) holds and \(\mu_x^I(\theta_0)>0\), the PME and NPV criteria share the same large-sample zero set. This is the sense in which \cite{DLP09wp} view the PME and log-PME transformations as asymptotically consistent under their cross-sectional scheme.
-
-The finite-sample issue is different. The implemented PME criterion uses the random ratio \(\overline{PV}_x^D(\theta)/\overline{PV}_x^I(\theta)-1\), and the expectation of this ratio need not equal the ratio of expectations. Heuristically, for a generic finite-sample portfolio \(i\) with \(NPV_i(\theta)=PV_i^D(\theta)-PV_i^I(\theta)\), one obtains at \(\theta_0\)
-\begin{equation*}
-	\mathbb{E}\!\left[\frac{PV_i^D(\theta_0)}{PV_i^I(\theta_0)}\right]
-	- 1
-	=
-	\mathbb{E}\!\left[\frac{NPV_i(\theta_0)}{PV_i^I(\theta_0)}\right]
-	=
-	\mathrm{Cov}\!\left(
-	NPV_i(\theta_0),
-	\frac{1}{PV_i^I(\theta_0)}
-	\right),
-\end{equation*}
-where the last equality uses \(\mathbb{E}[NPV_i(\theta_0)] = 0\). This identity is only a heuristic description of the finite-sample recentering of ratio criteria; it is not the population moment condition underlying the \cite{DLP09wp} asymptotic argument.
-
-Because of their asymptotic construction, \cite{DLP09wp} analyze a small-sample nonlinearity bias rather than a distinct population pseudo-target. This differs from our horizon-specific case, where the pseudo-target \(\theta_H^\dagger\) arises because changing the set of discounting dates changes the population criterion itself and may embed the timing wedge. Note that the two \cite{DLP09wp} alternatives can only be applied when investment and dividend cash flows can be observed separately and labeled accurately.
 
 \subsubsection{Connection to \cite{KN16}}
 
@@ -919,19 +878,65 @@ Proposition~\ref{prop:kn16_bridge} shows that the two criteria coincide only und
 The LMD criterion penalizes both mean mispricing and the cross-sectional dispersion of unit-level pricing errors, whereas the aggregated-moment criterion penalizes mean mispricing alone.
 Thus, even abstracting from weighting choices, the two sample objectives generally differ and need not share the same pseudo-true parameter under misspecification.
 This distinction is reinforced in \citet{KN16}, where the private-equity pricing moment is excluded from the estimation criterion itself.
-Finally, the two approaches differ less in whether a large-time-span dimension is needed than in how that dimension is formalized. 
+The practical contrast is therefore not simply that \citet{KN16} need ``more time'' while we need ``more cross sections.'' 
+Rather, both approaches require new realizations of aggregate conditions, but they formalize that requirement differently. 
 \citet{KN16} require sufficiently many nonoverlapping time windows in an aggregated-moment GMM setting: ``application of the usual asymptotic results for GMM estimation requires large $T$---a large number of cross-sectional units is not sufficient.
 This can be seen most clearly in the extreme hypothetical case in which all VC payoffs are observed over the same time window. 
 In this case, the realization of the SDF is exactly the same for each cross-sectional unit. Asset pricing theory does not predict that the cross-sectional average of returns multiplied by this single realization of the SDF value equals one. 
 Instead, it predicts that the expected cross-product of the SDF and the return equals one" \citep[p.\ 1447]{KN16}. 
-Our framework lets the number of vintage years grow in an increasing-domain random-field setting with bounded within-vintage counts and bounded fund lifetimes.
+In practice, this means that longer calendar samples help \citet{KN16} primarily when they create additional nonoverlapping payoff windows. 
+Our framework instead lets the number of vintage years grow in an increasing-domain random-field setting with bounded within-vintage counts and bounded fund lifetimes, so that new vintages supply additional macroeconomic realizations even when the number of funds per vintage remains limited.
 
+
+\subsubsection{Connection to \cite{DLP09wp}}
+
+The earlier working-paper version, \cite{DLP09wp}, provides the closest conceptual precursor to our $NFV$ approach. 
+Starting from the same inception-based $NPV$ criterion as \cite{DLP12}, they show that the raw sum of squared $NPV$s is not globally convex in finite samples (the ``exploding alpha'' problem) and \textbf{stabilize estimation by transforming the $NPV$ relation} itself. 
+Their two proposed ``GMM-style'' criteria are a log-transformed specification based on the difference between the log present values of investments and dividends and a PME-style ratio specification akin to \cite{KS05} that minimizes the distance between the ratio of these present values and one. 
+This is the main conceptual connection to our framework: both approaches use transformed-\(NPV\) criteria to obtain a better-behaved objective, but the source of the resulting bias is different.
+
+To make the asymptotic logic explicit without introducing additional counting notation, let \(\overline{PV}^{D}(\theta)\) and \(\overline{PV}^{I}(\theta)\) denote the discounted portfolio averages of dividends and investments within a generic vintage-year portfolio, and let \(\overline{NPV}(\theta)=\overline{PV}^{D}(\theta)-\overline{PV}^{I}(\theta)\). 
+Under the working paper's asymptotic scheme, the number of funds inside each fixed vintage-year portfolio diverges, so the PME transformation inherits the same population zero set as the inception-\(NPV\) criterion:
+\[
+\frac{\mathbb{E}[\overline{PV}^{D}(\theta_0)]}{\mathbb{E}[\overline{PV}^{I}(\theta_0)]} - 1
+=
+\frac{\mathbb{E}[\overline{NPV}(\theta_0)]}{\mathbb{E}[\overline{PV}^{I}(\theta_0)]}.
+\]
+Hence, when \(\mathbb{E}[\overline{NPV}(\theta_0)] = 0\) and \(\mathbb{E}[\overline{PV}^{I}(\theta_0)]>0\), the transformed and untransformed portfolio criteria are asymptotically equivalent. 
+The cost of stabilization is therefore not a different asymptotic target, but a finite-sample nonlinearity bias: \cite{DLP09wp} find a downward bias for \(\alpha\) under the log transformation and an upward bias under the ratio specification.
+
+The object would be different if the ratio transformation were treated as primitive at the unit level before aggregation (like in our estimator). 
+For a generic unit \(i\) with \(NPV_i(\theta)=PV_i^D(\theta)-PV_i^I(\theta)\), one obtains at \(\theta_0\)
+\begin{equation*}
+	\mathbb{E}\!\left[\frac{PV_i^D(\theta_0)}{PV_i^I(\theta_0)}\right]
+	- 1
+	=
+	\mathbb{E}\!\left[\frac{NPV_i(\theta_0)}{PV_i^I(\theta_0)}\right]
+	=
+	\mathrm{Cov}\!\left(
+	NPV_i(\theta_0),
+	\frac{1}{PV_i^I(\theta_0)}
+	\right),
+\end{equation*}
+where the last equality uses \(\mathbb{E}[NPV_i(\theta_0)] = 0\). 
+This expectation of a random ratio is not the ratio-of-expectations moment justified by \cite{DLP09wp}. 
+The distinction matters because, as emphasized by \citet{KN16}, cross-sectional multiplicity alone does not justify replacing the required expected SDF-return cross-product with an average of transformed realized payoffs observed under the same SDF realization. 
+The \cite{DLP09wp} construction avoids that issue by first averaging within vintage-year portfolios and only then transforming, so the transformation is asymptotically innocuous but finitely biased.
+
+This is the key contrast with our horizon-specific framework. 
+In \cite{DLP09wp}, the transformed-\(NPV\) criterion stabilizes estimation while preserving the same large-sample target under portfolio-infill asymptotics. 
+In our setup, by contrast, changing \(H\) changes the set of discounting dates and hence the population criterion itself, so different Horizons can legitimately target different pseudo-true parameters \(\theta_H^\dagger\) even asymptotically. 
+The two \cite{DLP09wp} alternatives also require separate observation and accurate labeling of investment and dividend cash flows.
 
 
 \subsubsection{Positioning of the present estimator}
 
 The contribution of the present estimator is therefore not that it dominates prior approaches in every dimension. 
 Rather, its advantage is methodological fit for the current application: it combines a transparent nonlinear least-squares objective with explicit control over the discounting horizon, accommodates pooled non-traded cash flows at the unit level, and admits an increasing-domain asymptotic framework that maps naturally to vintage-year variation.
+Practically, the three asymptotic devices are useful for different kinds of data expansion. 
+If a researcher mainly gains more funds inside already-observed vintages, the \citet{DLP12} infill logic is the natural benchmark. 
+If the sample mainly lengthens in calendar time and thereby adds nonoverlapping payoff windows, the \citet{KN16} logic is closer to the underlying information structure. 
+If the panel broadens chiefly by observing additional vintages while per-vintage counts remain modest, our increasing-domain framework is the more natural approximation.
 Table \ref{tab:comparison} summarizes the most prominent distinctions between the three approaches.
 
 \begin{table}[ht]
@@ -948,7 +953,7 @@ Table \ref{tab:comparison} summarizes the most prominent distinctions between th
 		\addlinespace
 		\textbf{Cash flows priced}
 		& PE fund cash flows 
-		& Public replicating strategies 
+		& PE payoffs + public benchmark moments 
 		& PE fund cash flows \\
 		\addlinespace
 		\textbf{Discounting dates}
@@ -956,10 +961,20 @@ Table \ref{tab:comparison} summarizes the most prominent distinctions between th
 		& Fund inception only 
 		& Flexible via $\mathcal{T}_i$ \\
 		\addlinespace
-		\textbf{Asymptotics}
-		& Infill ($n_i \to \infty$, $N$ fixed) 
-		& $V \to \infty$ 
-		& Increasing domain ($V \to \infty$, $n_v$ bounded) \\
+		\textbf{What grows}
+		& Funds/projects within fixed vintage portfolios 
+		& Calendar span with new nonoverlapping payoff windows 
+		& Number of vintage years with bounded $n_v$ \\
+		\addlinespace
+		\textbf{What is averaged out}
+		& Within-portfolio idiosyncratic fund/project noise 
+		& Sampling noise in aggregated SDF-return moments across windows 
+		& Short-range dependence across vintages \\
+		\addlinespace
+		\textbf{More data help when}
+		& Existing vintages receive more funds 
+		& The sample adds new nonoverlapping time windows 
+		& The sample adds new vintages, not merely more funds per vintage \\
 		\addlinespace
 		\textbf{Inference}
 		& Bootstrap 
@@ -968,7 +983,7 @@ Table \ref{tab:comparison} summarizes the most prominent distinctions between th
 		\addlinespace
 		\textbf{Cross-sectional unit}
 		& Vintage year portfolio 
-		& Single fund 
+		& Single payoff series 
 		& Both (tested empirically) \\
 		\addlinespace
 		\textbf{SDF specification}
