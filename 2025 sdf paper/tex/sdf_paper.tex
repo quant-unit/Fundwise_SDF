@@ -549,6 +549,7 @@ where $w_i$ normalizes fund-level pricing errors before the loss is applied; it 
 
 The set $\mathcal{T}_i$ controls which discounting dates enter the averaged pricing error $\bar{\epsilon}_i(\theta)$ in Equation~\eqref{eq:average_pricing_error} (see Figure \ref{fig:npvs}). 
 Averaging over multiple dates in $\mathcal{T}_i$ was originally motivated by the ``exploding alpha'' problem described by \cite{DLP12}: when the initial cash flow is very small, an arbitrarily large alpha can discount all subsequent cash flows close to zero, rendering the beta factors irrelevant and distorting estimation. 
+Thus, their inception-only objective function is not globally convex in finite samples: the multiplicative SDF parameterization permits extreme parameter regions in which the discount factors drive all $NPV_i$ close to zero, creating spurious near-minima that can prevent reliable identification of $\alpha$.
 Averaging over $\mathcal{T}_i$ mitigates this degeneracy.
 The relevant horizon family is parameterized as
 \begin{equation}
