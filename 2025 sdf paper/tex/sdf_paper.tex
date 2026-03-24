@@ -1,27 +1,13 @@
 
 \documentclass[12pt]{article}
 
-\title{Semiparametric SDF Estimators \\ for Pooled, Non-Traded Cash Flows}
-
-\author{
-	Christian Tausch  \\
-	AssetMetrix GmbH  \\
-	Theresienh\"{o}he 13, D-80339 Munich \\
-	christian.tausch@quant-unit.com \\
-	\and 
-	Alexander Bohnert  \\
-	Munich University of Applied Sciences \\
-	Am Stadtpark 20, D-81243 Munich \\
-	alexander.bohnert@hm.edu \\
-}
-
-\date{\today}
-
-
-
 % Packages
 \usepackage{amssymb}
 \usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage[T1]{fontenc}
+\usepackage{newtxtext}
+\usepackage{newtxmath}
 \usepackage{natbib}
 \usepackage{graphics}
 % use smaller margins
@@ -29,7 +15,6 @@
 \usepackage[margin=1.1cm]{caption}
 % use double spacing
 \usepackage{setspace}
-\usepackage{amsthm}
 \usepackage{url}
 \usepackage[outdir=./]{epstopdf}
 \usepackage{booktabs}
@@ -59,40 +44,24 @@
 
 \begin{document}
 	
-\maketitle
+\input{sdf_paper_titlepage.tex}
 
-
-\section*{Keywords}
-Stochastic Discount Factor,
-Semiparametric Estimation,
-Spatial Dependence,
-Generalized Method of Moments (GMM),
-Private Equity,
-Illiquid Assets
-
-
-\section*{Acknowledgements}
-We thank Nicolas D\"{u}tsch, Philipp Abel, Kai Urban, Ralf Werner, and the participants of the GOR AG Analytics workshop in Frankfurt for their valuable feedback and helpful comments that greatly improved the paper.
-
-\section*{Declaration of interest}
-The authors report no conflict of interest. 
-The authors alone are responsible for the content and writing of the paper.
-
-
-\newpage
 %\doublespacing
 
-\begin{center} 
-	\section*{Semiparametric SDF Estimators \\ for Pooled, Non-Traded Cash Flows}
+\begin{center}
+	{\Large\bfseries Semiparametric SDF Estimators \\[0.5ex] for Pooled, Non-Traded Cash Flows\par}
 \end{center}
 
-
-\abstract{
+\begin{abstract}
 	We study identification and semiparametric estimation of stochastic discount factors from pooled non-traded cash flows. 
 	The framework generalizes the inception-based approach of \cite{DLP12} and accommodates dependence induced by overlapping cash-flow streams. 
 	We show that horizon choice creates a tradeoff between structural fidelity and finite-sample stability: averaging pricing errors over additional compounding dates can materially stabilize estimation, but generally does so by introducing a Compounding-Horizon Wedge that shifts the population pricing restriction. 
 	In private-equity cash-flow panels, the framework yields more stable evidence on broad market exposure in seasoned portfolios than on abnormal performance or richer factor decompositions.
-}
+\end{abstract}
+
+\noindent\textbf{Keywords:} Stochastic Discount Factor, Semiparametric Estimation, Spatial Dependence, Generalized Method of Moments (GMM), Private Equity, Illiquid Assets
+
+\noindent\textbf{JEL classification:} G12, G24, C14, C58
 
 
 %% main text
@@ -1752,7 +1721,7 @@ Developing a formal theoretical or empirical mechanism to endogenously determine
 
 %% References
 \bibliographystyle{apalike}
-\bibliography{ref.bib}
+\bibliography{sdf_paper_refs}
 
 %\newpage
 
