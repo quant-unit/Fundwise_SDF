@@ -90,7 +90,7 @@ The authors alone are responsible for the content and writing of the paper.
 \abstract{
 	We study identification and semiparametric estimation of stochastic discount factors from pooled non-traded cash flows. 
 	The framework generalizes the inception-based approach of \cite{DLP12} and accommodates dependence induced by overlapping cash-flow streams. 
-	We show that horizon choice creates a tradeoff between structural fidelity and finite-sample stability: averaging pricing errors over additional compounding dates can materially stabilize estimation, but generally shifts the population pricing restriction. 
+	We show that horizon choice creates a tradeoff between structural fidelity and finite-sample stability: averaging pricing errors over additional compounding dates can materially stabilize estimation, but generally does so by introducing a Compounding-Horizon Wedge that shifts the population pricing restriction. 
 	In private-equity cash-flow panels, the framework yields more stable evidence on broad market exposure in seasoned portfolios than on abnormal performance or richer factor decompositions.
 }
 
@@ -119,13 +119,14 @@ Our starting point is simple.
 In typical private-equity samples, inception-only pricing errors can be highly unstable because the estimating equations are nonlinear and the effective cross-sectional sample size is limited. 
 A natural response is to average pricing errors over additional compounding dates rather than evaluate all discounted cash flows only at inception. 
 But this is not merely a statistical refinement. Once pricing errors are evaluated at horizons beyond inception, the estimator generally targets a different population object. 
-Horizon choice therefore creates a tradeoff between finite-sample stabilization and population target shift: longer horizons can improve finite-sample behavior by smoothing the sample criterion, but they also change the underlying population pricing restriction through what we term a Timing Risk Premium component.
+Horizon choice therefore creates a tradeoff between finite-sample stabilization and population target shift: longer horizons can improve finite-sample behavior by smoothing the sample criterion, but they also change the underlying population pricing restriction through what we term the Compounding-Horizon Wedge.
 
 The paper's first contribution is to characterize identification in this setting. 
 We derive a generalized pooled-cash-flow pricing framework that makes explicit how the choice of discounting date affects the estimand. 
 This formulation nests the inception-only criterion of \citet{DLP12} as a special case. 
 It also clarifies the relation to \citet{KN16}: their estimator is closely connected to our framework, but it is not obtained as a literal special case because the order of aggregation differs. 
 Framing the problem in this way makes explicit a distinction that, to our knowledge, has not been formalized in the semiparametric private-equity SDF literature: a horizon may improve finite-sample performance without preserving the original inception-based pricing restriction.
+Accordingly, we treat horizon averaging as a finite-sample regularization device: it can smooth the nonlinear sample criterion and stabilize estimation, but only by introducing the Compounding-Horizon Wedge and thereby shifting the population target.
 
 Our second contribution is methodological in service of that identification problem. 
 We formulate the estimator as a nonlinear Least-Mean-Distance (LMD) problem for pooled, non-traded cash flows \citep{PP97}. 
@@ -219,7 +220,7 @@ Additionally, \cite{HSS23} leverage a similar generalized framework to evaluate 
 Finally, for comprehensive methodological and empirical overviews of risk and return assessment in private equity, we refer to \cite{K19,korteweg2023risk}, who also discuss the popular \cite{D79} time-series regression that employs lagged returns to correct for stale valuations.
 
 Our paper's LMD framework contributes to this semiparametric literature by providing a loss-function formulation that encompasses the \cite{DLP12} approach and contextualizes the \cite{KN16} time-series analogue while supplying the rigorous increasing-domain asymptotic inference missing in earlier work (drawing on the spatial theory of \cite{PP97}, \cite{KS11}, and \cite{JP12}). 
-While \cite{GSW20} highlighted that NPV-based measures are biased relative to per-period returns, we explicitly formalize this discrepancy as a ``Timing Risk Premium'', a concept related to recent literature on discount-rate risk in secondary markets \citep{boyer2023discount}.
+While \cite{GSW20} highlighted that NPV-based measures are biased relative to per-period returns, we explicitly formalize this discrepancy as the Compounding-Horizon Wedge, that is, a horizon-induced wedge in the pooled pricing restriction, a concept related to recent literature on discount-rate risk in secondary markets \citep{boyer2023discount}.
 
 % Related conceptually, \citet{APR18} study pseudo-true SDFs in conditional traded-asset pricing models, where the pseudo-true parameter minimizes a conditional Hansen-Jagannathan distance and can be characterized through local factors or their mimicking portfolios. That paper is relevant for our framing because it emphasizes that pseudo-true targets in asset pricing are criterion-dependent objects under misspecification rather than automatically structural parameters. Our setting differs, however, in that the horizon-specific pseudo-target \(\theta_H^\dagger\) arises here because the pooled cash-flow criterion itself changes with the discounting horizon; the central issue is target shift induced by post-inception timing terms in non-traded private-equity cash flows, not selection of a best-fitting misspecified conditional SDF in traded-return data.
 
@@ -227,7 +228,7 @@ While \cite{GSW20} highlighted that NPV-based measures are biased relative to pe
 \label{sec:spatial_sdf_methodology}
 
 We now formalize a semiparametric framework for SDF estimation with pooled cash flows. 
-Section~\ref{sec:asset_pricing_pooled} establishes the theoretical asset-pricing conditions and highlights how the choice of discounting date induces a ``Timing Risk Premium". 
+Section~\ref{sec:asset_pricing_pooled} establishes the theoretical asset-pricing conditions and highlights how the choice of discounting date induces the Compounding-Horizon Wedge. 
 Section~\ref{sec:fundwise_lmd_estimator} uses this insight to introduce a generalized Least-Mean-Distance estimator that endogenizes the discounting dates. 
 Section~\ref{sec:asymptotic_framework} summarizes the increasing-domain asymptotic benchmark and SHAC inference used to interpret the empirical results under overlapping vintage-year dependence. 
 Section~\ref{sec:comparison_to_similar_estimators} demonstrates how this LMD estimator nests the framework of \cite{DLP12} as a special case and relates to \cite{KN16}.
@@ -400,11 +401,11 @@ where we used the conditional covariance identity and Equation~\eqref{eq:deal_pr
 \end{proof}
 
 Part~(3) of Lemma \ref{lem:deal_level_timing} shows that compounding deal cash flows to a future date generally destroys the zero conditional moment restriction because the resulting expression contains a covariance between the pricing error and future SDF realizations. 
-We refer to this non-zero expected value as the \emph{timing wedge}. 
+We refer to this non-zero expected value as a \emph{timing-related covariance wedge}. 
 Economically, it is the time-$\tau$ price of an investment-date covariance term between continuation SDF realizations and the discounted divestment cash flows over the illiquid holding period. 
-We label this component the \textbf{Timing Risk Premium (TRP)} because it captures compensation for systematic timing exposure, i.e., exposure to the states in which realization occurs and discount rates are realized.
+At the level of the generalized estimator, this mechanism induces the \textbf{Compounding-Horizon Wedge}: once the criterion averages over post-investment or future-value revaluation dates, the timing-related covariance wedge enters the pooled objective and shifts the population target away from the inception-based benchmark.
 
-To facilitate the economic interpretation of the TRP, let us briefly analyze Equation \ref{eq:future_value_bias_derivation} with only one divestment cash flow per deal ($K_{i,j}=1$).
+To clarify the economic mechanism behind the Compounding-Horizon Wedge, let us briefly analyze Equation \ref{eq:future_value_bias_derivation} with only one divestment cash flow per deal ($K_{i,j}=1$).
 In this case, the covariance term reads 
 \[
 \mathrm{Cov} \left( \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}},\
@@ -421,8 +422,8 @@ In this case, the covariance term reads
 Thus, for $K_{i,j}=1$, the covariance is naturally expected to be largest when $t_{i,j}^{\mathrm{Future}}$ is equal to $t_{i,j,k}^{\mathrm{Div}}$, since the continuation SDF and the discounted divestment payoff then load on the same SDF path. 
 This ranking is not automatic, however, and requires additional restrictions on the post-divestment SDF dynamics (e.g, ${\Psi_{t_{i,j}^{\mathrm{Future}}}} / {\Psi_{t_{i,j}^{\mathrm{Div}}}}$ being conditionally mean-independent of $\mathcal{F}_{t_{i,j}^{\mathrm{Div}}}$ given  $\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$).
 
-To conclude our analysis of Part 3 of Lemma \ref{lem:deal_level_timing}, NFV-type moments are inappropriate as primitive ex-ante pricing moments unless the TRP term is modeled explicitly.
-They can still be informative for ex-post benchmarking, but the resulting performance measure must then be interpreted as a composite object that mixes true abnormal performance (skill) with a systematic timing exposure-related compensation (TRP).
+To conclude our analysis of Part 3 of Lemma \ref{lem:deal_level_timing}, NFV-type moments are inappropriate as primitive ex-ante pricing moments unless the timing-related covariance wedge is modeled explicitly.
+They can still be informative for ex-post benchmarking, but the resulting performance measure must then be interpreted as a composite object that mixes true abnormal performance (skill) with systematic exposure to the states in which realization and discounting occur.
 
 \begin{proposition}
 	\label{theo:inception_value}
@@ -463,15 +464,15 @@ Applying Equation~\eqref{eq:zero_deal_expectation} term-by-term yields
 \end{proof}
 
 
-Proposition~\ref{theo:inception_value} provides the clean benchmark for identification: pooled NPV moments are theoretically well founded when discounting occurs at or before fund inception. Once $\tau>t_i^0$, some underlying deals are active or already partially realized, so the corresponding pooled pricing error incorporates the timing wedge.
+Proposition~\ref{theo:inception_value} provides the clean benchmark for identification: pooled NPV moments are theoretically well founded when discounting occurs at or before fund inception. Once $\tau>t_i^0$, some underlying deals are active or already partially realized, so the corresponding pooled pricing error incorporates the Compounding-Horizon Wedge.
 The choice of discounting dates is therefore not innocuous.
 Section~\ref{sec:fundwise_lmd_estimator} formalizes this choice by defining an estimator that explicitly specifies which discounting dates are used.
 When it restricts to dates $\tau \le t_i^0$, the pooled fund-level pricing error inherits a valid zero conditional moment.
-When it includes dates $\tau > t_i^0$, it generally targets a tilted criterion that embeds the Timing Risk Premium characterized by Equation \eqref{eq:future_value_bias_derivation}.
+When it includes dates $\tau > t_i^0$, it generally targets a tilted criterion that embeds the Compounding-Horizon Wedge characterized by Equation \eqref{eq:future_value_bias_derivation}.
 
-Critically, this Timing Risk Premium is not solely relevant for ex-post benchmarking.
+Critically, the Compounding-Horizon Wedge is not solely relevant for ex-post benchmarking.
 It also fundamentally drives the large-sample and small-sample properties of our generalized LMD estimator. 
-As we demonstrate in later sections, averaging pricing errors over extended horizons deliberately injects this structural timing wedge to control severe finite-sample estimator bias and variance.
+As we demonstrate in later sections, averaging pricing errors over extended horizons deliberately introduces wedge-bearing discounting dates that smooth the nonlinear sample criterion and can materially improve finite-sample behavior, even though doing so shifts the population target.
 
 
 
@@ -530,7 +531,7 @@ For each fund $i$ and all points $\tau$ within a common fund lifetime, the empir
 \epsilon_{\tau,i}(\theta) := \sum_{t=0}^T P_{\tau,t,i}(\theta) 
 \qquad \forall \quad \tau,i
 \end{equation}
-Note that for $t<\tau$, the terms $\frac{\Psi_t}{\Psi_\tau}CF_{i,t}$ are compounded past cash flows, not discounted future cash flows, so the term ``present value'' is no longer accurate for $\tau > t_i^0$. For $\tau>t_i^0$, $\epsilon_{\tau,i}(\theta)$ is not a continuation value but a time-$\tau$ revaluation of the entire realized cash-flow stream, and therefore generally inherits the timing wedge characterized in Section~\ref{sec:asset_pricing_pooled}.
+Note that for $t<\tau$, the terms $\frac{\Psi_t}{\Psi_\tau}CF_{i,t}$ are compounded past cash flows, not discounted future cash flows, so the term ``present value'' is no longer accurate for $\tau > t_i^0$. For $\tau>t_i^0$, $\epsilon_{\tau,i}(\theta)$ is not a continuation value but a time-$\tau$ revaluation of the entire realized cash-flow stream, and therefore generally inherits the Compounding-Horizon Wedge characterized in Section~\ref{sec:asset_pricing_pooled}.
 This time-$\tau$ revaluation $\epsilon_{\tau,i}(\theta)$ must be sharply distinguished from the latent continuation value ${LCV}_{i,\tau}(\theta) := \mathbb{E}[\sum_{t=\tau}^{T}(\Psi_t/\Psi_\tau)CF_{i,t} \mid \mathcal{F}_\tau]$, which conditions on information at $\tau$ and is not directly observed.
 
 To analyze the effect of different discounting dates $\tau$ on the bias and variance of the estimated SDF parameters, we define the generalized criterion $\bar{\epsilon}_{i}(\theta)$ that averages pricing errors over the set $\mathcal{T}_i$:
@@ -560,7 +561,7 @@ The relevant horizon family is parameterized as
 This formulation encompasses two economically distinct cases:
 \begin{itemize}
     \item $H=0$: If $\mathcal{T}_i = \{t_i^0\}$, the estimator uses an inception-only NPV criterion, is anchored in the pooled pricing restriction from Section~\ref{sec:asset_pricing_pooled}, and targets the structural parameter $\theta_0$.
-    \item $H>0$: If $\mathcal{T}_i = \mathcal{T}_{i,H}$ with $H>0$, the estimator is a generalized horizon-averaged criterion and targets the pseudo-true parameter $\theta_H^{\dagger}$. It provides finite-sample regularization benefits but incorporates a potential timing distortion. 
+    \item $H>0$: If $\mathcal{T}_i = \mathcal{T}_{i,H}$ with $H>0$, the estimator is a generalized horizon-averaged criterion and targets the pseudo-true parameter $\theta_H^{\dagger}$. It acts as a finite-sample regularization device by smoothing the sample criterion, but it does so by introducing the Compounding-Horizon Wedge and therefore changing the estimand. 
 \end{itemize}
 Larger values of the horizon $H$ offer more regularization, but a larger departure from the structural benchmark with zero expected value. 
 
@@ -579,8 +580,8 @@ Larger values of the horizon $H$ offer more regularization, but a larger departu
 
 \begin{remark}[Target parameter under horizon averaging]
 	\label{rem:target_parameter}
-	For $\mathcal{T}_{i,H}=\{t_i^0,t_i^0+1,\dots,\min(t_i^0+12H,T_i^{\max})\}$, the estimator targets the horizon-specific pseudo-true parameter $\theta_H^{\dagger}=\arg\max_{\theta}Q_H(\theta)$. 
-	This coincides with the structural parameter $\theta_0$ only when $H=0$. For $H>0$, the estimator trades structural fidelity against finite-sample regularization by averaging pricing errors over discounting dates that may incorporate the timing wedge from Section~\ref{sec:asset_pricing_pooled}.
+	For $\mathcal{T}_{i,H}=\{t_i^0,t_i^0+1,\dots,\min(t_i^0+12H,T_i^{\max})\}$, the estimator targets the horizon-specific pseudo-true parameter $\theta_H^{\dagger}$. 
+	This coincides with the structural parameter $\theta_0$ only when $H=0$. For $H>0$, the estimator trades structural fidelity against finite-sample regularization by averaging pricing errors over discounting dates that may incorporate the Compounding-Horizon Wedge from Section~\ref{sec:asset_pricing_pooled}.
 \end{remark}
 
 \textbf{Restriction used for identification and asymptotic theory.} In the consistency analysis below, we specialize the generalized criterion to $\mathcal{T}_i = \{t_i^0\}$. Under Proposition~\ref{theo:inception_value}, this yields a valid pooled fund-level zero-moment restriction at the structural parameter $\theta_0$.
@@ -668,7 +669,7 @@ and let the corresponding population target be
 \begin{remark}[Structural versus horizon-specific target]
 \label{rem:structural_vs_pseudotrue}
 The asymptotic benchmark is intentionally formulated around \(\theta_H^\dagger\), not around \(\theta_0\). For \(H=0\), the pooled inception-only criterion coincides with the structural pricing restriction of Section~\ref{sec:asset_pricing_pooled}, and hence \(\theta_0^\dagger=\theta_0\). 
-For \(H>0\), the criterion generally targets a pseudo-true parameter \(\theta_H^\dagger \neq \theta_0\), because averaging over \(\tau>t_i^0\) may embed the timing wedge at the population level.
+For \(H>0\), the criterion generally targets a pseudo-true parameter \(\theta_H^\dagger \neq \theta_0\), because averaging over \(\tau>t_i^0\) may embed the Compounding-Horizon Wedge at the population level.
 \end{remark}
 
 We use increasing-domain asymptotics indexed by vintage years, with local overlap dependence and bounded within-vintage clustering; the full regularity conditions are stated in Online Appendix~\ref{sec:proofs_asymptotics_H}. 
@@ -1294,7 +1295,7 @@ Averaging pricing errors over multiple future dates therefore acts as a finite-s
 In the reported designs, this stabilization improves the mean estimate far more than it reduces standard errors. 
 While estimator variance traces a shallow U-shape with a minimum near the 15-year Horizon (see Table \ref{tab:sim_q5_summary}) for fund with a lifetime of 15 years, this reduction is secondary to the striking stabilization of the parameter bias.
 However, our simulations for shorter fund lifetimes indicate that determining the optimal horizon requires tailored simulation designs rather than a simple heuristic assuming the optimal horizon always coincides with the fund's life.
-We further analyze these puzzling results from a theoretical perspective in Appendix \ref{sec:appendix_bias_variance}, detailing the finite-sample stabilization under $\mathcal{T}$-averaging and the role of the Timing Risk Premium.
+We further analyze these puzzling results from a theoretical perspective in Appendix \ref{sec:appendix_bias_variance}, detailing the finite-sample stabilization under $\mathcal{T}$-averaging and the role of the Compounding-Horizon Wedge.
 
 \paragraph{Simulation conclusion:}
 To conclude, our simulation study supports several implementation choices used in the empirical application. 
@@ -1399,7 +1400,7 @@ The divergence between asymptotic and cross-validation diagnostics persists: asy
 For VC, the market beta is substantially higher across all Horizons, consistent with venture capital's greater sensitivity to systematic risk.
 Under EW, $\hat{\beta}_{\mathrm{MKT}}$ reaches approximately 1.97--2.00 at 2.5--5~years and converges toward 1.04--1.13 beyond 25~years; under FW, the corresponding range is 1.64--1.68 down to 0.82--0.86.
 Despite the higher parameter variability reflected in larger asymptotic standard errors (SE$_A$ of 1.2--1.8), the cross-validation stability diagnostics indicate comparatively stable estimates ($\mathrm{SR}_{CV}$ of 3.59--4.46 under EW; 3.54--7.01 under FW), although somewhat lower than the BO stability ratios due to the more heterogeneous VC fund universe.
-The converged long-horizon estimates (BO $\approx 0.67$, VC $\approx 1.0$--$1.1$ under EW) are economically plausible: BO funds, which invest in mature companies with stable cash flows, exhibit market exposure near or slightly below unity, while VC funds, which back early-stage ventures with highly uncertain outcomes, retain a substantially higher beta even at seasoned Horizons.
+As horizon-specific diagnostics rather than direct structural estimates, the converged long-horizon coefficients (BO $\approx 0.67$, VC $\approx 1.0$--$1.1$ under EW) remain economically interpretable: BO funds, which invest in mature companies with stable cash flows, load less on market risk than VC funds, which back early-stage ventures with highly uncertain outcomes.
 
 \begin{figure}[htbp]
 	\centering
@@ -1669,7 +1670,7 @@ We therefore do not view the $q^5$-factor two-factor models as providing compara
 The empirical results for Buyout and Venture Capital funds are best interpreted as evidence about what current private-equity cash-flow panels can identify under semiparametric SDF estimation, rather than as definitive evidence about the true factor structure of private equity.
 
 \paragraph{Among the specifications considered, the single-factor MKT model is the most stable.}
-For both BO and VC, the single-factor market model delivers economically plausible and comparatively stable estimates across Horizons and weighting schemes.
+For both BO and VC, the single-factor market model delivers comparatively stable horizon-specific estimates across Horizons and weighting schemes, with magnitudes that remain economically interpretable.
 For Buyout, the estimated market beta declines from approximately 1.27 at short Horizons to 0.67 at long Horizons under equal weighting.
 For Venture Capital, the corresponding range is 1.88--2.00 down to 1.04--1.13, consistent with the higher systematic risk exposure typically associated with early-stage investments.
 Most importantly, the cross-validation stability diagnostics remain comparatively strong across the Horizon grid, even when asymptotic standard errors fluctuate erratically.
@@ -1738,7 +1739,7 @@ Approaches such as LASSO, ridge regression, or model averaging to regularize non
 Another vital avenue for future work involves explicitly modeling funding rounds, financial engineering, complex fee structures and carried interest within the data generating process. 
 This would enable the estimation of company-level and gross-versus-net-of-fee SDFs, providing sharper evaluation models for both General Partners (GPs) and Limited Partners (LPs). 
 Such structural refinements would naturally improve parameter accuracy and allow for a more rigorous analytical characterization of finite-sample bias. 
-Additionally, carefully integrating intermediate NAVs as proxies for unobservable true valuations could help alleviate the Timing Risk Premium bias inherent to terminal value concepts, though this requires downweighting actual cash distributions in favor of subjective accounting metrics.
+Additionally, carefully integrating intermediate NAVs as proxies for unobservable true valuations could help alleviate the Compounding-Horizon Wedge inherent to terminal value concepts, though this requires downweighting actual cash distributions in favor of subjective accounting metrics.
 
 Finally, we highlight the important role of the compounding Horizon in empirical asset pricing for private markets. 
 Reporting estimates on a future-value-based horizon grid yields an additional array of alternative parameter estimates that can be compared to the traditional NPV-based results of the \cite{DLP12} method.
@@ -1763,10 +1764,11 @@ Developing a formal theoretical or empirical mechanism to endogenously determine
 
 This appendix clarifies why $\mathcal{T}$-averaging can improve finite-sample performance even though, for $H>0$, it generally shifts the population target away from the structural parameter $\theta_0$.
 The key mechanism is a tradeoff between:
-(i) a \emph{population target shift} induced by post-investment timing terms through the Timing Risk Premium (TRP), and
+(i) a \emph{population target shift} induced by post-investment timing terms through the Compounding-Horizon Wedge, and
 (ii) a \emph{finite-sample stabilization effect} from averaging imperfectly correlated pricing errors across discounting dates.
 
 Throughout this appendix, we specialize to the quadratic loss $L(x)=x^2$ and set $w_i=1$, so that the population objective reduces to a nonlinear least-squares criterion.
+Because this appendix works directly with squared loss rather than its negative, the horizon-specific population criterion is written in minimization form; this is equivalent to the maximization convention used for the negative-loss objective in Section~\ref{sec:asymptotic_framework}.
 To keep the notation transparent, all moment calculations in this appendix are stated conditional on a fixed fund structure for a generic fund $i$ (that is, conditional on $J_i$, the relevant investment dates, and the horizon set $\mathcal{T}_{i,H}$), while expectations continue to integrate over SDF and pricing-error randomness.
 The corresponding unconditional population statements follow by taking an outer expectation over the distribution of fund structures.
 
@@ -1775,6 +1777,7 @@ First, we define the horizon-specific population criterion and pseudo-true minim
 Second, we identify the exact source of the averaged population moment shift at $\theta_0$.
 Third, we show how that moment shift enters the gradient of the population criterion and thereby affects the pseudo-true parameter.
 Fourth, we present an exact MSE decomposition and then interpret the simulation evidence through a second-order finite-sample lens.
+In compact form, the mechanism is: post-investment dates create timing-related covariance wedges at the deal level; these generate a nonzero averaged population moment $b_{H,i}$ at $\theta_0$, tilt the gradient of the criterion, shift the pseudo-true target, and then enter the exact MSE tradeoff.
 
 \subsection{Setup and horizon-specific population target}
 \label{sec:appendix_bv_setup}
@@ -1849,7 +1852,7 @@ It is convenient to define the horizon-specific averaged population moment at th
 	J_i,\mathcal{T}_{i,H},\{t_{i,j}^{\mathrm{Inv}}\}_{j=1}^{J_i}
 	\right].
 \end{equation}
-The next subsection shows that, under correct specification, $b_{H,i}$ is generated exactly by the post-investment TRP terms.
+The next subsection shows that, under correct specification, $b_{H,i}$ is generated exactly by the post-investment timing-related covariance wedges that aggregate into the Compounding-Horizon Wedge.
 The corresponding unconditional object is $\mathbb{E}[b_{H,i}]$.
 \subsection{Exact source of the averaged population moment at $\theta_0$}
 \label{sec:appendix_bv_moment_bias}
@@ -1964,10 +1967,10 @@ Since $\mathbb{E}[\delta_{i,j}]=0$, Equation~\eqref{eq:iterated_zero_preinv} als
 We therefore obtain the following exact characterization.
 
 \begin{lemma}[Exact source of the averaged population moment at $\theta_0$]
-	\label{lem:bH_TRP}
+	\label{lem:bH_horizon_wedge}
 	Under correct specification,
 	\begin{equation}
-		\label{eq:bH_TRP}
+		\label{eq:bH_horizon_wedge}
 		b_{H,i}
 		=
 		\frac{1}{\mathrm{card}(\mathcal{T}_{i,H})}
@@ -1981,17 +1984,21 @@ We therefore obtain the following exact characterization.
 		J_i,\mathcal{T}_{i,H},\{t_{i,j}^{\mathrm{Inv}}\}_{j=1}^{J_i}
 		\right).
 	\end{equation}
-	In particular, benchmark NPV terms contribute zero to $b_{H,i}$, and the averaged population moment at $\theta_0$ is shifted only by post-investment timing terms.
+In particular, benchmark NPV terms contribute zero to $b_{H,i}$, and the averaged population moment at $\theta_0$ is shifted only by post-investment timing terms.
 \end{lemma}
 
 \begin{proof}
 	The result follows from Equation~\eqref{eq:avg_eps_expectation}, the decomposition in Equation~\eqref{eq:cov_decomp}, the fact that $\mathbb{E}[\delta_{i,j}]=0$ under correct specification, and the iterated-expectations argument in Equation~\eqref{eq:iterated_zero_preinv} for all pairs $(\tau,j)$ satisfying $\tau\le t_{i,j}^{\mathrm{Inv}}$.
 \end{proof}
 
+\paragraph{What the lemma does and does not identify.}
+Lemma~\ref{lem:bH_horizon_wedge} identifies the exact source of the averaged population moment shift at $\theta_0$.
+It does not, by itself, characterize the pseudo-true target shift $\theta_H^\dagger-\theta_0$, because that parameter shift depends on how the moment shift enters both the gradient and the curvature of the population criterion.
+
 \paragraph{Misspecification.}
 Under model misspecification, $\mathbb{E}[\delta_{i,j}]\neq 0$, and the second term in Equation~\eqref{eq:cov_decomp} no longer vanishes.
 In that case, the conditional averaged population moment at $\theta_0$ contains both
-(i) the covariance term associated with the TRP and
+(i) the timing-related covariance wedge and
 (ii) an additional mean component
 \[
 \mathbb{E}\!\left[
@@ -2000,19 +2007,12 @@ In that case, the conditional averaged population moment at $\theta_0$ contains 
 \mathbb{E}[\delta_{i,j}].
 \]
 Without further sign or decay restrictions, horizon averaging need not eliminate that additional component.
-Accordingly, the clean correct-specification interpretation of $\mathcal{T}$-averaging as a tradeoff between a TRP-induced target shift and variance reduction no longer applies without qualification.
+Accordingly, the clean correct-specification interpretation of $\mathcal{T}$-averaging as a tradeoff between a target shift induced by the Compounding-Horizon Wedge and variance reduction no longer applies without qualification.
 
 \subsection{From averaged moment shift to pseudo-true target shift}
 \label{sec:appendix_bv_target_shift}
 
-Lemma~\ref{lem:bH_TRP} identifies the exact source of the conditional averaged population moment $b_{H,i}$ at $\theta_0$.
-To connect that result to the parameter target, define
-\[
-g_{i,H}(\theta)
-:=
-\nabla_\theta \bar{\epsilon}_i^{(H)}(\theta),
-\]
-and assume that differentiation can be interchanged with expectation.
+Lemma~\ref{lem:bH_horizon_wedge} identifies the exact source of the conditional averaged population moment $b_{H,i}$ at $\theta_0$.
 To connect that result to the parameter target, define
 \[
 g_{i,H}(\theta)
@@ -2046,7 +2046,7 @@ Evaluating at $\theta_0$ and decomposing the expectation around the conditional 
 where for scalar $X$ and vector $Y$, $\mathrm{Cov}(X,Y):=\mathbb{E}[(X-\mathbb{E}[X])(Y-\mathbb{E}[Y])]$.
 
 Equation~\eqref{eq:grad_decomp} makes two points precise.
-First, the TRP-driven conditional moment shift $b_{H,i}$ is one component of the criterion tilt at $\theta_0$.
+First, the conditional moment shift in $b_{H,i}$ induced by the Compounding-Horizon Wedge is one component of the criterion tilt at $\theta_0$.
 Second, the pseudo-true target depends not only on that conditional mean shift, but also on the residual co-movement between the averaged pricing error and its parameter sensitivity.
 
 Assume now that $Q_H$ is twice continuously differentiable on an open convex neighborhood containing the line segment between $\theta_0$ and $\theta_H^\dagger$, and that its Hessian is nonsingular throughout that set.
@@ -2077,7 +2077,7 @@ Hence
 \end{equation}
 
 Combining Equations~\eqref{eq:grad_decomp} and \eqref{eq:theta_shift}, the pseudo-true target shift is driven by the full gradient tilt of the population criterion at $\theta_0$.
-Lemma~\ref{lem:bH_TRP} therefore identifies an exact channel through which the TRP moves the population target, but $b_{H,i}$ alone does not fully characterize $\theta_H^\dagger-\theta_0$ unless additional restrictions are imposed.
+Lemma~\ref{lem:bH_horizon_wedge} therefore identifies an exact channel through which the Compounding-Horizon Wedge moves the population target, but $b_{H,i}$ alone does not fully characterize $\theta_H^\dagger-\theta_0$ unless additional restrictions are imposed.
 
 \begin{remark}[A generic magnitude bound]
 	\label{rem:target_shift_magnitude}
@@ -2096,7 +2096,7 @@ Lemma~\ref{lem:bH_TRP} therefore identifies an exact channel through which the T
 	\sigma(\delta_{i,j}).
 	\]
 	Moreover, the averaging operator contributes the factor
-	$1/\mathrm{card}(\mathcal{T}_{i,H})$ in Equation~\eqref{eq:bH_TRP}.
+	$1/\mathrm{card}(\mathcal{T}_{i,H})$ in Equation~\eqref{eq:bH_horizon_wedge}.
 	Thus, large target shifts require either highly volatile SDF ratios, highly dispersed deal-level pricing errors, or strong alignment between these objects.
 \end{remark}
 
@@ -2192,6 +2192,7 @@ Proposition~\ref{prop:exact_mse} separates four conceptually distinct objects:
 
 This decomposition is exact.
 What remains model-dependent is how these terms move with $H$.
+From this point onward, the appendix no longer derives exact comparative statics in $H$; instead, it provides a second-order heuristic for why finite-sample stabilization can dominate over some range of horizons.
 
 \paragraph{Heuristic link to second-order finite-sample bias.}
 For nonlinear extremum estimators, standard higher-order expansions imply that
@@ -2253,7 +2254,7 @@ As $H$ increases, averaging combines additional pricing moments that are correla
 
 Against this benefit stands the population target shift characterized above.
 Once $H$ is large enough to include post-investment timing terms, the criterion is generally no longer minimized at $\theta_0$.
-The resulting TRP-induced shift can be economically meaningful, but under the baseline calibration it is modest relative to the large finite-sample distortions observed at very short horizons.
+The resulting target shift induced by the Compounding-Horizon Wedge can be economically meaningful, but under the baseline calibration it is modest relative to the large finite-sample distortions observed at very short horizons.
 
 This yields the central interpretation of the simulation results:
 for small to intermediate horizons, the stabilization benefit of $\mathcal{T}$-averaging can dominate the incremental target shift;
@@ -2263,7 +2264,7 @@ Instead, it is generally \emph{interior} and \emph{DGP-dependent}.
 
 \begin{remark}[Why we do not impose a global monotonicity theorem]
 	We do not claim that each MSE component is globally monotone in $H$ without additional restrictions.
-	In particular, the aggregate TRP contribution may contain offsetting covariance terms, and the effect of averaging on estimator variance depends on the covariance structure of the pricing moments and on the local geometry of the nonlinear criterion.
+	In particular, the aggregate Compounding-Horizon Wedge may contain offsetting covariance terms, and the effect of averaging on estimator variance depends on the covariance structure of the pricing moments and on the local geometry of the nonlinear criterion.
 	For that reason, the appendix establishes the exact decomposition and the exact source of the averaged population moment shift, while the existence and location of the empirically relevant interior optimum are documented in the simulation study rather than asserted as a universal theorem.
 \end{remark}
 
@@ -2274,7 +2275,7 @@ Instead, it is generally \emph{interior} and \emph{DGP-dependent}.
 \end{remark}
 
 \paragraph{Summary.}
-The main message is not that the TRP ``washes out'' as $H$ grows.
+The main message is not that the Compounding-Horizon Wedge ``washes out'' as $H$ grows.
 Rather, $\mathcal{T}$-averaging trades off a population target shift against a potentially large reduction in finite-sample estimation error.
 Under the baseline DGP, the latter effect dominates over an economically relevant range of horizons, which is why the simulation study favors intermediate horizons rather than the NPV-only benchmark.
 
