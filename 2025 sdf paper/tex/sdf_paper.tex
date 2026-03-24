@@ -988,8 +988,9 @@ The fund currency distribution is as follows: USD (968).
 We test a simple linear SDF model similar to \cite{DLP12}
 \begin{equation}
 	\label{eq:linear_sdf}
-	\Psi_{\tau,t}^{\mathrm{SL}} (\theta) = 
-	\frac{\prod_{h=0}^{\tau}\ \left(1 + \alpha + r_{f,h} + \sum_m\ \beta_m \ F_{m,h} \right)}{\prod_{h=0}^{t}\ \left(1 + \alpha + r_{f,h} + \sum_m\ \beta_m\ F_{m,h} \right)}
+	\Psi_{\tau,t}^{\mathrm{SL}}(\theta)=
+	\frac{\prod_{h=1}^{\tau}\left(1+\alpha+r_{f,h}+\sum_m \beta_m F_{m,h}\right)}
+	     {\prod_{h=1}^{t}\left(1+\alpha+r_{f,h}+\sum_m \beta_m F_{m,h}\right)}
 \end{equation}
 and an exponential affine SDF model adapted from \cite{KN16}
 \begin{equation}
@@ -1282,7 +1283,7 @@ Accordingly, in the empirical application we use vintage-year portfolios, the si
 \subsection{Role of asymptotic inference}
 
 To assess the parameter significance in the empirical application, we compute the asymptotic standard errors as outlined in Subsection \ref{sec:asymptotic_framework}.
-For the Bartlett kernel's bandwidth $b_n=D$ we select 12 years, i.e., funds with absolute vintage year differences larger than 12 years are assumed to be independent.
+For the Bartlett kernel bandwidth $b_V$, we set $b_V=12$ years, so pairs of funds with absolute vintage-year differences exceeding 12 receive zero kernel weight in the SHAC covariance estimator.
 The asymptotic results provide the benchmark large-sample approximation. 
 
 At the same time, private-equity samples remain small in the vintage-year and cross-sectional dimensions, and model choice is often data-driven. 
@@ -2274,7 +2275,7 @@ Accordingly, we focus our analysis on estimates derived from NPV-based discounti
 \subsection{Comparison to simulation results}
 \label{sec:dlp_simulation}
 
-\cite[Table 1]{DLP12} report Monte Carlo results for $n=50$ funds per vintage-year portfolio with an annualized idiosyncratic volatility of 108\% ($\sigma_{\text{monthly}}=0.3$).
+\cite[Table 1]{DLP12} report Monte Carlo results for $n=50$ funds per vintage-year portfolio with monthly idiosyncratic standard deviation $\sigma_{\text{monthly}}=0.3$, corresponding to roughly 104\% annualized volatility under $\sqrt{12}$ scaling.
 In our base case (S1), we use only $n=20$ funds per vintage, which is more realistic for older vintages and smaller private capital asset classes beyond Buyout and Venture Capital.
 Scenarios S2--S10 in Table~\ref{tab:driessen_comparison} systematically vary the simulation design to identify which features drive the remaining discrepancy between our results and the \cite{DLP12} benchmark.
 
@@ -2377,7 +2378,8 @@ The discrepancy likely reflects differences in the underlying datasets (Preqin v
 
 But once the alpha term is reintroduced in the four-factor model ($\alpha$, MKT, SMB, HML), the same instability reappears.
 Because the alpha term absorbs the bulk of the remaining variance, the other factor loadings swing erratically: the asymptotic MKT coefficient for BO drops substantially (to $0.25$ under FW), while SMB and HML loadings reach extreme values.
-The pervasive asymptotic standard errors of exactly $(0.000)$ in these models often coincide with the estimates hitting the boundary constraints. 
+The pervasive asymptotic standard errors of exactly $(0.000)$ in these models often occur when estimates lie on or very near the imposed parameter bounds.
+In such cases, the usual interior Hessian-based asymptotic approximation is not a reliable measure of uncertainty, so we interpret the SHAC standard errors with caution and place greater weight on the cross-validation stability diagnostics.
 The CV analysis exposes this reality: rather than being estimated with zero error, the parameters swing erratically across hold-out sets, with CV standard deviations for the factor loadings routinely exceeding $0.4$, indicating that the multi-factor models are not stably estimated when alpha is included.
 
 In conclusion, our empirical evaluation is consistent with the simulation-based warning from Section~\ref{sec:simulation_study}: with the limited cross-section of only 20--40 vintage-year portfolios currently available in commercial private equity databases, generalized SDF models that attempt to separately estimate multiple pricing factors alongside an explicit alpha parameter appear too weakly identified in this sample to support stable inference. 
