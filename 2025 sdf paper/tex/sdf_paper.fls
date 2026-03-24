@@ -246,13 +246,15 @@ INPUT /usr/local/texlive/2017/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 INPUT /usr/local/texlive/2017/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 INPUT /usr/local/texlive/2017/texmf-dist/tex/latex/caption/ltcaption.sty
 INPUT /usr/local/texlive/2017/texmf-dist/tex/latex/caption/ltcaption.sty
-INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/newtx/ntx-Regular-tlf-t1.tfm
-INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/newtx/ntx-Bold-tlf-t1.tfm
+INPUT sdf_paper_titlepage.tex
+INPUT sdf_paper_titlepage.tex
 INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/newtx/ntx-Regular-tlf-t1.tfm
 INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/newtx/ntx-Bold-tlf-t1.tfm
 INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/newtx/ntx-Bold-tlf-t1.tfm
 OUTPUT sdf_paper.pdf
 INPUT /usr/local/texlive/2017/texmf-var/fonts/map/pdftex/updmap/pdftex.map
+INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/newtx/ntx-Regular-tlf-t1.tfm
+INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/newtx/ntx-Bold-tlf-t1.tfm
 INPUT /usr/local/texlive/2017/texmf-dist/tex/latex/newtx/ot1ntxtlf.fd
 INPUT /usr/local/texlive/2017/texmf-dist/tex/latex/newtx/ot1ntxtlf.fd
 INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/newtx/ntx-Regular-tlf-ot1.tfm
@@ -441,6 +443,8 @@ INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/newtx/ntxexa.tfm
 INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/newtx/ntxexa.tfm
 INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/newtx/ntx-Regular-tlf-t1.tfm
 INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/newtx/ntx-Regular-tlf-t1.tfm
+INPUT /usr/local/texlive/2017/texmf-dist/fonts/vf/public/newtx/ntxexa.vf
+INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/newtx/txexas.tfm
 INPUT /usr/local/texlive/2017/texmf-dist/fonts/vf/public/newtx/ntxmi.vf
 INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/txfonts/txmi.tfm
 INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/newtx/rntxmi.tfm
@@ -469,8 +473,6 @@ INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/newtx/rntxmi5.tfm
 INPUT /usr/local/texlive/2017/texmf-dist/fonts/vf/public/newtx/ntxsy.vf
 INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/newtx/txsys.tfm
 INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/newtx/txex-bar.tfm
-INPUT /usr/local/texlive/2017/texmf-dist/fonts/vf/public/newtx/ntxexa.vf
-INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/newtx/txexas.tfm
 INPUT /usr/local/texlive/2017/texmf-dist/fonts/vf/public/newtx/ntxsy7.vf
 INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/newtx/txsys.tfm
 INPUT /usr/local/texlive/2017/texmf-dist/fonts/tfm/public/newtx/txex-bar.tfm

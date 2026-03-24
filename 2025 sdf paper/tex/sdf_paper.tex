@@ -637,7 +637,7 @@ and let the corresponding population target be
 
 \begin{remark}[Structural versus horizon-specific target]
 \label{rem:structural_vs_pseudotrue}
-The asymptotic benchmark is intentionally formulated around \(\theta_H^\dagger\), not around \(\theta_0\). For \(H=0\), the pooled inception-only criterion coincides with the structural pricing restriction of Section~\ref{sec:asset_pricing_pooled}, and hence \(\theta_0^\dagger=\theta_0\). 
+The asymptotic benchmark is intentionally formulated around \(\theta_H^\dagger\), not around \(\theta_0\). For \(H=0\), the pooled inception-only criterion coincides with the structural pricing restriction of Section~\ref{sec:asset_pricing_pooled}; the benchmark target is structural when the inception-only population criterion is uniquely maximized at \(\theta_0\). 
 For \(H>0\), the criterion generally targets a pseudo-true parameter \(\theta_H^\dagger \neq \theta_0\), because averaging over \(\tau>t_i^0\) may embed the Compounding-Horizon Wedge at the population level.
 \end{remark}
 
@@ -655,7 +655,7 @@ Under the regularity conditions stated in Online Appendix~\ref{sec:proofs_asympt
 \]
 \end{proposition}
 
-This is the horizon-indexed analogue of the standard extremum-estimator consistency result of \citet{NM94}. For \(H=0\), the probability limit coincides with the structural parameter \(\theta_0\); for \(H>0\), consistency is around the horizon-specific pseudo-target \(\theta_H^\dagger\).
+This is the horizon-indexed analogue of the standard extremum-estimator consistency result of \citet{NM94}. For \(H=0\), the probability limit coincides with the structural parameter \(\theta_0\) when the inception-only population criterion is uniquely maximized at \(\theta_0\); for \(H>0\), consistency is around the horizon-specific pseudo-target \(\theta_H^\dagger\).
 
 \begin{proposition}[Asymptotic normality around the horizon-specific target]
 \label{prop:clt_H}
@@ -675,7 +675,7 @@ Under the regularity conditions stated in Online Appendix~\ref{sec:proofs_asympt
 \end{proposition}
 
 This combines the extremum-estimator expansion of \citet{NM94} with the increasing-domain random-field CLT of \citet{JP12}. 
-As with consistency, the special case \(H=0\) is centered at the structural parameter \(\theta_0\), whereas for \(H>0\) the asymptotic center is the pseudo-target \(\theta_H^\dagger\).
+As with consistency, the special case \(H=0\) is centered at the structural parameter \(\theta_0\) only under the additional structural-identification condition that the inception-only population criterion is uniquely maximized at \(\theta_0\); for \(H>0\) the asymptotic center is the pseudo-target \(\theta_H^\dagger\).
 
 For large-sample inference, let \(s_i^{(H)}(\theta):=\nabla_\theta L(\bar{\epsilon}^{(H)}_i(\theta))\) denote the score contribution and \(\hat{\mathcal{H}}_H:=\nabla_{\theta\theta} Q_{n,H}(\hat\theta_H)\) the sample Hessian.
 We estimate the long-run score covariance with the spatial HAC estimator of \citet{KS11} adapted to the vintage-year metric:
@@ -708,7 +708,7 @@ The resulting asymptotic covariance matrix is
 \hat{\Lambda}_H
 \hat{\mathcal{H}}_H^{-1}.
 \end{equation}
-Asymptotic standard errors then follow in the usual way $\mathrm{SE}(\hat\theta_H)=\sqrt{\mathrm{diag}\left[\widehat{\mathrm{Avar}}(\hat\theta_H\right]}$.
+Asymptotic standard errors then follow in the usual way $\mathrm{SE}(\hat\theta_H)=\sqrt{\mathrm{diag}\left[\widehat{\mathrm{Avar}}(\hat\theta_H)\right]}$.
 
 
 
@@ -1107,8 +1107,10 @@ Specifically, we investigate five key dimensions of the estimation framework:
 (iv) the behavior of multivariate identification under idiosyncratic noise using two-factor models; and
 (v) as the central design choice in the paper, the optimal choice of the maximum compounding Horizon (i.e., the set of discounting dates $\mathcal{T}$).
 
-We use historical $q$-investment factors from 1986 to 2005 and simulate 20 funds for each of these 20 vintage years.
-This means we condition our simulation analysis on realized $q$-investment factors paths (see the Macro-Conditioning Kernel discussion in Section \ref{sec:asset_pricing_pooled}).
+We begin from a baseline simulation that uses historical $q$-investment factor paths from 1986 to 2005 and simulates 20 funds for each of these 20 vintage years.
+Thus, the baseline conditions on a realized 1986--2005 factor path rather than simulating market factors.
+The subsequent paragraphs compare this baseline to alternative scenario blocks that vary one margin at a time, such as the number of funds per vintage, the vintage span, the factor specification, or the fund lifetime; the full scenario definitions are listed in the simulation configuration file in the online repository.
+In particular, the ``extended vintage'' scenarios use vintages 1967--2005, so \(V=39\), whereas the baseline uses vintages 1986--2005, so \(V=20\).
 Each fund contains 15 deals with equal investment amounts and exactly one divestment cash flow.
 Deals are entered within the first five years of the fund lifetime following a discrete uniform distribution and afterward held between one to ten years again uniformly distributed.
 The deal returns are generated by the simple linear or exponential affine SDF models described in Equations \ref{eq:linear_sdf} and \ref{eq:expaff_SDF}.
@@ -1145,8 +1147,9 @@ This constraint likely explains the choice of \cite{KN16} to rely on individual 
 \paragraph{Varying vintages $V$ and portfolio sizes $n/V$:}
 
 A fundamental question in private equity panel data econometrics is whether precision is best improved by extending the time-series dimension ($V$, number of vintage years) or the cross-sectional dimension ($n/V$, number of funds per vintage portfolio).
+For this comparison block, we intentionally switch from the overall 20-fund baseline to a dedicated reference scenario with larger portfolios, so that changes in \(V\) and \(n/V\) can be separated more cleanly.
 To assess this tradeoff, we compare five data configurations (depicted in Figures \ref{fig:sim_vary_vin_sizes_alpha} and \ref{fig:sim_vary_vin_sizes}): 
-(1) our base case for this experiment ($V=20$, $n/V=40$); 
+(1) a reference scenario with $V=20$, $n/V=40$; 
 (2) an extended vintage sample with small portfolios ($V=39$, $n/V=10$); 
 (3) an extended vintage sample with medium portfolios ($V=39$, $n/V=20$); 
 (4) an early-vintage sub-sample ($V=10$, years 1986--1995, $n/V=20$); and 
@@ -1352,8 +1355,15 @@ Our baseline specification is the single-factor MKT model estimated on vintage-y
 Two-factor models that add an alpha intercept or a single $q$-investment factor serve as robustness and exploratory extensions.
 
 For each model specification, we report asymptotic standard errors (SE$_A$) from the SHAC framework alongside $hv$-block cross-validation fold dispersions (SD$_{CV}$), defined as the standard deviation of parameter estimates across hold-out folds.
-Throughout the empirical analysis, $t_A$ denotes the $t$-ratio based on asymptotic standard errors; $\mathrm{SR}_{CV}$ (stability ratio) denotes the ratio of the full-sample estimate to the cross-validation fold dispersion, i.e., $\mathrm{SR}_{CV} := \hat{\theta} / \mathrm{SD}_{CV}$.
+Throughout the empirical analysis, $t_A$ denotes the $t$-ratio based on asymptotic standard errors; $\mathrm{SR}_{CV}$ denotes the signed stability ratio
+\[
+\mathrm{SR}_{CV} := \hat{\theta} / \mathrm{SD}_{CV},
+\]
+where \(\hat{\theta}\) is the corresponding full-sample estimate.
+Because \(\mathrm{SR}_{CV}\) preserves the sign of \(\hat{\theta}\), negative values simply indicate negative estimated coefficients; its absolute value \(|\mathrm{SR}_{CV}|\) measures the coefficient magnitude relative to fold-to-fold dispersion.
+We use \(\mathrm{SR}_{CV}\) descriptively rather than as a formal test statistic.
 As discussed in Remark~\ref{rem:cv_diagnostic}, $\mathrm{SR}_{CV}$ complements asymptotic inference as a stability diagnostic.
+We report asymptotic significance markers for completeness, but when SE$_A$ is erratic, boundary solutions arise, or the cross-validation diagnostics indicate instability, we do not treat isolated significant $t_A$ values as decisive.
 
 All R code and data (including the previous simulations) are available in an online repository: \url{https://github.com/quant-unit/Fundwise_SDF/tree/master/r_project}.
 
@@ -1415,7 +1425,7 @@ As horizon-specific diagnostics rather than direct structural estimates, the con
 		\bottomrule
 	\end{tabular}
 	\par\vspace{2pt}
-	{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = stability ratio (estimate / fold dispersion). Significance markers based on $t_A$: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+	{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. Significance markers based on $t_A$ are reported for completeness only: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
 \end{table}
 
 % Auto-generated by plot_empirical_estimates.R
@@ -1447,7 +1457,7 @@ As horizon-specific diagnostics rather than direct structural estimates, the con
 		\bottomrule
 	\end{tabular}
 	\par\vspace{2pt}
-	{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = stability ratio (estimate / fold dispersion). Significance markers based on $t_A$: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+	{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. Significance markers based on $t_A$ are reported for completeness only: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
 \end{table}
 
 
@@ -1460,6 +1470,7 @@ The results show the instability anticipated by the simulation study: once an al
 For BO, the alpha term absorbs a substantial share of the variation that otherwise loads on the market factor: under EW, $\hat{\alpha}$ ranges from 0.003 to 0.006 per month and the MKT coefficient oscillates between 0.41 and 1.01, with no stable convergence across Horizons; under FW, $\hat{\alpha}$ is persistently around 0.005--0.008 per month while the MKT loading falls to values between 0.10 and 0.32.
 The asymptotic standard errors are highly erratic, with several entries at or very near zero interspersed with values exceeding 25.
 Cross-validation fold dispersions for $\hat{\beta}_{\mathrm{MKT}}$ are large (0.09--0.49 under EW; 0.65--0.74 under FW), indicating that these point estimates are highly sensitive to the sample split.
+Accordingly, the few isolated asymptotic significance markers in Tables~\ref{tab:empirical_bo_alpha}--\ref{tab:empirical_vc_alpha} are not emphasized in our interpretation.
 
 For VC, the two-factor model exhibits a different but similarly unstable pattern.
 At short Horizons (0--0.1~years under EW), the alpha term reaches its upper bound ($\hat{\alpha} = 0.020$/month) and the MKT coefficient drops to approximately 0.47, resembling the BO and PE behavior.
@@ -1530,7 +1541,7 @@ The BO and VC two-factor results therefore reinforce the conclusion drawn for PE
 		\bottomrule
 	\end{tabular}
 	\par\vspace{2pt}
-	{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = stability ratio (estimate / fold dispersion). Significance markers based on $t_A$: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+	{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. Significance markers based on $t_A$ are reported for completeness only: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
 \end{table}
 
 
@@ -1582,7 +1593,7 @@ The BO and VC two-factor results therefore reinforce the conclusion drawn for PE
 		\bottomrule
 	\end{tabular}
 	\par\vspace{2pt}
-	{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = stability ratio (estimate / fold dispersion). Significance markers based on $t_A$: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+	{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. Significance markers based on $t_A$ are reported for completeness only: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
 \end{table}
 
 
@@ -1598,7 +1609,7 @@ Figure~\ref{fig:empirical_BO_q_factors} shows a uniform pattern across the four 
 At short Horizons (0--5~years), the second-factor loadings are positive and economically large: the ME loading reaches approximately 1.4--1.6 under EW (with stability ratios $\mathrm{SR}_{CV}$ of 3.0--3.8), the IA loading starts near 1.0 under EW ($\mathrm{SR}_{CV} \approx 1.4$), ROE near 0.6 ($\mathrm{SR}_{CV} \approx 0.9$), and EG near 0.5 ($\mathrm{SR}_{CV} \approx 1.3$).
 As the Horizon increases, however, all four second-factor loadings decay toward zero and frequently change sign beyond 10--15~years.
 The ME factor retains a moderate positive loading even at long Horizons under FW ($\hat{\beta}_{\mathrm{ME}} \approx 1.3$, $\mathrm{SR}_{CV} \approx 2.1$), but under EW the loading drops below 1.0 after 17.5~years.
-The EG, IA, and ROE loadings all fluctuate around zero at intermediate and long Horizons, with cross-validation stability ratios well below conventional thresholds.
+The EG, IA, and ROE loadings all fluctuate around zero at intermediate and long Horizons, with small absolute stability ratios relative to the single-factor benchmark.
 The MKT loading in these two-factor models remains similar to its single-factor counterpart (ranging from roughly 1.0--1.1 at short Horizons to 0.63--0.76 at long Horizons), showing that a second factor does not materially alter the market risk assessment.
 The asymptotic standard errors are erratic throughout, often exceeding 10 and occasionally reaching triple-digit values, which highlights the unreliability of asymptotic inference in this setting.
 
@@ -1606,14 +1617,15 @@ The asymptotic standard errors are erratic throughout, often exceeding 10 and oc
 Figure~\ref{fig:empirical_VC_q_factors} displays qualitatively analogous but more extreme patterns, consistent with the higher idiosyncratic risk inherent to early-stage ventures.
 At short Horizons, the second-factor loadings are strikingly large: the IA loading reaches $5.1$ under EW at the 0-year Horizon ($\mathrm{SR}_{CV} \approx 1.4$) and $4.2$ under FW, the ROE loading starts at $1.5$ (EW) and $1.0$ (FW), the EG loading at approximately $3.5$ (EW) and $6.6$ (FW), while the ME factor is the exception with a subdued loading near zero or slightly positive ($0.3$ under EW, $-0.03$ under FW).
 All four second-factor loadings undergo dramatic sign reversals as the Horizon extends.
-The IA loading, for instance, turns negative beyond 10~years and eventually reaches $-1.5$ to $-1.9$ at long Horizons with large stability ratios ($\mathrm{SR}_{CV}$ exceeding $-12$).
+The IA loading, for instance, turns negative beyond 10~years and eventually reaches $-1.5$ to $-1.9$ at long Horizons, with correspondingly large absolute stability ratios (\(|\mathrm{SR}_{CV}|\) exceeding 12).
 Similarly, EG and ROE produce large negative loadings at long Horizons ($\hat{\beta}_{\mathrm{EG}} \approx -0.9$, $\hat{\beta}_{\mathrm{ROE}} \approx -1.2$ under EW at 30~years).
 These sign reversals echo the behavior documented in the simulation study (Section~\ref{sec:simulation_study}), where two-factor models exhibited severe attenuation and sign changes in the second-factor loading across Horizons.
 The MKT loading in the VC two-factor models varies substantially across specifications: in the IA model it stabilizes around 1.4--1.5 at intermediate Horizons, while in the ROE and EG models it ranges from 0.4 to 2.0 depending on the Horizon and weighting scheme.
 
 \paragraph{Summary.}
 The $q^5$-factor results for BO and VC confirm the fragility of multi-factor SDF estimation documented in the preceding MKT~+~$\alpha$ analysis.
-While some second-factor loadings attain statistical significance at isolated Horizons (particularly ME for BO and short-Horizon IA for VC), none of the four non-market factors produces a stable, economically interpretable loading across the full Horizon spectrum.
+While a few second-factor loadings attain conventional asymptotic significance at isolated Horizons (particularly ME for BO and short-Horizon IA for VC), we do not treat those isolated $t_A$ values as decisive because they are not stable across the Horizon grid and are not accompanied by comparably robust cross-validation evidence.
+None of the four non-market factors produces a stable, economically interpretable loading across the full Horizon spectrum.
 The pervasive sign reversals and the extreme sensitivity of point estimates to the compounding Horizon are more consistent with weak identification and Horizon sensitivity in the current sample than with a stably identified second factor.
 We therefore do not view the $q^5$-factor two-factor models as providing comparably stable evidence relative to the single-factor MKT benchmark for either asset class.
 
@@ -2606,6 +2618,24 @@ For each fixed \(H\):
 
 Assumption~\ref{as:ulln_H} is stated at a deliberately primitive level: dependence is imposed on the underlying horizon-specific pricing errors, and the loss inherits the required regularity through continuity and Lipschitz continuity. This is preferable to assuming a law of large numbers directly for the transformed criterion because it ties the statistical assumptions more closely to the economic structure of the data.
 
+\begin{assume}[Population stabilization across vintages]
+\label{as:population_limit_H}
+For each fixed \(H\), the sample-specific mean criterion converges uniformly to the population criterion defined in Equation~\eqref{eq:population_criterion_H}:
+\[
+\sup_{\theta \in \Theta}
+\left|
+-
+\frac{1}{n}
+\sum_{i=1}^n \mathbb E\bigl[Z_i(\theta)\bigr]
+-
+Q_H(\theta)
+\right|
+\to 0.
+\]
+\end{assume}
+
+Assumption~\ref{as:population_limit_H} makes explicit the population-stabilization step across expanding vintage spans that was only implicit in the compact main-text notation: as the sample adds vintages, the Ces\`aro average of the expected criterion contributions converges to a single horizon-specific population object.
+
 \begin{assume}[Identification of the horizon-specific target]
 \label{as:identification_H}
 For each fixed \(H\), the population criterion \(Q_H(\theta)\) has a unique maximizer
@@ -2641,7 +2671,7 @@ The first technical step is a uniform law of large numbers for the horizon-speci
 
 \begin{proposition}[Uniform law of large numbers]
 \label{prop:ulln_H}
-Under Assumptions~\ref{as:portfolio}, \ref{as:vya}, and \ref{as:ulln_H},
+Under Assumptions~\ref{as:portfolio}, \ref{as:vya}, \ref{as:ulln_H}, and \ref{as:population_limit_H},
 \[
 \sup_{\theta \in \Theta}
 \left|
@@ -2715,7 +2745,7 @@ Economically, Proposition~\ref{prop:ulln_H} says that when the sample spans suff
 	\]
 	
 	It remains to pass from the sample-specific mean criterion $\bar Q_{n,H}(\theta)$ to the population target $Q_H(\theta)$ defined in Equation~\eqref{eq:population_criterion_H}.
-	By the ergodic homogeneity invoked immediately after Equation~\eqref{eq:population_criterion_H}, the Ces\`aro average of the expectations converges to the generic-unit expectation as $V\to\infty$; because $n\asymp V$, the same holds under $n$-normalization. Therefore,
+	Assumption~\ref{as:population_limit_H} gives exactly this deterministic uniform convergence. Therefore,
 	\[
 	\sup_{\theta\in\Theta}
 	\left|
@@ -2821,7 +2851,7 @@ Proposition~\ref{prop:consistency_H} is the horizon-indexed analogue of the stan
 
 \begin{corollary}[Structural consistency under inception-only pricing]
 \label{cor:consistency_structural}
-Suppose, in addition, that \(H=0\) and that the pooled inception-only pricing restriction of Proposition~\ref{theo:inception_value} holds at the structural parameter \(\theta_0\). Then
+Suppose, in addition, that \(H=0\), that the pooled inception-only pricing restriction of Proposition~\ref{theo:inception_value} holds at the structural parameter \(\theta_0\), and that the inception-only population criterion \(Q_0(\theta)\) is uniquely maximized at \(\theta_0\). Then
 \[
 \theta_0^\dagger = \theta_0
 \qquad \text{and hence} \qquad

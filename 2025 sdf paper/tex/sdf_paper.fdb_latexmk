@@ -1,12 +1,12 @@
 # Fdb version 3
-["bibtex sdf_paper"] 1774367597 "sdf_paper.aux" "sdf_paper.bbl" "sdf_paper" 1774367598
+["bibtex sdf_paper"] 1774369981 "sdf_paper.aux" "sdf_paper.bbl" "sdf_paper" 1774369982
   "/usr/local/texlive/2017/texmf-dist/bibtex/bst/base/apalike.bst" 1480098433 24635 604dafcc79f521a11ea73e506e1fbd98 ""
-  "sdf_paper.aux" 1774367598 23872 58cf8e5b55290d3efef00c847f603bc6 ""
+  "sdf_paper.aux" 1774369981 23903 6b27c7e89305793539a0fc4ea77a481e ""
   "sdf_paper_refs.bib" 1774367593 14821 e77c0408e39b0937e50085469be97393 ""
   (generated)
   "sdf_paper.bbl"
   "sdf_paper.blg"
-["pdflatex"] 1774367597 "sdf_paper.tex" "sdf_paper.pdf" "sdf_paper" 1774367598
+["pdflatex"] 1774369981 "sdf_paper.tex" "sdf_paper.pdf" "sdf_paper" 1774369982
   "/usr/local/texlive/2017/texmf-dist/fonts/enc/dvips/base/8r.enc" 1480098666 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2017/texmf-dist/fonts/enc/dvips/base/ec.enc" 1480098666 12642 9742585e52c5b37e57ae9249e0b2585b ""
   "/usr/local/texlive/2017/texmf-dist/fonts/enc/dvips/newtx/ntx-ec-tlf.enc" 1480098668 2880 847ca622ad468c3dafba6a3f9d89a636 ""
@@ -260,9 +260,10 @@
   "empirical_bovc_us/nav_disc_BO_US_MKT_combined_NC.pdf" 1772718864 13784 4cf2db7963d39c2696efde8dc2d548e2 ""
   "empirical_bovc_us/nav_disc_VC_US_MKT_combined_NC.pdf" 1772718864 14059 8392e291cb223b4b5adc248e7011d013 ""
   "figure/npvs3.pdf" 1754515385 12231 83f3a151ecf0b1cc47a7c1790f4db165 ""
-  "sdf_paper.aux" 1774367598 23872 58cf8e5b55290d3efef00c847f603bc6 ""
-  "sdf_paper.bbl" 1774367597 11926 68193f73f601093ba5a52d467db9d156 "bibtex sdf_paper"
-  "sdf_paper.tex" 1774367503 202033 6b73f5aa7b9837edef5c4d6dd6bc75da ""
+  "sdf_paper.aux" 1774369981 23903 6b27c7e89305793539a0fc4ea77a481e ""
+  "sdf_paper.bbl" 1774369981 11926 68193f73f601093ba5a52d467db9d156 "bibtex sdf_paper"
+  "sdf_paper.tex" 1774369971 205313 e9bba919db2b657fc77928bc63a452ac ""
+  "sdf_paper_titlepage.tex" 1774368272 1093 f1cd2c014831f9416a0fbcb55a1c2682 ""
   "simulation/bias_comparison1.pdf" 1773534563 14070 ff2b89d47cb742768683b9bc39c6d0fb ""
   "simulation/bias_comparison2.pdf" 1773534564 12233 ccbc95e8e5711222f2302981fa02413e ""
   "simulation/bias_comparison3.pdf" 1773534565 20445 f33e58bbdbb8a0b5a95a491746c59c02 ""
