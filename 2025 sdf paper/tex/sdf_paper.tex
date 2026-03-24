@@ -1353,11 +1353,7 @@ Our baseline specification is the single-factor MKT model estimated on vintage-y
 Two-factor models that add an alpha intercept or a single $q$-investment factor serve as robustness and exploratory extensions.
 
 For each model specification, we report asymptotic standard errors (SE$_A$) from the SHAC framework alongside $hv$-block cross-validation fold dispersions (SD$_{CV}$), defined as the standard deviation of parameter estimates across hold-out folds.
-Throughout the empirical analysis, $t_A$ denotes the $t$-ratio based on asymptotic standard errors; $\mathrm{SR}_{CV}$ denotes the signed stability ratio
-\[
-\mathrm{SR}_{CV} := \hat{\theta} / \mathrm{SD}_{CV},
-\]
-where \(\hat{\theta}\) is the corresponding full-sample estimate.
+Throughout the empirical analysis, $t_A$ denotes the $t$-ratio based on asymptotic standard errors; $\mathrm{SR}_{CV}$ denotes the signed stability ratio $\mathrm{SR}_{CV} := \hat{\theta} / \mathrm{SD}_{CV}$, where \(\hat{\theta}\) is the corresponding full-sample estimate.
 Because \(\mathrm{SR}_{CV}\) preserves the sign of \(\hat{\theta}\), negative values simply indicate negative estimated coefficients; its absolute value \(|\mathrm{SR}_{CV}|\) measures the coefficient magnitude relative to fold-to-fold dispersion.
 We use \(\mathrm{SR}_{CV}\) descriptively rather than as a formal test statistic.
 As discussed in Remark~\ref{rem:cv_diagnostic}, $\mathrm{SR}_{CV}$ complements asymptotic inference as a stability diagnostic.
