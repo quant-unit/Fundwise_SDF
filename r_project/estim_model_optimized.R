@@ -86,10 +86,9 @@ if (source.internally) {
   factors.to.use <- ""
 
   data.prepared.folder <- "data_prepared"
-  
-  #private.source <- "preqin"
-  #data.prepared.folder <- "data_prepared_2026"
-  
+
+  # private.source <- "preqin"
+  # data.prepared.folder <- "data_prepared_2026"
 }
 
 # 1.2) load data -----
@@ -214,7 +213,7 @@ if (FALSE) {
 # system.time(df.private.cfs <- as.data.frame(data.table::rbindlist(list.private)))
 system.time(df.private.cfs <- as.data.frame(data.table::rbindlist(lapply(split(df.private.cfs, df.private.cfs$Fund.ID), to.monthly))))
 
-stopifnot(sum(df.private.cfs$CF) >0)
+stopifnot(sum(df.private.cfs$CF) > 0)
 
 
 df.private.cfs$type <- as.factor(as.character(df.private.cfs$type))
@@ -419,10 +418,10 @@ par <- c(MKT = 1, Alpha = 0)
 type <- levels(df0$type)[1]
 df.in <- df0[df0$type == type, ]
 
-#df.test <- df.in[df.in$Fund.ID == df.in$Fund.ID[1], ]
-#plot(df.test$Date, cumsum(df.test$CF))
-#plot(df.test$Date, exp(cumsum(log(1 + (as.matrix(df.test[, names(par)]) %*% par)))))
-#f1(df.test, 180, par)
+# df.test <- df.in[df.in$Fund.ID == df.in$Fund.ID[1], ]
+# plot(df.test$Date, cumsum(df.test$CF))
+# plot(df.test$Date, exp(cumsum(log(1 + (as.matrix(df.test[, names(par)]) %*% par)))))
+# f1(df.test, 180, par)
 
 
 df.in$Fund.ID <- (as.character(df.in$Fund.ID))
