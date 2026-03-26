@@ -949,14 +949,14 @@ For non-liquidated funds, we treat the latest NAV as final cash flow.
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.9\textwidth]{empirical_bovc_us/cumcashflowsBO.pdf}
+	\includegraphics[width=0.99\textwidth]{empirical_bovc_us/cumcashflowsBO.pdf}
 	\caption{\textbf{Cumulative cash flows:} J-curves by vintage year for BO funds in Preqin dataset scaled by fund commitment. Post-2010 vintage years are shown as green lines. Based on the sensitivity analysis in Section~\ref{sec:empirical_vintage_cutoffs_bovc}, these vintages are excluded from the empirical estimates in Section~\ref{sec:empirical_results_bovc} to limit reliance on unrealized NAVs.}
 	\label{fig:preqin_cashflows_bo}
 \end{figure}
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.9\textwidth]{empirical_bovc_us/cumcashflowsVC.pdf}
+	\includegraphics[width=0.99\textwidth]{empirical_bovc_us/cumcashflowsVC.pdf}
 	\caption{\textbf{Cumulative cash flows:} J-curves by vintage year for VC funds in Preqin dataset scaled by fund commitment. Post-2010 vintage years are shown as green lines. Based on the sensitivity analysis in Section~\ref{sec:empirical_vintage_cutoffs_bovc}, these vintages are excluded from the empirical estimates in Section~\ref{sec:empirical_results_bovc} to limit reliance on unrealized NAVs.}
 	\label{fig:preqin_cashflows_vc}
 \end{figure}
@@ -1033,13 +1033,13 @@ These findings reinforce the sample restriction to the 2010 maximum vintage year
 
 \begin{figure}[htbp]
 	\centering
-	\begin{minipage}{0.5\textwidth}
+	\begin{minipage}{0.49\textwidth}
 		\centering
-		\includegraphics[width=0.9\textwidth]{empirical_bovc_us/max_vintage_BO_US_MKT_combined_NC}
-	\end{minipage}\hfill
-	\begin{minipage}{0.5\textwidth}
+		\includegraphics[width=0.99\textwidth]{empirical_bovc_us/max_vintage_BO_US_MKT_combined_NC}
+	\end{minipage}
+	\begin{minipage}{0.49\textwidth}
 		\centering
-		\includegraphics[width=0.9\textwidth]{empirical_bovc_us/max_vintage_VC_US_MKT_combined_NC}
+		\includegraphics[width=0.99\textwidth]{empirical_bovc_us/max_vintage_VC_US_MKT_combined_NC}
 	\end{minipage}
 	\caption{\textbf{Sensitivity analysis ($MKT$ factor):} Single-factor model for BO (left) and VC (right) under value weighting, using VYP with different vintage-year cutoffs (asymptotic estimates). For each asset class, the left chart shows the standard baseline (full NAV as final cash flow), while the right chart applies a 50\% discount to all final NAVs.}
 	\label{fig:max_vintage_BOVC_MKT}
@@ -1076,13 +1076,13 @@ Instead, the range spanned by the five NAV treatments provides a transparent env
 
 \begin{figure}[htbp]
 	\centering
-	\begin{minipage}{0.5\textwidth}
+	\begin{minipage}{0.49\textwidth}
 		\centering
-		\includegraphics[width=0.9\textwidth]{empirical_bovc_us/nav_disc_BO_US_MKT_combined_NC}
-	\end{minipage}\hfill
-	\begin{minipage}{0.5\textwidth}
+		\includegraphics[width=0.99\textwidth]{empirical_bovc_us/nav_disc_BO_US_MKT_combined_NC}
+	\end{minipage}
+	\begin{minipage}{0.49\textwidth}
 		\centering
-		\includegraphics[width=0.9\textwidth]{empirical_bovc_us/nav_disc_VC_US_MKT_combined_NC}
+		\includegraphics[width=0.99\textwidth]{empirical_bovc_us/nav_disc_VC_US_MKT_combined_NC}
 	\end{minipage}
 	\caption{\textbf{NAV discount sensitivity ($MKT$ factor):} Single-factor model for BO (left) and VC (right) using VYP and maximum vintage year 2010. Each panel shows asymptotic estimates under five NAV treatments: full NAV as final cash flow, 25\%, 50\%, 75\% constant discounts, and 100\% NAV write-off.}
 	\label{fig:nav_disc_BOVC_MKT}
@@ -1136,7 +1136,7 @@ This constraint likely explains the choice of \cite{KN16} to rely on individual 
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.9\textwidth]{simulation/bias_comparison1}
+	\includegraphics[width=0.99\textwidth]{simulation/bias_comparison1}
 	\caption{\textbf{Simulation ($\beta_{\textrm{MKT}}$, $\alpha$):} Single-fund vs.\ vintage-year portfolios.}
 	\label{fig:simulation_funds_vs_vyps}
 \end{figure}
@@ -1162,14 +1162,14 @@ Consequently, our findings provide an empirical rationale for the finite-sample 
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.9\textwidth]{simulation/bias_comparison3}
+	\includegraphics[width=0.99\textwidth]{simulation/bias_comparison3}
 	\caption{\textbf{Simulation ($\beta_{\textrm{MKT}}$, $\alpha$):} Varying vintages $V$ and portfolio sizes $n/V$.}
 	\label{fig:sim_vary_vin_sizes_alpha}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.9\textwidth]{simulation/bias_comparison2}
+	\includegraphics[width=0.99\textwidth]{simulation/bias_comparison2}
 	\caption{\textbf{Simulation ($\beta_{\textrm{MKT}}$):} Varying vintages $V$ and portfolio sizes $n/V$.}
 	\label{fig:sim_vary_vin_sizes}
 \end{figure}
@@ -1189,7 +1189,7 @@ If anything, the simple linear model appears slightly better behaved in the repo
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.9\textwidth]{simulation/bias_comparison5}
+	\includegraphics[width=0.99\textwidth]{simulation/bias_comparison5}
 	\caption{\textbf{Simulation ($\beta_{\textrm{MKT}}$, $\alpha$):} Exponential affine vs.\ linear models.}
 	\label{fig:sim_exp_aff}
 \end{figure}
@@ -1230,7 +1230,7 @@ These results suggest that empirical researchers should exercise caution when in
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.9\textwidth]{simulation/bias_comparison4zoom}
+	\includegraphics[width=0.99\textwidth]{simulation/bias_comparison4zoom}
 	\caption{\textbf{Simulation ($q^5$ factors):} Two-factor models using VYP.}
 	\label{fig:sim_q_factors}
 \end{figure}
@@ -1246,7 +1246,7 @@ Consequently, these results suggest that for funds with short lifespans, the Hor
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.9\textwidth]{simulation/bias_comparison_lifetime}
+	\includegraphics[width=0.99\textwidth]{simulation/bias_comparison_lifetime}
 	\caption{\textbf{Simulation ($\beta_{\textrm{MKT}}$, $\alpha$):} Varying fund lifetimes using VYP with the following yearly investment-period/holding-period pairs: 1/1, 2/2, 3/3, 3/6, and 3/10 (from left to right).}
 	\label{fig:sim_lifetimes}
 \end{figure}
@@ -1377,13 +1377,13 @@ As horizon-specific diagnostics rather than direct structural estimates, the con
 
 \begin{figure}[htbp]
 	\centering
-	\begin{minipage}{0.5\textwidth}
+	\begin{minipage}{0.49\textwidth}
 		\centering
-		\includegraphics[width=0.9\textwidth]{empirical_bovc_us/empirical_BO_US_MKT}
-	\end{minipage}\hfill
-	\begin{minipage}{0.5\textwidth}
+		\includegraphics[width=0.99\textwidth]{empirical_bovc_us/empirical_BO_US_MKT}
+	\end{minipage}
+	\begin{minipage}{0.49\textwidth}
 		\centering
-		\includegraphics[width=0.9\textwidth]{empirical_bovc_us/empirical_VC_US_MKT}
+		\includegraphics[width=0.99\textwidth]{empirical_bovc_us/empirical_VC_US_MKT}
 	\end{minipage}
 	\caption{\textbf{Empirical ($MKT$ factor):} Single-factor model for BO (left) and VC (right) using VYP and maximum vintage year 2010.}
 	\label{fig:empirical_BOVC_MKT}
@@ -1476,13 +1476,13 @@ The BO and VC two-factor results therefore reinforce the conclusion drawn for PE
 
 \begin{figure}[htbp]
 	\centering
-	\begin{minipage}{0.5\textwidth}
+	\begin{minipage}{0.49\textwidth}
 		\centering
-		\includegraphics[width=0.9\textwidth]{empirical_bovc_us/empirical_BO_US_Alpha}
-	\end{minipage}\hfill
-	\begin{minipage}{0.5\textwidth}
+		\includegraphics[width=0.99\textwidth]{empirical_bovc_us/empirical_BO_US_Alpha}
+	\end{minipage}
+	\begin{minipage}{0.49\textwidth}
 		\centering
-		\includegraphics[width=0.9\textwidth]{empirical_bovc_us/empirical_VC_US_Alpha}
+		\includegraphics[width=0.99\textwidth]{empirical_bovc_us/empirical_VC_US_Alpha}
 	\end{minipage}
 	\caption{\textbf{Empirical ($MKT + \alpha$ model):} Two-factor model for BO (left) and VC (right) using VYP and maximum vintage year 2010.}
 	\label{fig:empirical_BOVC_Alpha}
@@ -1625,7 +1625,7 @@ We therefore do not view the $q^5$-factor two-factor models as providing compara
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.9\textwidth]{empirical_bovc_us/empirical_BO_US_Multi.pdf}
+	\includegraphics[width=0.99\textwidth]{empirical_bovc_us/empirical_BO_US_Multi.pdf}
 	\caption{\textbf{Empirical results ($q^5$-factors):} Two-factor model for BO funds using VYP and maximum vintage year 2010.}
 	\label{fig:empirical_BO_q_factors}
 \end{figure}
@@ -1633,7 +1633,7 @@ We therefore do not view the $q^5$-factor two-factor models as providing compara
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.9\textwidth]{empirical_bovc_us/empirical_VC_US_Multi.pdf}
+	\includegraphics[width=0.99\textwidth]{empirical_bovc_us/empirical_VC_US_Multi.pdf}
 	\caption{\textbf{Empirical results ($q^5$-factors):} Two-factor model for VC funds using VYP and maximum vintage year 2010.}
 	\label{fig:empirical_VC_q_factors}
 \end{figure}
@@ -1710,6 +1710,8 @@ Expanding our SDF framework to robustly accommodate multiple risk factors requir
 Future research could further explore parametric assumptions for the cash flow generating process \citep{ACGP18} or extract intra-period information from reported Net Asset Values \citep{brown2023nowcasting}. 
 Methodologically, addressing the high estimator variance demands statistical techniques suited for sparse, high-dimensional settings. 
 Approaches such as LASSO, ridge regression, or model averaging to regularize non-market coefficients, as well as ensemble learning methods that combine multiple weak learners, present promising paths forward.
+Especially resampling-based methods are likely to perform well in conjunction with \cite{KN16}-type loss functions, which aggregate pricing errors over multiple vintage years.
+
 
 Another vital avenue for future work involves explicitly modeling funding rounds, financial engineering, complex fee structures and carried interest within the data generating process. 
 This would enable the estimation of company-level and gross-versus-net-of-fee SDFs, providing sharper evaluation models for both General Partners (GPs) and Limited Partners (LPs). 
