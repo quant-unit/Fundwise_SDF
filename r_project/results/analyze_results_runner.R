@@ -16,6 +16,8 @@ if (!exists("data.out.folder", envir = .GlobalEnv)) {
   data.out.folder <- "results/data_out_2026_02_18"
   data.out.folder <- "results/data_out_2026_02_24"
   data.out.folder <- "results/data_out_2026_02_26"
+  # data.out.folder <- "results/data_out_2026_03_26"
+  
 }
 
 # 1. analyze base results ----
@@ -243,7 +245,7 @@ source(here("results/analyze_result.R"))
 
 # 5. Preqin North America USD results ----
 
-data.out.folder <- "results/data_out_2026_03_04"
+data.out.folder <- "results/data_out_2026_03_26"
 
 prefix <- "q_factors_preqin_"
 suffix <- "EW_VYP_North America"
@@ -257,7 +259,7 @@ source(here("results/analyze_result.R"))
 
 # 6. Preqin North America USD Vintage Year Cutoffs ----
 
-data.out.folder <- "results/data_out_2026_03_04"
+data.out.folder <- "results/data_out_2026_03_26"
 
 suffix <- paste0("EW_VYP_North America_max_vin_", 2011)
 source(here("results/analyze_result.R"))
@@ -358,7 +360,7 @@ source(here("results/analyze_result.R"))
 
 # 7. Preqin North America USD NAV Discounts ----
 
-data.out.folder <- "results/data_out_2026_03_05"
+data.out.folder <- "results/data_out_2026_03_26"
 
 prefix <- "q_factors_preqin_"
 suffix <- "EW_VYP_North America_NC0"
@@ -401,3 +403,36 @@ suffix <- "FW_VYP_North America_NC75"
 source(here("results/analyze_result.R"))
 
 
+
+# 8. Fama French Factors North America ----
+
+data.out.folder <- "results/data_out_2026_03_26"
+
+
+"cache_ff3_factors_preqin_alpha_ALL_EW_VYP_North America"
+"cache_ff3_factors_preqin_alpha_Alpha_EW_VYP_North America"
+"cache_ff3_factors_preqin_MKT_EW_VYP_North America"
+"cache_ff3_factors_preqin_MKT_SMB_HML_EW_VYP_North America"
+
+prefix <- "ff3_factors_preqin_alpha_ALL_"
+
+prefix <- "ff3_factors_preqin_alpha_Alpha_"
+
+suffix <- "EW_VYP_North America"
+source(here("results/analyze_result.R"))
+suffix <- "FW_VYP_North America"
+source(here("results/analyze_result.R"))
+
+prefix <- "ff3_factors_preqin_MKT_"
+
+suffix <- "EW_VYP_North America"
+source(here("results/analyze_result.R"))
+suffix <- "FW_VYP_North America"
+source(here("results/analyze_result.R"))
+
+prefix <- "ff3_factors_preqin_MKT_SMB_HML_"
+
+suffix <- "EW_VYP_North America"
+source(here("results/analyze_result.R"))
+suffix <- "FW_VYP_North America"
+source(here("results/analyze_result.R"))

@@ -12,7 +12,7 @@
 defaults:
   private_source: "preqin"
   public_filename: "q_factors"
-  data_prepared_folder: "data_prepared_2026"
+  data_prepared_folder: "data_prepared_2026_b"
   cutoff: ""
   sdf_model: "linear"
   error_function: "L2_Lasso"

@@ -11,7 +11,7 @@
 
 <meta name="author" content="Christian Tausch" />
 
-<meta name="date" content="2026-03-15" />
+<meta name="date" content="2026-03-26" />
 
 <title>Documentation of Preqin Data Preparation</title>
 
@@ -1624,7 +1624,7 @@ display: none;
 <h1 class="title toc-ignore">Documentation of Preqin Data
 Preparation</h1>
 <h4 class="author">Christian Tausch</h4>
-<h4 class="date">2026-03-15</h4>
+<h4 class="date">2026-03-26</h4>
 
 </div>
 
@@ -1933,7 +1933,7 @@ helps in understanding the coverage of the dataset.</p>
 }
 make.strategy.summary()</code></pre>
 <pre><code>## % latex table generated in R 4.3.1 by xtable 1.8-4 package
-## % Sun Mar 15 16:08:40 2026
+## % Thu Mar 26 22:19:27 2026
 ## \begin{table}[ht]
 ## \centering
 ## \begin{tabular}{llr}
@@ -2020,6 +2020,8 @@ across vintage years and regions.</p>
         df &lt;- df[df$REGION == region, ]
         if (region == &quot;North America&quot;) {
             df &lt;- df[!is.na(df$FUND.CURRENCY) &amp; df$FUND.CURRENCY == &quot;USD&quot;, ]
+            df &lt;- df[df$PRIMARY.GEOGRAPHIC.FOCUS %in% c(&quot;US&quot;, &quot;US, West Europe&quot;, &quot;North America&quot;,
+                                                        &quot;Northeast&quot;, &quot;Southwest&quot;, &quot;Southeast&quot;, &quot;West&quot;, &quot;Midwest&quot;), ]
         }
     }
 
@@ -2091,17 +2093,17 @@ make.vintage.summary(&quot;Private Equity&quot;)</code></pre>
 ## [1] &quot;The strategy distribution is as follows: Early Stage (348), Early Stage: Seed (66), Early Stage: Start-up (42), Expansion / Late Stage (153), Venture (General) (600), Venture Debt (31).&quot;
 ## [1] &quot;The fund currency distribution is as follows: AUD (8), BRL (1), CAD (16), CHF (1), DKK (4), EUR (104), GBP (22), INR (2), JPY (2), KRW (3), NOK (3), NZD (1), RMB (2), SEK (2), USD (1066), ZAR (1).&quot;</code></pre>
 <pre class="r"><code>make.vintage.summary(&quot;Buyout&quot;, &quot;North America&quot;)</code></pre>
-<pre><code>## [1] &quot;The Buyout (North America) sample contains 933 distinct funds spreading over 36 vintage years.&quot;
-## [1] &quot;The vintage year distribution is as follows: 1985 (2), 1986 (3), 1987 (5), 1988 (6), 1990 (2), 1991 (3), 1992 (6), 1993 (5), 1994 (14), 1995 (11), 1996 (13), 1997 (14), 1998 (32), 1999 (27), 2000 (34), 2001 (21), 2002 (14), 2003 (21), 2004 (24), 2005 (44), 2006 (50), 2007 (49), 2008 (45), 2009 (19), 2010 (31), 2011 (25), 2012 (39), 2013 (36), 2014 (44), 2015 (35), 2016 (57), 2017 (35), 2018 (45), 2019 (65), 2020 (34), 2021 (23).&quot;
-## [1] &quot;The region distribution is as follows: Americas (4), Asia (16), Canada (1), Central and East Europe (2), Europe (6), Japan (1), Midwest (2), North America (461), South America (2), Southeast (1), Southwest (1), US (433), West Europe (1).&quot;
-## [1] &quot;The strategy distribution is as follows: Buyout (933).&quot;
-## [1] &quot;The fund currency distribution is as follows: USD (933).&quot;</code></pre>
+<pre><code>## [1] &quot;The Buyout (North America) sample contains 898 distinct funds spreading over 36 vintage years.&quot;
+## [1] &quot;The vintage year distribution is as follows: 1985 (2), 1986 (3), 1987 (5), 1988 (6), 1990 (2), 1991 (3), 1992 (6), 1993 (4), 1994 (14), 1995 (11), 1996 (13), 1997 (14), 1998 (29), 1999 (25), 2000 (34), 2001 (19), 2002 (13), 2003 (19), 2004 (24), 2005 (43), 2006 (48), 2007 (45), 2008 (43), 2009 (19), 2010 (31), 2011 (24), 2012 (37), 2013 (34), 2014 (44), 2015 (34), 2016 (54), 2017 (35), 2018 (43), 2019 (63), 2020 (33), 2021 (22).&quot;
+## [1] &quot;The region distribution is as follows: Midwest (2), North America (461), Southeast (1), Southwest (1), US (433).&quot;
+## [1] &quot;The strategy distribution is as follows: Buyout (898).&quot;
+## [1] &quot;The fund currency distribution is as follows: USD (898).&quot;</code></pre>
 <pre class="r"><code>make.vintage.summary(&quot;Venture Capital&quot;, &quot;North America&quot;)</code></pre>
-<pre><code>## [1] &quot;The Venture Capital (North America) sample contains 968 distinct funds spreading over 38 vintage years.&quot;
-## [1] &quot;The vintage year distribution is as follows: 1982 (1), 1985 (3), 1986 (4), 1987 (2), 1988 (1), 1989 (1), 1990 (4), 1991 (1), 1992 (7), 1993 (6), 1994 (6), 1995 (8), 1996 (14), 1997 (16), 1998 (28), 1999 (44), 2000 (70), 2001 (45), 2002 (28), 2003 (18), 2004 (31), 2005 (34), 2006 (44), 2007 (48), 2008 (38), 2009 (18), 2010 (18), 2011 (23), 2012 (21), 2013 (32), 2014 (33), 2015 (37), 2016 (40), 2017 (50), 2018 (52), 2019 (64), 2020 (45), 2021 (33).&quot;
-## [1] &quot;The region distribution is as follows: Asia (10), Australasia (1), Canada (1), China (10), Europe (3), India (2), Mexico (1), Midwest (2), North America (267), Northeast (2), Southwest (1), Thailand (1), US (664), West (1).&quot;
-## [1] &quot;The strategy distribution is as follows: Early Stage (274), Early Stage: Seed (47), Early Stage: Start-up (26), Expansion / Late Stage (127), Venture (General) (472), Venture Debt (22).&quot;
-## [1] &quot;The fund currency distribution is as follows: USD (968).&quot;</code></pre>
+<pre><code>## [1] &quot;The Venture Capital (North America) sample contains 937 distinct funds spreading over 38 vintage years.&quot;
+## [1] &quot;The vintage year distribution is as follows: 1982 (1), 1985 (3), 1986 (4), 1987 (2), 1988 (1), 1989 (1), 1990 (4), 1991 (1), 1992 (7), 1993 (6), 1994 (6), 1995 (8), 1996 (14), 1997 (15), 1998 (28), 1999 (44), 2000 (68), 2001 (45), 2002 (26), 2003 (18), 2004 (31), 2005 (34), 2006 (43), 2007 (47), 2008 (37), 2009 (18), 2010 (18), 2011 (22), 2012 (20), 2013 (32), 2014 (31), 2015 (37), 2016 (35), 2017 (48), 2018 (47), 2019 (60), 2020 (45), 2021 (30).&quot;
+## [1] &quot;The region distribution is as follows: Midwest (2), North America (267), Northeast (2), Southwest (1), US (664), West (1).&quot;
+## [1] &quot;The strategy distribution is as follows: Early Stage (269), Early Stage: Seed (44), Early Stage: Start-up (23), Expansion / Late Stage (123), Venture (General) (456), Venture Debt (22).&quot;
+## [1] &quot;The fund currency distribution is as follows: USD (937).&quot;</code></pre>
 </div>
 </div>
 <div id="core-methodology-cash-flow-construction" class="section level1">

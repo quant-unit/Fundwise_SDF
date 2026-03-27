@@ -284,14 +284,13 @@ scenarios <- c(
 # scenarios <- c("pitchbook_fw_vintage_sweep_NC50", "pitchbook_ew_vintage_sweep_NC50", "pitchbook_fw_vintage_sweep", "pitchbook_ew_vintage_sweep")
 scenarios <- c(
     # "fw_no_cv", "fw_cv", "ew_no_cv", "ew_cv",
-    # "fw_no_cv_north_america", "fw_cv_north_america", "ew_no_cv_north_america", "ew_cv_north_america",
-    # 50"fw_vintage_sweep_north_america", "ew_vintage_sweep_north_america", "fw_vintage_sweep_north_america_NC50", "ew_vintage_sweep_north_america_NC50"
+    "fw_no_cv_north_america", "fw_cv_north_america", "ew_no_cv_north_america", "ew_cv_north_america",
+    "fw_vintage_sweep_north_america", "ew_vintage_sweep_north_america", 
+    "fw_vintage_sweep_north_america_NC50", "ew_vintage_sweep_north_america_NC50",
       "fw_no_cv_north_america_NC0" , "ew_no_cv_north_america_NC0",
       "fw_no_cv_north_america_NC25", "ew_no_cv_north_america_NC25",
       "fw_no_cv_north_america_NC50", "ew_no_cv_north_america_NC50", 
-      "fw_no_cv_north_america_NC75", "ew_no_cv_north_america_NC75"
-  )
-scenarios <- c(
+      "fw_no_cv_north_america_NC75", "ew_no_cv_north_america_NC75",
   # Fama French
   "ff3_fw_no_cv_alpha", "ff3_ew_no_cv_alpha",
   "ff3_fw_cv_alpha", "ff3_ew_cv_alpha",
@@ -303,7 +302,7 @@ scenarios <- c(
   "ff3_fw_cv", "ff3_ew_cv"
 )
 # data.out.folder <- "results/data_out_2026_02_27_pitchbook"
-data.out.folder <- "results/data_out_2026_03_09"
+data.out.folder <- "results/data_out_2026_03_26"
 
 results <- run_empirical_study(
     scenario_ids = scenarios,
