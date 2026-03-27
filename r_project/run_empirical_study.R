@@ -302,7 +302,7 @@ scenarios <- c(
   "ff3_fw_cv", "ff3_ew_cv"
 )
 # data.out.folder <- "results/data_out_2026_02_27_pitchbook"
-data.out.folder <- "results/data_out_2026_03_26"
+data.out.folder <- "results/data_out_2026_03_27"
 
 results <- run_empirical_study(
     scenario_ids = scenarios,

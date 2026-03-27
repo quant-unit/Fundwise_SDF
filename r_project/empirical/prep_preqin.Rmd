@@ -112,8 +112,7 @@ make.vintage.summary <- function(asset.class = "Private Equity", region = NA) {
         df <- df[df$REGION == region, ]
         if (region == "North America") {
             df <- df[!is.na(df$FUND.CURRENCY) & df$FUND.CURRENCY == "USD", ]
-            df <- df[df$PRIMARY.GEOGRAPHIC.FOCUS %in% c("US", "US, West Europe", "North America",
-                                                        "Northeast", "Southwest", "Southeast", "West", "Midwest"), ]
+            df <- df[df$PRIMARY.GEOGRAPHIC.FOCUS %in% c("US", "US, West Europe", "North America"), ]
         }
     }
 
@@ -215,6 +214,7 @@ make.preqin.df <- function(
         df <- df[df$REGION %in% region.filter, ]
         if (region.filter == "North America") {
             df <- df[!is.na(df$FUND.CURRENCY) & df$FUND.CURRENCY == "USD", ]
+            df <- df[df$PRIMARY.GEOGRAPHIC.FOCUS %in% c("US", "US, West Europe", "North America"), ]
         }
     }
 

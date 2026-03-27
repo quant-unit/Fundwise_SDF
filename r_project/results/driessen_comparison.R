@@ -11,7 +11,7 @@ if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable())
 getwd()
 
 # folder for cross-validation
-base_folder <- "results/data_out_2026_03_26/"
+base_folder <- "results/data_out_2026_03_27/"
 f_1f_ew_folder <- file.path(base_folder, "cache_ff3_factors_preqin_MKT_EW_VYP_North America")
 f_1f_fw_folder <- file.path(base_folder, "cache_ff3_factors_preqin_MKT_FW_VYP_North America")
 f_2f_ew_folder <- file.path(base_folder, "cache_ff3_factors_preqin_alpha_Alpha_EW_VYP_North America")

@@ -245,7 +245,7 @@ source(here("results/analyze_result.R"))
 
 # 5. Preqin North America USD results ----
 
-data.out.folder <- "results/data_out_2026_03_26"
+data.out.folder <- "results/data_out_2026_03_27"
 
 prefix <- "q_factors_preqin_"
 suffix <- "EW_VYP_North America"
@@ -259,7 +259,7 @@ source(here("results/analyze_result.R"))
 
 # 6. Preqin North America USD Vintage Year Cutoffs ----
 
-data.out.folder <- "results/data_out_2026_03_26"
+data.out.folder <- "results/data_out_2026_03_27"
 
 suffix <- paste0("EW_VYP_North America_max_vin_", 2011)
 source(here("results/analyze_result.R"))
@@ -360,7 +360,7 @@ source(here("results/analyze_result.R"))
 
 # 7. Preqin North America USD NAV Discounts ----
 
-data.out.folder <- "results/data_out_2026_03_26"
+data.out.folder <- "results/data_out_2026_03_27"
 
 prefix <- "q_factors_preqin_"
 suffix <- "EW_VYP_North America_NC0"
@@ -406,7 +406,7 @@ source(here("results/analyze_result.R"))
 
 # 8. Fama French Factors North America ----
 
-data.out.folder <- "results/data_out_2026_03_26"
+data.out.folder <- "results/data_out_2026_03_27"
 
 prefix <- "ff3_factors_preqin_alpha_ALL_"
 

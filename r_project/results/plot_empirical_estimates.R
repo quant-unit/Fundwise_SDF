@@ -663,8 +663,9 @@ plot_empirical_estimates <- function(
             " & \\multicolumn{5}{c}{Equal-Weighted (EW)} & \\multicolumn{5}{c}{Value-Weighted (FW)} \\\\",
             "\\cmidrule(lr){2-6} \\cmidrule(lr){7-11}",
             paste0(
-                "Horizon & $\\hat{\\beta}$ & SE$_A$ & SE$_{CV}$ & $t_A$ & $t_{CV}$",
-                " & $\\hat{\\beta}$ & SE$_A$ & SE$_{CV}$ & $t_A$ & $t_{CV}$ \\\\"
+                "Horizon & $\\hat{\\beta}$ & SE$_A$ & SD$_{CV}$ & $t_A$ & $\\mathrm{SR}_{CV}$",
+                " & $\\hat{\\beta}$ & SE$_A$ & SD$_{CV}$ & $t_A$ & $\\mathrm{SR}_{CV}$ \\\\"
+
             ),
             "\\midrule"
         )
@@ -772,9 +773,10 @@ plot_empirical_estimates <- function(
             "\\bottomrule",
             "\\end{tabular}",
             "\\par\\vspace{2pt}",
-            "{\\scriptsize\\textit{Notes:} $\\hat{\\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SE$_{CV}$ = cross-validation standard error; $t_A$/$t_{CV}$ = corresponding $t$-ratios. Significance: $^{*}$\\,$p<0.05$, $^{**}$\\,$p<0.01$, $^{***}$\\,$p<0.005$.}",
+            "{\\scriptsize\\textit{Notes:} $\\hat{\\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. Significance markers based on $t_A$ are reported for completeness only: $^{*}$\\,$p<0.05$, $^{**}$\\,$p<0.01$, $^{***}$\\,$p<0.005$.}",
             "\\end{table}"
         )
+
 
         # Append this factor's table to the combined output
         all_lines <- c(all_lines, lines)
@@ -2417,7 +2419,7 @@ plot_max_vintage_cutoff_combined_mkt(
 ### Preqin - North America
 ### Paper: Buyout (BO) and Venture Capital (VC)
 
-file.folder <- "data_out_2026_03_26"
+file.folder <- "data_out_2026_03_27"
 out.folder <- "figures_bovc_us" # North America Results
 
 # BO: Two-factor model with only Alpha
@@ -2602,7 +2604,7 @@ plot_max_vintage_cutoff_combined_mkt(
 
 # Analyze Different NAV Discounts
 
-file.folder <- "data_out_2026_03_26"
+file.folder <- "data_out_2026_03_27"
 out.folder <- "figures_bovc_us" # North America Results
 
 plot_nav_discounts_combined_mkt(
