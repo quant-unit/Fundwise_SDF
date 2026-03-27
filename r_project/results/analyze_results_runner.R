@@ -408,13 +408,12 @@ source(here("results/analyze_result.R"))
 
 data.out.folder <- "results/data_out_2026_03_26"
 
-
-"cache_ff3_factors_preqin_alpha_ALL_EW_VYP_North America"
-"cache_ff3_factors_preqin_alpha_Alpha_EW_VYP_North America"
-"cache_ff3_factors_preqin_MKT_EW_VYP_North America"
-"cache_ff3_factors_preqin_MKT_SMB_HML_EW_VYP_North America"
-
 prefix <- "ff3_factors_preqin_alpha_ALL_"
+
+suffix <- "EW_VYP_North America"
+source(here("results/analyze_result.R"))
+suffix <- "FW_VYP_North America"
+source(here("results/analyze_result.R"))
 
 prefix <- "ff3_factors_preqin_alpha_Alpha_"
 

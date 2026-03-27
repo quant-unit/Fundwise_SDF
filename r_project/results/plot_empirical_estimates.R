@@ -2417,7 +2417,7 @@ plot_max_vintage_cutoff_combined_mkt(
 ### Preqin - North America
 ### Paper: Buyout (BO) and Venture Capital (VC)
 
-file.folder <- "data_out_2026_03_04"
+file.folder <- "data_out_2026_03_26"
 out.folder <- "figures_bovc_us" # North America Results
 
 # BO: Two-factor model with only Alpha
@@ -2602,7 +2602,7 @@ plot_max_vintage_cutoff_combined_mkt(
 
 # Analyze Different NAV Discounts
 
-file.folder <- "data_out_2026_03_05"
+file.folder <- "data_out_2026_03_26"
 out.folder <- "figures_bovc_us" # North America Results
 
 plot_nav_discounts_combined_mkt(

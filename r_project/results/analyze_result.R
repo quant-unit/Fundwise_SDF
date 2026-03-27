@@ -70,6 +70,9 @@ for (Factor in q.factors) {
   # Select columns without duplicating MKT when Factor == "MKT"
   if (Factor == "MKT") {
     select_cols <- c("MKT", "Type", "max.month", "validation.error")
+  } else if (Factor == "ALL" || grepl("\\+", Factor)) {
+    available_factors <- setdiff(intersect(c("Alpha", "SMB", "HML", "ME", "ROE", "IA", "EG"), colnames(df.f)), "MKT")
+    select_cols <- c("MKT", available_factors, "Type", "max.month", "validation.error")
   } else {
     select_cols <- c("MKT", Factor, "Type", "max.month", "validation.error")
   }
@@ -100,6 +103,9 @@ for (Factor in q.factors) {
     m$Coef <- m$MKT
     s$Coef <- s$MKT
     names(s)[a:ncol(s)] <- paste0("SE.", names(s)[a:ncol(s)])
+  } else if (Factor == "ALL" || grepl("\\+", Factor)) {
+    names(m)[a:n] <- paste0(names(m)[a:n])
+    names(s)[a:n] <- paste0("SE.", names(s)[a:n])
   } else if (n == b) {
     names(m)[b] <- "Coef"
     names(s)[b] <- "Coef"
@@ -119,7 +125,22 @@ if (length(cv.res) > 0) {
     df.cv[i, "Type"] <- strsplit(df.cv$id, "_")[[i]][1]
     df.cv[i, "max.month"] <- strsplit(df.cv$id, "_")[[i]][2]
   }
-  df.cv <- df.cv[, c("Type", "max.month", "MKT", "SE.MKT", "Factor", "Coef", "SE.Coef", "validation.error")]
+  cv_select_cols <- c("Type", "max.month", "MKT", "SE.MKT", "Factor", "validation.error")
+  if (any(df.cv$Factor != "ALL" & !grepl("\\+", df.cv$Factor))) {
+    cv_select_cols <- c(cv_select_cols, "Coef", "SE.Coef")
+  }
+  if (any(df.cv$Factor == "ALL" | grepl("\\+", df.cv$Factor))) {
+    available_factors <- setdiff(intersect(c("Alpha", "SMB", "HML", "ME", "ROE", "IA", "EG"), colnames(df.cv)), "MKT")
+    for (f in available_factors) {
+      cv_select_cols <- c(cv_select_cols, f, paste0("SE.", f))
+    }
+  }
+  cv_select_cols <- intersect(cv_select_cols, colnames(df.cv))
+  
+  for (col in cv_select_cols) {
+      if (!col %in% colnames(df.cv)) df.cv[[col]] <- NA
+  }
+  df.cv <- df.cv[, cv_select_cols]
   df.cv <- df.cv[order(df.cv$Type, df.cv$Factor, as.numeric(df.cv$max.month)), ]
 
   # Filter horizons: use caller-defined max.months.to.keep if available, otherwise keep all
@@ -217,9 +238,16 @@ prepare_and_print_tables <- function(df, types, table_type, suffix, spec) {
     # Rename columns based on table type
     if (table_type == "AI") {
       # Asymptotic Inference: select available columns
-      ai_cols <- c("max.month", "MKT", "SE.MKT", "SE.MKT.indep", "Factor", "Coef", "SE.Coef", "SE.Coef.indep")
-      ai_cols <- intersect(ai_cols, colnames(df.sub))
-      df.sub <- df.sub[, ai_cols]
+      has_indep <- "SE.MKT.indep" %in% colnames(df.sub)
+      if (has_indep) {
+          ai_cols_req <- c("max.month", "MKT", "SE.MKT", "SE.MKT.indep", "Factor", "Coef", "SE.Coef", "SE.Coef.indep")
+      } else {
+          ai_cols_req <- c("max.month", "MKT", "SE.MKT", "Factor", "Coef", "SE.Coef")
+      }
+      for (col in ai_cols_req) {
+          if (!col %in% colnames(df.sub)) df.sub[[col]] <- NA
+      }
+      df.sub <- df.sub[, ai_cols_req]
 
       cap <- paste0(
         "Asymptotic results for ", type, " Funds. ",
@@ -230,7 +258,7 @@ prepare_and_print_tables <- function(df, types, table_type, suffix, spec) {
       lab <- paste0("tab:ai_", suffix, "_", type)
 
       # Build header based on available columns
-      if ("SE.MKT.indep" %in% ai_cols) {
+      if (has_indep) {
         header_row <- paste0(
           "\\hline\n",
           " & Market& Market & Market & Second & Second & Second & Second \\\\ \n",
@@ -250,7 +278,11 @@ prepare_and_print_tables <- function(df, types, table_type, suffix, spec) {
       # Desired columns: MCM, Market Loading, Market SE, Second Name, Second Loading, Second SE, CV-Error
 
       # Original cols: MKT, SE.MKT, Factor, Coef, SE.Coef, validation.error, max.month
-      df.sub <- df.sub[, c("max.month", "MKT", "SE.MKT", "Factor", "Coef", "SE.Coef", "validation.error")]
+      cv_table_cols <- c("max.month", "MKT", "SE.MKT", "Factor", "Coef", "SE.Coef", "validation.error")
+      for (col in cv_table_cols) {
+          if (!col %in% colnames(df.sub)) df.sub[[col]] <- NA
+      }
+      df.sub <- df.sub[, cv_table_cols]
 
       cap <- paste0(
         "Cross-validation results for ", type, " Funds. ",
@@ -353,9 +385,11 @@ write.csv(df.all.abs, paste0(dir.cache, "/0_asymptotic_inference_sumabs.csv"))
 # Write Cross-Validation
 if (nrow(df.cv) > 0) {
   df.cv$t.MKT <- df.cv$MKT / df.cv$SE.MKT
-  df.cv$t.Coef <- df.cv$Coef / df.cv$SE.Coef
-  df.cv$sig <- ((abs(df.cv$t.MKT) > 1.96) & (abs(df.cv$t.Coef) > 1.96))
-  sum(df.cv$sig)
+  if ("Coef" %in% colnames(df.cv)) {
+    df.cv$t.Coef <- df.cv$Coef / df.cv$SE.Coef
+    df.cv$sig <- ((abs(df.cv$t.MKT) > 1.96) & (abs(df.cv$t.Coef) > 1.96))
+    sum(df.cv$sig, na.rm = TRUE)
+  }
   nrow(df.cv)
 
   df.cv <- df.cv[order(df.cv$Type, df.cv$max.month, df.cv$Factor), ]
@@ -400,7 +434,11 @@ for (Type in unique(df.cv$Type)) {
     # we just want "one best" model
     if (nrow(df.ss) > 1) {
       # df.ss <- df.ss[df.ss$MKT > 0, ] # hope that exactly one model remains
-      df.ss <- df.ss[df.ss$t.Coef == max(df.ss$t.Coef), ] # choose most significant model
+      if ("t.Coef" %in% colnames(df.ss) && !all(is.na(df.ss$t.Coef))) {
+          df.ss <- df.ss[df.ss$t.Coef == max(df.ss$t.Coef, na.rm=TRUE), ] # choose most significant model
+      } else {
+          df.ss <- df.ss[1, , drop = FALSE]
+      }
     }
 
     if (nrow(df.ss) > 0 && df.ss$Factor[1] == "Alpha") {

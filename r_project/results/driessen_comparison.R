@@ -11,7 +11,7 @@ if (requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable())
 getwd()
 
 # folder for cross-validation
-base_folder <- "results/data_out_2026_03_09/"
+base_folder <- "results/data_out_2026_03_26/"
 f_1f_ew_folder <- file.path(base_folder, "cache_ff3_factors_preqin_MKT_EW_VYP_North America")
 f_1f_fw_folder <- file.path(base_folder, "cache_ff3_factors_preqin_MKT_FW_VYP_North America")
 f_2f_ew_folder <- file.path(base_folder, "cache_ff3_factors_preqin_alpha_Alpha_EW_VYP_North America")
@@ -50,7 +50,9 @@ load_and_prep <- function(folder_path, model_name, w_val) {
             d$SE.Alpha <- NA
         }
         d$CV.key <- as.character(d$CV.key)
-        return(d)
+        
+        # Select only the needed columns to prevent bind_rows() type mismatch errors (e.g., column 'X')
+        return(d[, c("Type", "max.month", "CV.key", "MKT", "SMB", "HML", "Alpha", "SE.MKT", "SE.SMB", "SE.HML", "SE.Alpha")])
     })
 
     df <- bind_rows(df_list)
