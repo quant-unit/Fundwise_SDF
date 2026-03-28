@@ -111,7 +111,7 @@ On the other margin, averaging pricing errors over additional compounding dates 
 Our goal is not to treat horizon choice as a purely mechanical implementation detail, but to characterize this tradeoff explicitly and provide guidance on how researchers should navigate it in empirical work.
 
 In that sense, this is an identification and stability paper for private-market asset pricing. 
-It studies how estimator design, especially the discounting Horizon, jointly determines the population object being estimated and the finite-sample stability with which it can be recovered. 
+It studies how estimator design, especially the discounting horizon, jointly determines the population object being estimated and the finite-sample stability with which it can be recovered. 
 In the private-equity panels we study, this framework yields more stable evidence on broad market exposure than on abnormal performance or richer factor decompositions.
 
 We study this identification and stability problem in three steps. 
@@ -122,7 +122,7 @@ Third, we implement the estimator in the Preqin cash-flow database for North Ame
 Our empirical results yield three main messages, all of which we interpret as diagnostics about identification under currently available private-equity cash-flow panels rather than as definitive statements about the population factor structure of private equity. 
 First, including recent vintages with large NAV components can mechanically inflate measured market exposure, underscoring the importance of sample construction in private-equity asset pricing. 
 Second, within our sample, parsimonious single-factor market specifications applied to seasoned vintages are the most stable among the specifications we consider. 
-Third, $\alpha$ terms and additional factors are only weakly identified in the available data and become highly sensitive to Horizon choice and finite-sample noise, even when asymptotic inference is supplemented with cross-validation diagnostics. 
+Third, $\alpha$ terms and additional factors are only weakly identified in the available data and become highly sensitive to horizon choice and finite-sample noise, even when asymptotic inference is supplemented with cross-validation diagnostics. 
 Taken together, these results suggest that, in our sample and under our semiparametric design, current cash-flow panels support more stable inference about broad market exposure in seasoned buyout and venture-capital portfolios than about abnormal performance or richer factor decompositions.
 
 These findings matter for more than estimator design. 
@@ -733,7 +733,7 @@ Relative to \citet{KN16}, we share the discounted-cash-flow pricing logic, but d
 
 The connection to \citet{DLP12} is the closest at the objective-function level. 
 Under the inception-only restriction, equal normalization, and quadratic loss, the LMD criterion coincides with the identity-weighted one-step cross-sectional GMM objective used in their framework.
-To bridge the gap, let us rewrite the $NPV_i$ from Equation \ref{eq:dlp12_minimization} in our more general SDF notation as $PV_i (\theta) = \sum_{t \in \left\{ t_{0,i}, t_{0,i} + 1, \dots \right\}} \Psi_{t_{0,i}, t}(\theta) CF_t$.
+To bridge the gap, let us rewrite the $NPV_i$ from Equation \ref{eq:dlp12_minimization} in our more general SDF notation as $PV_i (\theta) = \sum_{t \in \left\{ t_{0,i}, t_{0,i} + 1, \dots \right\}} \Psi_{t_{0,i}, t}(\theta) CF_{i,t}$.
 
 \begin{proposition}[Connection to the \cite{DLP12} objective]
 \label{prop:dlp12_connection}
@@ -823,8 +823,8 @@ If the ratio transformation were treated as primitive at the unit level before a
 where the last equality uses \(\mathbb{E}[NPV_i(\theta_0)] = 0\). 
 This expectation of a random ratio is not the ratio-of-expectations moment justified by \cite{DLP09wp}. 
 The \cite{DLP09wp} construction therefore stabilizes estimation while preserving the same large-sample target under portfolio-infill asymptotics, whereas in our setup changing \(H\) changes the set of discounting dates and hence the population criterion itself. 
-Different Horizons can therefore target different pseudo-true parameters \(\theta_H^\dagger\) even asymptotically.
-A practical advantage of our Horizon-based approach is that it operates directly on net cash-flow streams. 
+Different horizons can therefore target different pseudo-true parameters \(\theta_H^\dagger\) even asymptotically.
+A practical advantage of our horizon-based approach is that it operates directly on net cash-flow streams. 
 The two alternatives in \citet{DLP09wp}, by contrast, require separately observed and accurately labeled investment and dividend cash flows.
 
 

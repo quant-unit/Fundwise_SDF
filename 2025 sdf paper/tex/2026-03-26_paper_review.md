@@ -3,23 +3,20 @@
 ## I. Formal/Technical Errors and Typos
 
 ### 1. Region filter inconsistency in the data section (L939, L966–968, L976)
-The text at L939 states: *"In rare instances, the Preqin taxonomy assigns geographic labels that are inconsistent with the North America region filter."*
-But the **Buyout region distribution** (L967) lists: Americas (4), **Asia (16)**, Canada (1), **Central and East Europe (2)**, **Europe (6)**, **Japan (1)**, **South America (2)**, **Southeast (1)**, **Southwest (1)**, **West Europe (1)** — totaling ~35 non-North-American-tagged funds out of 933.
 
-Similarly the **VC distribution** (L976) lists: **Asia (10)**, **Australasia (1)**, **China (10)**, **Europe (3)**, **India (2)**, **Mexico (1)**, **Thailand (1)**, **West (1)** — totaling ~29 non-North-American-tagged funds.
-
-> [!WARNING]
-> These are not "rare instances." ~3.8% of BO funds and ~3.0% of VC funds have non-North-American region tags. A referee may ask why Asia/Japan/Europe-tagged funds are in a "North America" sample. The one-sentence disclaimer at L939 may be insufficient; consider either (a) removing these funds and re-running, or (b) providing a more detailed justification (e.g., the fund is legally domiciled in the US but invests abroad).
+Resolved!
 
 ---
 
 ### 2. Notation: $CF_t$ vs. $CF_{i,t}$ in Proposition 4 proof (L736)
-Line 736 writes: `$PV_i (\theta) = \sum_{t} \Psi_{t_{0,i}, t}(\theta) CF_t$` — missing the subscript $i$ on $CF$. Should be $CF_{i,t}$.
+
+Resolved!
 
 ---
 
 ### 3. "0.1 yr" Horizon label in Tables (L1407, L1439, etc.)
-All empirical tables include a "0.1 yr" Horizon row (= 1.2 months). This label is never defined or motivated. The Horizon formula (Eq. 15, L524) uses $12H$ months, so $H=0.1$ gives $\mathcal{T}_{i,0.1} = \{t_i^0, t_i^0+1\}$ — just one additional month. Explain why this specific "one extra month" case is reported alongside the 2.5-year grid. Without context, it reads like a leftover from debugging.
+
+Resolved!
 
 ---
 
@@ -29,7 +26,8 @@ In the alpha tables, Panel B is labeled *"Alpha ($\beta_{Alpha}$)"*. Using $\bet
 ---
 
 ### 5. Capitalization inconsistency: "Horizon"
-"Horizon" is capitalized throughout (L91, L114, L125, etc.) as though it is a defined term, but it is only formally defined in Remark 6 (L1048). Consider either (a) introducing the capitalized convention at first use in the introduction or (b) using lowercase "horizon" until the formal definition and capitalizing thereafter.
+
+Resolved!
 
 ---
 
