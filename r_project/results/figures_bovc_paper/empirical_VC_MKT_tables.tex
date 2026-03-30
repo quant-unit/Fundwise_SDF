@@ -9,7 +9,7 @@
 \toprule
  & \multicolumn{5}{c}{Equal-Weighted (EW)} & \multicolumn{5}{c}{Value-Weighted (FW)} \\
 \cmidrule(lr){2-6} \cmidrule(lr){7-11}
-Horizon & $\hat{\beta}$ & SE$_A$ & SE$_{CV}$ & $t_A$ & $t_{CV}$ & $\hat{\beta}$ & SE$_A$ & SE$_{CV}$ & $t_A$ & $t_{CV}$ \\
+Horizon & $\hat{\beta}$ & SE$_A$ & SD$_{CV}$ & $t_A$ & $\mathrm{SR}_{CV}$ & $\hat{\beta}$ & SE$_A$ & SD$_{CV}$ & $t_A$ & $\mathrm{SR}_{CV}$ \\
 \midrule
 0 yr & 1.845 & 1.737 & 0.409 & 1.06 & 4.25 & 1.583 & 1.589 & 0.357 & 1.00 & 4.42 \\
 0.1 yr & 1.801 & 1.724 & 0.389 & 1.04 & 4.37 & 1.540 & 1.592 & 0.326 & 0.97 & 4.70 \\
@@ -27,5 +27,5 @@ Horizon & $\hat{\beta}$ & SE$_A$ & SE$_{CV}$ & $t_A$ & $t_{CV}$ & $\hat{\beta}$ 
 \bottomrule
 \end{tabular}
 \par\vspace{2pt}
-{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SE$_{CV}$ = cross-validation standard error; $t_A$/$t_{CV}$ = corresponding $t$-ratios. Significance: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. Significance markers based on $t_A$ are reported for completeness only: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
 \end{table}

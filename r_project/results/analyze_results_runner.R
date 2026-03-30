@@ -435,3 +435,18 @@ suffix <- "EW_VYP_North America"
 source(here("results/analyze_result.R"))
 suffix <- "FW_VYP_North America"
 source(here("results/analyze_result.R"))
+
+# 9. Preqin North America USD results (L1 Loss) ----
+
+data.out.folder <- "results/data_out_2026_03_27"
+
+prefix <- "q_factors_preqin_"
+suffix <- "EW_VYP_North America_L1_Ridge"
+
+source(here("results/analyze_result.R"))
+
+prefix <- "q_factors_preqin_"
+suffix <- "FW_VYP_North America_L1_Ridge"
+
+source(here("results/analyze_result.R"))
+

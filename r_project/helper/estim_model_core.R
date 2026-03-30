@@ -248,7 +248,8 @@ run_estimation <- function(
             if (include_alpha_term) factor_tag <- paste0(factor_tag, "alpha_")
             if (length(factors_to_use) > 0 && any(factors_to_use != "")) factor_tag <- paste0(factor_tag, paste(factors_to_use, collapse = "_"), "_")
             nc_tag <- if (final_nav_discount != 100) paste0("_NC", final_nav_discount) else ""
-            cache_folder_tag <- paste0(private_source, "_", factor_tag, weighting, nc_tag)
+            ef_tag <- if (error_function != "L2_Lasso") paste0("_", error_function) else ""
+            cache_folder_tag <- paste0(private_source, "_", factor_tag, weighting, nc_tag, ef_tag)
         }
     }
 

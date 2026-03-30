@@ -299,8 +299,11 @@ scenarios <- c(
   "ff3_fw_cv_ALL_3f", "ff3_ew_cv_ALL_3f",
   "ff3_fw_no_cv_ALL_3f", "ff3_ew_no_cv_ALL_3f",
   "ff3_fw_no_cv", "ff3_ew_no_cv",
-  "ff3_fw_cv", "ff3_ew_cv"
+  "ff3_fw_cv", "ff3_ew_cv",
+  # L1 Loss
+  "fw_no_cv_north_america_l1", "fw_cv_north_america_l1", "ew_no_cv_north_america_l1", "ew_cv_north_america_l1"
 )
+# scenarios <- c("fw_no_cv_north_america_l1", "fw_cv_north_america_l1", "ew_no_cv_north_america_l1", "ew_cv_north_america_l1")
 # data.out.folder <- "results/data_out_2026_02_27_pitchbook"
 data.out.folder <- "results/data_out_2026_03_27"
 

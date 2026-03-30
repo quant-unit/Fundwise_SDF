@@ -83,33 +83,35 @@ plot_empirical_estimates <- function(
     cex = 1.0,
     weighting_filter = c("EW", "FW"),
     exclude_cv = FALSE,
-    region = NULL) {
+    region = NULL,
+    error_function = "L2_Lasso") {
     # -------------------------------------------------------------------------
     # Define file paths for the 4 CSV sources
     # -------------------------------------------------------------------------
     region_tag <- if (!is.null(region) && region != "") paste0("_", region) else ""
+    ef_tag <- if (!is.null(error_function) && error_function != "L2_Lasso") paste0("_", error_function) else ""
 
     csv_sources <- list(
         list(
-            path = file.path(data_dir, paste0("cache_q_factors_", data_source, "_EW_VYP", region_tag), "0_asymptotic_inference_summary.csv"),
+            path = file.path(data_dir, paste0("cache_q_factors_", data_source, "_EW_VYP", region_tag, ef_tag), "0_asymptotic_inference_summary.csv"),
             label = "EW Asymptotic",
             weighting = "EW",
             method = "Asymptotic"
         ),
         list(
-            path = file.path(data_dir, paste0("cache_q_factors_", data_source, "_EW_VYP", region_tag), "0_cross_validation_summary.csv"),
+            path = file.path(data_dir, paste0("cache_q_factors_", data_source, "_EW_VYP", region_tag, ef_tag), "0_cross_validation_summary.csv"),
             label = "EW Cross-Validation",
             weighting = "EW",
             method = "Cross-Validation"
         ),
         list(
-            path = file.path(data_dir, paste0("cache_q_factors_", data_source, "_FW_VYP", region_tag), "0_asymptotic_inference_summary.csv"),
+            path = file.path(data_dir, paste0("cache_q_factors_", data_source, "_FW_VYP", region_tag, ef_tag), "0_asymptotic_inference_summary.csv"),
             label = "FW Asymptotic",
             weighting = "FW",
             method = "Asymptotic"
         ),
         list(
-            path = file.path(data_dir, paste0("cache_q_factors_", data_source, "_FW_VYP", region_tag), "0_cross_validation_summary.csv"),
+            path = file.path(data_dir, paste0("cache_q_factors_", data_source, "_FW_VYP", region_tag, ef_tag), "0_cross_validation_summary.csv"),
             label = "FW Cross-Validation",
             weighting = "FW",
             method = "Cross-Validation"
@@ -665,7 +667,6 @@ plot_empirical_estimates <- function(
             paste0(
                 "Horizon & $\\hat{\\beta}$ & SE$_A$ & SD$_{CV}$ & $t_A$ & $\\mathrm{SR}_{CV}$",
                 " & $\\hat{\\beta}$ & SE$_A$ & SD$_{CV}$ & $t_A$ & $\\mathrm{SR}_{CV}$ \\\\"
-
             ),
             "\\midrule"
         )
@@ -2536,7 +2537,7 @@ plot_empirical_estimates(
     output_file = paste0(out.folder, "/empirical_VC_US_Alpha")
 )
 
-# BO: Two-factor model with q^5 factors
+# VC: Two-factor model with q^5 factors
 plot_empirical_estimates(
     data_dir = file.folder,
     fund_type = "VC",
@@ -2641,4 +2642,68 @@ plot_nav_discounts_combined_mkt(
     weighting_filter = c("FW", "EW"),
     region = "North America",
     output_file = paste0(out.folder, "/nav_disc_BO_US_MKT_combined_NC")
+)
+
+# L1 Loss Function 
+# BO: Single-factor model with MKT only (L1)
+plot_empirical_estimates(
+  data_dir = file.folder,
+  fund_type = "BO",
+  factors = c("MKT"),
+  export_pdf = TRUE, export_csv = TRUE, export_latex = TRUE,
+  height = 4, width = 6,
+  y.max.mkt = 2.5, y.min.mkt = -0.5,
+  main.linewidth = 1, cex = 0.8,
+  weighting_filter = c("FW", "EW"),
+  region = "North America",
+  error_function = "L1_Ridge",
+  output_file = paste0(out.folder, "/empirical_BO_US_MKT_L1")
+)
+
+# BO: Two-factor model with Alpha (L1)
+plot_empirical_estimates(
+  data_dir = file.folder,
+  fund_type = "BO",
+  factors = c("Alpha"),
+  export_pdf = TRUE, export_csv = TRUE, export_latex = TRUE,
+  height = 5, width = 5,
+  y.max.mkt = 2.5, y.min.mkt = -0.5,
+  y.lim.second = list(Alpha = c(-0.02, 0.02)),
+  main.linewidth = 1, cex = 0.8,
+  exclude_cv = FALSE,
+  weighting_filter = c("FW", "EW"),
+  region = "North America",
+  error_function = "L1_Ridge",
+  output_file = paste0(out.folder, "/empirical_BO_US_Alpha_L1")
+)
+
+# VC: Single-factor model with MKT only (L1)
+plot_empirical_estimates(
+  data_dir = file.folder,
+  fund_type = "VC",
+  factors = c("MKT"),
+  export_pdf = TRUE, export_csv = TRUE, export_latex = TRUE,
+  height = 4, width = 6,
+  y.max.mkt = 2.5, y.min.mkt = -0.5,
+  main.linewidth = 1, cex = 0.8,
+  weighting_filter = c("FW", "EW"),
+  region = "North America",
+  error_function = "L1_Ridge",
+  output_file = paste0(out.folder, "/empirical_VC_US_MKT_L1")
+)
+
+# VC: Two-factor model with Alpha (L1)
+plot_empirical_estimates(
+  data_dir = file.folder,
+  fund_type = "VC",
+  factors = c("Alpha"),
+  export_pdf = TRUE, export_csv = TRUE, export_latex = TRUE,
+  height = 5, width = 5,
+  y.max.mkt = 2.5, y.min.mkt = -0.5,
+  y.lim.second = list(Alpha = c(-0.02, 0.02)),
+  main.linewidth = 1, cex = 0.8,
+  weighting_filter = c("FW", "EW"),
+  region = "North America",
+  error_function = "L1_Ridge",
+  output_file = paste0(out.folder, "/empirical_VC_US_Alpha_L1")
 )

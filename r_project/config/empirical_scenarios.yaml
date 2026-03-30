@@ -134,7 +134,43 @@ scenarios:
     do_cross_validation: true
     factors_to_use: ""
     active: true
-  
+
+  fw_no_cv_north_america_l1:
+    description: "Fund-weighted VYP, no CV, North America, L1 Loss"
+    weighting: "FW"
+    error_function: "L1_Ridge"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+
+  fw_cv_north_america_l1:
+    description: "Fund-weighted VYP, CV, North America, L1 Loss"
+    weighting: "FW"
+    error_function: "L1_Ridge"
+    region: "North America"
+    do_cross_validation: true
+    factors_to_use: ""
+    active: true
+
+  ew_no_cv_north_america_l1:
+    description: "Equal-weighted VYP, no CV, North America, L1 Loss"
+    weighting: "EW"
+    error_function: "L1_Ridge"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+
+  ew_cv_north_america_l1:
+    description: "Equal-weighted VYP, CV, North America, L1 Loss"
+    weighting: "EW"
+    error_function: "L1_Ridge"
+    region: "North America"
+    do_cross_validation: true
+    factors_to_use: ""
+    active: true
+    
   fw_vintage_sweep_north_america:
     description: "FW VYP, no CV, max vintage 2011–2021"
     weighting: "FW"
