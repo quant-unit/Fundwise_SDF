@@ -58,13 +58,15 @@ The simulation calibrates $\alpha=0$ (L1115: *"we just use the MKT factor with $
 ---
 
 ### 10. Cross-validation fold structure and the 2010 cutoff
-Table 5 (L1307–1333) defines 10 folds, with the last fold validating on 2015–2017. But the empirical sample is restricted to max vintage 2010 — meaning folds 8–10 have **no data in their validation sets** (since no vintages from 2012+ are included). The text (L1296) acknowledges dynamic truncation to 7 folds, but the table still prints 10. Trim the table to the 7 active folds or add a visual separator/note marking inactive folds.
+
+Resloved! 
 
 ---
 
 ### 11. Claim about DLP12 asymptotic device
 Line 789 states: *"Their Theorem 1 fixes the number of fund-of-funds portfolios and lets the number of underlying projects or funds within each portfolio diverge."*
-Check whether \\cite{DLP12} use "fund-of-funds portfolios" or "vintage-year portfolios." Using "fund-of-funds" here may confuse readers into thinking DLP12 model fund-of-funds vehicles specifically, when they model vintage-year cohorts.
+
+Resolved!
 
 ---
 

@@ -786,7 +786,7 @@ Writing the vector of pooled pricing errors as \(e(\theta) = (PV_1(\theta),\dots
 \end{proof}
 
 \citet{DLP12} justify this inception-based estimator under a different asymptotic device than the one used here. 
-Their Theorem~1 fixes the number of fund-of-funds portfolios and lets the number of underlying projects or funds within each portfolio diverge, yielding consistency for the inception-only estimator under their maintained model \citep[p.\ 520]{DLP12}. 
+Their Theorem~1 fixes the number of vintage-year portfolios and lets the number of underlying projects or funds within each portfolio diverge, yielding consistency for the inception-only estimator under their maintained model \citep[p.\ 520]{DLP12}. 
 Economically, this portfolio-infill asymptotic sequence averages out within-portfolio idiosyncratic noise, but it does not by itself create new realizations of aggregate states. 
 Relative to that setup, our framework preserves the exact \(H=0\) nesting result while letting the vintage-year domain itself expand, which is better aligned with unconditional identification, horizon comparisons, and overlap dependence when new vintages bring new realizations of macroeconomic conditions.
 
@@ -1315,6 +1315,8 @@ For instance, when estimating the full sample through 2021, we apply ten folds; 
 			start-1996 & 1997,1998,1999 & 2000,2001,2002 & 2003,2004,2005 & 2006-end \\ 
 			start-1999 & 2000,2001,2002 & 2003,2004,2005 & 2006,2007,2008 & 2009-end \\ 
 			start-2002 & 2003,2004,2005 & 2006,2007,2008 & 2009,2010,2011 & 2012-end \\ 
+			\midrule
+			\multicolumn{5}{l}{\emph{Inactive in empirical pre-2011 sample:}} \\
 			start-2005 & 2006,2007,2008 & 2009,2010,2011 & 2012,2013,2014 & 2015-end \\ 
 			start-2008 & 2009,2010,2011 & 2012,2013,2014 & 2015,2016,2017 & 2018-end \\ 
 			start-2011 & 2012,2013,2014 & 2015,2016,2017 & 2018,2019,2020 & 2021-end \\ 
