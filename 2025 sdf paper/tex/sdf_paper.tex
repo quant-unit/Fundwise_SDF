@@ -999,9 +999,9 @@ with monthly (arithmetic) risk-free return $r_f$, monthly (arithmetic) zero-net-
 Throughout both the simulation and the empirical application, all factor returns and fund cash flows are observed at monthly frequency.
 
 The public market factors that enter our SDF draw on the US dataset of the recently popularized $q^5$ investment factor model sourced from \url{http://global-q.org/factors.html} \citep{HXZ15,hou2021augmented}. 
-Their five-factor model includes the market excess return (MKT), a size factor (ME), an investment factor (IA), a return on equity factor (ROE), and an expected growth factor (EG).
+According to \cite{hou2019factors} this family of new "investment" factors subsumes the more popular Fama-French factors \citep{fama2015five,fama2018choosing}, which indicates higher explanatory power of the \cite{hou2021augmented} model.
+The $q^5$ five-factor model includes the market excess return (MKT), a size factor (ME), an investment factor (IA), a return on equity factor (ROE), and an expected growth factor (EG).
 The maximum date in the  $q^5$ investment factor dataset is 2024-12-31.
-
 
 To avoid overfitting, we restrict our analysis to six simple SDF models that contain \{MKT\} alone or \{MKT\} plus \{ME or IA or ROE or EG or Alpha\}.
 In Equation \ref{eq:estimator}, we use the quadratic loss function $L(x)=x^2$.
@@ -1017,7 +1017,11 @@ In Equation \ref{eq:estimator}, we use the quadratic loss function $L(x)=x^2$.
 \subsection{The impact of unseasoned funds and reported NAVs}
 \label{sec:empirical_vintage_cutoffs_bovc}
 
-Figure~\ref{fig:max_vintage_BOVC_MKT} presents the vintage-year cutoff sensitivity analysis separately for BO and VC under fund-value weighting (FW).
+Before defining our baseline sample, we emphasize a structural limitation of including recent vintages: treating the final reported NAV as a terminal cash flow is problematic not only because of potential staleness, but also because it represents an expected continuation value rather than a realized payoff. 
+This formally violates the actual-divestment requirement of Assumption~\ref{ass:deal_level_dgp}, meaning that whenever NAV is used as a terminal cash flow, the estimator technically targets an approximation. 
+We alleviate this issue by implementing a strict maximum vintage-year cutoff to ensure the sample primarily consists of seasoned funds with minimal remaining NAVs.
+
+To illustrate this mechanism, Figure~\ref{fig:max_vintage_BOVC_MKT} presents a vintage-year cutoff sensitivity analysis separately for BO and VC under fund-value weighting (FW).
 A clear upward-drift pattern is present in both sub-samples: as more recent, unseasoned vintages are included, the estimated market beta increases monotonically.
 For BO under value weighting, $\hat{\beta}_{\mathrm{MKT}}$ at the 0-year Horizon (see Remark~\ref{rem:horizon_def}) rises from approximately 1.23 with a 2011 vintage cutoff to roughly 2.42 with the full sample (2021).
 Notably, most of the increase is concentrated in vintages after 2016, where $\hat{\beta}_{\mathrm{MKT}}$ jumps sharply from 1.53 (2016 cutoff) to 2.34 (2017 cutoff), reflecting the disproportionate influence of young, unrealized funds.

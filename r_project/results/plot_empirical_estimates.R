@@ -349,6 +349,18 @@ plot_empirical_estimates <- function(
     second_plots <- list()
     first_coef_plot <- TRUE # Track first real coef plot for y-axis label
 
+    # Determine y-axis label for second factor
+    non_mkt_factors <- column_factors[column_factors != "MKT"]
+    if (length(non_mkt_factors) == 1) {
+        if (tolower(non_mkt_factors[1]) == "alpha") {
+            sec_ylab <- expression(alpha)
+        } else {
+            sec_ylab <- bquote(beta[.(non_mkt_factors[1])])
+        }
+    } else {
+        sec_ylab <- expression(beta["Second"])
+    }
+
     if (has_second_factor && !single_factor_only) {
         for (i in seq_along(column_factors)) {
             cf <- column_factors[i]
@@ -380,7 +392,7 @@ plot_empirical_estimates <- function(
                     labs(
                         title = paste0(fund_type, " - ", cf),
                         x = "Horizon (Years)",
-                        y = if (first_coef_plot) expression(beta["Second"]) else NULL
+                        y = if (first_coef_plot) sec_ylab else NULL
                     ) +
                     {
                         # Per-factor y-limits: look up cf in y.lim.second, fall back to "default"
@@ -722,10 +734,12 @@ plot_empirical_estimates <- function(
 
         # ----- Panel B: Second Factor (if two-factor) -----
         if (!is_single) {
+            fct_label <- if (tolower(fct) == "alpha") "$\\alpha$" else paste0("$\\beta_{", fct, "}$")
+            
             lines <- c(
                 lines,
                 "\\addlinespace[4pt]",
-                paste0("\\multicolumn{11}{l}{\\textit{Panel B: ", fct, " ($\\beta_{", fct, "}$)}} \\\\"),
+                paste0("\\multicolumn{11}{l}{\\textit{Panel B: ", fct, " (", fct_label, ")}} \\\\"),
                 "\\addlinespace[2pt]"
             )
 
@@ -1076,6 +1090,18 @@ plot_max_vintage_cutoff <- function(
     second_plots <- list()
     first_coef_plot <- TRUE
 
+    # Determine y-axis label for second factor dynamically
+    non_mkt_factors <- column_factors[column_factors != "MKT"]
+    if (length(non_mkt_factors) == 1) {
+        if (tolower(non_mkt_factors[1]) == "alpha") {
+            sec_ylab <- expression(alpha)
+        } else {
+            sec_ylab <- bquote(beta[.(non_mkt_factors[1])])
+        }
+    } else {
+        sec_ylab <- expression(beta["Second"])
+    }
+
     if (has_second_factor && !single_factor_only) {
         for (i in seq_along(column_factors)) {
             cf <- column_factors[i]
@@ -1113,8 +1139,9 @@ plot_max_vintage_cutoff <- function(
                         title         = title_text,
                         show_x        = TRUE,
                         show_y_label  = show_y,
-                        y_label       = expression(beta["Second"]),
+                        y_label       = sec_ylab,
                         ylim_vec      = ylim_vec,
+
                         v.lines_vec   = v.lines.second,
                         v.colors_vec  = v.colors.second,
                         h.lines_vec   = h.lines.second,

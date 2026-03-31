@@ -21,7 +21,8 @@ Resolved!
 ---
 
 ### 4. Panel B header says "$\beta_{\text{Alpha}}$" (L1520, L1572)
-In the alpha tables, Panel B is labeled *"Alpha ($\beta_{Alpha}$)"*. Using $\beta_{\text{Alpha}}$ for the intercept is confusing — throughout the paper $\alpha$ is the intercept and $\beta$ is the vector of factor loadings. Consider changing to $\hat{\alpha}$ to avoid reader confusion.
+
+Resolved!
 
 ---
 
@@ -91,7 +92,8 @@ Equation 14 defines a general loss $L(\cdot)$, but every simulation and empirica
 ---
 
 ### 15. Treatment of NAV as "final cash flow" conflates two distinct issues
-The paper treats the last reported NAV as a terminal cash flow. But NAV-as-cash-flow is problematic for *two* reasons: (a) it may be stale/biased (addressed extensively), and (b) it represents an *expected* continuation value, not a *realized* payoff — so it violates Assumption 1 which requires actual divestment cash flows. This second issue is acknowledged informally (L83–84) but never formally reconciled with the theoretical framework. Consider adding a remark that when NAV is used as terminal CF, Assumption 1 is violated and the estimator targets an approximation.
+
+Resolved!
 
 ---
 
@@ -118,7 +120,8 @@ The simulation study (Section 4.4) mixes five distinct experiments in a single s
 ---
 
 ### 20. Missing discussion: why $q^5$ factors and not Fama-French?
-The paper uses the $q^5$ investment factors without explaining why this factor model was chosen over the more standard Fama-French five-factor model. Given that most PE literature uses Fama-French factors, this choice may confuse readers or raise concerns about factor-shopping. A sentence explaining the motivation (e.g., economic priors, data availability, avoiding multicollinearity) would help.
+
+Resolved.
 
 ---
 

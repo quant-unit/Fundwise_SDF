@@ -253,7 +253,11 @@ plot_simulation_bias <- function(
         # Create dynamic y-axis label based on factor names
         second_factor_names <- unique(na.omit(plot_data$second_factor_name))
         if (length(second_factor_names) == 1) {
-            y_label <- bquote(beta[.(second_factor_names[1])])
+            if (tolower(second_factor_names[1]) == "alpha") {
+                y_label <- expression(alpha)
+            } else {
+                y_label <- bquote(beta[.(second_factor_names[1])])
+            }
         } else {
             y_label <- expression(beta["Second Factor"])
         }
@@ -468,7 +472,7 @@ plot_single_scenario_bias <- function(bias_file, scenario_id) {
         mutate(horizon_years = max_month / 12) %>%
         select(
             horizon_years, est_beta_MKT, true_beta_MKT,
-            est_second, true_second, bias_MKT, bias_second
+            est_second, true_second, bias_MKT, bias_second, second_factor_name
         )
 
     # MKT plot
@@ -496,6 +500,18 @@ plot_single_scenario_bias <- function(bias_file, scenario_id) {
         theme(legend.position = "bottom")
 
     if (has_second) {
+        # Determine y-axis label for second factor
+        sec_names <- unique(na.omit(plot_df$second_factor_name))
+        if (length(sec_names) == 1) {
+            if (tolower(sec_names[1]) == "alpha") {
+                sec_ylab <- expression(alpha)
+            } else {
+                sec_ylab <- bquote(beta[.(sec_names[1])])
+            }
+        } else {
+            sec_ylab <- expression(beta["Second Factor"])
+        }
+
         p2 <- ggplot(plot_df %>% filter(!is.na(est_second)), aes(x = horizon_years)) +
             geom_ribbon(
                 aes(
@@ -512,7 +528,7 @@ plot_single_scenario_bias <- function(bias_file, scenario_id) {
             labs(
                 title = "Second Factor Bias",
                 x = "Horizon (Years)",
-                y = expression(beta["Second"]),
+                y = sec_ylab,
                 color = "Type"
             ) +
             theme_minimal(base_size = 12) +
@@ -542,8 +558,9 @@ file <- "simulation/data_out_2026_new/bias_analysis/2026-03-12_174621_bias_by_sc
 file <- "simulation/data_out_2026_new/bias_analysis/2026-03-14_220349_bias_by_scenario_horizon.csv"
 
 
-
+setwd(dirname(dirname(rstudioapi::getActiveDocumentContext()$path)))
 print(getwd())
+
 max.mkt <- 1.5 #  1.25
 max.second <- 0.005
 min.mkt <- 0.5 # 0.6
