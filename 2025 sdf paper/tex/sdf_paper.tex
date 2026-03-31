@@ -1677,6 +1677,9 @@ Second, the attenuation and occasional sign reversals in the empirical two-facto
 Third, the gap between unstable asymptotic standard errors and more informative stability diagnostics is consistent with the simulation result that asymptotic approximations can substantially mischaracterize uncertainty in small samples.
 Taken together, the empirical results suggest that the finite-sample mechanisms isolated in the simulations are economically relevant in real-world private-equity cash-flow data.
 
+\paragraph{Robustness to loss specification.}
+Private equity cash flows can be heavy-tailed, raising the concern that the baseline quadratic loss function ($L(x)=x^2$) might disproportionately weight outlier pricing errors. As a robustness test, we re-estimated our main specifications using the absolute deviation ($L_1$) loss function ($L(x)=\lvert x \rvert$). This alternative specification yields empirical results that closely mirror our baseline $L_2$ estimates in both magnitude and horizon-stability. This consistency suggests that the finite-sample instability documented above is driven by the structural identification challenges of pooling cash flows rather than extreme outlier sensitivity.
+
 \paragraph{Implications for empirical practice.}
 For applied work, the main lesson is methodological.
 In the present sample, semiparametric SDF estimation for private-equity cash flows appears most credible when it is restricted to seasoned vintage-year portfolios, emphasizes parsimonious market-based specifications, and evaluates robustness over a Horizon grid.

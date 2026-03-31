@@ -33,7 +33,8 @@ Resolved!
 ---
 
 ### 6. Mixed labeling: "FW" vs "value-weighted"
-The paper introduces "FW" as "fund-size-weighted" (L942) but some captions and text refer to "value weighting" and the tables column header says "Value-Weighted (FW)". The acronym derivation should be made explicit once: *FW = fund-size-weighted (value-weighted)*.
+
+Resolved!
 
 ---
 
@@ -65,7 +66,6 @@ Resloved!
 ---
 
 ### 11. Claim about DLP12 asymptotic device
-Line 789 states: *"Their Theorem 1 fixes the number of fund-of-funds portfolios and lets the number of underlying projects or funds within each portfolio diverge."*
 
 Resolved!
 
@@ -87,7 +87,9 @@ The paper argues extensively that $\alpha$ and two-factor models are weakly iden
 ---
 
 ### 14. Quadratic loss only — no robustness to loss specification
-Equation 14 defines a general loss $L(\cdot)$, but every simulation and empirical result uses $L(x) = x^2$. The paper does not discuss robustness to alternative loss functions (e.g., absolute deviation, Huber loss). Given that PE cash flows are heavy-tailed and often have extreme outliers, the quadratic loss may give excessive weight to outlier pricing errors. Acknowledge this limitation or test one alternative.
+
+Resolved!
+
 
 ---
 
