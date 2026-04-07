@@ -365,6 +365,7 @@ For any horizon $H$, the identity
 	(\theta_H^\dagger-\theta_0)
 \end{equation}
 holds exactly.
+Here, $\theta_0$ is the structural parameter, $\theta_H^\dagger$ is the pseudo-true minimizer of the population criterion $Q_H$ (Equation~\eqref{eq:pseudotrue}), and $\hat{\theta}_H$ is its sample analogue.
 Taking squared norms and expectations over the sampling distribution gives the following decomposition.
 
 \begin{proposition}[Exact MSE decomposition around the structural parameter]
@@ -430,7 +431,7 @@ Taking squared norms and expectations over the sampling distribution gives the f
 	\]
 \end{proof}
 
-Proposition~\ref{prop:exact_mse} separates four conceptually distinct objects:
+\noindent Proposition~\ref{prop:exact_mse} separates four conceptually distinct objects:
 \begin{enumerate}
 	\item the \emph{population target shift} $\|\theta_H^\dagger-\theta_0\|^2$,
 	\item the \emph{interaction term}
@@ -476,22 +477,27 @@ where $a_{i,H}$ is the $\mathrm{card}(\mathcal{T}_{i,H})\times 1$ averaging vect
 \]
 
 \begin{remark}[A simple variance-reduction benchmark]
-	Suppose, for illustration, that
+	\label{rem:equicorr}
+	To build intuition for the stabilization mechanism, consider a stylized case.
+	Suppose that all $m=\mathrm{card}(\mathcal{T}_{i,H})$ date-specific pricing errors have a common variance
 	$\mathrm{Var}(\epsilon_{\tau,i}(\theta))=\sigma^2(\theta)$
-	for all $\tau\in\mathcal{T}_{i,H}$ and that every pair of distinct dates has the same correlation $\rho(\theta)$.
-	If $m=\mathrm{card}(\mathcal{T}_{i,H})$ and the implied equicorrelation covariance matrix is positive semidefinite, i.e.\ $\rho(\theta)\ge -1/(m-1)$, then
+	and that every pair of distinct dates shares the same correlation $\rho(\theta)$, with $\rho(\theta)\ge -1/(m-1)$ so that the covariance matrix is positive semidefinite.
+	The variance of the averaged error then takes the form
 	\[
 	\mathrm{Var}\!\left(
 	\bar{\epsilon}_i^{(H)}(\theta)
 	\right)
 	=
-	\sigma^2(\theta)\left(
-	\rho(\theta)+\frac{1-\rho(\theta)}{m}
-	\right).
+	\sigma^2(\theta)\;\frac{1+\rho(\theta)(m-1)}{m}.
 	\]
-	Whenever $\rho(\theta)<1$, this variance is strictly below $\sigma^2(\theta)$, and mild negative correlation lowers it even further.
-	This special case illustrates the basic stabilization mechanism:
-	with comparable marginal variances and less-than-perfect dependence, averaging lowers the variance of the objective contribution relative to a representative single-date moment.
+	Two polar cases anchor the interpretation.
+	If the errors are independent ($\rho=0$), this reduces to $\sigma^2/m$: the classical variance reduction from averaging $m$ i.i.d.\ terms.
+	If the errors are perfectly correlated ($\rho=1$), the variance equals $\sigma^2$: averaging provides no benefit because each date carries exactly the same information.
+	For any intermediate correlation $0<\rho<1$, the variance lies strictly between $\sigma^2/m$ and $\sigma^2$, interpolating smoothly between the two extremes.
+	Mild negative correlation ($\rho<0$) pushes the variance below $\sigma^2/m$, as partial offsetting further stabilizes the average.
+
+	In summary, the averaged objective contribution has lower variance than a representative single-date moment whenever the date-specific errors are less than perfectly correlated.
+	This is the basic channel through which horizon averaging can stabilize the sample criterion.
 \end{remark}
 
 \subsection{Interpretation and reconciliation with the simulation study}
@@ -513,7 +519,7 @@ for sufficiently long horizons, the marginal gain from additional averaging may 
 Accordingly, the MSE-minimizing horizon need not be $H=0$ and need not be arbitrarily large.
 Instead, it is generally \emph{interior} and \emph{DGP-dependent}.
 
-We do not claim that each MSE component is globally monotone in $H$ without additional restrictions.
+We do not claim that each MSE component from Proposition \ref{prop:exact_mse} is globally monotone in $H$ without additional restrictions.
 In particular, the aggregate Compounding-Horizon Wedge may contain offsetting covariance terms, and the effect of averaging on estimator variance depends on the covariance structure of the pricing moments and on the local geometry of the nonlinear criterion.
 For that reason, the appendix establishes the exact decomposition and the exact source of the averaged population moment shift, while the existence and location of the empirically relevant interior optimum are documented in the simulation study rather than asserted as a universal theorem.
 
