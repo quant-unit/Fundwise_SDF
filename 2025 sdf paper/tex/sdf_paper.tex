@@ -9,7 +9,7 @@
 \usepackage{newtxtext}
 \usepackage{newtxmath}
 \usepackage{natbib}
-\usepackage{graphics}
+\usepackage{graphicx}
 % use smaller margins
 \usepackage[margin=1.1in]{geometry} % 1.25in
 \usepackage[margin=1.1cm]{caption}
@@ -38,7 +38,6 @@
 
 % logo
 \usepackage{fancyhdr}
-\usepackage{graphicx }
 
 
 
@@ -138,10 +137,10 @@ Relative to \citet{KN16}, we show that both approaches are built on closely rela
 More broadly, the paper contributes to the growing literature on asset-pricing inference with illiquid, non-traded, and intermittently valued cash-flow streams, where the key challenge is not only estimation, but also determining which economically meaningful objects available data can identify with stability.
 
 The remainder of the paper proceeds as follows. 
-Section \ref{sec:literature} reviews the related literature. Section \ref{sec:spatial_sdf_methodology} develops the generalized semiparametric estimator and the corresponding asymptotic inference framework. 
-Section \ref{sec:empirical_application} studies finite-sample behavior in simulation and discusses implementation choices. 
-Section \ref{sec:empirical_results_bovc} presents the empirical application to buyout and venture-capital funds. 
-Section \ref{sec:conclusion} concludes.
+Section~\ref{sec:literature} reviews the related literature. Section~\ref{sec:spatial_sdf_methodology} develops the generalized semiparametric estimator and the corresponding asymptotic inference framework. 
+Section~\ref{sec:empirical_application} discusses implementation choices and studies finite-sample behavior in simulation.
+Section~\ref{sec:empirical_results_bovc} presents the empirical application to buyout and venture-capital funds. 
+Section~\ref{sec:conclusion} concludes.
 
 
 
@@ -234,7 +233,7 @@ Section~\ref{sec:comparison_to_similar_estimators} demonstrates how this LMD est
 		$\delta_{i,j}$ & Deal-level pricing error \\
 		\bottomrule
 	\end{tabular}
-	\caption{Key notation for asset pricing and pooled cash flows (Section \ref{sec:asset_pricing_pooled}).}
+	\caption{Key notation for asset pricing and pooled cash flows (Section~\ref{sec:asset_pricing_pooled}).}
 	\label{tab:notation_asset_pricing}
 \end{table}
 
@@ -366,12 +365,12 @@ For part (3), using the law of iterated expectations with an intermediate condit
 where we used the conditional covariance identity and Equation~\eqref{eq:deal_pricing}.
 \end{proof}
 
-Part~(3) of Lemma \ref{lem:deal_level_timing} shows that compounding deal cash flows to a future date generally destroys the zero conditional moment restriction because the resulting expression contains a covariance between the pricing error and future SDF realizations. 
+Part~(3) of Lemma~\ref{lem:deal_level_timing} shows that compounding deal cash flows to a future date generally destroys the zero conditional moment restriction because the resulting expression contains a covariance between the pricing error and future SDF realizations. 
 We refer to this non-zero expected value as a \emph{timing-related covariance wedge}. 
 Economically, it is the time-$\tau$ price of an investment-date covariance term between continuation SDF realizations and the discounted divestment cash flows over the illiquid holding period. 
 At the level of the generalized estimator, this mechanism induces the \textbf{Compounding-Horizon Wedge}: once the criterion averages over post-investment or future-value revaluation dates, the timing-related covariance wedge enters the pooled objective and shifts the population target away from the inception-based benchmark.
 
-To clarify the economic mechanism behind the Compounding-Horizon Wedge, let us briefly analyze Equation \ref{eq:future_value_bias_derivation} with only one divestment cash flow per deal ($K_{i,j}=1$).
+To clarify the economic mechanism behind the Compounding-Horizon Wedge, let us briefly analyze Equation~\eqref{eq:future_value_bias_derivation} with only one divestment cash flow per deal ($K_{i,j}=1$).
 In this case, the covariance term reads 
 \[
 \mathrm{Cov} \left( \frac{\Psi_{t_{i,j}^{\mathrm{Future}}}}{\Psi_{t_{i,j}^{\mathrm{Inv}}}},\
@@ -388,7 +387,7 @@ In this case, the covariance term reads
 Thus, for $K_{i,j}=1$, the covariance is naturally expected to be largest when $t_{i,j}^{\mathrm{Future}}$ is equal to $t_{i,j,k}^{\mathrm{Div}}$, since the continuation SDF and the discounted divestment payoff then load on the same SDF path. 
 This ranking is not automatic, however, and requires additional restrictions on the post-divestment SDF dynamics (e.g, ${\Psi_{t_{i,j}^{\mathrm{Future}}}} / {\Psi_{t_{i,j}^{\mathrm{Div}}}}$ being conditionally mean-independent of $\mathcal{F}_{t_{i,j}^{\mathrm{Div}}}$ given  $\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$).
 
-To conclude our analysis of Part 3 of Lemma \ref{lem:deal_level_timing}, NFV-type moments are inappropriate as primitive ex-ante pricing moments unless the timing-related covariance wedge is modeled explicitly.
+To conclude our analysis of Part 3 of Lemma~\ref{lem:deal_level_timing}, NFV-type moments are inappropriate as primitive ex-ante pricing moments unless the timing-related covariance wedge is modeled explicitly.
 They can still be informative for ex-post benchmarking, but the resulting performance measure must then be interpreted as a composite object that mixes true abnormal performance (skill) with systematic exposure to the states in which realization and discounting occur.
 
 \begin{proposition}
@@ -469,8 +468,6 @@ As we demonstrate in later sections, averaging pricing errors over extended hori
 		$\mathcal{H}_H$ & Hessian of population objective at $\theta_H^\dagger$ \\
 		$\Lambda_H$ & Long-run covariance matrix of the score \\
 		$\Sigma_H$ & Asymptotic covariance matrix of $\hat{\theta}_H$ \\
-		$W_H$ & Wald statistic for linear hypotheses  \\
-		$R, r$ & Linear constraint matrix and vector \\
 		\bottomrule
 	\end{tabular}
 	\caption{Key notation for the LMD estimator and asymptotic benchmark (Sections \ref{sec:fundwise_lmd_estimator}--\ref{sec:asymptotic_framework}).}
@@ -514,7 +511,7 @@ where $w_i$ normalizes fund-level pricing errors before the loss is applied; it 
 
 \paragraph{The role of $\mathcal{T}_i$}
 
-The set $\mathcal{T}_i$ controls which discounting dates enter the averaged pricing error $\bar{\epsilon}_i(\theta)$ in Equation~\eqref{eq:average_pricing_error} (see Figure \ref{fig:npvs}). 
+The set $\mathcal{T}_i$ controls which discounting dates enter the averaged pricing error $\bar{\epsilon}_i(\theta)$ in Equation~\eqref{eq:average_pricing_error} (see Figure~\ref{fig:npvs}). 
 Averaging over multiple dates in $\mathcal{T}_i$ was originally motivated by the ``exploding alpha'' problem described by \cite{DLP12}: when the initial cash flow is very small, an arbitrarily large alpha can discount all subsequent cash flows close to zero, rendering the beta factors irrelevant and distorting estimation. 
 Thus, their inception-only objective function is not globally convex in finite samples: the multiplicative SDF parameterization permits extreme parameter regions in which the discount factors drive all $NPV_i$ close to zero, creating spurious near-minima that can prevent reliable identification of $\alpha$.
 Averaging over $\mathcal{T}_i$ mitigates this degeneracy.
@@ -733,7 +730,7 @@ Relative to \citet{KN16}, we share the discounted-cash-flow pricing logic, but d
 
 The connection to \citet{DLP12} is the closest at the objective-function level. 
 Under the inception-only restriction, equal normalization, and quadratic loss, the LMD criterion coincides with the identity-weighted one-step cross-sectional GMM objective used in their framework.
-To bridge the gap, let us rewrite the $NPV_i$ from Equation \ref{eq:dlp12_minimization} in our more general SDF notation as $PV_i (\theta) = \sum_{t \in \left\{ t_{0,i}, t_{0,i} + 1, \dots \right\}} \Psi_{t_{0,i}, t}(\theta) CF_{i,t}$.
+To bridge the gap, let us rewrite the $NPV_i$ from Equation~\eqref{eq:dlp12_minimization} in our more general SDF notation as $PV_i (\theta) = \sum_{t \in \left\{ t_i^0, t_i^0 + 1, \dots \right\}} \Psi_{t_i^0, t}(\theta) CF_{i,t}$, where $t_i^0$ denotes the fund inception date as defined in Section~\ref{sec:asset_pricing_pooled}.
 
 \begin{proposition}[Connection to the \cite{DLP12} objective]
 \label{prop:dlp12_connection}
@@ -937,10 +934,10 @@ We use the Preqin cash flow dataset as of 14th April 2022, which is well known i
 To keep the empirical analysis clear and concise, we filter the dataset for Buyout (BO) and Venture Capital (VC) funds.
 We only keep funds with fund currency US Dollar (USD) and region equal to North America.
 
-For this subset of BO and VC funds, we extract all (i) equal-weighted (hereafter EW) and (ii) value-weighted (hereafter FW, for fund-size-weighted) cash flow series (cf.\ Figures \ref{fig:preqin_cashflows_bo} and \ref{fig:preqin_cashflows_vc}).
+For this subset of BO and VC funds, we extract all (i) equal-weighted (hereafter EW) and (ii) value-weighted (hereafter FW, weighted by fund size) cash flow series (cf.\ Figures \ref{fig:preqin_cashflows_bo} and \ref{fig:preqin_cashflows_vc}).
 In the overall dataset, the minimum vintage year is 1982, and the maximum is 2021.
 We initially retain all vintage years, including recent ones.
-Section \ref{sec:empirical_vintage_cutoffs_bovc} assesses the impact of unseasoned fund Net Asset Values (NAVs) on our empirical estimation results.
+Section~\ref{sec:empirical_vintage_cutoffs_bovc} assesses the impact of unseasoned fund Net Asset Values (NAVs) on our empirical estimation results.
 On this basis, we decide how many recent vintage years to remove to reduce reliance on unrealized NAVs.
 For the vintage years we keep, all liquidated and non-liquidated funds enter our estimation.
 For non-liquidated funds, we treat the latest NAV as final cash flow.
@@ -1004,7 +1001,7 @@ The $q^5$ five-factor model includes the market excess return (MKT), a size fact
 The maximum date in the  $q^5$ investment factor dataset is 2024-12-31.
 
 To avoid overfitting, we restrict our analysis to six simple SDF models that contain \{MKT\} alone or \{MKT\} plus \{ME or IA or ROE or EG or Alpha\}.
-In Equation \ref{eq:estimator}, we use the quadratic loss function $L(x)=x^2$.
+In Equation~\eqref{eq:estimator}, we use the quadratic loss function $L(x)=x^2$.
 
 
 \begin{remark}[Alpha Bounds]
@@ -1061,7 +1058,7 @@ Figure~\ref{fig:max_vintage_BOVC_MKT_alpha} confirms that this distortion also a
 
 \begin{remark}[Definition of Horizon]
 	\label{rem:horizon_def}
-	Throughout the empirical section, we use the term \emph{Horizon} $H$ to denote the maximum compounding horizon in years used in the set of discounting dates $\mathcal{T}$ (cf.\ Equation \ref{eq:t_cal_horizon}). 
+	Throughout the empirical section, we use the term \emph{Horizon} $H$ to denote the maximum compounding horizon in years used in the set of discounting dates $\mathcal{T}$ (cf.\ Equation~\eqref{eq:t_cal_horizon}). 
 	Formally, starting from the fund inception date $t_i^0$, estimating a model with a Horizon $H$ implies that the estimator minimizes the average pricing error over the set of discounting dates $\mathcal{T}_{i,H} = \{t_i^0, t_i^0+1, \dots, \min(t_i^0+12H, T_i^{\max}) \}$, formally denoted as $\bar{\epsilon}_{i}^{(H)}$.
 	Note that the Horizon has as upper bound the max cash flow date per fund or portfolio in our empirical application.
 	This Horizon in years serves as x-axis in all subsequent empirical and simulation charts.
@@ -1127,21 +1124,21 @@ The subsequent paragraphs compare this baseline to alternative scenario blocks t
 In particular, the ``extended vintage'' scenarios use vintages 1967--2005, so \(V=39\), whereas the baseline uses vintages 1986--2005, so \(V=20\).
 Each fund contains 15 deals with equal investment amounts and exactly one divestment cash flow.
 Deals are entered within the first five years of the fund lifetime following a discrete uniform distribution and afterward held between one to ten years again uniformly distributed.
-The deal returns are generated by the simple linear or exponential affine SDF models described in Equations \ref{eq:linear_sdf} and \ref{eq:expaff_SDF}.
+The deal returns are generated by the simple linear or exponential affine SDF models described in Equations~\eqref{eq:linear_sdf} and~\eqref{eq:expaff_SDF}.
 In the base case, we just use the MKT factor with $\beta_{\mathrm{MKT}}=1$ and in each month, add a normal i.i.d. error term with monthly standard deviation $\sigma=0.2$ (annualized variance $12 \cdot 0.2^2=0.48$, corresponding to an annualized volatility of $0.2\sqrt{12}\approx 69\%$) and zero mean.
 In the exponential affine case, we adjust the lognormally distributed error mean to zero by subtracting $0.5 \sigma^2$.
 If a negative return exceeds -100\%, the company defaults with a zero exit cash flow.
 In contrast, the error term in the simulations of \cite{DLP12} is more well-behaved as it follows a shifted lognormal distribution that, even with arbitrarily high error term variance, just allows for returns below say -99\%, if the market return is close to its lower bound (see equation 9 in their online appendix).
-We specifically analyze the remaining divergence from their simulation design in Appendix \ref{sec:dlp_simulation}.
+We specifically analyze the remaining divergence from their simulation design in Appendix~\ref{sec:dlp_simulation}.
 In our simulation scenarios, we evaluate the estimator across a full grid of compounding Horizons, where the maximum month in the set of discounting dates $\mathcal{T}$ ranges from 0 up to 30 years (0-360 months).
 To assess our estimator's bias and variance, we simulate 1000 test scenarios for both vintage-year and single-fund portfolios.
 
 
 \paragraph{Cross-sectional unit $i$:}
 
-As anticipated in Subsection \ref{sec:asymptotic_framework}, vintage year portfolios demonstrate lower bias and variance than individual funds.
+As anticipated in Subsection~\ref{sec:asymptotic_framework}, vintage year portfolios demonstrate lower bias and variance than individual funds.
 Under the simple linear SDF and a 15-year Horizon (maximum month 180), the mean (standard deviation) of the coefficient estimate $\hat{\beta}_{\mathrm{MKT}}$ is 0.966 (0.188) for vintage year portfolios, compared to 0.887 (0.359) for individual funds. 
-The superiority of the portfolio approach is especially striking when evaluating the entire Horizon curve in Figure \ref{fig:simulation_funds_vs_vyps}.
+The superiority of the portfolio approach is especially striking when evaluating the entire Horizon curve in Figure~\ref{fig:simulation_funds_vs_vyps}.
 Estimates for individual funds are highly unstable, exhibiting severe upward bias at short Horizons ($\hat{\beta}_{\mathrm{MKT}} \approx 1.5$) and deteriorating to negative values at long Horizons.
 In contrast, vintage year portfolios yield substantially more stable estimates that remain within a narrow, economically plausible range around the true value of 1.0.
 The portfolio approach consistently achieves a lower standard deviation across all simulated Horizons, confirming that grouping funds effectively mitigates idiosyncratic noise.
@@ -1193,7 +1190,7 @@ Consequently, our findings provide an empirical rationale for the finite-sample 
 
 \paragraph{SDF model $\Psi$:}
 
-In Figure \ref{fig:sim_exp_aff}, we compare the simple linear SDF model against the exponential affine specification.
+In Figure~\ref{fig:sim_exp_aff}, we compare the simple linear SDF model against the exponential affine specification.
 For the single-factor model, the bias is minimized at the 12.5-year Horizon (150 months), where both functional forms perform almost identically and yield estimates extremely close to the true value of 1.0: the exponential affine yields a mean market beta of 0.999 (0.182), matching the simple linear's 0.994 (0.189).
 For the two-factor (MKT+Alpha) model at this same 12.5-year Horizon, both functional forms again yield nearly identical parameter results, though with an attenuated market beta ($\hat{\beta}_{\mathrm{MKT}} \approx 0.85$) and a minor spurious positive alpha ($\hat{\alpha} \approx 0.001$).
 In the two-factor case, the market beta bias is actually minimized later, around the 20-year Horizon ($\hat{\beta}_{\mathrm{MKT}} \approx 0.97$, $\hat{\alpha} \approx -0.0002$).
@@ -1254,7 +1251,7 @@ These results suggest that empirical researchers should exercise caution when in
 
 \paragraph{Varying fund lifetimes:}
 
-Figure \ref{fig:sim_lifetimes} illustrates how the optimal Horizon shifts in response to abbreviated fund lifetimes. 
+Figure~\ref{fig:sim_lifetimes} illustrates how the optimal Horizon shifts in response to abbreviated fund lifetimes. 
 As anticipated, the intercept of the alpha parameter decreases for shorter fund lifetimes relative to our baseline scenario of a five-year investment period and a ten-year maximum holding period. 
 Specifically, for the shortest examined fund lifetime of two years (comprising a one-year investment period and a one-year maximum holding period), the beta bias is minimized at a 12.5-year Horizon, while the alpha bias is minimized at a 5-year Horizon. 
 Similarly, for a fund with a two-year investment period and a two-year maximum holding period, the minimum beta bias occurs at a 15-year Horizon, and the minimum alpha bias at a 7.5-year Horizon. 
@@ -1270,7 +1267,7 @@ Consequently, these results suggest that for funds with short lifespans, the Hor
 \paragraph{Size of set $\mathcal{T}$ (Maximum Compounding Horizon):}
 
 A central simulation finding concerns the choice of the maximum compounding Horizon, i.e., the size of the set of discounting dates $\mathcal{T}$.
-From a purely theoretical perspective (cf.\ Section \ref{sec:asset_pricing_pooled}), discounting all cash flows exclusively to the fund inception date, corresponding to a zero-month or NPV-only Horizon in our notation, should yield unconditionally unbiased estimates under the deal-level exact-pricing restriction (Equation~\eqref{eq:deal_pricing}).
+From a purely theoretical perspective (cf.\ Section~\ref{sec:asset_pricing_pooled}), discounting all cash flows exclusively to the fund inception date, corresponding to a zero-month or NPV-only Horizon in our notation, should yield unconditionally unbiased estimates under the deal-level exact-pricing restriction (Equation~\eqref{eq:deal_pricing}).
 This minimal choice for $\mathcal{T}$ corresponds exactly to the established \cite{DLP12} framework.
 
 However, our simulation results highlight a tension between structural fidelity and finite-sample recoverability: extending the set of discounting dates into the fund lifecycle can materially stabilize the estimator in the reported designs.
@@ -1279,9 +1276,9 @@ At extremely short Horizons, idiosyncratic cash flow noise interacts non-linearl
 Averaging pricing errors over multiple future dates therefore acts as a finite-sample stabilization device, while also introducing the timing component discussed in Section~\ref{sec:asset_pricing_pooled}.
 
 In the reported designs, this stabilization improves the mean estimate far more than it reduces standard errors. 
-While estimator variance traces a shallow U-shape with a minimum near the 15-year Horizon (see Table \ref{tab:sim_q5_summary}) for fund with a lifetime of 15 years, this reduction is secondary to the striking stabilization of the parameter bias.
+While estimator variance traces a shallow U-shape with a minimum near the 15-year Horizon (see Table~\ref{tab:sim_q5_summary}) for fund with a lifetime of 15 years, this reduction is secondary to the striking stabilization of the parameter bias.
 However, our simulations for shorter fund lifetimes indicate that determining the optimal horizon requires tailored simulation designs rather than a simple heuristic assuming the optimal horizon always coincides with the fund's life.
-We further analyze these puzzling results from a theoretical perspective in Appendix \ref{sec:appendix_bias_variance}, detailing the finite-sample stabilization under $\mathcal{T}$-averaging and the role of the Compounding-Horizon Wedge.
+We further analyze these puzzling results from a theoretical perspective in Appendix~\ref{sec:appendix_bias_variance}, detailing the finite-sample stabilization under $\mathcal{T}$-averaging and the role of the Compounding-Horizon Wedge.
 
 \paragraph{Simulation conclusion:}
 To conclude, our simulation study supports several implementation choices used in the empirical application. 
@@ -1295,7 +1292,7 @@ Accordingly, in the empirical application we use vintage-year portfolios, the si
 
 \subsection{Role of asymptotic inference}
 
-To assess the parameter significance in the empirical application, we compute the asymptotic standard errors as outlined in Subsection \ref{sec:asymptotic_framework}.
+To assess the parameter significance in the empirical application, we compute the asymptotic standard errors as outlined in Subsection~\ref{sec:asymptotic_framework}.
 For the Bartlett kernel bandwidth $b_V$, we set $b_V=12$ years, so pairs of funds with absolute vintage-year differences exceeding 12 receive zero kernel weight in the SHAC covariance estimator.
 The asymptotic results provide the benchmark large-sample approximation. 
 
@@ -1492,12 +1489,12 @@ Cross-validation fold dispersions for $\hat{\beta}_{\mathrm{MKT}}$ are large (0.
 Accordingly, the few isolated asymptotic significance markers in Tables~\ref{tab:empirical_bo_alpha}--\ref{tab:empirical_vc_alpha} are not emphasized in our interpretation.
 
 For VC, the two-factor model exhibits a different but similarly unstable pattern.
-At short Horizons (0 under EW), the alpha term reaches its upper bound ($\hat{\alpha} = 0.020$/month) and the MKT coefficient drops to approximately 0.47, resembling the BO and PE behavior.
+At short Horizons (0 under EW), the alpha term reaches its upper bound ($\hat{\alpha} = 0.020$/month) and the MKT coefficient drops to approximately 0.47, resembling the BO behavior.
 However, as the Horizon increases beyond 5~years, the MKT loading rises steadily to values exceeding 2.3, while the alpha estimate turns progressively negative, reaching $-0.009$/month at 30~years.
 We interpret this reversal as further evidence that the two-parameter decomposition is highly sensitive to Horizon choice and sample composition in VC.
 Under FW, the instability is somewhat attenuated ($\hat{\alpha}$ remains close to zero at short Horizons; $\hat{\beta}_{\mathrm{MKT}} \approx 1.74$), but the overall fragility persists, with asymptotic standard errors exceeding 10 for some Horizons.
 
-The BO and VC two-factor results therefore reinforce the conclusion drawn for PE: among the specifications considered here, single-factor MKT models are the most stable for private-equity SDF estimation in our sample.
+The BO and VC two-factor results therefore reinforce the same conclusion: among the specifications considered here, single-factor MKT models are the most stable for private-equity SDF estimation in our sample.
 
 \begin{figure}[htbp]
 	\centering
@@ -1542,7 +1539,7 @@ The BO and VC two-factor results therefore reinforce the conclusion drawn for PE
 		%27.5 yr & 0.453 & 0.766 & 0.435 & 0.59 & 1.35 & 0.110 & 14.320 & 0.723 & 0.01 & 0.46 \\
 		30 yr & 0.453 & 0.766 & 0.435 & 0.59 & 1.35 & 0.110 & 14.320 & 0.723 & 0.01 & 0.46 \\
 		\addlinespace[4pt]
-		\multicolumn{11}{l}{\textit{Panel B: Alpha ($\beta_{Alpha}$)}} \\
+		\multicolumn{11}{l}{\textit{Panel B: Alpha ($\hat{\alpha}$)}} \\
 		\addlinespace[2pt]
 		0 yr & 0.004 & 0.005 & 0.002 & 0.91 & 1.76 & 0.008 & 0.209 & 0.005 & 0.04 & 1.53 \\
 		%0.1 yr & 0.004 & 0.005 & 0.003 & 0.91 & 1.53 & 0.008 & 0.185 & 0.005 & 0.04 & 1.45 \\
@@ -1593,7 +1590,7 @@ The BO and VC two-factor results therefore reinforce the conclusion drawn for PE
 		%27.5 yr & 2.324 & 4.614 & 0.256 & 0.50 & 8.86 & 2.195 & 5.788 & 0.233 & 0.38 & 9.45 \\
 		30 yr & 2.335 & 4.546 & 0.255 & 0.51 & 8.95 & 2.201 & 4.533 & 0.230 & 0.49 & 9.60 \\
 		\addlinespace[4pt]
-		\multicolumn{11}{l}{\textit{Panel B: Alpha ($\beta_{Alpha}$)}} \\
+		\multicolumn{11}{l}{\textit{Panel B: Alpha ($\hat{\alpha}$)}} \\
 		\addlinespace[2pt]
 		0 yr & 0.020 & 0.115 & 0.009 & 0.17 & 1.63 & -0.001 & 0.004 & 0.010 & -0.35 & 0.44 \\
 		%0.1 yr & 0.020 & 0.131 & 0.009 & 0.15 & 1.47 & -0.002 & 0.001 & 0.010 & -1.55 & 0.42 \\
