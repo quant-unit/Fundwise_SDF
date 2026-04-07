@@ -241,13 +241,12 @@ We therefore obtain the following exact characterization.
 	The result follows from Equation~\eqref{eq:avg_eps_expectation}, the decomposition in Equation~\eqref{eq:cov_decomp}, the fact that $\mathbb{E}[\delta_{i,j}]=0$ under correct specification, and the iterated-expectations argument in Equation~\eqref{eq:iterated_zero_preinv} for all pairs $(\tau,j)$ satisfying $\tau\le t_{i,j}^{\mathrm{Inv}}$.
 \end{proof}
 
-\paragraph{What the lemma does and does not identify.}
 Lemma~\ref{lem:bH_horizon_wedge} identifies the exact source of the averaged population moment shift at $\theta_0$.
-It does not, by itself, characterize the pseudo-true target shift $\theta_H^\dagger-\theta_0$, because that parameter shift depends on how the moment shift enters both the gradient and the curvature of the population criterion.
+It does not, by itself, characterize the pseudo-true target shift $\theta_H^\dagger-\theta_0$, because that parameter shift depends on how the moment shift enters both the gradient and the curvature of the population criterion in Equation~\eqref{eq:QH}.
 
 \paragraph{Misspecification.}
-Under model misspecification, $\mathbb{E}[\delta_{i,j}]\neq 0$, and the second term in Equation~\eqref{eq:cov_decomp} no longer vanishes.
-In that case, the conditional averaged population moment at $\theta_0$ contains both
+In practice, all parsimonious SDF models are misspecified for observed PE cash flows, so the case $\mathbb{E}[\delta_{i,j}]\neq 0$ is the empirically relevant one.
+Under misspecification, the second term in Equation~\eqref{eq:cov_decomp} no longer vanishes, and the conditional averaged population moment at $\theta_0$ contains both
 (i) the timing-related covariance wedge and
 (ii) an additional mean component
 \[
@@ -256,8 +255,10 @@ In that case, the conditional averaged population moment at $\theta_0$ contains 
 \right]
 \mathbb{E}[\delta_{i,j}].
 \]
-Without further sign or decay restrictions, horizon averaging need not eliminate that additional component.
-Accordingly, the clean correct-specification interpretation of $\mathcal{T}$-averaging as a tradeoff between a target shift induced by the Compounding-Horizon Wedge and variance reduction no longer applies without qualification.
+This mean component reflects systematic deal-level mispricing that the SDF does not span, compounded by the SDF ratio $\Psi_{t_{i,j}^{\mathrm{Inv}}}/\Psi_\tau$ which reweights the mispricing at each discounting date.
+Crucially, horizon averaging need not eliminate this additional component without further sign or decay restrictions: unlike the timing-related covariance wedge, it does not arise from the compounding structure and therefore does not share the same averaging properties.
+Accordingly, the clean correct-specification decomposition of $\mathcal{T}$-averaging into a target shift induced by the Compounding-Horizon Wedge and a variance-reduction benefit no longer applies without qualification.
+Under misspecification, the population target shift reflects both the timing channel characterized by Lemma~\ref{lem:bH_horizon_wedge} and the misspecification channel, and the two channels may reinforce or offset each other depending on the sign and magnitude of $\mathbb{E}[\delta_{i,j}]$.
 
 \subsection{From averaged moment shift to pseudo-true target shift}
 \label{sec:appendix_bv_target_shift}
@@ -269,7 +270,7 @@ g_{i,H}(\theta)
 :=
 \nabla_\theta \bar{\epsilon}_i^{(H)}(\theta),
 \]
-and assume that differentiation can be interchanged with expectation.
+and assume that differentiation can be interchanged with expectation, so that the gradient of the population criterion can be expressed as an expectation of the sample-level score contributions.
 Then
 \begin{equation}
 	\label{eq:grad_QH}
@@ -293,7 +294,7 @@ Evaluating at $\theta_0$ and decomposing the expectation around the conditional 
 	g_{i,H}(\theta_0)
 	\right].
 \end{equation}
-where for scalar $X$ and vector $Y$, $\mathrm{Cov}(X,Y):=\mathbb{E}[(X-\mathbb{E}[X])(Y-\mathbb{E}[Y])]$.
+The second term equals $2\,\mathrm{Cov}\bigl(\bar{\epsilon}_i^{(H)}(\theta_0),\,g_{i,H}(\theta_0)\bigr)$ and captures the residual co-movement between the averaged pricing error and its parameter sensitivity beyond the conditional mean shift.
 
 Equation~\eqref{eq:grad_decomp} makes two points precise.
 First, the conditional moment shift in $b_{H,i}$ induced by the Compounding-Horizon Wedge is one component of the criterion tilt at $\theta_0$.
@@ -512,19 +513,14 @@ for sufficiently long horizons, the marginal gain from additional averaging may 
 Accordingly, the MSE-minimizing horizon need not be $H=0$ and need not be arbitrarily large.
 Instead, it is generally \emph{interior} and \emph{DGP-dependent}.
 
-\begin{remark}[Why we do not impose a global monotonicity theorem]
-	We do not claim that each MSE component is globally monotone in $H$ without additional restrictions.
-	In particular, the aggregate Compounding-Horizon Wedge may contain offsetting covariance terms, and the effect of averaging on estimator variance depends on the covariance structure of the pricing moments and on the local geometry of the nonlinear criterion.
-	For that reason, the appendix establishes the exact decomposition and the exact source of the averaged population moment shift, while the existence and location of the empirically relevant interior optimum are documented in the simulation study rather than asserted as a universal theorem.
-\end{remark}
+We do not claim that each MSE component is globally monotone in $H$ without additional restrictions.
+In particular, the aggregate Compounding-Horizon Wedge may contain offsetting covariance terms, and the effect of averaging on estimator variance depends on the covariance structure of the pricing moments and on the local geometry of the nonlinear criterion.
+For that reason, the appendix establishes the exact decomposition and the exact source of the averaged population moment shift, while the existence and location of the empirically relevant interior optimum are documented in the simulation study rather than asserted as a universal theorem.
 
-\begin{remark}[Connection to GMM and misspecification]
-	The role of $\mathcal{T}$-averaging is related to two familiar ideas.
-	First, from a GMM perspective, averaging combines multiple imperfectly correlated pricing moments, which can improve finite-sample stability when those moments contain useful information.
-	Second, from the perspective of misspecified moments, post-investment timing terms can be viewed as informative but potentially biased moment components: they perturb the population target, yet may still lower overall MSE when the induced target shift is small relative to the finite-sample stabilization they provide.
-\end{remark}
+The role of $\mathcal{T}$-averaging is also related to two familiar ideas.
+First, from a GMM perspective, averaging combines multiple imperfectly correlated pricing moments, which can improve finite-sample stability when those moments contain useful information.
+Second, from the perspective of misspecified moments, post-investment timing terms can be viewed as informative but potentially biased moment components: they perturb the population target, yet may still lower overall MSE when the induced target shift is small relative to the finite-sample stabilization they provide.
 
-\paragraph{Summary.}
 The main message is not that the Compounding-Horizon Wedge ``washes out'' as $H$ grows.
 Rather, $\mathcal{T}$-averaging trades off a population target shift against a potentially large reduction in finite-sample estimation error.
 Under the baseline DGP, the latter effect dominates over an economically relevant range of horizons, which is why the simulation study favors intermediate horizons rather than the NPV-only benchmark.
