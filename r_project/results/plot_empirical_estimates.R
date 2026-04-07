@@ -1715,6 +1715,294 @@ plot_max_vintage_cutoff_combined_mkt <- function(
     }
 }
 
+# =============================================================================
+# Plot Combined Alpha + MKT Max Vintage–Year Cutoff Analysis (Two-Panel)
+# =============================================================================
+
+#' Plot Two-Factor (Alpha + MKT) Estimates Across Max Vintage-Year Cutoffs
+#'
+#' Creates a two-row, multi-column chart comparing estimated coefficients from
+#' the two-factor Alpha + MKT model across different maximum vintage-year
+#' cutoffs (e.g., 2011–2021) and NAV treatment specifications.
+#' Top row:  β_MKT   (Panel A)
+#' Bottom row: α      (Panel B)
+#' Each column corresponds to one nc_tag × weighting combination.
+#'
+#' @param data_dir   Path to the data_out folder
+#' @param fund_type  Fund type to plot
+#' @param vintages   Vintage years
+#' @param nc_tags    Vector of NC tags to combine
+#' @param nc_labels  Human-readable headers for the different tags
+#' @param y.max.mkt, y.min.mkt  Optional y-axis limits for the MKT (top) row
+#' @param y.max.alpha, y.min.alpha  Optional y-axis limits for the Alpha (bottom) row
+plot_max_vintage_cutoff_combined_alpha_mkt <- function(
+    data_dir,
+    data_source = "preqin",
+    fund_type = "PE",
+    vintages = 2011:2021,
+    nc_tags = c("", "_NC50"),
+    nc_labels = c("100% NAV as Cashflow", "50% NAV-discount sample"),
+    export_svg = FALSE,
+    export_png = FALSE,
+    export_pdf = FALSE,
+    export_csv = FALSE,
+    output_file = "max_vintage_cutoff_combined_alpha_mkt_plot",
+    width = 14,
+    height = 7,
+    png_dpi = 300,
+    y.max.mkt = NULL,
+    y.min.mkt = NULL,
+    y.max.alpha = NULL,
+    y.min.alpha = NULL,
+    x.max = NULL,
+    x.min = NULL,
+    v.lines.mkt = NULL,
+    h.lines.mkt = NULL,
+    v.colors.mkt = c("black", "black"),
+    h.colors.mkt = c("black", "black"),
+    v.lines.alpha = NULL,
+    h.lines.alpha = NULL,
+    v.colors.alpha = c("black", "black"),
+    h.colors.alpha = c("black", "black"),
+    main.linewidth = 0.7,
+    abline.linewidth = 0.7,
+    cex = 1.0,
+    weighting_filter = c("EW", "FW"),
+    region = NULL) {
+
+    # -------------------------------------------------------------------------
+    # 1. Load data
+    # -------------------------------------------------------------------------
+    region_tag <- if (!is.null(region) && region != "") paste0("_", region) else ""
+    all_rows <- list()
+    for (v in vintages) {
+        for (i in seq_along(nc_tags)) {
+            nt <- nc_tags[i]
+            nl <- nc_labels[i]
+            for (w in c("EW", "FW")) {
+                folder <- file.path(data_dir, paste0(
+                    "cache_q_factors_", data_source, "_", w,
+                    "_VYP", region_tag, nt, "_max_vin_", v
+                ))
+                csv_path <- file.path(folder, "0_asymptotic_inference_summary.csv")
+                if (!file.exists(csv_path)) {
+                    warning(paste("File not found (skipped):", csv_path))
+                    next
+                }
+                df <- read.csv(csv_path, stringsAsFactors = FALSE)
+                df$vintage <- v
+                df$weighting <- w
+                df$nc_tag <- nt
+                df$nc_label <- nl
+                df$method <- "Asymptotic"
+                all_rows[[length(all_rows) + 1L]] <- df
+            }
+        }
+    }
+    all_data <- bind_rows(all_rows)
+    if (nrow(all_data) == 0) stop("No data could be loaded from the specified directory.")
+
+    if (!is.null(weighting_filter)) {
+        all_data <- all_data %>% filter(weighting %in% weighting_filter)
+    }
+
+    plot_data <- all_data %>% filter(Type == fund_type, Factor == "Alpha")
+    if (nrow(plot_data) == 0) stop("No Alpha-factor data found for fund type.")
+
+    plot_data$max.month <- as.numeric(plot_data$max.month)
+    plot_data$horizon_years <- plot_data$max.month / 12
+    plot_data$vintage <- factor(plot_data$vintage)
+
+    if (!is.null(x.min)) plot_data <- plot_data %>% filter(max.month >= x.min)
+    if (!is.null(x.max)) plot_data <- plot_data %>% filter(max.month <= x.max)
+
+    # -------------------------------------------------------------------------
+    # 2. Publication theme
+    # -------------------------------------------------------------------------
+    theme_publication <- theme_minimal(base_size = 11 * cex, base_family = "serif") +
+        theme(
+            panel.grid.major = element_line(color = "grey85", linewidth = 0.3),
+            panel.grid.minor = element_blank(),
+            panel.border = element_rect(color = "grey40", fill = NA, linewidth = 0.5),
+            panel.background = element_rect(fill = "white"),
+            strip.text = element_text(face = "bold", size = 10 * cex, margin = margin(b = 5, t = 5)),
+            strip.background = element_rect(fill = "grey95", color = "grey40", linewidth = 0.5),
+            axis.title = element_text(face = "bold", size = 10 * cex),
+            axis.text = element_text(size = 9 * cex, color = "grey20"),
+            axis.ticks = element_line(color = "grey40", linewidth = 0.3),
+            axis.line = element_blank(),
+            legend.position = "bottom",
+            legend.title = element_text(face = "bold", size = (if (!is.null(weighting_filter) && length(weighting_filter) == 1) 6 else 9) * cex),
+            legend.text = element_text(size = (if (!is.null(weighting_filter) && length(weighting_filter) == 1) 5 else 8) * cex),
+            legend.key.size = unit((if (!is.null(weighting_filter) && length(weighting_filter) == 1) 0.5 else 0.8) * cex, "cm"),
+            legend.background = element_rect(fill = "white", color = NA),
+            legend.margin = margin(t = 5),
+            plot.title = element_text(face = "bold", size = 10 * cex, hjust = 0.5, margin = margin(b = 5)),
+            plot.margin = margin(5, 5, 5, 5)
+        )
+
+    # -------------------------------------------------------------------------
+    # 3. Panel builder
+    # -------------------------------------------------------------------------
+    .build_panel <- function(df, y_col, title, show_x, show_y_label, y_label,
+                             ylim_vec = NULL,
+                             v.lines_vec = NULL, v.colors_vec = NULL,
+                             h.lines_vec = NULL, h.colors_vec = NULL) {
+        p <- ggplot(df, aes(x = horizon_years, y = .data[[y_col]], color = vintage, group = vintage)) +
+            geom_line(linewidth = main.linewidth, alpha = 0.85) +
+            geom_point(size = 1.5 * cex, alpha = 0.85) +
+            scale_color_viridis_d(option = "turbo", name = "Max Vintage Year", guide = guide_legend(nrow = 1)) +
+            scale_x_continuous(breaks = seq(0, max(c(0, df$horizon_years), na.rm = TRUE), by = 5), expand = c(0.02, 0)) +
+            labs(title = title, x = if (show_x) "Horizon (Years)" else NULL, y = if (show_y_label) y_label else NULL) +
+            {
+                if (!is.null(v.lines_vec)) {
+                    lapply(seq_along(v.lines_vec), function(idx) {
+                        geom_vline(xintercept = v.lines_vec[idx], color = v.colors_vec[min(idx, length(v.colors_vec))], linetype = "dotted", linewidth = abline.linewidth)
+                    })
+                } else {
+                    NULL
+                }
+            } +
+            {
+                if (!is.null(h.lines_vec)) {
+                    lapply(seq_along(h.lines_vec), function(idx) {
+                        geom_hline(yintercept = h.lines_vec[idx], color = h.colors_vec[min(idx, length(h.colors_vec))], linetype = "dotted", linewidth = abline.linewidth)
+                    })
+                } else {
+                    NULL
+                }
+            } +
+            theme_publication +
+            theme(
+                legend.position = "none",
+                axis.title.y = if (!show_y_label) element_blank() else element_text(face = "bold", size = 10 * cex)
+            )
+        if (!is.null(ylim_vec)) {
+            p <- p + coord_cartesian(ylim = ylim_vec)
+        }
+        p
+    }
+
+    # -------------------------------------------------------------------------
+    # 4. Build MKT row (Panel A — top) and Alpha row (Panel B — bottom)
+    # -------------------------------------------------------------------------
+    mkt_plots <- list()
+    alpha_plots <- list()
+
+    ylim_mkt <- NULL
+    if (!is.null(y.max.mkt) || !is.null(y.min.mkt)) {
+        ylim_mkt <- c(if (is.null(y.min.mkt)) NA else y.min.mkt, if (is.null(y.max.mkt)) NA else y.max.mkt)
+    }
+    ylim_alpha <- NULL
+    if (!is.null(y.max.alpha) || !is.null(y.min.alpha)) {
+        ylim_alpha <- c(if (is.null(y.min.alpha)) NA else y.min.alpha, if (is.null(y.max.alpha)) NA else y.max.alpha)
+    }
+
+    for (i in seq_along(nc_tags)) {
+        nt <- nc_tags[i]
+        nl <- nc_labels[i]
+        for (w in weighting_filter) {
+            sub_df <- plot_data %>% filter(weighting == w, nc_tag == nt)
+            title_text <- paste0(fund_type, ": ", nl, " (", w, ")")
+
+            # -- MKT panel (top) --
+            show_y_mkt <- (i == 1 && w == weighting_filter[1])
+            p_mkt <- .build_panel(
+                df = sub_df, y_col = "MKT", title = title_text,
+                show_x = FALSE, show_y_label = show_y_mkt,
+                y_label = expression(beta[MKT]), ylim_vec = ylim_mkt,
+                v.lines_vec = v.lines.mkt, v.colors_vec = v.colors.mkt,
+                h.lines_vec = h.lines.mkt, h.colors_vec = h.colors.mkt
+            )
+            mkt_plots[[length(mkt_plots) + 1L]] <- p_mkt
+
+            # -- Alpha panel (bottom) --
+            show_y_alpha <- (i == 1 && w == weighting_filter[1])
+            p_alpha <- .build_panel(
+                df = sub_df, y_col = "Coef", title = NULL,
+                show_x = TRUE, show_y_label = show_y_alpha,
+                y_label = expression(alpha), ylim_vec = ylim_alpha,
+                v.lines_vec = v.lines.alpha, v.colors_vec = v.colors.alpha,
+                h.lines_vec = h.lines.alpha, h.colors_vec = h.colors.alpha
+            )
+            alpha_plots[[length(alpha_plots) + 1L]] <- p_alpha
+        }
+    }
+
+    # -------------------------------------------------------------------------
+    # 5. Assemble with patchwork (Panel A label / MKT row / Panel B label / Alpha row)
+    # -------------------------------------------------------------------------
+    panel_a_label <- wrap_elements(
+        panel = textGrob(
+            expression(bold("Panel A: Market Factor (" * beta[MKT] * ")")),
+            x = 0, y = 0, hjust = 0, vjust = 0,
+            gp = gpar(fontsize = 12 * cex, fontfamily = "serif", fontface = "bold")
+        )
+    )
+    panel_b_label <- wrap_elements(
+        panel = textGrob(
+            expression(bold("Panel B: Alpha (" * alpha * ")")),
+            x = 0, y = 0, hjust = 0, vjust = 0,
+            gp = gpar(fontsize = 12 * cex, fontfamily = "serif", fontface = "bold")
+        )
+    )
+
+    row1 <- Reduce(`|`, mkt_plots)
+    row2 <- Reduce(`|`, alpha_plots)
+
+    combined_plot <- panel_a_label / row1 / panel_b_label / row2 +
+        plot_layout(heights = c(0.08, 1, 0.08, 1), guides = "collect") &
+        theme(legend.position = "bottom")
+
+    # -------------------------------------------------------------------------
+    # 6. Export or display
+    # -------------------------------------------------------------------------
+    any_export <- export_svg || export_png || export_pdf || export_csv
+    if (any_export) {
+        base_file <- sub("\\.(svg|png|pdf)$", "", output_file, ignore.case = TRUE)
+        output_dir_path <- dirname(base_file)
+        if (!dir.exists(output_dir_path) && output_dir_path != "." && output_dir_path != "") {
+            dir.create(output_dir_path, recursive = TRUE)
+        }
+        if (export_svg) {
+            svg_file <- paste0(base_file, ".svg")
+            tryCatch(
+                {
+                    ggsave(filename = svg_file, plot = combined_plot, width = width, height = height, device = "svg")
+                    message(paste("SVG exported to:", svg_file))
+                },
+                error = function(e) {
+                    warning("SVG export failed. Falling back to PDF.")
+                    pdf_file <- paste0(base_file, ".pdf")
+                    ggsave(filename = pdf_file, plot = combined_plot, width = width, height = height, device = "pdf")
+                    message(paste("PDF exported to:", pdf_file))
+                }
+            )
+        }
+        if (export_png) {
+            png_file <- paste0(base_file, ".png")
+            ggsave(filename = png_file, plot = combined_plot, width = width, height = height, device = "png", dpi = png_dpi, bg = "white")
+            message(paste("PNG exported to:", png_file))
+        }
+        if (export_pdf) {
+            pdf_file <- paste0(base_file, ".pdf")
+            ggsave(filename = pdf_file, plot = combined_plot, width = width, height = height, device = "pdf")
+            message(paste("PDF exported to:", pdf_file))
+        }
+        if (export_csv) {
+            csv_export <- all_data %>% filter(Type == fund_type, Factor == "Alpha")
+            csv_file <- paste0(base_file, "_data.csv")
+            write.csv(csv_export, file = csv_file, row.names = FALSE)
+            message(paste("Data CSV exported to:", csv_file))
+        }
+        invisible(combined_plot)
+    } else {
+        print(combined_plot)
+        invisible(combined_plot)
+    }
+}
+
+
 # ============================================================================
 # Plot NAV Discounts Combined Market Analysis
 # ============================================================================
@@ -2540,6 +2828,26 @@ plot_max_vintage_cutoff_combined_mkt(
     output_file = paste0(out.folder, "/max_vintage_BO_US_MKT_combined_NC")
 )
 
+# BO Combined Alpha+MKT Max vintage-year cutoff analysis (100% NAV and 50% NAV-discount)
+plot_max_vintage_cutoff_combined_alpha_mkt(
+    data_dir = file.folder,
+    fund_type = "BO",
+    vintages = 2011:2021,
+    nc_tags = c("", "_NC50"),
+    nc_labels = c("100% NAV as Cashflow", "50% NAV-discount sample"),
+    export_pdf = TRUE,
+    export_svg = TRUE,
+    export_csv = TRUE,
+    width = 7,
+    height = 7,
+    y.max.mkt = 3, y.min.mkt = 0,
+    y.max.alpha = 0.02, y.min.alpha = -0.02,
+    main.linewidth = 0.8,
+    weighting_filter = c("FW"),
+    region = "North America",
+    output_file = paste0(out.folder, "/max_vintage_BO_US_Alpha_MKT_combined_NC")
+)
+
 # VC: Two-factor model with only Alpha
 plot_empirical_estimates(
     data_dir = file.folder,
@@ -2628,6 +2936,26 @@ plot_max_vintage_cutoff_combined_mkt(
     weighting_filter = c("FW"),
     region = "North America",
     output_file = paste0(out.folder, "/max_vintage_VC_US_MKT_combined_NC")
+)
+
+# VC Combined Alpha+MKT Max vintage-year cutoff analysis (100% NAV and 50% NAV-discount)
+plot_max_vintage_cutoff_combined_alpha_mkt(
+    data_dir = file.folder,
+    fund_type = "VC",
+    vintages = 2011:2021,
+    nc_tags = c("", "_NC50"),
+    nc_labels = c("100% NAV as Cashflow", "50% NAV-discount sample"),
+    export_pdf = TRUE,
+    export_svg = TRUE,
+    export_csv = TRUE,
+    width = 7,
+    height = 7,
+    y.max.mkt = 3, y.min.mkt = 0,
+    y.max.alpha = 0.02, y.min.alpha = -0.02,
+    main.linewidth = 0.8,
+    weighting_filter = c("FW"),
+    region = "North America",
+    output_file = paste0(out.folder, "/max_vintage_VC_US_Alpha_MKT_combined_NC")
 )
 
 # Analyze Different NAV Discounts

@@ -1028,6 +1028,7 @@ Notably, most of the increase is concentrated in vintages after 2016, where $\ha
 For VC, the drift is similarly dramatic: the FW estimate at the 0-year Horizon climbs from approximately 1.57 (2011 cutoff) to 2.33 with the full sample.
 Discounting all final NAVs by 50\% substantially flattens the upward trend: the BO FW estimate range compresses to 1.09--1.65, and the VC FW range to 1.41--1.54, consistent with the view that the drift is partly attributable to the outsized mechanical reliance on subjectively reported Net Asset Values for young funds.
 These findings reinforce the sample restriction to the 2010 maximum vintage year applied throughout the remainder of this section.
+Figure~\ref{fig:max_vintage_BOVC_MKT_alpha} confirms that this distortion also affects the two-factor models, where unseasoned post-2016 vintages severely inflate the estimated intercept $\alpha$. For Buyout funds at short horizons, this upward bias mechanically drives $\alpha$ into its +2\% upper parameter boundary, an estimation collapse that is effectively mitigated by the 50\% NAV discount.
 
 \begin{figure}[htbp]
 	\centering
@@ -1042,6 +1043,21 @@ These findings reinforce the sample restriction to the 2010 maximum vintage year
 	\caption{\textbf{Sensitivity analysis ($MKT$ factor):} Single-factor model for BO (left) and VC (right) under value weighting, using VYP with different vintage-year cutoffs (asymptotic estimates). For each asset class, the left chart shows the standard baseline (full NAV as final cash flow), while the right chart applies a 50\% discount to all final NAVs.}
 	\label{fig:max_vintage_BOVC_MKT}
 \end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\begin{minipage}{0.49\textwidth}
+		\centering
+		\includegraphics[width=0.99\textwidth]{empirical_bovc_us/max_vintage_BO_US_Alpha_MKT_combined_NC}
+	\end{minipage}
+	\begin{minipage}{0.49\textwidth}
+		\centering
+		\includegraphics[width=0.99\textwidth]{empirical_bovc_us/max_vintage_VC_US_Alpha_MKT_combined_NC}
+	\end{minipage}
+	\caption{\textbf{Sensitivity analysis ($\alpha + MKT$ factor):} Two-factor model for BO (left) and VC (right) under value weighting, using VYP with different vintage-year cutoffs (asymptotic estimates). For each asset class, the left chart shows the standard baseline (full NAV as final cash flow), while the right chart applies a 50\% discount to all final NAVs.}
+	\label{fig:max_vintage_BOVC_MKT_alpha}
+\end{figure}
+
 
 \begin{remark}[Definition of Horizon]
 	\label{rem:horizon_def}
@@ -1066,12 +1082,6 @@ The qualitative conclusion is robust across all NAV treatments: the single-facto
 For VC under EW, the pattern is analogous but the sensitivity is more muted in percentage terms due to the higher baseline beta: the 0-year estimate declines from 1.88 (no discount) to 1.84 (25\%), 1.80 (50\%), 1.77 (75\%), and 1.74 (100\%); at the 15-year Horizon, from 1.30 (no discount) to 1.09 (100\% write-off).
 Under FW, the sensitivity is more pronounced, particularly at longer Horizons: the 0-year estimate ranges from 1.59 to 1.34, while the 15-year estimate declines from 1.07 to 0.73.
 
-This analysis demonstrates that terminal NAV treatment has a material but bounded effect on estimated factor loadings.
-The monotonic relationship is consistent with the intuition that reported NAVs mechanically inflate estimated betas: funds whose final cash flow is a subjective valuation rather than a realized exit price appear more systematically risky because their NAVs partially co-move with public market indices.
-Importantly, even under the extreme assumption of a complete NAV write-off, the first qualitative conclusions of this subsection can be summarized as follows: BO maintains a market beta near or below unity, while VC retains a substantially higher systematic exposure.
-We do not impose a model-based residual-value adjustment, as this would constitute a separate research agenda \citep{JLRS20,brown2023nowcasting}.
-Instead, the range spanned by the five NAV treatments provides a transparent envelope of estimation uncertainty attributable to terminal value measurement.
-
 \begin{figure}[htbp]
 	\centering
 	\begin{minipage}{0.49\textwidth}
@@ -1085,6 +1095,14 @@ Instead, the range spanned by the five NAV treatments provides a transparent env
 	\caption{\textbf{NAV discount sensitivity ($MKT$ factor):} Single-factor model for BO (left) and VC (right) using VYP and maximum vintage year 2010. Each panel shows asymptotic estimates under five NAV treatments: full NAV as final cash flow, 25\%, 50\%, 75\% constant discounts, and 100\% NAV write-off.}
 	\label{fig:nav_disc_BOVC_MKT}
 \end{figure}
+
+This analysis demonstrates that terminal NAV treatment has a material but bounded effect on estimated factor loadings.
+The monotonic relationship is consistent with the intuition that reported NAVs mechanically inflate estimated betas: funds whose final cash flow is a subjective valuation rather than a realized exit price appear more systematically risky because their NAVs partially co-move with public market indices.
+Importantly, even under the extreme assumption of a complete NAV write-off, the first qualitative conclusions of this subsection can be summarized as follows: BO maintains a market beta near or below unity, while VC retains a substantially higher systematic exposure.
+We do not impose a model-based residual-value adjustment, as this would constitute a separate research agenda \citep{JLRS20,brown2023nowcasting}.
+Instead, the range spanned by the five NAV treatments provides a transparent envelope of estimation uncertainty attributable to terminal value measurement.
+
+
 
 
 
