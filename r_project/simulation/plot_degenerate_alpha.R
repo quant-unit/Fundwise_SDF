@@ -22,6 +22,9 @@
 
 # 1. Setup Data Paths and Parameters ------------------------------------------
 
+setwd(dirname(dirname(rstudioapi::getActiveDocumentContext()$path)))
+print(getwd())
+
 # Set working directory to r_project
 if (basename(getwd()) == "simulation") {
   setwd("..")
@@ -46,7 +49,7 @@ beta_seq <- seq(0, 2, length.out = grid_n)
 view_theta <- 25
 view_phi <- 10  
 
-max.months <- c(180, 270)
+max.months <- c(0, 180)
 lambda <- 0
 
 # True parameters for 'base_case_vyp' DGP

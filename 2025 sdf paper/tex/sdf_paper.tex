@@ -514,7 +514,7 @@ where $w_i$ normalizes fund-level pricing errors before the loss is applied; it 
 The set $\mathcal{T}_i$ controls which discounting dates enter the averaged pricing error $\bar{\epsilon}_i(\theta)$ in Equation~\eqref{eq:average_pricing_error} (see Figure~\ref{fig:npvs}). 
 Averaging over multiple dates in $\mathcal{T}_i$ was originally motivated by the ``exploding alpha'' problem described by \cite{DLP12}: when the initial cash flow is very small, an arbitrarily large alpha can discount all subsequent cash flows close to zero, rendering the beta factors irrelevant and distorting estimation. 
 Thus, their inception-only objective function is not globally convex in finite samples: the multiplicative SDF parameterization permits extreme parameter regions in which the discount factors drive all $NPV_i$ close to zero, creating spurious near-minima that can prevent reliable identification of $\alpha$.
-Averaging over $\mathcal{T}_i$ mitigates this degeneracy.
+Averaging over $\mathcal{T}_i$ mitigates this degeneracy (see Figure~\ref{fig:exploding_alpha}).
 The relevant horizon family is parameterized as
 \begin{equation}
 	\label{eq:t_cal_horizon}
@@ -539,6 +539,19 @@ Larger values of the horizon $H$ offer more regularization, but a larger departu
 		In this example, $\mathrm{card}(\mathcal{T}_{i})=7$, i.e., the number of blue boxes.
 	}
 	\label{fig:npvs}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.98\textwidth]{figure/degenerate_alpha_grid.pdf}
+	\caption{
+		The figure plots the sample objective function $Q_{n,H}(\theta) = \frac{1}{n} \sum_{i=1}^n \bar{\epsilon}i(\theta)^2$ over a two-dimensional grid of SDF parameters $\alpha \in [-0.01, 0.01]$ and $\beta_{\mathrm{MKT}} \in [0, 2]$, using simulated private-equity cash flows (from the base-case DGP of Section \ref{sec:simulation_study}) with true parameters $\alpha_0 = 0$ and $\beta_{\mathrm{MKT},0} = 1$. 
+		The left panel uses the inception-only criterion ($H = 0$), where $\mathcal{T}_i = {t_i^0}$ and each fund's pricing error $\bar{\epsilon}i(\theta)$ reduces to a single unscaled net present value $PV_i(\theta) = \sum_t \Psi_{t_i^0,t}(\theta) , CF_{i,t}$. 
+		The right panel uses horizon averaging with $H = 180$ months, so that $\bar{\epsilon}_i(\theta)$ averages pricing errors over $\mathrm{card}(\mathcal{T}_{i,H})$ discounting dates as defined in Equation~\eqref{eq:average_pricing_error}. In each panel, the green dot marks the true DGP parameter vector $(\alpha_0, \beta_{\mathrm{MKT},0}) = (0, 1)$. 
+		The left panel illustrates the ``exploding alpha'' degeneracy: extreme values of $\alpha$ drive the multiplicative discount factors $\Psi_{\tau,t}(\theta)$ toward zero for all funds, collapsing the squared pricing errors to near-zero and creating a ridge of spurious near-minima along the $\alpha$ axis that prevents reliable identification. 
+		The right panel shows that horizon averaging over $\mathcal{T}_{i,H}$ regularizes the objective surface, restoring a well-identified minimum near the true parameter values.
+	} 
+	\label{fig:exploding_alpha}
 \end{figure}
 
 \begin{remark}[Target parameter under horizon averaging]
@@ -582,6 +595,7 @@ L \bigl( \bar{\epsilon}_{i}(\theta) \bigr)
 \end{equation*}
 where $L: \mathbb{R}^{1} \rightarrow \mathbb{R}^1$ denotes a loss function, e.g., $L(x)=(x-0)^2$ in the case of nonlinear least squares.
 Throughout the paper, the weighted average fund pricing error $\bar{\epsilon}_i \equiv \bar{\epsilon}_i(\theta)$ is regarded as a nonlinear random function of the SDF parameter $\theta$.
+
 
 
 \subsection{Asymptotic benchmark and SHAC inference}
@@ -1727,7 +1741,7 @@ Accordingly, parsimonious specifications should be preferred for empirical imple
 These results also bear on the literature on private-equity outperformance.
 Our findings do not imply that private-equity alpha is zero, nor do they imply that prior estimates of outperformance are necessarily incorrect.
 Rather, they indicate that semiparametric alpha estimates constructed from sparse pooled cash-flow panels can be weakly identified and highly sensitive to Horizon choice, sample construction, and finite-sample noise.
-This qualification is directly relevant for interpreting prior evidence on private-equity outperformance, including \cite{KS05}, \cite{HJK14}, \cite{K19,korteweg2023risk}, and related work.
+This qualification is directly relevant for interpreting prior evidence on private-equity outperformance and risk.
 Differences across studies may reflect not only economic heterogeneity and dataset coverage, but also the limited ability of currently available cash-flow panels to separately identify abnormal performance from systematic risk exposure with high precision.
 
 Expanding our SDF framework to robustly accommodate multiple risk factors requires imposing additional economic or statistical structure. 
@@ -1735,7 +1749,6 @@ Future research could further explore parametric assumptions for the cash flow g
 Methodologically, addressing the high estimator variance demands statistical techniques suited for sparse, high-dimensional settings. 
 Approaches such as LASSO, ridge regression, or model averaging to regularize non-market coefficients, as well as ensemble learning methods that combine multiple weak learners, present promising paths forward.
 Especially resampling-based methods are likely to perform well in conjunction with \cite{KN16}-type loss functions, which aggregate pricing errors over multiple vintage years.
-
 
 Another vital avenue for future work involves explicitly modeling funding rounds, financial engineering, complex fee structures and carried interest within the data generating process. 
 This would enable the estimation of company-level and gross-versus-net-of-fee SDFs, providing sharper evaluation models for both General Partners (GPs) and Limited Partners (LPs). 
