@@ -1,0 +1,117 @@
+\documentclass[tikz,border=0pt]{standalone}
+
+\usepackage[T1]{fontenc}
+\usepackage{newtxtext}
+\usepackage{newtxmath}
+\usepackage{xcolor}
+\usetikzlibrary{positioning}
+
+\definecolor{estone}{HTML}{1B7837}
+\definecolor{esttwo}{HTML}{4DAF4A}
+\definecolor{estthree}{HTML}{A6D96A}
+\definecolor{validblue}{HTML}{2C7FB8}
+\definecolor{ignoredgray}{HTML}{BDBDBD}
+\definecolor{gridgray}{HTML}{ECECEC}
+\definecolor{textgray}{HTML}{303030}
+\definecolor{bandgray}{HTML}{F5F5F5}
+
+\pagecolor{white}
+
+\newcommand{\funddot}[3]{%
+	\filldraw[fill=#3, draw=white, line width=0.35pt] (#1,#2) circle[radius=2.2pt];
+}
+
+\begin{document}
+\begin{tikzpicture}[x=0.48cm,y=0.56cm]
+	% Fixed white canvas so PDF-to-PNG conversion never creates a transparent margin.
+	\path[use as bounding box] (-2.7,-9.35) rectangle (24.6,1.85);
+	\fill[white] (-2.7,-9.35) rectangle (24.6,1.85);
+
+	% Compact panel title. The paper caption should carry the full methodological text.
+	\node[anchor=west, font=\bfseries\small, text=textgray] at (0,1.25)
+		{Proposed split: within-vintage fund resampling};
+	\node[anchor=west, font=\scriptsize, text=textgray] at (0,0.72)
+		{Each dot is one fund; folds are assigned within vintage year.};
+
+	% Light background for young vintages excluded from estimation and validation.
+	\fill[bandgray] (0.5,-5.5) rectangle (14.5,-7.52);
+
+	% Grid and y-axis labels.
+	\foreach \y/\year in {0/2005,-1/2006,-2/2007,-3/2008,-4/2009,-5/2010,-6/2011,-7/2012} {
+		\draw[gridgray, line width=0.3pt] (0.5,\y) -- (14.5,\y);
+		\node[anchor=east, font=\scriptsize, text=textgray] at (-0.35,\y) {\year};
+	}
+
+	% x-axis labels and faint vertical guides.
+	\foreach \x in {1,...,14} {
+		\draw[gridgray, line width=0.22pt] (\x,-7.32) -- (\x,0.32);
+		\node[anchor=north, font=\tiny, text=textgray] at (\x,-7.72) {\x};
+	}
+	\node[anchor=north, font=\scriptsize, text=textgray] at (7.5,-8.2)
+		{Fund index within vintage year};
+	\node[rotate=90, anchor=south, font=\scriptsize, text=textgray] at (-1.95,-3.5)
+		{Vintage year};
+
+	% 2005: 8 funds.
+	\funddot{1}{0}{estone} \funddot{2}{0}{esttwo} \funddot{3}{0}{estthree} \funddot{4}{0}{validblue}
+	\funddot{5}{0}{estone} \funddot{6}{0}{esttwo} \funddot{7}{0}{estthree} \funddot{8}{0}{validblue}
+
+	% 2006: 10 funds.
+	\funddot{1}{-1}{estone} \funddot{2}{-1}{esttwo} \funddot{3}{-1}{estthree} \funddot{4}{-1}{validblue}
+	\funddot{5}{-1}{estone} \funddot{6}{-1}{esttwo} \funddot{7}{-1}{estthree} \funddot{8}{-1}{validblue}
+	\funddot{9}{-1}{estone} \funddot{10}{-1}{esttwo}
+
+	% 2007: 14 funds.
+	\funddot{1}{-2}{estone} \funddot{2}{-2}{esttwo} \funddot{3}{-2}{estthree} \funddot{4}{-2}{validblue}
+	\funddot{5}{-2}{estone} \funddot{6}{-2}{esttwo} \funddot{7}{-2}{estthree} \funddot{8}{-2}{validblue}
+	\funddot{9}{-2}{estone} \funddot{10}{-2}{esttwo} \funddot{11}{-2}{estthree} \funddot{12}{-2}{validblue}
+	\funddot{13}{-2}{estone} \funddot{14}{-2}{esttwo}
+
+	% 2008: 13 funds.
+	\funddot{1}{-3}{estone} \funddot{2}{-3}{esttwo} \funddot{3}{-3}{estthree} \funddot{4}{-3}{validblue}
+	\funddot{5}{-3}{estone} \funddot{6}{-3}{esttwo} \funddot{7}{-3}{estthree} \funddot{8}{-3}{validblue}
+	\funddot{9}{-3}{estone} \funddot{10}{-3}{esttwo} \funddot{11}{-3}{estthree} \funddot{12}{-3}{validblue}
+	\funddot{13}{-3}{estone}
+
+	% 2009: 11 funds.
+	\funddot{1}{-4}{estone} \funddot{2}{-4}{esttwo} \funddot{3}{-4}{estthree} \funddot{4}{-4}{validblue}
+	\funddot{5}{-4}{estone} \funddot{6}{-4}{esttwo} \funddot{7}{-4}{estthree} \funddot{8}{-4}{validblue}
+	\funddot{9}{-4}{estone} \funddot{10}{-4}{esttwo} \funddot{11}{-4}{estthree}
+
+	% 2010: 9 funds.
+	\funddot{1}{-5}{estone} \funddot{2}{-5}{esttwo} \funddot{3}{-5}{estthree} \funddot{4}{-5}{validblue}
+	\funddot{5}{-5}{estone} \funddot{6}{-5}{esttwo} \funddot{7}{-5}{estthree} \funddot{8}{-5}{validblue}
+	\funddot{9}{-5}{estone}
+
+	% 2011 and 2012: ignored because these vintages are too young / not liquidated enough.
+	\foreach \x in {1,...,7} {\funddot{\x}{-6}{ignoredgray}}
+	\foreach \x in {1,...,6} {\funddot{\x}{-7}{ignoredgray}}
+
+	% Cutoff annotation.
+	\draw[densely dashed, textgray, line width=0.35pt] (0.5,-5.5) -- (14.5,-5.5);
+	\node[anchor=west, font=\tiny, text=textgray] at (9.55,-5.25)
+		{seasoning cutoff after 2010};
+
+	% Legend, placed to the right to avoid crowding the x-axis.
+	\node[anchor=west, font=\bfseries\scriptsize, text=textgray] at (16.2,0.18)
+		{Fold assignment};
+	\funddot{16.35}{-0.62}{estone}
+	\node[anchor=west, font=\scriptsize, text=textgray] at (16.8,-0.62)
+		{Estimation fold 1};
+	\funddot{16.35}{-1.27}{esttwo}
+	\node[anchor=west, font=\scriptsize, text=textgray] at (16.8,-1.27)
+		{Estimation fold 2};
+	\funddot{16.35}{-1.92}{estthree}
+	\node[anchor=west, font=\scriptsize, text=textgray] at (16.8,-1.92)
+		{Estimation fold 3};
+	\funddot{16.35}{-2.57}{validblue}
+	\node[anchor=west, font=\scriptsize, text=textgray] at (16.8,-2.57)
+		{Validation fold};
+	\funddot{16.35}{-3.22}{ignoredgray}
+	\node[anchor=west, font=\scriptsize, text=textgray] at (16.8,-3.22)
+		{Ignored: too young / not liquidated};
+
+	\node[anchor=west, align=left, text width=3.7cm, font=\tiny, text=textgray] at (16.2,-4.45)
+		{Schematic counts are illustrative. In the empirical figure, the x-axis can use actual fund counts and the colors can use the realized random partition.};
+\end{tikzpicture}
+\end{document}

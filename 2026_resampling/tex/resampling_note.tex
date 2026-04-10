@@ -9,216 +9,233 @@
 \usepackage{natbib}
 \usepackage{enumitem}
 \usepackage{booktabs}
+\usepackage{graphicx}
 \usepackage{hyperref}
 
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0.5em}
 \setlist[itemize]{leftmargin=1.3em,itemsep=0.2em,topsep=0.2em}
+\setlist[enumerate]{leftmargin=1.5em,itemsep=0.2em,topsep=0.2em}
 
 \begin{document}
 
 {\Large\bfseries Resampling-Based Model Selection for PE SDFs\par}
-{\normalsize How to empirically measure the risk-adjusted performance of PE\par}
+{\normalsize How to empirically measure the risk-adjusted performance of non-traded cash flows\par}
 \today
 
-\section{Goal and Positioning}
+\section{Idea}
 
-Our goal is to develop a \emph{new resampling-based estimation method} that empirically determines which candidate SDF models are most credible for private-equity cash flows.
+The paper asks a simple empirical question: which stochastic discount factor (SDF) models give the most credible risk adjustment for private-equity cash flows?
 
-The central idea is simple. Suppose a candidate SDF model has \(p\) parameters. Then we can repeatedly partition the available vintage-year portfolios into \(p\) disjoint folds and use those \(p\) folds as \(p\) aggregated pricing moments in a KN16-style estimator. If the number of admissible partitions is too large, we sample from that partition set. The paper then asks whether the resulting exact-identified estimates are stable across partitions and, more importantly, whether they price \emph{held-out} vintage folds well.
+The difficulty is that private-equity samples are small, lumpy, and organized by vintage year. A model can look good or bad because of the particular way we group funds into pricing moments. Instead of treating one grouping as fixed, we make the grouping itself part of the empirical design. We repeatedly build pricing moments from different fund partitions, estimate the SDF on some of those moments, and evaluate pricing errors on held-out moments.
 
-This means the new paper is primarily a model-selection and empirical-design paper. It is closer in spirit to KN16 than to DLP12 because the estimation engine is built around aggregated pricing moments. DLP12 still matters because the choice of primitive pricing error and alpha parameterization remains central \citep{DriessenLinPhalippou2012,KortewegNagel2016}.
-
-\section{Why Resampling Is Needed}
-
-Private-equity samples are too small and too dependent to rely on one arbitrary partition of vintages into pricing moments. A single three-fold split for a three-parameter model can be highly unrepresentative. Resampling over many admissible partitions addresses this directly.
-
-At the same time, exact-identified in-sample fit is not enough for comparing different candidate models (e.g. two-parameter models with different factors, or a two- versus a three-factor model). 
-If a model with \(p\) parameters is estimated on exactly \(p\) aggregated folds, it can often fit those \(p\) moments very closely by construction. 
-Therefore:
+The method therefore has two goals:
 
 \begin{itemize}
-\item \textbf{\(p\)-fold estimation} is useful for parameter recovery, feasibility, and stability diagnostics.
-\item \textbf{\(p+1\)-fold estimation} is needed for genuine model ranking, because the extra fold creates an out-of-sample validation pricing moment.
+\item \textbf{Model selection:} choose the SDF model that gives the lowest holdout pricing error for PE cash flows.
+\item \textbf{Design comparison:} compare whether it is better to build moments from newly resampled within-vintage fund portfolios or from traditional vintage-year portfolios.
 \end{itemize}
 
-So the paper should not drop cross-validation in substance. 
-It should instead use a PE-specific form of repeated blocked sample splitting centered on holdout pricing error.
-For better model selection, $p$ shall be selected as the maximum number of parameters among all candidate models.
+The paper is closest in spirit to \citet{KortewegNagel2016} because the estimator works with aggregated pricing moments. It also retains the key DLP12 idea that the moments price private cash flows directly \citep{DriessenLinPhalippou2012}. The new contribution is the resampling layer: instead of committing to one arbitrary construction of moments, we ask which SDFs price many admissible constructions out of sample.
 
-\section{Primitive Units, Folds, and Admissible Partitions}
+\section{Guiding Example}
 
-Let \(v=1,\dots,V\) index primitive vintage-year portfolios. For candidate model \(M\), let \(\theta\in\Theta_M\subset\mathbb{R}^{p(M)}\) denote the parameter vector. In sampled split \(n=1,\dots,N\), draw an admissible partition
-\[
-\mathcal P_n=\{F_{n,1},\dots,F_{n,p+h}\}
-\]
-of the vintage set into \(p+h\) disjoint folds, where \(p=p(M)\) and \(h\ge 0\) is the number of holdout folds.
-
-The admissible partition set should enforce basic empirical discipline, for example:
+Suppose a candidate SDF has three parameters: an alpha term and two factor loadings. Then we need at least three pricing moments to estimate it. A natural resampling design is therefore:
 
 \begin{itemize}
-\item minimum number of underlying funds per fold,
-\item minimum capital or NAV per fold,
-\item no trivially tiny or empty folds,
-\item reasonable balance across vintages.
+\item build three estimation folds,
+\item build one validation fold,
+\item estimate the SDF on the three estimation moments,
+\item score the fitted SDF on the validation moment.
 \end{itemize}
 
-If the number of admissible partitions is manageable, we can enumerate them. If it is too large, we sample Monte Carlo draws from that admissible set.
+Figures \ref{fig:sampling-scheme} and \ref{fig:vintage-portfolio-scheme} show the two benchmark ways to build these folds. In both figures, each dot is one fund and the active vintages are 2005--2010. Vintages 2011--2012 are excluded because they are too young or not sufficiently liquidated.
 
-\section{Resampled KN16-Style Estimation}
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{../figure/sampling_scheme.pdf}
+\caption{Proposed within-vintage fund resampling scheme. Each active vintage is split into three estimation cells and one validation cell. Fold 1 contains the dark-green funds from every vintage, fold 2 contains the medium-green funds from every vintage, fold 3 contains the light-green funds from every vintage, and the validation fold contains the blue funds from every vintage.}
+\label{fig:sampling-scheme}
+\end{figure}
 
-\subsection{Fold pricing moments}
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{../figure/sampling_scheme_vintage_portfolios.pdf}
+\caption{Traditional shuffled vintage-year portfolio scheme. Funds are first aggregated into whole vintage-year portfolios, and whole vintages are then assigned to folds. Here, 2005 and 2009 enter estimation fold 1, 2006 and 2010 enter estimation fold 2, 2007 enters estimation fold 3, and 2008 is the validation fold.}
+\label{fig:vintage-portfolio-scheme}
+\end{figure}
 
-Let \(m_{n,j}(\theta;M,\eta)\) denote the pricing moment formed from fold \(F_{n,j}\) under candidate model \(M\) and design choice \(\eta\). The key point is that each fold contributes \emph{one aggregated pricing moment}, so the estimator is KN16-style at the level of aggregation logic.
+\section{Two Canonical Sampling Schemes}
 
-For a three-parameter model, a sampled three-fold partition therefore gives three pricing moments:
+\textbf{Proposed split: within-vintage fund resampling.}
+In the proposed design, every fold contains funds from every active vintage. This keeps the vintage-year support fixed across estimation and validation moments. The folds differ because they contain different funds, not because they represent different macro or vintage states. This is the cleanest design for asking whether an SDF prices PE cash flows robustly across fund-level resamples.
+
+\textbf{Benchmark split: shuffled vintage-year portfolios.}
+In the traditional design, the primitive object is a vintage-year portfolio. A fold contains whole vintages, not fund sub-samples from all vintages. This is easy to explain and resembles standard PE portfolio construction. But the validation moment now differs from the estimation moments in vintage composition. A failure on the validation fold may therefore reflect poor SDF pricing, or it may reflect extrapolation across vintage states.
+
+The first version of the paper should focus on this contrast. If within-vintage resampling delivers more stable estimates and lower holdout pricing errors, the evidence favors building all-vintage subportfolios before estimating the SDF. If shuffled vintage-year portfolios perform similarly, the simpler vintage-year construction may be sufficient.
+
+\section{Objects and Notation}
+
+Let \(v=1,\dots,V\) index active vintage years, and let \(\mathcal I_v\) be the set of funds in vintage \(v\). Let \(M\) denote a candidate SDF model with parameter vector \(\theta\in\Theta_M\subset\mathbb R^{p(M)}\).
+
+We use \(P\) estimation folds and \(h\) holdout folds. For the guiding three-parameter example, \(P=3\) and \(h=1\). When comparing models with different numbers of parameters, a clean implementation is to use a common number of estimation folds \(P=p_{\max}\), where \(p_{\max}=\max_M p(M)\).
+
+\subsection{Within-vintage resampling}
+
+For sampled split \(n=1,\dots,N\), split the funds within each vintage into \(P+h\) cells:
 \[
-m_{n,1}(\theta)=0,\qquad
-m_{n,2}(\theta)=0,\qquad
-m_{n,3}(\theta)=0.
+\mathcal P_{n,v}
+=
+\{C_{n,v,1},\dots,C_{n,v,P+h}\},
+\qquad
+C_{n,v,r}\subset \mathcal I_v.
 \]
-
-\subsection{Exact-identified baseline: \(p\)-fold estimation}
-
-When \(h=0\), each sampled partition contains exactly \(p\) folds. The split-specific estimate solves
+The cells are disjoint and cover the funds in vintage \(v\). The \(r\)th cross-vintage fold is
 \[
-\hat\theta_n(M,\eta)
+F_{n,r}
+=
+\{C_{n,1,r},C_{n,2,r},\dots,C_{n,V,r}\}.
+\]
+Thus fold \(r\) contains one fund sub-sample from every active vintage.
+
+At the single-fund level, the number of admissible assignments is usually too large to enumerate. We therefore draw Monte Carlo samples from a partition rule \(\Pi\):
+\[
+\mathcal P_n
+\sim
+\Pi(\cdot \mid P,h,\mathcal I_1,\dots,\mathcal I_V).
+\]
+For now, \(\Pi\) should be simple and transparent: random assignment within each vintage, subject to no empty cells and reasonable balance in fund counts or economic size.
+
+\subsection{Vintage-year portfolio benchmark}
+
+For the benchmark design, first aggregate all funds in each vintage \(v\) into a vintage-year portfolio. Then assign whole vintages to folds. The notation is the same at the fold level, but the economic object differs: \(F_{n,r}\) now contains whole vintage-year portfolios rather than within-vintage fund cells.
+
+\section{Pricing Moments}
+
+For a fold \(F_{n,r}\), let \(\epsilon_{n,v,r}(\theta;M,\eta)\) be the pricing error from the vintage component of that fold. The design choice \(\eta\) collects choices such as the alpha definition, loss function, and cash-flow weighting.
+
+The aggregated fold moment is
+\[
+m_{n,r}(\theta;M,\eta)
+=
+\sum_{v\in A_{n,r}}
+\omega_{n,v,r}\,
+\epsilon_{n,v,r}(\theta;M,\eta),
+\]
+where \(A_{n,r}\) is the set of vintages represented in fold \(r\), and \(\omega_{n,v,r}\) are vintage or value weights. Under within-vintage resampling, \(A_{n,r}\) is the full active vintage set for every fold. Under shuffled vintage-year portfolios, \(A_{n,r}\) is only the set of whole vintages assigned to fold \(r\).
+
+This distinction is the core empirical design choice. The proposed method creates comparable fold moments that all span the same vintage domain. The benchmark creates moments from different vintage domains.
+
+\section{Estimation and Holdout Scoring}
+
+For each sampled split \(n\), let \(E_n\) be the set of estimation folds and \(H_n\) the validation fold. The split-specific estimator solves
+\[
+\hat\theta_n(M,\eta,\Pi)
 =
 \arg\min_{\theta\in\Theta_M}
-\frac{1}{p}\sum_{j=1}^{p}
+\frac{1}{P}\sum_{j\in E_n}
 L\!\left(m_{n,j}(\theta;M,\eta)\right).
 \]
 
-This is the natural baseline estimator because it uses the minimum number of aggregated moments needed for identification. Across many sampled partitions, it produces a distribution of split-specific estimates \(\hat\theta_n\). That distribution is already informative about:
-
-\begin{itemize}
-\item numerical feasibility,
-\item parameter stability,
-\item sensitivity to vintage partition choice,
-\item boundary behavior and weak-identification problems.
-\end{itemize}
-
-But by itself it is not enough for model selection, because a just-identified model can often fit those \(p\) moments too easily.
-
-\subsection{Holdout model selection: \(p+1\)-fold estimation}
-
-The core model-selection design should therefore use \(h=1\). For each sampled partition, use \(p\) folds for estimation and one fold for holdout evaluation. Denote the estimation fold set by \(E_n\) and the holdout fold by \(H_n\). Then
+The validation score is the pricing loss on the held-out fold:
 \[
-\hat\theta_n(M,\eta)
+S_n(M,\eta,\Pi)
 =
-\arg\min_{\theta\in\Theta_M}
-\frac{1}{p}\sum_{j\in E_n}
-L\!\left(m_{n,j}(\theta;M,\eta)\right),
-\]
-and the holdout pricing score is
-\[
-S_n(M,\eta)
-=
-L\!\left(m_{n,H_n}(\hat\theta_n(M,\eta);M,\eta)\right).
+L\!\left(m_{n,H_n}(\hat\theta_n(M,\eta,\Pi);M,\eta)\right).
 \]
 
-Aggregate across sampled partitions:
+Aggregate this score across many sampled assignments:
 \[
-\mathrm{Score}_N(M,\eta)
+\mathrm{Score}_N(M,\eta,\Pi)
 =
-\frac{1}{N}\sum_{n=1}^{N} S_n(M,\eta).
+\frac{1}{N}\sum_{n=1}^{N} S_n(M,\eta,\Pi).
 \]
 
-This is the key criterion for the new paper. The preferred SDF model is the one with the best average holdout pricing performance, not the one with the best in-sample exact-identified fit.
+The preferred model-design pair \((M,\eta,\Pi)\) is the one with the lowest average holdout pricing loss. Parameter stability is still informative, but the primary ranking criterion should be predictive pricing performance: does the fitted SDF price cash flows that were not used in estimation?
 
-\subsection{Generalization}
+\section{Why Validation Is Needed}
 
-The same framework naturally accommodates:
+If a model has \(p\) parameters and we estimate it on exactly \(p\) moments, the in-sample fit can look deceptively good. This is especially dangerous in small PE samples because exact identification can hide instability. The validation fold creates a more demanding question: after fitting the model on \(P\) moments, does it also price a held-out PE cash-flow portfolio?
 
-\begin{itemize}
-\item \textbf{\(p\)-fold only:} exact-identified stability analysis,
-\item \textbf{\(p+1\)-fold:} main model-selection design,
-\item \textbf{\(p+2\)-fold estimation} with an additional partition which discards "too correlated" or not needed observations in the spirit of \cite{Racine2000},
-\item \textbf{\(p+h\)-fold with \(h>1\):} richer holdout evaluation,
-\item \textbf{\(p'>p\) estimation folds:} overidentified variants as robustness checks.
-\end{itemize}
-
-For the first version of the paper, the cleanest design is:
+The main empirical specifications should be:
 
 \begin{itemize}
-\item main specification: \(p+1\),
-\item robustness 1: \(p\),
-\item robustness 2: \(p+2\) or \(p+1\) with alternative fold-balance constraints.
+\item \textbf{Main comparison:} \(P=p_{\max}\), \(h=1\), so all candidate models are compared on a common fold architecture.
+\item \textbf{Exact-identified diagnostic:} \(P=p(M)\), \(h=0\), to study feasibility and parameter instability.
+\item \textbf{Model-specific validation:} \(P=p(M)\), \(h=1\), to compare exact-identified estimation plus one holdout fold.
+\item \textbf{Scheme comparison:} run the same model list under within-vintage resampling and shuffled vintage-year portfolios.
 \end{itemize}
 
 \section{Alpha Design}
 
-Even though the estimation engine is KN16-style, the choice of primitive pricing moment remains open. This is where the DLP12 and KN16 traditions enter the new paper.
+The resampling method does not by itself decide what alpha should mean. That choice is central to the paper. The cleanest baseline is to use a cumulative, NPV-style alpha rather than a period-by-period intercept alpha.
 
-\subsection{Recommended baseline: cumulative alpha}
+\subsection{Baseline: cumulative alpha}
 
-For fold \(F_{n,j}\), let the benchmark portfolio path implied by factor loadings \(\beta\) be \(B_t(\beta)\). The exact direct-alpha-style fold moment is
+For fold \(F_{n,j}\), let \(B_t(\beta)\) be the cumulative benchmark return implied by factor loadings \(\beta\). A direct-alpha-style fold moment is
 \[
 \psi_{n,j}(a,\beta)
 =
 \sum_t \frac{cf_{n,j,t}}{B_t(\beta)}
 \exp\!\left(-a\,\tau_{n,j,t}\right),
 \]
-where \(\tau_{n,j,t}\) is elapsed time from the fold origin to date \(t\). Equivalently, for fixed \(\beta\), the fold-implied cumulative alpha \(a_{n,j}(\beta)\) solves
+where \(cf_{n,j,t}\) is the fold cash flow at time \(t\), and \(\tau_{n,j,t}\) is elapsed time from the fold origin to date \(t\). For fixed \(\beta\), the fold-implied cumulative alpha solves
 \[
 \sum_t \frac{cf_{n,j,t}}{B_t(\beta)}
 \exp\!\left(-a_{n,j}(\beta)\,\tau_{n,j,t}\right)=0.
 \]
 
-This should be the recommended baseline because:
+This is close to the KN16/GPME/direct-alpha tradition because alpha is an NPV-style abnormal-performance object \citep{KortewegNagel2016,GredilGriffithsStucke2023,KortewegNagel2025}. It is also more natural for long-horizon PE cash flows than a monthly intercept alpha.
+
+\subsection{Alternative alpha definitions}
+
+The paper should still compare alpha definitions:
 
 \begin{itemize}
-\item it keeps alpha cumulative rather than period-by-period,
-\item it is much closer to KN16 / GPME / direct-alpha logic,
-\item it avoids the worst exploding-alpha geometry of monthly intercept-alpha estimation,
-\item it yields a natural abnormal-performance object that can be annualized only after estimation \citep{KortewegNagel2016,GredilGriffithsStucke2023,KortewegNagel2025}.
+\item \textbf{Cumulative alpha:} the recommended baseline, estimated from benchmark-discounted cash flows.
+\item \textbf{Error-term alpha:} alpha as the mean pricing-error component, as in the machine-learning approach of \citet{TauschPietz2024}.
+\item \textbf{Intercept alpha:} a DLP12-style robustness specification, useful for comparison but vulnerable to exploding-alpha behavior in small or weakly identified samples \citep{DriessenLinPhalippou2012,DriessenLinPhalippou2008WP}.
 \end{itemize}
 
-\subsection{Alpha as mean of the error-term series}
-
-Using the machine-learning approach of \cite{TauschPietz2024}.
-Alpha is then the mean value of the error time series $\alpha=\mathbb{E}[\epsilon]$.
-
-\subsection{Intercept alpha as a robustness design}
-
-If the paper still wants to include a DLP12-style intercept alpha, it should be treated as a robustness design rather than as the main estimator. In that case the pricing moments should be built from a transformed objective, such as log-ratio or PME-style moments, not from the raw NPV criterion \citep{DriessenLinPhalippou2008WP}. A penalty on the alpha direction can also be justified when the split-specific exact-identified solutions are numerically unstable \citep{StockWright2000,CuiFengHong2024}.
+The empirical question is not only which SDF factors perform best, but also which alpha definition yields stable and predictive PE pricing moments.
 
 \section{Relation to DLP12 and KN16}
 
-The paper should present the new method as follows.
+The paper can be positioned in one paragraph:
 
 \begin{itemize}
-\item \textbf{KN16 contribution retained:} the estimator uses aggregated pricing moments and is naturally expressed through repeated grouped partitions of the data.
-\item \textbf{DLP12 contribution retained:} the moments still price private cash flows directly, and the primitive pricing restriction can be DLP12-like if desired.
-\item \textbf{New contribution:} instead of committing to one partition, the paper resamples many admissible partitions and ranks candidate models by holdout pricing performance.
+\item \textbf{From DLP12:} price private cash flows directly with an SDF.
+\item \textbf{From KN16:} use aggregated pricing moments and an NPV-style abnormal-performance object.
+\item \textbf{New here:} treat the construction of PE pricing moments as a resampling problem and rank SDF models by holdout pricing errors across many admissible fund assignments.
 \end{itemize}
 
-So the main innovation is not ``fixing'' the old SDF paper. It is turning partition choice itself into an empirical object.
+The paper is therefore not a repair of the existing SDF paper. It is a new empirical-design paper: how should we build, resample, and validate PE pricing moments when the sample is small and the moment construction is consequential?
 
-\section{Practical Algorithm}
+\section{Empirical Algorithm}
 
-For each candidate model \(M\):
+For each candidate model \(M\), alpha design \(\eta\), and partition scheme \(\Pi\):
+
+\begin{enumerate}
+\item Choose active vintages and exclude insufficiently seasoned vintages.
+\item Choose \(P\) estimation folds and \(h\) holdout folds.
+\item Draw a sampled assignment \(n\) from \(\Pi\).
+\item Build fold cash-flow portfolios and fold pricing moments \(m_{n,r}(\theta;M,\eta)\).
+\item Estimate \(\hat\theta_n(M,\eta,\Pi)\) on the \(P\) estimation folds.
+\item Evaluate the fitted model on the holdout fold.
+\item Repeat over many sampled assignments.
+\item Rank model-design pairs by average holdout pricing loss.
+\end{enumerate}
+
+Alongside the mean holdout loss, report diagnostics that help interpret the ranking:
 
 \begin{itemize}
-\item Determine \(p=p(M)\).
-\item Construct the admissible set of disjoint \((p+h)\)-fold partitions of vintage-year portfolios.
-\item Enumerate all such partitions if feasible; otherwise sample \(N\) partitions from that set.
-\item For each partition \(n\), estimate \(\hat\theta_n(M,\eta)\) on the \(p\) estimation folds.
-\item Score \(\hat\theta_n(M,\eta)\) on the \(h\) holdout folds.
-\item Aggregate holdout losses across \(n\).
-\item Rank candidate models by average holdout pricing loss.
-\end{itemize}
-
-Alongside the mean holdout loss, report:
-
-\begin{itemize}
-\item median holdout loss,
-\item dispersion of \(\hat\theta_n\),
+\item median and dispersion of holdout losses,
+\item dispersion of \(\hat\theta_n\) across assignments,
 \item frequency of non-convergence,
-\item frequency of boundary solutions,
-\item conditioning or curvature diagnostics.
+\item frequency of boundary or exploding-alpha solutions,
+\item sensitivity of results to within-vintage resampling versus shuffled vintage-year portfolios.
 \end{itemize}
-
 
 \bibliographystyle{plainnat}
 \bibliography{resampling_refs}
