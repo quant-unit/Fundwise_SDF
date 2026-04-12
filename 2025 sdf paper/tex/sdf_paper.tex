@@ -246,7 +246,7 @@ The argument proceeds in three steps.
 First, we state a deal-level decomposition of fund cash flows (Assumption~\ref{ass:deal_level_dgp}) and derive the timing result at the deal level (Lemma~\ref{lem:deal_level_timing}).
 Second, we aggregate to the fund level and show that pooled Net Present Value (NPV) moments satisfy a valid zero conditional moment restriction whenever discounting occurs at or before fund inception (Proposition~\ref{theo:inception_value}).
 Third, we discuss the implications for Net Future Value (NFV) moments and the interpretation of alpha measured ex~post.
-Throughout, the deal-level structure serves only as a latent accounting device used to justify the fund-level restriction; only pooled fund cash flows are required as observable inputs to the estimator.
+Throughout, the deal-level structure serves only as a latent accounting device used to illuminate and justify the fund-level restriction; only pooled fund cash flows are required as observable inputs to the estimator.
 
 For fund $i$, let $CF_{i,t}$ denote the observed net cash flow at time $t$, and define the fund inception date by $t_i^0 := \min_j t_{i,j}^{\mathrm{Inv}}$.
 All fund-level variables are constructed from the following deal-level data generation process.
@@ -431,7 +431,7 @@ Applying Equation~\eqref{eq:zero_deal_expectation} term-by-term yields
 
 Proposition~\ref{theo:inception_value} provides the clean benchmark for identification: pooled NPV moments are theoretically well founded when discounting occurs at or before fund inception. Once $\tau>t_i^0$, some underlying deals are active or already partially realized, so the corresponding pooled pricing error incorporates the Compounding-Horizon Wedge.
 The choice of discounting dates is therefore not innocuous.
-Section~\ref{sec:fundwise_lmd_estimator} formalizes this choice by defining an estimator that explicitly specifies which discounting dates are used.
+Section~\ref{sec:fundwise_lmd_estimator} formalizes this choice by defining an estimator that operates entirely on pooled fund cash flows (the deal-level decomposition having served its purpose as an analytical device) and explicitly specifies which discounting dates are used.
 When it restricts to dates $\tau \le t_i^0$, the pooled fund-level pricing error inherits a valid zero conditional moment.
 When it includes dates $\tau > t_i^0$, it generally targets a tilted criterion that embeds the Compounding-Horizon Wedge characterized by Equation \eqref{eq:future_value_bias_derivation}.
 
