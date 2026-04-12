@@ -207,7 +207,7 @@ plot_surface <- function(z_mat, max_m) {
   pmat <- persp(x = alpha_seq, y = beta_seq, z = z_mat, 
           zlim = z_range,
           xlab = "\nAlpha", ylab = "\nBeta (MKT)", zlab = "\nSquared Error",
-          main = paste0("Objective Function (Horizon = ", max_m, ")"), 
+          main = paste0("Objective Function (Horizon = ", max_m/12, "y)"), 
           theta = view_theta, phi = view_phi, 
           ticktype = "detailed",
           col = facet_cols,
