@@ -69,18 +69,18 @@
 
 Do private equity funds deliver abnormal performance, and how should their systematic risk be measured?
 These questions are central to a large and growing literature \citep[see][for comprehensive reviews]{K19,korteweg2023risk}, yet answering them with cash-flow-based methods confronts a fundamental identification challenge that existing work has not fully addressed.
-The semiparametric stochastic discount factor (SDF) estimators of \citet{DLP12} and \citet{KN16}---now standard tools in private-market asset pricing---estimate abnormal performance ($\alpha$) and factor exposures ($\beta$) from pooled cash flows without strong distributional assumptions.
+The semiparametric stochastic discount factor (SDF) estimators of \citet{DLP12} and \citet{KN16}, now standard tools in private-market asset pricing, estimate abnormal performance ($\alpha$) and factor exposures ($\beta$) from pooled cash flows without strong distributional assumptions.
 But an important practical question remains open: \emph{which} economically meaningful objects can those estimators identify with stability in the sparse, overlapping, and partially NAV-based panels that researchers actually observe?
 
 This paper studies that question by formalizing a tradeoff that practitioners and researchers navigate implicitly in every private-equity SDF estimation.
-In typical samples, inception-only pricing errors---the foundation of the \citet{DLP12} approach---can be highly unstable because the estimating equations are nonlinear and the effective cross-sectional sample size is limited.
+In typical samples, inception-only pricing errors, the foundation of the \citet{DLP12} approach, can be highly unstable because the estimating equations are nonlinear and the effective cross-sectional sample size is limited.
 A natural response is to average pricing errors over additional compounding dates beyond fund inception.
 But this is not merely a statistical refinement: once pricing errors are evaluated at horizons beyond inception, the estimator generally targets a different population object.
-We formalize this mechanism as the \emph{Compounding-Horizon Wedge} and show that horizon choice creates a tradeoff between finite-sample stabilization and population target shift.
+We formalize this regularization-like mechanism as the \emph{Compounding-Horizon Wedge} and show that horizon choice creates a tradeoff between finite-sample stabilization and population target shift.
 
 Applied to Preqin cash-flow data for 894 buyout and 931 venture-capital funds (North America, USD, vintages 1982--2010), the framework delivers three concrete findings.
 First, parsimonious single-factor market models yield stable estimates across a wide range of compounding horizons: market betas of approximately 0.8--1.2 for buyout and 1.0--1.9 for venture capital, depending on horizon and weighting scheme.
-Second, once an $\alpha$ intercept or a second factor is introduced, the estimates become highly unstable---market betas oscillate, sign reversals occur, and asymptotic standard errors become erratic---consistent with weak identification rather than a well-determined multifactor structure.
+Second, once an $\alpha$ intercept or a second factor is introduced, the estimates become highly unstable, market betas oscillate, sign reversals occur, and asymptotic standard errors become erratic, consistent with weak identification rather than a well-determined multifactor structure.
 Third, including unseasoned post-2010 vintages with large reported NAV components mechanically inflates estimated market betas (from approximately 1.2 to 2.4 for buyout), underscoring that sample construction is itself an identification choice in private-equity asset pricing.
 
 These findings do not imply that private-equity alpha is zero or that multifactor models are wrong; they indicate that semiparametric alpha estimates from currently available pooled cash-flow panels are weakly identified and highly sensitive to implementation choices.
@@ -92,12 +92,14 @@ The paper makes three contributions.
 \emph{First,} we characterize identification in semiparametric cash-flow-based SDF estimation under flexible horizon choice.
 We derive a generalized pooled-cash-flow pricing framework that makes explicit how the choice of discounting date affects the estimand, nesting the inception-only criterion of \citet{DLP12} as a special case.
 This formulation reveals a distinction that, to our knowledge, has not been formalized: a compounding horizon may improve finite-sample performance without preserving the original inception-based pricing restriction.
-The framework also clarifies the relation to \citet{KN16}---their estimator is closely connected but not a literal special case because the order of aggregation differs, so that the two approaches generally converge to different pseudo-true parameter vectors under misspecification.
+The framework also clarifies the relation to \citet{KN16}. Their estimator is closely connected but not a literal special case because the order of aggregation differs, so that the two approaches generally converge to different pseudo-true parameter vectors under misspecification.
 
 \emph{Second,} we formulate the estimator as a nonlinear Least-Mean-Distance (LMD) problem for pooled, non-traded cash flows \citep{PP97} and develop an increasing-domain asymptotic framework for inference under dependence induced by overlapping funds and adjacent vintages.
 This fills a gap in the existing literature: \citet{DLP12} use within-portfolio infill asymptotics that do not generate new aggregate-state realizations, while \citet{KN16} rely on nonoverlapping payoff windows that are scarce in typical panels.
 Our vintage-year increasing-domain device is better aligned with unconditional identification when new vintages bring new macroeconomic realizations.
+In the empirical application, however, we treat finite-sample simulation evidence and stability diagnostics as the primary basis for interpretation whenever asymptotic approximations appear unreliable.
 
+In that sense, this is an identification and stability paper for private-market asset pricing.
 \emph{Third,} we provide simulation and empirical evidence on the practical boundaries of semiparametric SDF identification for private equity.
 We validate the estimator's finite-sample behavior in Monte Carlo experiments calibrated to private-equity-like cash-flow environments and implement $hv$-block cross-validation diagnostics \citep{R00} tailored to overlapping cash-flow dependence.
 The empirical application demonstrates that, in our sample, current cash-flow panels support stable inference about broad market exposure in seasoned vintage-year portfolios but not about abnormal performance or richer factor decompositions.
@@ -105,7 +107,7 @@ The empirical application demonstrates that, in our sample, current cash-flow pa
 \paragraph{Related literature.}
 The paper contributes to the semiparametric private-equity performance literature that builds on \citet{DLP12} and \citet{KN16}.
 The \citet{DLP12} estimator has been widely applied to price human capital contracts, venture capital, real estate, and private equity funds \citep{kroencke2013return,kim2015estimation,farrelly2019risk,lee2019new,zhao2020master,TP24}.
-The \citet{KN16} framework has found broad application spanning private equity, infrastructure, REITs, CLOs, impact funds, and private debt \citep{giommetti2021risk,andonov2021institutional,riddiough2022private,boyer2023discount,cordell2023clo,erel2024risk,jeffers2024risk,KN24}.
+The \citet{KN16} framework has found broad application spanning private equity, infrastructure, REITs, CLOs, impact funds, and private debt \citep{giommetti2021risk,GN18,andonov2021institutional,riddiough2022private,boyer2023discount,cordell2023clo,erel2024risk,jeffers2024risk,KN24,korteweg2024private}.
 Our LMD framework contributes by providing a loss-function formulation that encompasses \citet{DLP12} and contextualizes \citet{KN16} while supplying rigorous increasing-domain asymptotics (drawing on \cite{PP97}, \cite{KS11}, and \cite{JP12}).
 While \citet{GSW20} highlighted that NPV-based measures are biased relative to per-period returns, we explicitly formalize this discrepancy as the Compounding-Horizon Wedge, a concept related to discount-rate risk in secondary markets \citep{boyer2023discount}.
 
