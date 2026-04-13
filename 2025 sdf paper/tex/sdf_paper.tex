@@ -45,7 +45,7 @@
 	
 \input{sdf_paper_titlepage.tex}
 
-%\doublespacing
+\doublespacing
 
 \begin{center}
 % Option 1:
@@ -1586,12 +1586,7 @@ In the MKT~+~$\alpha$ specification, the intercept and market loading are only w
 This produces implausible or near-collapsed market betas and highly erratic uncertainty measures.
 In the $q^5$-based two-factor models, the second-factor loadings vary sharply across Horizons and often attenuate toward, or pass through, zero at longer Horizons.
 We view these sign changes and sensitivity patterns as evidence of weak finite-sample identification in the present data environment, not as definitive evidence that the underlying economic factors are absent from private-equity payoffs.
-
-\paragraph{The BO--VC split strengthens the identification interpretation.}
-Analyzing Buyout and Venture Capital separately is informative because the two segments differ markedly in business models, leverage, cash-flow timing, and payoff profiles.
-Despite these economic differences, both sub-samples exhibit the same broad empirical pattern: relatively stable single-factor market estimates, destabilization once $\alpha$ is introduced, and fragile second-factor estimates.
-This common pattern across BO and VC suggests that the central difficulty is not merely the pooling of heterogeneous fund types.
-At the same time, it does not imply that BO and VC share the same true factor structure; rather, it indicates that the present sample does not support stable estimation of richer specifications for either segment.
+%That identification interpretation is reinforced by estimating Buyout and Venture Capital separately: despite marked differences in business models, leverage, cash-flow timing, and payoff profiles, both sub-samples exhibit the same broad pattern of relatively stable single-factor market estimates, destabilization once $\alpha$ is introduced, and fragile second-factor estimates, suggesting that the central difficulty is not merely the pooling of heterogeneous fund types but the limited ability of the present sample to support stable richer specifications in either segment.
 
 \paragraph{The empirical patterns are qualitatively consistent with the simulation study.}
 The empirical findings line up closely with the mechanisms highlighted in Section~\ref{sec:simulation_study}.
@@ -1599,9 +1594,7 @@ First, the Horizon range at which the single-factor estimates appear most stable
 Second, the attenuation and occasional sign reversals in the empirical two-factor estimates resemble the weak-identification patterns observed in the simulated multi-factor experiments.
 Third, the gap between unstable asymptotic standard errors and more informative stability diagnostics is consistent with the simulation result that asymptotic approximations can substantially mischaracterize uncertainty in small samples.
 Taken together, the empirical results suggest that the finite-sample mechanisms isolated in the simulations are economically relevant in real-world private-equity cash-flow data.
-
-\paragraph{Robustness to loss specification.}
-Private equity cash flows can be heavy-tailed, raising the concern that the baseline quadratic loss function ($L(x)=x^2$) might disproportionately weight outlier pricing errors. As a robustness test, we re-estimated our main specifications using the absolute deviation ($L_1$) loss function ($L(x)=\lvert x \rvert$). This alternative specification yields empirical results that closely mirror our baseline $L_2$ estimates in both magnitude and horizon-stability. This consistency suggests that the finite-sample instability documented above is driven by the structural identification challenges of pooling cash flows rather than extreme outlier sensitivity.
+%Re-estimating the main specifications under absolute-deviation loss ($L(x)=\lvert x \rvert$) instead of quadratic loss yields closely similar magnitudes and horizon-stability, suggesting that the documented instability reflects structural identification challenges rather than sensitivity to outlier pricing errors.
 
 \paragraph{Implications for empirical practice.}
 For applied work, the main lesson is methodological.
