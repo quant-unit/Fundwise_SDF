@@ -80,6 +80,7 @@ In typical samples, inception-only pricing errors, the foundation of the \citet{
 A natural response is to average pricing errors over additional compounding dates beyond fund inception.
 But this is not merely a statistical refinement: once pricing errors are evaluated at horizons beyond inception, the estimator generally targets a different population object.
 We formalize this regularization-like mechanism as the \emph{Compounding-Horizon Wedge} and show that horizon choice creates a tradeoff between finite-sample stabilization and population target shift.
+Importantly, the simulation evidence below indicates that this estimand shift need not be purely a cost: over an intermediate range of horizons, horizon averaging can improve finite-sample recoverability not only by lowering dispersion, but also by reducing higher-order small-sample bias of the estimator around its horizon-specific target.
 
 Applied to Preqin cash-flow data for 894 buyout and 931 venture-capital funds (North America, USD, vintages 1982--2010), the framework delivers three concrete findings.
 First, parsimonious single-factor market models yield stable estimates across a wide range of compounding horizons: market betas of approximately 0.8--1.2 for buyout and 1.0--1.9 for venture capital, depending on horizon and weighting scheme.
@@ -115,6 +116,8 @@ Our LMD framework contributes by providing a loss-function formulation that enco
 While \citet{GSW20} highlighted that NPV-based measures are biased relative to per-period returns, we explicitly formalize this discrepancy as the Compounding-Horizon Wedge, a concept related to discount-rate risk in secondary markets \citep{boyer2023discount}.
 
 More broadly, the paper connects to parametric private-equity models \citep{FNP12,ACGP18}, the NAV-smoothing literature \citep{BGK19,JLRS20,brown2023nowcasting}, credit-market approaches to private-firm valuation \citep{HSS23}, and the SDF performance evaluation tradition in public equities \citep{FFJT02} and hedge funds \citep{LXZ16}.
+
+The paper is also complementary to \cite{burnside2016identification}, who studies identification and inference in linear SDF models with traded excess returns under alternative normalizations. In our pooled non-traded cash-flow setting, the key issue is instead that horizon averaging regularizes the sample criterion while shifting the population pricing restriction.
 
 The remainder of the paper proceeds as follows.
 Section~\ref{sec:spatial_sdf_methodology} develops the generalized semiparametric estimator and the corresponding asymptotic inference framework.
@@ -1643,7 +1646,9 @@ A broader and more independent cross-section (through longer panels of seasoned 
 
 Our generalized Least-Mean-Distance framework provides a flexible way to study identification and estimation of Stochastic Discount Factor (SDF) models using non-traded cash flows.
 The central theoretical result is that horizon choice is part of the estimand: inception-only discounting preserves the structural pooled pricing restriction, whereas horizon averaging can improve finite-sample stability while shifting the population target. 
-Our Monte Carlo simulations show that this tradeoff is economically relevant in the reported designs. Short-Horizon criteria can be highly unstable, particularly when abnormal performance ($\alpha$) is estimated jointly with market exposure, whereas averaging pricing errors across multiple dates can materially improve finite-sample recoverability.
+Our Monte Carlo simulations show that this tradeoff is economically relevant in the reported designs. 
+Short-Horizon criteria can be highly unstable, particularly when abnormal performance ($\alpha$) is estimated jointly with market exposure.
+In contrast, averaging pricing errors across multiple dates can materially improve finite-sample recoverability through both lower dispersion and lower higher-order bias (even though the associated estimator generally targets a horizon-specific pseudo-true parameter rather than the structural inception-based benchmark).
 
 In the data-sparse private-equity domain, where estimation relies on a limited cross-section of vintage-year portfolios, our empirical application shows that large-sample asymptotic approximations should be interpreted with caution.
 The asymptotic theory remains valuable as an organizing benchmark and as motivation for dependence-robust variance estimation, but in the empirical sample its implications are often dominated by finite-sample distortions.

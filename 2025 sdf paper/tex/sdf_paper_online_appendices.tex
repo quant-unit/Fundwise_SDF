@@ -514,8 +514,9 @@ Once $H$ is large enough to include post-investment timing terms, the criterion 
 The resulting target shift induced by the Compounding-Horizon Wedge can be economically meaningful, but under the baseline calibration it is modest relative to the large finite-sample distortions observed at very short horizons.
 
 This yields the central interpretation of the simulation results:
-for small to intermediate horizons, the stabilization benefit of $\mathcal{T}$-averaging can dominate the incremental target shift;
-for sufficiently long horizons, the marginal gain from additional averaging may weaken while the scope for target shift grows.
+for small to intermediate horizons, the stabilization benefit of $\mathcal{T}$-averaging can dominate the incremental target shift.
+In the reported designs, this dominance reflects not only lower variance of the averaged criterion contributions, but also smaller higher-order finite-sample bias of the nonlinear extremum estimator around its horizon-specific pseudo-true parameter, so that overall error relative to the structural benchmark can initially fall before target shift eventually dominates.
+This entails, for sufficiently long horizons, the marginal gain from additional averaging may weaken while the scope for target shift grows.
 Accordingly, the MSE-minimizing horizon need not be $H=0$ and need not be arbitrarily large.
 Instead, it is generally \emph{interior} and \emph{DGP-dependent}.
 
