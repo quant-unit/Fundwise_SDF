@@ -1,12 +1,12 @@
 # Fdb version 3
-["bibtex sdf_paper"] 1776017117 "sdf_paper.aux" "sdf_paper.bbl" "sdf_paper" 1776017118
+["bibtex sdf_paper"] 1776116278 "sdf_paper.aux" "sdf_paper.bbl" "sdf_paper" 1776116279
   "/usr/local/texlive/2017/texmf-dist/bibtex/bst/base/apalike.bst" 1480098433 24635 604dafcc79f521a11ea73e506e1fbd98 ""
-  "sdf_paper.aux" 1776017118 26086 aa3a88c7e4f11c7ddb40c0aabfffa345 ""
-  "sdf_paper_refs.bib" 1774958099 15535 378b52ce114e606b6d76073285e169e9 ""
+  "sdf_paper.aux" 1776116279 26289 0be5b8ffa3e388443cddda6d2b84f845 ""
+  "sdf_paper_refs.bib" 1776107315 15844 dcadb07af2c9cb832cc999b5e8328692 ""
   (generated)
   "sdf_paper.bbl"
   "sdf_paper.blg"
-["pdflatex"] 1776017118 "sdf_paper.tex" "sdf_paper.pdf" "sdf_paper" 1776017118
+["pdflatex"] 1776116278 "sdf_paper.tex" "sdf_paper.pdf" "sdf_paper" 1776116279
   "/usr/local/texlive/2017/texmf-dist/fonts/enc/dvips/base/8r.enc" 1480098666 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2017/texmf-dist/fonts/enc/dvips/base/ec.enc" 1480098666 12642 9742585e52c5b37e57ae9249e0b2585b ""
   "/usr/local/texlive/2017/texmf-dist/fonts/enc/dvips/newtx/ntx-ec-tlf.enc" 1480098668 2880 847ca622ad468c3dafba6a3f9d89a636 ""
@@ -261,13 +261,13 @@
   "empirical_bovc_us/max_vintage_VC_US_MKT_combined_NC.pdf" 1775385798 22549 017e952c482a3f92f76ba22e3e238c95 ""
   "empirical_bovc_us/nav_disc_BO_US_MKT_combined_NC.pdf" 1775385800 13780 e836e7a4ed1e26c1c3f648b3921882b2 ""
   "empirical_bovc_us/nav_disc_VC_US_MKT_combined_NC.pdf" 1775385799 14064 e2c54d1a508f1e084b628f4a24d84819 ""
-  "figure/degenerate_alpha_grid.pdf" 1774433970 364669 bff2ea288091eeb637941ab95eb7e6ac ""
+  "figure/degenerate_alpha_grid.pdf" 1776019379 364671 fc50f14808560914efb2ae9fc452c265 ""
   "figure/npvs3.pdf" 1754515385 12231 83f3a151ecf0b1cc47a7c1790f4db165 ""
-  "sdf_paper.aux" 1776017118 26086 aa3a88c7e4f11c7ddb40c0aabfffa345 ""
-  "sdf_paper.bbl" 1776017118 11918 1f0cbc4938edceb20896f703b51c0c2f "bibtex sdf_paper"
-  "sdf_paper.tex" 1776010206 132205 eaa0becdfbbb3b068d3cd20ce89c2d39 ""
-  "sdf_paper_online_appendices.tex" 1775587464 70592 cc9c720d86881209151894558308acd5 ""
-  "sdf_paper_titlepage.tex" 1776010268 1048 79b5e6c5d5aee498c257f310f71f46e8 ""
+  "sdf_paper.aux" 1776116279 26289 0be5b8ffa3e388443cddda6d2b84f845 ""
+  "sdf_paper.bbl" 1776116278 12162 2b0ce0bf88e2c48a5d589467e6c6494f "bibtex sdf_paper"
+  "sdf_paper.tex" 1776116260 131305 dafdb302601f7aac8f558fba362fe743 ""
+  "sdf_paper_online_appendices.tex" 1776116260 74016 7df9155805159afaab26af42bb44f7dd ""
+  "sdf_paper_titlepage.tex" 1776113437 1161 f75b5e01e455b2b0161f4d570dae8c95 ""
   "simulation/bias_comparison1.pdf" 1773534563 14068 c8d671937104cb8c2c598d15149c5c17 ""
   "simulation/bias_comparison2.pdf" 1774959677 12233 7e1be4426ed1416e4cc89ba6110d1e14 ""
   "simulation/bias_comparison3.pdf" 1774959083 20358 214fa09c2e933669e594954df0b09575 ""
