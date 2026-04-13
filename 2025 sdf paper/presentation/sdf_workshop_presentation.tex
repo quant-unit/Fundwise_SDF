@@ -9,6 +9,7 @@
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{xcolor}
+\usepackage{appendixnumberbeamer}
 
 \title{Semiparametric SDF Estimators\\for Pooled, Non-Traded Cash Flows}
 \subtitle{CARRI Forschungskolloquium}
@@ -88,25 +89,12 @@
 
 \end{frame}
 
-
-\begin{frame}{Motivation: Autocorrelation Function (ACF) by Fund Type}
-	
-\begin{center}
-\includegraphics[width=0.9\linewidth]{figures/motivating_acf_buyout_vc.pdf}
-\end{center}
-
-\small Fund Net Asset Values (NAVs) are stale, i.e., not as frequently updated as public market valuations.
-\end{frame}
-
-\begin{frame}{Motivation: \cite{D79} Regression on Lagged Returns}
-\begin{center}
-\includegraphics[width=0.85\linewidth]{figures/motivating_dimson_side_by_side.pdf}
-\end{center}
-
-{\small 
-\cite{D79} regressions are designed for autocorrelated return time series. \\
-\textcolor{red}{If fund valuations are manipulated or not updated for a long time, cash flows are more trustworthy!}
-}
+\begin{frame}{Motivation: \cite{D79} Regression from NAV Returns}
+	\begin{center}
+		\includegraphics[width=0.93\linewidth]{figures/motivating_nav_acf_dimson.pdf}
+	\end{center}
+	\vspace{-0.4em}
+	\scriptsize Data: Preqin quarterly index levels and q5 monthly $R_{MKT}$ aggregated to quarters (overlap through 2022Q4).
 \end{frame}
 
 
@@ -184,6 +172,18 @@ Nonlinear least-mean-distance:
 	\end{center}
 \end{frame}
 
+\begin{frame}[t]{Estimator: How does the loss function change? (pt.1)}
+	\begin{center}
+		\includegraphics[width=0.9\linewidth]{images/degenerate_alpha_grid090.pdf}
+	\end{center}
+\end{frame}
+
+\begin{frame}[t]{Estimator: How does the loss function change? (pt.2)}
+	\begin{center}
+		\includegraphics[width=0.9\linewidth]{images/degenerate_alpha_grid180270.pdf}
+	\end{center}
+\end{frame}
+
 \begin{frame}{Simulation: What Is Tested?}
 \begin{itemize}
   \item \textbf{Base simulation setup:} 
@@ -217,16 +217,6 @@ Nonlinear least-mean-distance:
 \end{center}
 
 \textbf{Takeaway:} Increasing funds per vintage is more powerful for bias/variance reduction than only extending the time span.
-\end{frame}
-
-\begin{frame}[t]{Simulation: 3.\ Two-Factor q-Factor Models}
-	\begin{center}
-		\includegraphics[width=0.8\linewidth]{figures/bias_comparison4zoom.pdf}
-	\end{center}
-	
-	\textbf{Takeaway:} For horizon 0, second-factor estimate is $\approx 1$ instead of $0.5$. \\
-	\vspace{0.3em}
-	\footnotesize Remark: q-factor model from \cite{hou2021augmented} is a competitor to \cite{FF15}.
 \end{frame}
 
 \begin{frame}{Simulation: Synthesis}
@@ -275,21 +265,9 @@ Nonlinear least-mean-distance:
 	
 \end{frame}
 
-\begin{frame}{Empirical: 2.\ Single-Factor $MKT$ Model}
-\vspace{-2em}
-\begin{center}
- %\includegraphics[width=0.9\linewidth]{figures/empirical_PE_MKT_larger.pdf}
-\includegraphics[width=0.5\linewidth]{figures_bovc/empirical_BO_MKT.pdf}
-\includegraphics[width=0.5\linewidth]{figures_bovc/empirical_VC_MKT.pdf}
-\end{center}
 
-\textbf{Single-factor models:} \textcolor{orange}{\cite{D79} $\beta_{\textbf{MKT}}$} aligns with our 15-year horizon estimate.
 
-\vspace{1em}
-\footnotesize We use empirical vintages until 2010.
-\end{frame}
-
-\begin{frame}[t]{Empirical: 3.\ Two-Factor $\alpha + MKT$ Model}
+\begin{frame}[t]{Empirical: 2.\ Two-Factor $\alpha + MKT$ Model}
 \vspace{-1.5em}
 \begin{center}
 %\includegraphics[width=0.95\linewidth]{figures/empirical_PE_Alpha.pdf}
@@ -306,10 +284,6 @@ Nonlinear least-mean-distance:
 
 
 
-
-
-
-
 \begin{frame}{Conclusion}
 
 
@@ -322,7 +296,7 @@ Nonlinear least-mean-distance:
 
 \textbf{Empirical results} (for pre-2011 vintages)
 \begin{itemize}
-	\item \textbf{$MKT$-only model:} Our approach yields $\beta_{\textbf{MKT}}$ estimates close to \cite{D79}.
+	%\item \textbf{$MKT$-only model:} Our approach yields $\beta_{\textbf{MKT}}$ estimates close to \cite{D79}.
 	\item \textbf{$\alpha+MKT$ model:}
 	\begin{itemize}
 		\item For BO funds, we find $\beta_{\textbf{MKT}}$ between 0 and 0.5, and  $\alpha \approx +10\%$ p.a. \\
@@ -334,11 +308,19 @@ Nonlinear least-mean-distance:
 
 \vspace{1em}
 
-\textbf{Outlook} (for cash-flow-based inference)
+\textbf{Interpretation \& Outlook:} 
 \begin{itemize}
-	% \item We use cross-validation in addition to asymptotic standard errors.
-    \item Multi-factor models should be stabilized (e.g.\ by machine-learning techniques).
+ \item \emph{\cite{DLP12} and our estimator generate fragile $\alpha$ estimates.}
+ \item \emph{Reliable $\alpha$ estimates require further stabilization.}
 \end{itemize}
+
+%\textbf{Outlook} (for cash-flow-based inference)
+%\begin{itemize}
+	% \item We use cross-validation in addition to asymptotic standard errors.
+    % \item Multi-factor models should be stabilized (e.g.\ by machine-learning techniques).
+%\end{itemize}
+
+\vspace{1em}
 
 \centering
 \Large Questions and Discussion
@@ -354,6 +336,34 @@ Nonlinear least-mean-distance:
 
 \end{frame}
 
+
+
+
+
+
+
+
+
+
+
+% Appendix
+
+
+
+\appendix
+
+
+
+\pagestyle{empty}
+
+
+\begin{frame}{Appendix}
+	
+	\begin{center}
+	\huge Appendix
+	\end{center}
+	
+\end{frame}
 
 \begin{frame}[t]{Empirical Results Reported by \cite{DLP12}}
 	
@@ -401,55 +411,34 @@ Nonlinear least-mean-distance:
 
 
 
+% Dimson without intercept (MKT-only)
 
-
-
-% Appendix
-
-\iffalse
-
-
-\appendix
-
-
-\begin{frame}{Questions and Discussion}	
-	\vspace{0.6em}
-	\centering
-	\Large Questions and Discussion
-\end{frame}
-
-
-
-% Dimson with intercept (= Alpha + MKT)
-
-\begin{frame}{Motivation: \cite{D79} Regression from NAV Returns (Alpha+MKT)}
+\begin{frame}{Motivation: \cite{D79} Regression from NAV Returns}
 	\begin{center}
-		\includegraphics[width=0.93\linewidth]{figures/motivating_nav_acf_dimson.pdf}
+		\includegraphics[width=0.93\linewidth]{figures/motivating_nav_acf_dimson_no_intercept.pdf}
 	\end{center}
 	\vspace{-0.4em}
 	\scriptsize Data: Preqin quarterly index levels and q5 monthly $R_{MKT}$ aggregated to quarters (overlap through 2022Q4).
 \end{frame}
 
-\begin{frame}[plain]
+\begin{frame}{Motivation: Autocorrelation Function (ACF) by Fund Type}
+	
 	\begin{center}
-		\includegraphics[height=0.94\textheight]{figures/dimson_alpha_mkt_fundtypes_square.pdf}
+		\includegraphics[width=0.9\linewidth]{figures/motivating_acf_buyout_vc.pdf}
 	\end{center}
+	
+	\small Fund Net Asset Values (NAVs) are stale, i.e., not as frequently updated as public market valuations.
 \end{frame}
 
-
-\begin{frame}{Backup: Comparison to DLP12 and KN16}
-\small
-\begin{tabular}{@{}p{0.18\linewidth}p{0.25\linewidth}p{0.25\linewidth}p{0.25\linewidth}@{}}
-\toprule
-& DLP12 & KN16 & This paper \\
-\midrule
-Estimator & Cross-sectional NLS & Time-series GMM (public SDF) & Nonlinear LMD \\
-Cash flows priced & PE fund cash flows & Public replicating portfolios & PE fund cash flows \\
-Discount dates & Inception only & Inception only & Flexible via $\mathcal{T}_i$ \\
-Asymptotics & Infill & $V\to\infty$ & Increasing domain \\
-Inference & Bootstrap & SHAC & SHAC + CV focus \\
-\bottomrule
-\end{tabular}
+\begin{frame}{Motivation: \cite{D79} Regression on Lagged Returns}
+	\begin{center}
+		\includegraphics[width=0.85\linewidth]{figures/motivating_dimson_side_by_side.pdf}
+	\end{center}
+	
+	{\small 
+		\cite{D79} regressions are designed for autocorrelated return time series. \\
+		\textcolor{red}{If fund valuations are manipulated or not updated for a long time, cash flows are more trustworthy!}
+	}
 \end{frame}
 
 \begin{frame}{Motivation: Why Measuring Risk Is Hard in Private Markets}
@@ -465,35 +454,39 @@ Inference & Bootstrap & SHAC & SHAC + CV focus \\
 \end{frame}
 
 \begin{frame}{Backup: Significant ACF Lags and Dimson Lag Choice}
-\small
-\begin{tabular}{lccc}
-\toprule
-Series & Significant lags in 1--8 & Consecutive from lag 1 & Dimson lag $L$ \\
-\midrule
-PE Global & 3 & 2 & 2 \\
-PE North America & 5 & 3 & 3 \\
-PE Europe & 3 & 2 & 2 \\
-Buyout Global & 3 & 2 & 2 \\
-Growth Global & 2 & 2 & 2 \\
-VC Global & 5 & 5 & 5 \\
-\bottomrule
-\end{tabular}
-
-\vspace{0.5em}
-\textbf{Naive benchmark result:} contemporaneous beta is low ($\approx 0.32$--$0.39$), while Dimson beta increases to $\approx 0.63$--$0.96$.
+	\small
+	\begin{tabular}{lccc}
+		\toprule
+		Series & Significant lags in 1--8 & Consecutive from lag 1 & Dimson lag $L$ \\
+		\midrule
+		PE Global & 3 & 2 & 2 \\
+		PE North America & 5 & 3 & 3 \\
+		PE Europe & 3 & 2 & 2 \\
+		Buyout Global & 3 & 2 & 2 \\
+		Growth Global & 2 & 2 & 2 \\
+		VC Global & 5 & 5 & 5 \\
+		\bottomrule
+	\end{tabular}
+	
+	\vspace{0.5em}
+	\textbf{Naive benchmark result:} contemporaneous beta is low ($\approx 0.32$--$0.39$), while Dimson beta increases to $\approx 0.63$--$0.96$.
 \end{frame}
 
-\begin{frame}[t]{Dependence Structure: Random Field View}
+
+\begin{frame}[t]{Estimator: Net Present Value (NPV) vs Net Future Value (NFV)}
 	\begin{itemize}
-		\item Cross-sectional unit: fund or vintage-year portfolio.
-		\item Dependence driven by economic proximity (here: vintage-year distance).
-		\item Asymptotics: increasing domain ($V\to\infty$), bounded units per vintage.
+		\item NPV-only discounting (fund inception) is theoretically unbiased.
+		\item NFV: Adding \textcolor{cyan}{compounding} \textcolor{blue}{horizons $>0$} introduces a \textbf{bias term}. \\
+		$\to$ Definition ``Horizon": We average over all dates up to \textcolor{blue}{$\max (\mathcal{T})$}.
+		\item \textbf{Spoiler:} Finite-sample performance can improve when averaging across future dates.
 	\end{itemize}
 	
 	\begin{center}
-		\includegraphics[width=0.58\linewidth]{figures/randomfields.pdf}
+		%\includegraphics[width=1\linewidth]{images/NPV1.png}
+		\includegraphics[width=0.64\linewidth]{figures/npvs3.pdf}
 	\end{center}
 \end{frame}
+
 
 \begin{frame}{Estimator: Inference Strategy}
 	\begin{itemize}
@@ -507,15 +500,27 @@ VC Global & 5 & 5 & 5 \\
 \end{frame}
 
 
-\begin{frame}{Conclusion: Machine-Learning Ensembles}
+
+
+
+
+
+
+\begin{frame}[t]{Dependence Structure: Random Field View}
+	\begin{itemize}
+		\item Cross-sectional unit: fund or vintage-year portfolio.
+		\item Dependence driven by economic proximity (here: vintage-year distance).
+		\item Asymptotics: increasing domain ($V\to\infty$), bounded units per vintage.
+	\end{itemize}
 	
-	- Two-factor models are messy.
-	
-	- Idea: Combine multiple weak learners
-	
-	% - Additionally estimate error term \cite{TP24}
-	
+	\begin{center}
+		\includegraphics[width=0.58\linewidth]{figures/randomfields.pdf}
+	\end{center}
 \end{frame}
+
+
+
+
 
 
 \begin{frame}{Estimator: Starting Point \cite{DLP12}}
@@ -557,6 +562,39 @@ VC Global & 5 & 5 & 5 \\
 	\tiny Variables: $i$ fund/portfolio index, $t$ cash-flow time, $\tau$ compounding date, $CF_{i,t}$ net cash flow, $\frac{\Psi_{t}(\theta)}{\Psi_{\tau}(\theta)}$ SDF ratio, $\theta$ parameter vector, $\mathcal{T}_i$ compounding-date set, $L$ loss function.
 \end{frame}
 
+
+\begin{frame}{Estimator: Comparison to DLP12 and KN16}
+	\small
+	\begin{tabular}{@{}p{0.18\linewidth}p{0.25\linewidth}p{0.25\linewidth}p{0.25\linewidth}@{}}
+		\toprule
+		& DLP12 & KN16 & This paper \\
+		\midrule
+		Estimator & Cross-sectional NLS & Time-series GMM (public SDF) & Nonlinear LMD \\
+		Cash flows priced & PE fund cash flows & Public replicating portfolios & PE fund cash flows \\
+		Discount dates & Inception only & Inception only & Flexible via $\mathcal{T}_i$ \\
+		Asymptotics & Infill & $V\to\infty$ & Increasing domain \\
+		Inference & Bootstrap & SHAC & SHAC + CV focus \\
+		\bottomrule
+	\end{tabular}
+\end{frame}
+
+
+
+
+% Simulation
+
+
+
+\begin{frame}[t]{Simulation: 3.\ Two-Factor q-Factor Models}
+	\begin{center}
+		\includegraphics[width=0.8\linewidth]{figures/bias_comparison4zoom.pdf}
+	\end{center}
+	
+	\textbf{Takeaway:} For horizon 0, second-factor estimate is $\approx 1$ instead of $0.5$. \\
+	\vspace{0.3em}
+	\footnotesize Remark: q-factor model from \cite{hou2021augmented} is a competitor to \cite{FF15}.
+\end{frame}
+
 \begin{frame}[t]{Simulation: 4.\ Exponential Affine vs Linear SDF}
 	\begin{center}
 		\includegraphics[width=0.8\linewidth]{figures/bias_comparison5.pdf}
@@ -566,21 +604,21 @@ VC Global & 5 & 5 & 5 \\
 	\footnotesize SDF model comparison: \cite{KN16} vs \cite{DLP12}
 \end{frame}
 
-\begin{frame}[t]{Estimator: Net Present Value (NPV) vs Net Future Value (NFV)}
-	\begin{itemize}
-		\item NPV-only discounting (fund inception) is theoretically unbiased.
-		\item NFV: Adding \textcolor{cyan}{compounding} \textcolor{blue}{horizons $>0$} introduces a \textbf{bias term}. \\
-		$\to$ Definition ``Horizon": We average over all dates up to \textcolor{blue}{$\max (\mathcal{T})$}.
-		\item \textbf{Spoiler:} Finite-sample performance can improve when averaging across future dates.
-	\end{itemize}
-	
+\begin{frame}{Empirical: 3.\ Single-Factor $MKT$ Model}
+	\vspace{-2em}
 	\begin{center}
-		%\includegraphics[width=1\linewidth]{images/NPV1.png}
-		\includegraphics[width=0.64\linewidth]{figures/npvs3.pdf}
+		%\includegraphics[width=0.9\linewidth]{figures/empirical_PE_MKT_larger.pdf}
+		\includegraphics[width=0.5\linewidth]{figures_bovc/empirical_BO_MKT.pdf}
+		\includegraphics[width=0.5\linewidth]{figures_bovc/empirical_VC_MKT.pdf}
 	\end{center}
+	
+	\textbf{Single-factor models:} \textcolor{orange}{\cite{D79} $\beta_{\textbf{MKT}}$} aligns with our 15-year horizon estimate.
+	
+	\vspace{1em}
+	\footnotesize We use empirical vintages until 2010.
 \end{frame}
 
-\begin{frame}[t]{Empirical: 3b.\ Two-Factor Models}
+\begin{frame}[t]{Empirical: 4.\ Two-Factor Models}
 	\begin{center}
 		\includegraphics[width=0.95\linewidth]{figures/empirical_PE_all_factors.pdf}
 	\end{center}
@@ -590,13 +628,7 @@ VC Global & 5 & 5 & 5 \\
 	\footnotesize We use empirical vintages until 2010.
 \end{frame}
 
-\begin{frame}{Motivation: \cite{D79} Regression from NAV Returns}
-	\begin{center}
-		\includegraphics[width=0.93\linewidth]{figures/motivating_nav_acf_dimson_no_intercept.pdf}
-	\end{center}
-	\vspace{-0.4em}
-	\scriptsize Data: Preqin quarterly index levels and q5 monthly $R_{MKT}$ aggregated to quarters (overlap through 2022Q4).
-\end{frame}
+
 
 \begin{frame}[t]{Empirical: Synthesis}
 	
@@ -654,7 +686,6 @@ VC Global & 5 & 5 & 5 \\
 
 
 
-\fi
 
 
 
