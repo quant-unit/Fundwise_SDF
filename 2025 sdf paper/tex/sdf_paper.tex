@@ -947,18 +947,16 @@ In our optimization procedure, we limit the alpha intercept $\alpha$ to the rang
 \subsection{The impact of unseasoned funds and reported NAVs}
 \label{sec:empirical_vintage_cutoffs_bovc}
 
-Before defining our baseline sample, we emphasize a structural limitation of including recent vintages: treating the final reported NAV as a terminal cash flow is problematic not only because of potential staleness, but also because it represents an expected continuation value rather than a realized payoff. 
-This formally violates the actual-divestment requirement of Assumption~\ref{ass:deal_level_dgp}, meaning that whenever NAV is used as a terminal cash flow, the estimator technically targets an approximation. 
-We alleviate this issue by implementing a strict maximum vintage-year cutoff to ensure the sample primarily consists of seasoned funds with minimal remaining NAVs.
+Before defining our baseline sample, we highlight a structural limitation of including recent vintages: treating the final reported NAV as a terminal cash flow substitutes an expected continuation value for a realized payoff, violating the actual-divestment requirement of Assumption~\ref{ass:deal_level_dgp}.
+We mitigate this by imposing a strict maximum vintage-year cutoff to ensure the sample primarily consists of seasoned funds with minimal remaining NAVs.
 
-To illustrate this mechanism, Figure~\ref{fig:max_vintage_BOVC_MKT} presents a vintage-year cutoff sensitivity analysis separately for BO and VC under fund-value weighting (FW).
-A clear upward-drift pattern is present in both sub-samples: as more recent, unseasoned vintages are included, the estimated market beta increases monotonically.
-For BO under value weighting, $\hat{\beta}_{\mathrm{MKT}}$ at the 0-year Horizon (see Remark~\ref{rem:horizon_def}) rises from approximately 1.23 with a 2011 vintage cutoff to roughly 2.42 with the full sample (2021).
-Notably, most of the increase is concentrated in vintages after 2016, where $\hat{\beta}_{\mathrm{MKT}}$ jumps sharply from 1.53 (2016 cutoff) to 2.34 (2017 cutoff), reflecting the disproportionate influence of young, unrealized funds.
-For VC, the drift is similarly dramatic: the FW estimate at the 0-year Horizon climbs from approximately 1.57 (2011 cutoff) to 2.33 with the full sample.
-Discounting all final NAVs by 50\% substantially flattens the upward trend: the BO FW estimate range compresses to 1.09--1.65, and the VC FW range to 1.41--1.54, consistent with the view that the drift is partly attributable to the outsized mechanical reliance on subjectively reported Net Asset Values for young funds.
-These findings reinforce the sample restriction to the 2010 maximum vintage year applied throughout the remainder of this section.
-Figure~\ref{fig:max_vintage_BOVC_MKT_alpha} confirms that this distortion also affects the two-factor models, where unseasoned post-2016 vintages severely inflate the estimated intercept $\alpha$. For Buyout funds at short horizons, this upward bias mechanically drives $\alpha$ into its +2\% upper parameter boundary, an estimation collapse that is effectively mitigated by the 50\% NAV discount.
+Figure~\ref{fig:max_vintage_BOVC_MKT} presents the corresponding sensitivity analysis for BO and VC under fund-value weighting (FW).
+In both sub-samples, the estimated market beta drifts upward monotonically as more recent vintages are included.
+For BO, $\hat{\beta}_{\mathrm{MKT}}$ at the 0-year Horizon (see Remark~\ref{rem:horizon_def}) rises from approximately 1.23 with a 2011 cutoff to 2.42 with the full sample (2021), with most of the increase concentrated after 2016.
+For VC, the FW estimate climbs from 1.57 to 2.33 over the same range.
+Discounting all final NAVs by 50\% substantially flattens this trend: the BO FW range compresses to 1.09--1.65 and the VC FW range to 1.41--1.54, consistent with the view that the drift is driven by mechanical reliance on subjectively reported NAVs for young funds.
+These findings underpin the sample restriction to the 2010 maximum vintage year used throughout.
+Figure~\ref{fig:max_vintage_BOVC_MKT_alpha} confirms that unseasoned post-2016 vintages similarly inflate the estimated intercept $\alpha$ in two-factor models, an effect mitigated by the 50\% NAV discount.
 
 \begin{figure}[htbp]
 	\centering
@@ -1001,16 +999,16 @@ Figure~\ref{fig:max_vintage_BOVC_MKT_alpha} confirms that this distortion also a
 \subsection{NAV discount sensitivity analysis}
 \label{sec:empirical_nav_discount_bovc}
 
-To further quantify the sensitivity of factor loading estimates to terminal Net Asset Value treatment, we conduct a systematic NAV discount analysis on the seasoned sample (maximum vintage year 2010).
-Figure~\ref{fig:nav_disc_BOVC_MKT} reports single-factor MKT estimates under five NAV treatments: the baseline (full reported NAV as final cash flow), 25\%, 50\%, and 75\% constant discounts applied to all final NAVs, and a complete NAV write-off (100\% discount).
+To further quantify the sensitivity of factor loading estimates to terminal NAV treatment, we conduct a systematic NAV discount analysis on the seasoned sample (maximum vintage year 2010).
+Figure~\ref{fig:nav_disc_BOVC_MKT} reports single-factor MKT estimates under five NAV treatments: full reported NAV, 25\%, 50\%, 75\% constant discounts, and a complete write-off.
 
-For BO, the estimated market beta decreases monotonically with the NAV discount.
-At the 0-year Horizon under EW, $\hat{\beta}_{\mathrm{MKT}}$ drops from 1.26 (no discount) to 1.19 (25\% discount), 1.12 (50\%), 1.03 (75\%), and 0.94 (100\% write-off); under FW, the corresponding range is 1.20 to 0.98.
-At the 15-year Horizon, the EW estimate ranges from 0.81 (no discount) to 0.55 (100\% write-off), while the FW estimate spans 0.84 to 0.62.
-The qualitative conclusion is robust across all NAV treatments: the single-factor market model remains economically plausible and comparatively stable.
+For BO, $\hat{\beta}_{\mathrm{MKT}}$ decreases monotonically with the discount.
+At the 0-year Horizon under EW, estimates range from 1.26 (no discount) to 0.94 (100\% write-off); under FW, from 1.20 to 0.98.
+At the 15-year Horizon, the EW range is 0.81--0.55 and the FW range 0.84--0.62.
+The single-factor market model remains economically plausible across all treatments.
 
-For VC under EW, the pattern is analogous but the sensitivity is more muted in percentage terms due to the higher baseline beta: the 0-year estimate declines from 1.88 (no discount) to 1.84 (25\%), 1.80 (50\%), 1.77 (75\%), and 1.74 (100\%); at the 15-year Horizon, from 1.30 (no discount) to 1.09 (100\% write-off).
-Under FW, the sensitivity is more pronounced, particularly at longer Horizons: the 0-year estimate ranges from 1.59 to 1.34, while the 15-year estimate declines from 1.07 to 0.73.
+For VC, the pattern is analogous but the sensitivity is more muted under EW (0-year range: 1.88--1.74) due to the higher baseline beta.
+Under FW, the effect is more pronounced, particularly at longer Horizons (15-year range: 1.07--0.73).
 
 \begin{figure}[htbp]
 	\centering
@@ -1026,16 +1024,9 @@ Under FW, the sensitivity is more pronounced, particularly at longer Horizons: t
 	\label{fig:nav_disc_BOVC_MKT}
 \end{figure}
 
-This analysis demonstrates that terminal NAV treatment has a material but bounded effect on estimated factor loadings.
-The monotonic relationship is consistent with the intuition that reported NAVs mechanically inflate estimated betas: funds whose final cash flow is a subjective valuation rather than a realized exit price appear more systematically risky because their NAVs partially co-move with public market indices.
-Importantly, even under the extreme assumption of a complete NAV write-off, the first qualitative conclusions of this subsection can be summarized as follows: BO maintains a market beta near or below unity, while VC retains a substantially higher systematic exposure.
-We do not impose a model-based residual-value adjustment, as this would constitute a separate research agenda \citep{JLRS20,brown2023nowcasting}.
-Instead, the range spanned by the five NAV treatments provides a transparent envelope of estimation uncertainty attributable to terminal value measurement.
-
-
-
-
-
+The monotonic relationship is consistent with reported NAVs mechanically inflating betas, as subjective valuations co-move with public indices more than realized exits do.
+Even under a complete write-off, BO maintains a market beta near or below unity while VC retains substantially higher systematic exposure.
+Rather than imposing a model-based residual-value adjustment \citep{JLRS20,brown2023nowcasting}, we use the range spanned by the five treatments as a transparent envelope of estimation uncertainty attributable to terminal value measurement.
 
 
 
@@ -1043,40 +1034,27 @@ Instead, the range spanned by the five NAV treatments provides a transparent env
 \label{sec:simulation_study}
 
 
-Our Monte Carlo experiments examine the finite-sample behavior of our estimation methodology through bias and variance.\footnote{As with any simulation study, it investigates the ability to identify the assumed data generating process rather than validating the corresponding SDF model itself.}
-Specifically, we investigate four key dimensions of the estimation framework:
-(i) the finite-sample efficiency gains of forming vintage-year portfolios versus using individual funds;
-(ii) the tradeoff between expanding the time-series dimension (number of vintage years) and the cross-sectional dimension (funds per vintage);
-(iii) the behavior of multivariate identification under idiosyncratic noise using two-factor models; and
-(iv) as the central design choice in the paper, the optimal choice of the maximum compounding Horizon (i.e., the set of discounting dates $\mathcal{T}$).
+Our Monte Carlo experiments examine the finite-sample bias and variance of the estimator.\footnote{As with any simulation study, it investigates the ability to identify the assumed data generating process rather than validating the corresponding SDF model itself.}
+Specifically, we investigate (i) the efficiency gains of vintage-year portfolios versus individual funds; (ii) the tradeoff between the time-series ($V$) and cross-sectional ($n/V$) dimensions; (iii) multivariate identification under idiosyncratic noise; and (iv) the optimal choice of the maximum compounding Horizon $\mathcal{T}$.
 
-We begin from a baseline simulation that uses historical $q$-investment factor paths from 1986 to 2005 and simulates 20 funds for each of these 20 vintage years.
-Thus, the baseline conditions on a realized 1986--2005 factor path rather than simulating market factors.
-The subsequent paragraphs compare this baseline to alternative scenario blocks that vary one margin at a time, such as the number of funds per vintage, the vintage span, or the fund lifetime; the full scenario definitions are listed in the simulation configuration file in the online repository.
-In particular, the ``extended vintage'' scenarios use vintages 1967--2005, so \(V=39\), whereas the baseline uses vintages 1986--2005, so \(V=20\).
-Each fund contains 15 deals with equal investment amounts and exactly one divestment cash flow.
-Deals are entered within the first five years of the fund lifetime following a discrete uniform distribution and afterward held between one to ten years again uniformly distributed.
-The deal returns are generated by the simple linear SDF model described in Equation~\eqref{eq:linear_sdf}.
-In the base case, we just use the MKT factor with $\beta_{\mathrm{MKT}}=1$ and in each month, add a normal i.i.d. error term with monthly standard deviation $\sigma=0.2$ (annualized variance $12 \cdot 0.2^2=0.48$, corresponding to an annualized volatility of $0.2\sqrt{12}\approx 69\%$) and zero mean.
-If a negative return exceeds -100\%, the company defaults with a zero exit cash flow.
-In contrast, the error term in the simulations of \cite{DLP12} is more well-behaved as it follows a shifted lognormal distribution that, even with arbitrarily high error term variance, just allows for returns below say -99\%, if the market return is close to its lower bound (see equation 9 in their online appendix).
-We specifically analyze the remaining divergence from their simulation design in Appendix~\ref{sec:dlp_simulation}.
-In our simulation scenarios, we evaluate the estimator across a full grid of compounding Horizons, where the maximum month in the set of discounting dates $\mathcal{T}$ ranges from 0 up to 30 years (0-360 months).
-To assess our estimator's bias and variance, we simulate 1000 test scenarios for both vintage-year and single-fund portfolios.
+The baseline simulation uses historical $q$-investment factor paths from 1986 to 2005 and generates 20 funds per vintage year ($V{=}20$).
+Subsequent paragraphs vary one margin at a time; full scenario definitions are in the online repository.
+The ``extended vintage'' scenarios use vintages 1967--2005 ($V{=}39$).
+Each fund contains 15 deals with equal investment amounts and one divestment cash flow.
+Deals are entered within the first five years (discrete uniform) and held for one to ten years (uniform).
+Returns follow the linear SDF of Equation~\eqref{eq:linear_sdf} with $\beta_{\mathrm{MKT}}{=}1$, augmented by a normal i.i.d.\ monthly error ($\sigma{=}0.2$, zero mean); negative returns exceeding $-100\%$ trigger default with zero exit.
+Unlike the shifted lognormal error of \cite{DLP12}, which precludes returns below roughly $-99\%$, our specification admits full default; we analyze the remaining design divergence in Appendix~\ref{sec:dlp_simulation}.
+We evaluate the estimator over Horizons from 0 to 30 years and simulate 1000 replications for both vintage-year and single-fund portfolios.
 
 
 \paragraph{Cross-sectional unit $i$:}
 
-As anticipated in Subsection~\ref{sec:asymptotic_framework}, vintage year portfolios demonstrate lower bias and variance than individual funds.
-Under the simple linear SDF and a 15-year Horizon (maximum month 180), the mean (standard deviation) of the coefficient estimate $\hat{\beta}_{\mathrm{MKT}}$ is 0.966 (0.188) for vintage year portfolios, compared to 0.887 (0.359) for individual funds. 
-The superiority of the portfolio approach is especially striking when evaluating the entire Horizon curve in Figure~\ref{fig:simulation_funds_vs_vyps}.
-Estimates for individual funds are highly unstable, exhibiting severe upward bias at short Horizons ($\hat{\beta}_{\mathrm{MKT}} \approx 1.5$) and deteriorating to negative values at long Horizons.
-In contrast, vintage year portfolios yield substantially more stable estimates that remain within a narrow, economically plausible range around the true value of 1.0.
-The portfolio approach consistently achieves a lower standard deviation across all simulated Horizons, confirming that grouping funds effectively mitigates idiosyncratic noise.
+As anticipated in Subsection~\ref{sec:asymptotic_framework}, vintage-year portfolios exhibit lower bias and variance than individual funds.
+At a 15-year Horizon, the mean (standard deviation) of $\hat{\beta}_{\mathrm{MKT}}$ is 0.966 (0.188) for vintage-year portfolios versus 0.887 (0.359) for individual funds. 
+Figure~\ref{fig:simulation_funds_vs_vyps} illustrates that this advantage extends across the full Horizon curve: single-fund estimates are severely upward-biased at short Horizons ($\hat{\beta}_{\mathrm{MKT}} \approx 1.5$) and deteriorate to negative values at long Horizons, whereas vintage-year portfolios remain in a narrow range around 1.0.
 
-This trade-off between bias/variance reduction and sample size has important implications.
-While forming vintage year portfolios substantially improves the accuracy of the estimates, it dramatically reduces the number of cross-sectional units, thereby weakening the relevance of asymptotic approximations.
-This constraint likely explains the choice of \cite{KN16} to rely on individual funds as cross-sectional units in their asymptotic SHAC framework, enabling them to exploit a larger sample size for smaller standard errors.
+This bias--variance improvement comes at the cost of dramatically fewer cross-sectional units, weakening asymptotic approximations.
+This constraint likely explains why \cite{KN16} use individual funds in their SHAC framework, exploiting a larger sample for smaller standard errors.
 
 \begin{figure}[H]
 	\centering
@@ -1088,20 +1066,14 @@ This constraint likely explains the choice of \cite{KN16} to rely on individual 
 
 \paragraph{Varying vintages $V$ and portfolio sizes $n/V$:}
 
-A fundamental question in private equity panel data econometrics is whether precision is best improved by extending the time-series dimension ($V$, number of vintage years) or the cross-sectional dimension ($n/V$, number of funds per vintage portfolio).
-For this comparison block, we intentionally switch from the overall 20-fund baseline to a dedicated reference scenario with larger portfolios, so that changes in \(V\) and \(n/V\) can be separated more cleanly.
-To assess this tradeoff, we compare five data configurations (depicted in Figures \ref{fig:sim_vary_vin_sizes_alpha} and \ref{fig:sim_vary_vin_sizes}): 
-(1) a reference scenario with $V=20$, $n/V=40$; 
-(2) an extended vintage sample with small portfolios ($V=39$, $n/V=10$); 
-(3) an extended vintage sample with medium portfolios ($V=39$, $n/V=20$); 
-(4) an early-vintage sub-sample ($V=10$, years 1986--1995, $n/V=20$); and 
-(5) a late-vintage sub-sample ($V=10$, years 1996--2005, $n/V=20$).
+A key question is whether precision improves more from extending $V$ or from enlarging $n/V$.
+For this comparison, we switch to a reference scenario with $V{=}20$, $n/V{=}40$ and compare it with four alternatives that vary $V$ and $n/V$ (see Figures~\ref{fig:sim_vary_vin_sizes_alpha}--\ref{fig:sim_vary_vin_sizes}).
 
-In our simulation design, increasing the number of cross-sectional units per portfolio ($n/V$) is substantially more effective at suppressing estimator variance than adding more vintage years ($V$).
-For the single-factor model at the 15-year Horizon, transitioning from 10 funds to 20 funds per vintage over a 39-year period (scenarios 2 vs.\ 3) reduces the standard deviation of $\hat{\beta}_{\mathrm{MKT}}$ by roughly 22\%, from 0.218 to 0.169.
-In contrast, shrinking the time-series dimension from 39 years to just 10 years (while holding $n/V=20$ constant) elevates the variance only moderately for the early-vintage sub-sample ($\sigma(\hat{\beta}_{\mathrm{MKT}}) \approx 0.194$ for 1986--1995), though the late-vintage sub-sample (1996--2005) exhibits considerably higher variance ($\sigma(\hat{\beta}_{\mathrm{MKT}}) \approx 0.432$), reflecting the sensitivity to the realized macro environment.
-This hierarchy of variance reduction is even more pronounced in the two-factor setting, where idiosyncratic cash flow noise severely impairs multivariate identification: increasing $n/V$ aggressively dampens the spurious $\alpha$ variance.
-Consequently, our findings provide an empirical rationale for the finite-sample superiority of the \cite{DLP12} infill asymptotics (fixing $V$, letting $n_v \to \infty$) over approaches that rely purely on time-series aggregation.
+Increasing $n/V$ is substantially more effective at suppressing variance than adding vintages.
+At the 15-year Horizon, doubling $n/V$ from 10 to 20 over 39 years reduces $\sigma(\hat{\beta}_{\mathrm{MKT}})$ by roughly 22\% (0.218 to 0.169).
+Shrinking $V$ from 39 to 10 years elevates variance only moderately for the early sub-sample (1986--1995, $\sigma \approx 0.194$), though the late sub-sample (1996--2005) exhibits considerably higher variance ($\sigma \approx 0.432$), reflecting macro-environment sensitivity.
+This hierarchy is even more pronounced in the two-factor setting, where increasing $n/V$ aggressively dampens spurious $\alpha$ variance.
+These findings provide an empirical rationale for the finite-sample superiority of \cite{DLP12} infill asymptotics (fixing $V$, $n_v \to \infty$) over purely time-series aggregation.
 
 
 \begin{figure}[H]
@@ -1121,16 +1093,15 @@ Consequently, our findings provide an empirical rationale for the finite-sample 
 
 \paragraph{Two-factor models ($q^5$ factors):}
 
-Figure~\ref{fig:sim_q_factors} reports simulation results for two-factor models that pair MKT with each of the four non-market $q^5$ factors (ME, IA, ROE, EG), with true loadings $\beta_{\mathrm{MKT}}=1$ and $\beta_{\mathrm{2nd}}=0.5$.
-A common pattern emerges across all four specifications: the second-factor loading is substantially overestimated at short Horizons and attenuated toward (or beyond) the true value at long Horizons, while the market factor absorbs a compensating bias in the opposite direction.
-Estimation variance is markedly larger than in the single-factor case, reflecting the collinearity between correlated factors in a limited cross-section of vintage year portfolios.
-%Table~\ref{tab:sim_q5_summary} summarizes the key estimates at the shortest Horizon and at 15 years, which is approximately the MSE-minimizing Horizon for most models; we highlight the most notable factor-specific features below.
+Figure~\ref{fig:sim_q_factors} reports two-factor simulations pairing MKT with each non-market $q^5$ factor (ME, IA, ROE, EG), with $\beta_{\mathrm{MKT}}{=}1$ and $\beta_{\mathrm{2nd}}{=}0.5$.
+A common pattern emerges: the second-factor loading is overestimated at short Horizons and attenuated at long Horizons, while MKT absorbs a compensating bias.
+Variance is markedly larger than in the single-factor case due to factor collinearity.
 
-The ME model is the only specification in which $\hat{\beta}_{\mathrm{2nd}}$ undergoes a sign change (at roughly 17.5~years), declining from $0.86$ to $-0.02$ over the full Horizon range, a severe attenuation that would qualitatively alter economic conclusions.
-The IA model exhibits a large second-factor bias at short Horizons ($\hat{\beta}_{\mathrm{IA}} \approx 1.06$ vs.\ truth $0.5$) but both loadings converge close to their true values near the 17.5-year Horizon ($\hat{\beta}_{\mathrm{MKT}}=0.97$, $\hat{\beta}_{\mathrm{IA}}=0.52$).
-The EG model exhibits the largest overall estimation variance ($\sigma(\hat{\beta}_{\mathrm{EG}}) \approx 1.5$ at the shortest Horizon) but achieves a reasonably accurate joint estimate around 15--17.5~years ($\hat{\beta}_{\mathrm{MKT}}=0.91$--$1.02$, $\hat{\beta}_{\mathrm{EG}}=0.47$--$0.56$).
-The ROE model is the exception: both loadings remain persistently biased at all Horizons, with $\hat{\beta}_{\mathrm{MKT}}$ never exceeding $0.91$ and $\hat{\beta}_{\mathrm{ROE}}$ never falling below $0.62$.
-These results suggest that empirical researchers should exercise caution when interpreting two-factor SDF estimates for private equity, and that the MSE-minimizing Horizon is model-dependent, typically falling in the 12.5--17.5-year range.
+The ME model is the only specification exhibiting a sign change in $\hat{\beta}_{\mathrm{2nd}}$ (at ${\sim}17.5$ years).
+The IA model shows large short-Horizon bias ($\hat{\beta}_{\mathrm{IA}} \approx 1.06$) but converges near the true values around 17.5 years.
+The EG model has the highest variance ($\sigma(\hat{\beta}_{\mathrm{EG}}) \approx 1.5$ at Horizon 0) but achieves reasonable accuracy around 15--17.5 years.
+The ROE model is the exception: both loadings remain persistently biased at all Horizons.
+These results counsel caution when interpreting two-factor SDF estimates and indicate that the MSE-minimizing Horizon is model-dependent, typically in the 12.5--17.5-year range.
 
 \iffalse 
 
@@ -1167,11 +1138,9 @@ These results suggest that empirical researchers should exercise caution when in
 
 \paragraph{Varying fund lifetimes:}
 
-Figure~\ref{fig:sim_lifetimes} illustrates how the optimal Horizon shifts in response to abbreviated fund lifetimes. 
-As anticipated, the intercept of the alpha parameter decreases for shorter fund lifetimes relative to our baseline scenario of a five-year investment period and a ten-year maximum holding period. 
-Specifically, for the shortest examined fund lifetime of two years (comprising a one-year investment period and a one-year maximum holding period), the beta bias is minimized at a 12.5-year Horizon, while the alpha bias is minimized at a 5-year Horizon. 
-Similarly, for a fund with a two-year investment period and a two-year maximum holding period, the minimum beta bias occurs at a 15-year Horizon, and the minimum alpha bias at a 7.5-year Horizon. 
-Consequently, these results suggest that for funds with short lifespans, the Horizon that minimizes bias can extend significantly beyond the fund's actual lifetime.
+Figure~\ref{fig:sim_lifetimes} illustrates how the bias-minimizing Horizon shifts with fund lifetime.
+For the shortest examined lifetime (one-year investment, one-year hold), beta bias is minimized at a 12.5-year Horizon and alpha bias at 5 years; for a two-year/two-year fund, the corresponding optima are 15 and 7.5 years.
+These results show that the bias-minimizing Horizon can extend well beyond a fund's actual lifetime.
 
 \begin{figure}[H]
 	\centering
@@ -1182,46 +1151,33 @@ Consequently, these results suggest that for funds with short lifespans, the Hor
 
 \paragraph{Size of set $\mathcal{T}$ (Maximum Compounding Horizon):}
 
-A central simulation finding concerns the choice of the maximum compounding Horizon, i.e., the size of the set of discounting dates $\mathcal{T}$.
-From a purely theoretical perspective (cf.\ Section~\ref{sec:asset_pricing_pooled}), discounting all cash flows exclusively to the fund inception date, corresponding to a zero-month or NPV-only Horizon in our notation, should yield unconditionally unbiased estimates under the deal-level exact-pricing restriction (Equation~\eqref{eq:deal_pricing}).
-This minimal choice for $\mathcal{T}$ corresponds exactly to the established \cite{DLP12} framework.
-
-However, our simulation results highlight a tension between structural fidelity and finite-sample recoverability: extending the set of discounting dates into the fund lifecycle can materially stabilize the estimator in the reported designs.
-Across the reported specifications, bias is minimized not at the theoretical 0-year Horizon, but rather around a 12.5 to 15-year compounding Horizon.
-At extremely short Horizons, idiosyncratic cash flow noise interacts non-linearly with the estimation procedure, inducing severe bias in factor loadings.
-Averaging pricing errors over multiple future dates therefore acts as a finite-sample stabilization device, while also introducing the timing component discussed in Section~\ref{sec:asset_pricing_pooled}.
-
-In the reported designs, this stabilization improves the mean estimate far more than it reduces standard errors. 
-While estimator variance traces a shallow U-shape with a minimum near the 15-year Horizon for fund with a lifetime of 15 years, this reduction is secondary to the striking stabilization of the parameter bias.
-However, our simulations for shorter fund lifetimes indicate that determining the optimal horizon requires tailored simulation designs rather than a simple heuristic assuming the optimal horizon always coincides with the fund's life.
-We further analyze these puzzling results from a theoretical perspective in Appendix~\ref{sec:appendix_bias_variance}, detailing the finite-sample stabilization under $\mathcal{T}$-averaging and the role of the Compounding-Horizon Wedge.
+A central finding concerns the choice of $\mathcal{T}$.
+Theoretically, discounting exclusively to inception ($H{=}0$), i.e.\ the \cite{DLP12} framework, yields unbiased estimates under the exact-pricing restriction (Equation~\eqref{eq:deal_pricing}).
+However, in the reported designs, bias is minimized not at $H{=}0$ but around 12.5--15 years: at short Horizons, idiosyncratic noise interacts non-linearly with estimation, inducing severe factor-loading bias.
+Averaging pricing errors over multiple dates acts as a finite-sample stabilization device, improving the mean estimate far more than it reduces standard errors, while introducing the timing component of Section~\ref{sec:asset_pricing_pooled}.
+Our shorter-lifetime simulations indicate that the optimal horizon requires tailored calibration rather than a simple fund-life heuristic.
+We analyze these results theoretically in Appendix~\ref{sec:appendix_bias_variance}.
 
 \paragraph{Simulation conclusion:}
 To conclude, our simulation study supports several implementation choices used in the empirical application. 
 First, vintage-year portfolio formation helps improve estimator precision relative to single-fund estimation. 
 Second, in the reported designs, increasing the number of funds per vintage appears more effective in controlling estimator variance than increasing the number of vintages (for i.i.d.\ error terms). 
-Third, averaging pricing errors over multiple dates materially reduces the short-Horizon bias of the inception-only criterion in the reported designs, even though Appendix~\ref{sec:appendix_bias_variance} shows that this stabilization comes with a horizon-specific target shift.
+Third, averaging pricing errors over multiple dates materially reduces the short-Horizon bias of the inception-only criterion in the reported designs, even though Section~\ref{sec:asset_pricing_pooled} shows that this stabilization comes with a horizon-specific target shift.
 
 Accordingly, in the empirical application we use vintage-year portfolios and the simple linear SDF as the baseline specification, emphasize one-factor MKT specifications, treat two-factor results as exploratory, and focus on Horizons around 12.5--15 years while also reporting sensitivity over a broader grid.
 
 
 \subsection{Role of asymptotic inference}
 
-To assess the parameter significance in the empirical application, we compute the asymptotic standard errors as outlined in Subsection~\ref{sec:asymptotic_framework}.
-For the Bartlett kernel bandwidth $b_V$, we set $b_V=12$ years, so pairs of funds with absolute vintage-year differences exceeding 12 receive zero kernel weight in the SHAC covariance estimator.
-The asymptotic results provide the benchmark large-sample approximation. 
+We compute asymptotic standard errors using the SHAC framework of Subsection~\ref{sec:asymptotic_framework} with Bartlett kernel bandwidth $b_V{=}12$ years.
+These provide the benchmark large-sample approximation.
 
-At the same time, private-equity samples remain small in the vintage-year and cross-sectional dimensions, and model choice is often data-driven. 
-For that reason, the empirical analysis complements asymptotic inference with out-of-sample validation and stability diagnostics. 
-To account for the dependency between funds from adjacent vintage years caused by overlapping fund cash flows, we draw on $hv$-block cross-validation \citep{R00}.
-As \cite{R00} demonstrates, $hv$-block cross-validation is a consistent model-selection criterion for dependent data: the $h$-block gap between training and validation sets ensures approximate independence, while the $v$-block provides a sufficiently large validation sample within each fold.
-In our implementation, each cross-validation fold partitions the data into three disjoint groups:
-(i)~a \emph{validation set} ($v$-block) comprising funds from three consecutive vintage years (e.g., 2000, 2001, 2002), on which the out-of-sample pricing error is evaluated;
-(ii)~a \emph{buffer zone} ($h$-block) of three vintage years on each side of the $v$-block (e.g., 1997--1999 and 2003--2005), which is discarded entirely to break the dependence between training and validation data caused by overlapping fund cash flows; and
-(iii)~an \emph{estimation set} consisting of all remaining vintage years (e.g., 1985--1996 and 2006--end), on which the model parameters are estimated.
-This three-way split is repeated across rolling vintage-year windows, as detailed in Table~\ref{tab:hv_block_cv}.
-The number of active folds adapts dynamically to the selected maximum vintage year cutoff in any given estimation run.
-For instance, when estimating the full sample through 2021, we apply ten folds; when estimating a heavily seasoned sample truncated at 2010 to avoid reliance on subjective interim NAVs, the framework naturally truncates to seven active folds.
+Because private-equity samples remain small and model choice is often data-driven, we complement asymptotic inference with $hv$-block cross-validation \citep{R00}, a consistent model-selection criterion for dependent data.
+Each fold partitions the data into three disjoint groups:
+(i)~a \emph{validation set} ($v$-block) of three consecutive vintage years;
+(ii)~a \emph{buffer zone} ($h$-block) of three vintage years on each side, discarded to break dependence from overlapping cash flows; and
+(iii)~an \emph{estimation set} comprising all remaining vintage years.
+This three-way split is repeated across rolling vintage-year windows (Table~\ref{tab:hv_block_cv}), with the number of active folds adapting dynamically to the maximum vintage-year cutoff (e.g., seven folds when the sample is truncated at 2010).
 
 \begin{remark}[Cross-validation as stability diagnostic]
 	\label{rem:cv_diagnostic}
