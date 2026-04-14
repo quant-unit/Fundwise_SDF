@@ -393,7 +393,7 @@ process_plot_data <- function(df, weight_label, fund_type) {
 
     # Filter up to year 20 (t+20)
     df.subset <- df.subset[df.subset$Age >= 0 & df.subset$Age <= 20, ]
-
+  
     agg <- aggregate(cbind(CF, CON) ~ Vintage + Age, data = df.subset, sum, na.rm = TRUE)
     agg <- agg[order(agg$Vintage, agg$Age), ]
 

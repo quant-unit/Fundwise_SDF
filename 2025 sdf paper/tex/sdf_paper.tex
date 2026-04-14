@@ -933,7 +933,14 @@ The Venture Capital (North America) sample contains 931 distinct funds spreading
 The vintage year distribution is as follows: 1982 (1), 1985 (3), 1986 (4), 1987 (2), 1988 (1), 1989 (1), 1990 (4), 1991 (1), 1992 (7), 1993 (6), 1994 (6), 1995 (8), 1996 (14), 1997 (15), 1998 (28), 1999 (44), 2000 (68), 2001 (45), 2002 (26), 2003 (18), 2004 (31), 2005 (34), 2006 (43), 2007 (46), 2008 (36), 2009 (18), 2010 (18), 2011 (22), 2012 (20), 2013 (32), 2014 (31), 2015 (37), 2016 (34), 2017 (48), 2018 (46), 2019 (59), 2020 (44), 2021 (30).
 The region distribution is as follows: North America (267), US (664).
 The strategy distribution is as follows: Early Stage (268), Early Stage: Seed (44), Early Stage: Start-up (23), Expansion / Late Stage (123), Venture (General) (451), Venture Debt (22).
-The fund currency distribution is as follows: USD (931).
+The fund currency distribution is as follows: USD (931). \\
+
+Typical PE funds call approximately 33\% of their total capital commitments by year one, 50\% by year two, 66\% by year three, 80\% by year four, 88\% by year five, and 93\% by year six. 
+These cumulative drawdown dynamics clarify why short compounding horizons come with smaller structural target shifts. 
+Because investments initiated \emph{after} the maximum evaluation date in \(\mathcal{T}_{i,H}\) are priced strictly as future projects (\(\tau < t_{i,j}^{\mathrm{Inv}}\)), their conditional expected pricing error remains zero. 
+Therefore, they are mathematically immune to the Compounding-Horizon Wedge. 
+For example, under a compounding horizon of $H=4$ years, roughly 20\% of the aggregate investment cash flows occur \emph{after} the active averaging window. 
+Thus, for $H=4$ roughly 20\% of the fund's capital is discounted without accumulating the covariance wedge that structurally drives the target shift.
 
 \subsection{SDF models and public data}
 \label{sec:model_selection}
@@ -957,7 +964,7 @@ To avoid overfitting, we restrict our analysis to six simple SDF models that con
 In Equation~\eqref{eq:estimator}, we use the quadratic loss function $L(x)=x^2$.
 
 
-In our optimization procedure, we limit the alpha intercept $\alpha$ to the range $[-2\%, +2\%]$ per month to avoid the ``exploding alpha'' issue documented in \cite[Footnote~8]{DLP12}: when $\alpha$ is unrestricted, an arbitrarily large value can almost perfectly price any cash flow stream (except its first component), rendering the beta risk factors irrelevant.
+In our optimization procedure, we limit the alpha intercept $\alpha$ to the range $[-2\%, +2\%]$ per month to avoid the ``exploding alpha'' issue documented in \cite[Footnote~8]{DLP12}: when $\alpha$ is unrestricted, an arbitrarily large $\alpha$ value can almost perfectly price any cash flow stream (except its first component), rendering the beta risk factors irrelevant.
 
 
 \subsection{The impact of unseasoned funds and reported NAVs}

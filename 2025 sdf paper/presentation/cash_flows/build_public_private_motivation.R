@@ -185,6 +185,10 @@ cf_path <- cf_cum %>%
     values_to = "value"
   )
 
+# typical contribution path by age
+df.con <- cf_path[cf_path$series == "Cumulative contributions", ]
+df.con$value <- df.con$value / max(df.con$value)
+
 p_right <- ggplot(cf_path, aes(x = age_years, y = value, color = series, linetype = series)) +
   geom_hline(yintercept = 0, color = "grey70", linewidth = 0.3) +
   geom_line(linewidth = 1.25, alpha = 0.95) +
