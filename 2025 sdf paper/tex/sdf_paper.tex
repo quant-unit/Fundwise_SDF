@@ -490,6 +490,7 @@ Larger values of the horizon $H$ offer more regularization, but a larger departu
 \end{figure}
 
 For $\mathcal{T}_{i,H}=\{t_i^0,t_i^0+1,\dots,\min(t_i^0+12H,T_i^{\max})\}$, the estimator targets the horizon-specific pseudo-true parameter $\theta_H^{\dagger}$, which coincides with the structural parameter $\theta_0$ only when $H=0$. For $H>0$, the estimator trades structural fidelity against finite-sample regularization by averaging pricing errors over discounting dates that may incorporate the Compounding-Horizon Wedge from Section~\ref{sec:asset_pricing_pooled}.
+Online Appendix~\ref{sec:appendix_bias_variance} analyzes this mechanism in rigorous detail, providing an exact Mean Squared Error (MSE) decomposition that mathematically formalizes how $\mathcal{T}$-averaging dampens finite-sample criterion volatility at the cost of shifting the population pseudo-true target point.
 
 \paragraph{Restriction used for identification and asymptotic theory.} 
 In the consistency analysis below, we specialize the generalized criterion to $\mathcal{T}_i = \{t_i^0\}$. Under Proposition~\ref{theo:inception_value}, this yields a valid pooled fund-level zero-moment restriction at the structural parameter $\theta_0$.
