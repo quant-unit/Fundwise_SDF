@@ -39,7 +39,7 @@ simulation.filename <- "base_case_vyp/base_case_vyp_simulated_cashflows_EW_VYP.c
 public.filename <- "q_factors"
 
 # Grid parameters (can be easily increased)
-grid_n <- 100
+grid_n <- 30
 alpha_seq <- seq(-0.01, 0.01, length.out = grid_n)
 beta_seq <- seq(0, 2, length.out = grid_n)
 
@@ -175,7 +175,7 @@ cat("Generating 3D plot to PDF...\n")
 
 output_pdf <- "simulation/degenerate_alpha_grid.pdf"
 
-pdf(output_pdf, width = 12, height = 6)
+pdf(output_pdf, width = 12, height = 5.25)
 par(mfrow = c(1, 2), mar = c(2, 2, 2, 2))
 
 # Helper to plot one side

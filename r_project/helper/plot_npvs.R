@@ -9,10 +9,10 @@ df.cf <- data.frame(t = seq(0,8), CF = c(-3, -2, -4, -1, 5, 2, 5, 0, 1))
 npvs <- data.frame(t = seq(0,8), NPV = sum(df.cf$CF) / 2 + rnorm(9, 0, 0.3))
 
 # plot chart as EPS
-do.eps <- FALSE
+do.eps <- TRUE
 if(do.eps) {
   setEPS()
-  postscript("chart/npvs2.eps", 
+  postscript("npvs2.eps", 
              width = 5.5, height = 3, 
              family = "Helvetica", pointsize = 11)
 }
@@ -65,9 +65,9 @@ npvs <- data.frame(
 
 if(do.eps) {
   setEPS()
-  postscript("chart/npvs3.eps", 
-             width = 5.5, height = 3, 
-             family = "Helvetica", pointsize = 10)
+  postscript("npvs3.eps", 
+             width = 6, height = 2.5, 
+             family = "Helvetica", pointsize = 8)
 }
 
 # plot setup
@@ -81,7 +81,7 @@ plot(NULL,
 abline(h = 0, col = "grey")
 
 # color map
-cols <- c(A = "red", B = "darkgreen")
+cols <- c(A = "firebrick2", B = "seagreen")
 
 # draw project A & B cash flows
 for(i in seq_len(nrow(df_proj))) {
@@ -105,7 +105,7 @@ avg.npv <- mean(npvs$NPV)
 lines(c(0, 6), c(avg.npv, avg.npv), col = "blue")
 
 # legend
-legend("bottomright", bty = "n",
+legend("bottomright", bty = "n", cex = 0.8,
        legend = c("Project A cash flows", 
                   "Project B cash flows",
                   latex2exp::TeX('Pricing error per date: $\\epsilon_{\\tau}$'),
