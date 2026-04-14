@@ -112,6 +112,7 @@ For now, \(\Pi\) should be simple and transparent: random assignment within each
 For the benchmark design, first aggregate all funds in each vintage \(v\) into a vintage-year portfolio. Then assign whole vintages to folds. The notation is the same at the fold level, but the economic object differs: \(F_{n,r}\) now contains whole vintage-year portfolios rather than within-vintage fund cells.
 
 \section{Pricing Moments}
+\label{sec:pricing_moments}
 
 For a fold \(F_{n,r}\), let \(\epsilon_{n,v,r}(\theta;M,\eta)\) be the pricing error from the vintage component of that fold. The design choice \(\eta\) collects choices such as the alpha definition, loss function, and cash-flow weighting.
 
@@ -200,6 +201,98 @@ The paper should still compare alpha definitions:
 
 The empirical question is not only which SDF factors perform best, but also which alpha definition yields stable and predictive PE pricing moments.
 
+\section{Euler NAV Restrictions for Unseasoned Vintages}
+\label{sec:euler_nav}
+
+The empirical algorithm in Section~\ref{sec:algorithm} excludes insufficiently seasoned vintages. This wastes data from recent vintages that carry useful pricing information. Including them naively---by treating the latest reported NAV as a terminal distribution---amplifies alpha instability, because a single large NAV position is discounted over the fund's entire remaining horizon.
+
+We propose a different treatment. For unseasoned vintages, replace the single cumulative pricing restriction with a sequence of one-period Euler restrictions on quarterly NAV returns. This retains the information from recent vintages while avoiding long-horizon discounting. The resulting estimator is a \emph{NAV-bridged cash-flow estimator}: asymptotically a pure cash-flow estimator, with well-conditioned finite-sample corrections for young funds.
+
+\subsection{Seasoned and unseasoned vintage sets}
+
+Partition the active vintages into seasoned and unseasoned sets,
+\[
+\mathcal V = \mathcal V^S \cup \mathcal V^U.
+\]
+A vintage \(v\) is \emph{unseasoned} (\(v\in\mathcal V^U\)) if its aggregate residual NAV exceeds a fraction \(\delta\) of total committed capital; otherwise it is \emph{seasoned} (\(v\in\mathcal V^S\)). In practice, \(\delta\in[0.10,0.20]\) is a sensible range. For seasoned vintages, the pricing restriction is the standard cumulative cash-flow error as defined in Section~\ref{sec:pricing_moments}. For unseasoned vintages, we use the one-period Euler pricing error defined next.
+
+\subsection{One-period Euler pricing error}
+
+For a fund \(i\) in an unseasoned vintage with quarterly NAV observations at dates \(t=0,1,\dots,T_i\), define the one-period pricing error for quarter \(t\):
+\[
+\eta_{t,i}(\theta)
+=
+\Psi_{t-1,t}(\theta)\cdot\bigl(CF_{t,i}+\mathrm{NAV}_{t,i}\bigr)
+-\mathrm{NAV}_{t-1,i},
+\]
+where \(CF_{t,i}\) is the net cash flow during the quarter, \(\mathrm{NAV}_{t,i}\) is the reported net asset value at quarter-end, and \(\Psi_{t-1,t}(\theta)\) is the one-period stochastic discount factor.
+
+The restriction \(E[\eta_{t,i}(\theta_0)]=0\) is an Euler equation: the beginning-of-period NAV equals the risk-adjusted present value of within-period distributions plus the end-of-period NAV. It is the same object that prices a one-period return on a traded asset, applied here to the NAV-implied gross return of the fund.
+
+For an unseasoned vintage \(v\in\mathcal V^U\) and fund cell \(C_{n,v,r}\), define the cell-level Euler pricing error as the discounted sum of quarterly errors:
+\[
+\epsilon_{n,v,r}^{U}(\theta)
+=
+\sum_{i\in C_{n,v,r}} w_i
+\sum_{t=1}^{T_v}
+\Psi_{0,t-1}(\theta)\,\eta_{t,i}(\theta).
+\]
+The cumulative discount factor \(\Psi_{0,t-1}(\theta)\) converts each quarterly error to time-zero units, ensuring that \(\epsilon^U\) is denominated in the same present-value units as the standard cash-flow pricing error \(\epsilon^S\) for seasoned vintages.
+
+\subsection{Telescoping and asymptotic nesting}
+
+The discounted Euler errors telescope, which establishes that the Euler approach nests the standard cash-flow approach.
+
+\medskip\noindent
+\textbf{Proposition (Telescoping).}
+\textit{For a fund with inception value \(\mathrm{NAV}_{0,i}=0\) and terminal value \(\mathrm{NAV}_{T_i,i}=0\) (fully liquidated), the sum of discounted Euler errors equals the standard cumulative pricing error:}
+\[
+\sum_{t=1}^{T_i} \Psi_{0,t-1}(\theta)\,\eta_{t,i}(\theta)
+=
+\sum_{t=1}^{T_i} \Psi_{0,t}(\theta)\,CF_{t,i}.
+\]
+
+\textit{Proof.}\enspace
+Expand the left-hand side using \(\Psi_{0,t-1}\cdot\Psi_{t-1,t}=\Psi_{0,t}\):
+\begin{align*}
+\sum_{t=1}^{T_i}\Psi_{0,t-1}\,\eta_{t,i}
+&=\sum_{t=1}^{T_i}\bigl[\Psi_{0,t}\,(CF_{t,i}+\mathrm{NAV}_{t,i})
+  -\Psi_{0,t-1}\,\mathrm{NAV}_{t-1,i}\bigr]\\
+&=\sum_{t=1}^{T_i}\Psi_{0,t}\,CF_{t,i}
+  \;+\;\underbrace{\sum_{t=1}^{T_i}\bigl[\Psi_{0,t}\,\mathrm{NAV}_{t,i}
+  -\Psi_{0,t-1}\,\mathrm{NAV}_{t-1,i}\bigr]}_{\text{telescopes to }
+  \Psi_{0,T_i}\mathrm{NAV}_{T_i}-\mathrm{NAV}_{0,i}\;=\;0}.
+\end{align*}
+\hfill\(\square\)
+
+\medskip
+This identity has three consequences:
+\begin{enumerate}
+\item \textbf{Nesting.} For fully liquidated funds, the Euler pricing error equals the standard cash-flow pricing error. If all vintages are seasoned, the estimator reduces to a pure cash-flow estimator.
+\item \textbf{Convergence.} As an unseasoned fund matures and its NAV declines toward zero, the Euler error converges continuously to the cash-flow error. There is no discontinuity at the seasoned/unseasoned boundary.
+\item \textbf{Asymptotic irrelevance.} Only the most recent vintages within a bounded horizon \(D\) carry nonzero NAV terms. As \(V\to\infty\), the fraction \(|\mathcal V^U|/V\to 0\). The estimator is therefore \emph{asymptotically a pure cash-flow estimator}; the Euler restrictions are finite-sample corrections that vanish in the limit.
+\end{enumerate}
+
+\subsection{Why one-period restrictions stabilize alpha}
+
+Under the standard cumulative approach, including an unseasoned fund with residual \(\mathrm{NAV}_T>0\) requires discounting by the cumulative SDF \(\Psi_{0,T}(\theta)\), which contains the factor \((1+\alpha)^{-T}\). For large \(T\) or large \(\mathrm{NAV}_T\), a small perturbation in \(\alpha\) produces a large swing in the pricing error. This mechanism could aggravate the exploding-alpha issue.
+
+The quarterly Euler restriction replaces this single long-horizon discounting with \(T\) one-period discountings, each involving \((1+\alpha)^{-1}\). The sensitivity to \(\alpha\) is proportional to the quarter length \(\Delta t\), not exponential in the fund horizon \(T\). Moreover, each quarterly error \(\eta_{t,i}\) subtracts \(\mathrm{NAV}_{t-1}\) from a discounted quantity of comparable magnitude, so the error is well-conditioned regardless of fund size.
+
+\subsection{Integration into fold moments}
+
+The fold moment retains its original form:
+\[
+m_{n,r}(\theta;M,\eta)
+=
+\sum_{v\in\mathcal V^S\cap A_{n,r}}
+\omega_{n,v,r}\,\epsilon_{n,v,r}^{S}(\theta;M,\eta)
+\;+\;
+\sum_{v\in\mathcal V^U\cap A_{n,r}}
+\omega_{n,v,r}\,\epsilon_{n,v,r}^{U}(\theta;M,\eta),
+\]
+where \(\epsilon^S\) is the standard cumulative cash-flow pricing error and \(\epsilon^U\) is the Euler-based error defined above. Both terms are pricing errors that equal zero under correct pricing. The entire estimation and validation machinery from Sections~5 and~6 applies without modification---only the construction of vintage-level pricing errors differs between seasoned and unseasoned vintages.
+
 \section{Relation to DLP12 and KN16}
 
 The paper can be positioned in one paragraph:
@@ -208,16 +301,18 @@ The paper can be positioned in one paragraph:
 \item \textbf{From DLP12:} price private cash flows directly with an SDF.
 \item \textbf{From KN16:} use aggregated pricing moments and an NPV-style abnormal-performance object.
 \item \textbf{New here:} treat the construction of PE pricing moments as a resampling problem and rank SDF models by holdout pricing errors across many admissible fund assignments.
+\item \textbf{Also new:} Euler NAV restrictions for unseasoned vintages that telescope into the standard cash-flow restriction, avoiding both sample waste and exploding-alpha degeneracy (Section~\ref{sec:euler_nav}).
 \end{itemize}
 
 The paper is therefore not a repair of the existing SDF paper. It is a new empirical-design paper: how should we build, resample, and validate PE pricing moments when the sample is small and the moment construction is consequential?
 
 \section{Empirical Algorithm}
+\label{sec:algorithm}
 
 For each candidate model \(M\), alpha design \(\eta\), and partition scheme \(\Pi\):
 
 \begin{enumerate}
-\item Choose active vintages and exclude insufficiently seasoned vintages.
+\item Partition vintages into seasoned (\(\mathcal V^S\)) and unseasoned (\(\mathcal V^U\)) sets (Section~\ref{sec:euler_nav}).
 \item Choose \(P\) estimation folds and \(h\) holdout folds.
 \item Draw a sampled assignment \(n\) from \(\Pi\).
 \item Build fold cash-flow portfolios and fold pricing moments \(m_{n,r}(\theta;M,\eta)\).
