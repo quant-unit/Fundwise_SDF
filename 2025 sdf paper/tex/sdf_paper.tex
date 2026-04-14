@@ -478,28 +478,15 @@ Larger values of the horizon $H$ offer more regularization, but a larger departu
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.99\textwidth]{figure/npvs3.pdf}
+	\includegraphics[width=\textwidth]{figure/npvs3.pdf}
 	\caption{
 		How to calculate and interpret the average pricing error introduced by Equation~\eqref{eq:average_pricing_error}:
 		The time index $t$ is relevant for the cash flows (red and green dots).
 		The time index $\tau$ is used for the pricing error, i.e., the sum of discounted net cash flows (blue boxes).
-		The weighted average of these "pricing errors" gives the average pricing error $\bar{\epsilon}$ as defined in Equation~\eqref{eq:average_pricing_error} (solid blue line).
+		The weighted average of these ``pricing errors'' gives the average pricing error $\bar{\epsilon}$ as defined in Equation~\eqref{eq:average_pricing_error} (solid blue line).
 		In this example, $\mathrm{card}(\mathcal{T}_{i})=7$, i.e., the number of blue boxes.
 	}
 	\label{fig:npvs}
-\end{figure}
-
-\begin{figure}[htbp]
-	\centering
-	\includegraphics[width=0.98\textwidth]{figure/degenerate_alpha_grid.pdf}
-	\caption{
-		The figure plots the sample objective function $Q_{n,H}(\theta) = \frac{1}{n} \sum_{i=1}^n \bar{\epsilon}_i(\theta)^2$ over a two-dimensional grid of SDF parameters $\alpha \in [-0.01, 0.01]$ and $\beta_{\mathrm{MKT}} \in [0, 2]$, using simulated private-equity cash flows (from the base-case DGP of Section \ref{sec:simulation_study}) with true parameters $\alpha_0 = 0$ and $\beta_{\mathrm{MKT},0} = 1$. 
-		The left panel uses the inception-only criterion ($H = 0$), where $\mathcal{T}_i = {t_i^0}$ and each fund's pricing error $\bar{\epsilon}_i(\theta)$ reduces to a single unscaled net present value $PV_i(\theta) = \sum_t \Psi_{t_i^0,t}(\theta) CF_{i,t}$. 
-		The right panel uses horizon averaging with $H = 15$ years, so that $\bar{\epsilon}_i(\theta)$ averages pricing errors over $\mathrm{card}(\mathcal{T}_{i,H})$ discounting dates as defined in Equation~\eqref{eq:average_pricing_error}. In each panel, the green dot marks the true DGP parameter vector $(\alpha_0, \beta_{\mathrm{MKT},0}) = (0, 1)$. 
-		The left panel illustrates the ``exploding alpha'' degeneracy: extreme values of $\alpha$ drive the multiplicative discount factors $\Psi_{\tau,t}(\theta)$ toward zero for all funds, collapsing the squared pricing errors to near-zero and creating a ridge of spurious near-minima along the $\alpha$ axis that prevents reliable identification. 
-		The right panel shows that horizon averaging over $\mathcal{T}_{i,H}$ regularizes the objective surface, restoring a well-identified minimum near the true parameter values.
-	} 
-	\label{fig:exploding_alpha}
 \end{figure}
 
 For $\mathcal{T}_{i,H}=\{t_i^0,t_i^0+1,\dots,\min(t_i^0+12H,T_i^{\max})\}$, the estimator targets the horizon-specific pseudo-true parameter $\theta_H^{\dagger}$, which coincides with the structural parameter $\theta_0$ only when $H=0$. For $H>0$, the estimator trades structural fidelity against finite-sample regularization by averaging pricing errors over discounting dates that may incorporate the Compounding-Horizon Wedge from Section~\ref{sec:asset_pricing_pooled}.
@@ -508,6 +495,18 @@ For $\mathcal{T}_{i,H}=\{t_i^0,t_i^0+1,\dots,\min(t_i^0+12H,T_i^{\max})\}$, the 
 In the consistency analysis below, we specialize the generalized criterion to $\mathcal{T}_i = \{t_i^0\}$. Under Proposition~\ref{theo:inception_value}, this yields a valid pooled fund-level zero-moment restriction at the structural parameter $\theta_0$.
 This restriction guarantees that $\mathbb{E}[\bar{\epsilon}_i(\theta_0)] = 0$ under the true parameter.
 For the quadratic loss $L(x) = x^2$, the population objective $Q_0(\theta) = -\mathbb{E}[\bar{\epsilon}_i(\theta)^2] = -\mathrm{Var}[\bar{\epsilon}_i(\theta)] - (\mathbb{E}[\bar{\epsilon}_i(\theta)])^2$ involves both variance and bias terms, so consistency requires that $\theta_0$ uniquely maximizes this composite criterion (see Proposition~\ref{prop:consistency_H}).
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=\textwidth]{figure/degenerate_alpha_grid.pdf}
+	\caption{
+		\textbf{Regularizing the sample objective function.} 
+		The figure plots the sample objective $Q_{n,H}(\theta)$ with quadratic loss over $\alpha$ and $\beta_{\mathrm{MKT}}$, using simulated cash flows from the base-case DGP (Section \ref{sec:simulation_study}). The green dot marks the true parameters $(\alpha_0, \beta_{\mathrm{MKT},0}) = (0, 1)$. 
+		\textbf{Left panel ($H = 0$):} The inception-only criterion suffers from the ``exploding alpha'' degeneracy. Large positive $\alpha$ values drive multiplicative discount factors to zero, creating a ridge of spurious near-minima along the $\alpha$ axis that prevents reliable identification. 
+		\textbf{Right panel ($H = 15$ years):} Horizon averaging regularizes the objective surface, restoring a well-identified minimum near the true parameters.
+	} 
+	\label{fig:exploding_alpha}
+\end{figure}
 
 \paragraph{LMD estimator.} 
 Because our estimator is defined through the optimization of a sample criterion, it is an extremum estimator in the sense of \citet[Eq.~1.1]{NM94}, with $\hat{\theta} = \arg\max_{\theta \in \Theta} Q_n(\theta)$.
@@ -536,6 +535,7 @@ L \bigl( \bar{\epsilon}_{i}(\theta) \bigr)
 \end{equation*}
 where $L: \mathbb{R}^{1} \rightarrow \mathbb{R}^1$ denotes a loss function, e.g., $L(x)=(x-0)^2$ in the case of nonlinear least squares.
 Throughout the paper, the weighted average fund pricing error $\bar{\epsilon}_i \equiv \bar{\epsilon}_i(\theta)$ is regarded as a nonlinear random function of the SDF parameter $\theta$.
+
 
 
 
