@@ -10,12 +10,23 @@
 \usepackage{newtxmath}
 \usepackage{natbib}
 \usepackage{graphicx}
-% use smaller margin
-\usepackage[margin=1.1in]{geometry} % 1.25in
+% Margin for JFEC
+\usepackage[letterpaper, margin=1in]{geometry}
 \usepackage[margin=1.1cm]{caption}
 % use double spacing
 \usepackage{setspace}
 \usepackage{url}
+
+% Toggle this boolean to easily switch between visually nice working mode (false) and JFEC submission formatting (true)
+\newif\ifSubmissionMode
+\SubmissionModefalse % Set to \SubmissionModetrue before submitting
+
+\ifSubmissionMode
+  \usepackage{endnotes}
+  \let\footnote=\endnote
+  \usepackage[nomarkers, figlist, notablist]{endfloat}
+\fi
+
 \usepackage[outdir=./]{epstopdf}
 \usepackage{booktabs}
 \usepackage{float}
@@ -45,7 +56,10 @@
 	
 \input{sdf_paper_titlepage.tex}
 
-% \doublespacing
+\ifSubmissionMode
+  \doublespacing
+  \renewcommand{\arraystretch}{2}
+\fi
 
 \begin{center}
 % Option 1:
@@ -181,7 +195,7 @@ Section~\ref{sec:comparison_to_similar_estimators} demonstrates how this LMD est
 		$\delta_{i,j}$ & Deal-level pricing error \\
 		\bottomrule
 	\end{tabular}
-	\caption{Key notation for asset pricing and pooled cash flows (Section~\ref{sec:asset_pricing_pooled}).}
+	\caption{\textbf{Key notation for asset pricing and pooled cash flows.}}
 	\label{tab:notation_asset_pricing}
 \end{table}
 
@@ -418,7 +432,7 @@ As we demonstrate in later sections, averaging pricing errors over extended hori
 		$\Sigma_H$ & Asymptotic covariance matrix of $\hat{\theta}_H$ \\
 		\bottomrule
 	\end{tabular}
-	\caption{Key notation for the LMD estimator and asymptotic benchmark (Sections \ref{sec:fundwise_lmd_estimator}--\ref{sec:asymptotic_framework}).}
+	\caption{\textbf{Key notation for the LMD estimator and asymptotic benchmark.}}
 	\label{tab:notation_estimator}
 \end{table}
 
@@ -480,7 +494,8 @@ Larger values of the horizon $H$ offer more regularization, but a larger departu
 	\centering
 	\includegraphics[width=\textwidth]{figure/npvs3.pdf}
 	\caption{
-		How to calculate and interpret the average pricing error introduced by Equation~\eqref{eq:average_pricing_error}:
+		\textbf{Interpretation of averaged pricing error.}
+		How to calculate and interpret $\mathcal{T}$-averaging introduced by Equation~\eqref{eq:average_pricing_error}:
 		The time index $t$ is relevant for the cash flows (red and green dots).
 		The time index $\tau$ is used for the pricing error, i.e., the sum of discounted net cash flows (blue boxes).
 		The weighted average of these ``pricing errors'' gives the average pricing error $\bar{\epsilon}$ as defined in Equation~\eqref{eq:average_pricing_error} (solid blue line).
@@ -503,8 +518,8 @@ For the quadratic loss $L(x) = x^2$, the population objective $Q_0(\theta) = -\m
 	\caption{
 		\textbf{Regularizing the sample objective function.} 
 		The figure plots the sample objective $Q_{n,H}(\theta)$ with quadratic loss over $\alpha$ and $\beta_{\mathrm{MKT}}$, using simulated cash flows from the base-case DGP (Section \ref{sec:simulation_study}). The green dot marks the true parameters $(\alpha_0, \beta_{\mathrm{MKT},0}) = (0, 1)$. 
-		\textbf{Left panel ($H = 0$):} The inception-only criterion suffers from the ``exploding alpha'' degeneracy. Large positive $\alpha$ values drive multiplicative discount factors to zero, creating a ridge of spurious near-minima along the $\alpha$ axis that prevents reliable identification. 
-		\textbf{Right panel ($H = 15$ years):} Horizon averaging regularizes the objective surface, restoring a well-identified minimum near the true parameters.
+		Left panel ($H = 0$): The inception-only criterion suffers from the ``exploding alpha'' degeneracy. Large positive $\alpha$ values drive multiplicative discount factors to zero, creating a ridge of spurious near-minima along the $\alpha$ axis that prevents reliable identification. 
+		Right panel ($H = 15$ years): Horizon averaging regularizes the objective surface, restoring a well-identified minimum near the true parameters.
 	} 
 	\label{fig:exploding_alpha}
 \end{figure}
@@ -860,7 +875,7 @@ Table~\ref{tab:comparison} summarizes the main distinctions between \citet{DLP12
 		& Both (tested empirically) \\
 		\bottomrule
 	\end{tabular}
-	\caption{Comparison of SDF estimation frameworks for private equity.}
+	\caption{\textbf{Comparison of SDF estimation frameworks for private equity.}}
 	\label{tab:comparison}
 \end{table}
 
@@ -894,15 +909,15 @@ For non-liquidated funds, we treat the latest NAV as final cash flow.
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.99\textwidth]{empirical_bovc_us/cumcashflowsBO.pdf}
-	\caption{\textbf{Cumulative cash flows:} J-curves by vintage year for BO funds in Preqin dataset scaled by fund commitment. Post-2010 vintage years are shown as green lines. Based on the sensitivity analysis in Section~\ref{sec:empirical_vintage_cutoffs_bovc}, these vintages are excluded from the empirical estimates in Section~\ref{sec:empirical_results_bovc} to limit reliance on unrealized NAVs.}
+	\includegraphics[width=\textwidth]{empirical_bovc_us/cumcashflowsBO.pdf}
+	\caption{\textbf{Cumulative cash flows of BO funds.} J-curves by vintage year for BO funds in Preqin dataset scaled by fund commitment. Post-2010 vintage years are shown as green lines. Based on the sensitivity analysis in Section~\ref{sec:empirical_vintage_cutoffs_bovc}, these vintages are excluded from the empirical estimates in Section~\ref{sec:empirical_results_bovc} to limit reliance on unrealized NAVs.}
 	\label{fig:preqin_cashflows_bo}
 \end{figure}
 
 \begin{figure}[ht]
 	\centering
-	\includegraphics[width=0.99\textwidth]{empirical_bovc_us/cumcashflowsVC.pdf}
-	\caption{\textbf{Cumulative cash flows:} J-curves by vintage year for VC funds in Preqin dataset scaled by fund commitment. Post-2010 vintage years are shown as green lines. Based on the sensitivity analysis in Section~\ref{sec:empirical_vintage_cutoffs_bovc}, these vintages are excluded from the empirical estimates in Section~\ref{sec:empirical_results_bovc} to limit reliance on unrealized NAVs.}
+	\includegraphics[width=\textwidth]{empirical_bovc_us/cumcashflowsVC.pdf}
+	\caption{\textbf{Cumulative cash flows of VC fund.} J-curves by vintage year for VC funds in Preqin dataset scaled by fund commitment. Post-2010 vintage years are shown as green lines. Based on the sensitivity analysis in Section~\ref{sec:empirical_vintage_cutoffs_bovc}, these vintages are excluded from the empirical estimates in Section~\ref{sec:empirical_results_bovc} to limit reliance on unrealized NAVs.}
 	\label{fig:preqin_cashflows_vc}
 \end{figure}
 
@@ -969,7 +984,7 @@ Figure~\ref{fig:max_vintage_BOVC_MKT_alpha} confirms that unseasoned post-2016 v
 		\centering
 		\includegraphics[width=0.99\textwidth]{empirical_bovc_us/max_vintage_VC_US_MKT_combined_NC}
 	\end{minipage}
-	\caption{\textbf{Sensitivity analysis ($MKT$ factor):} Single-factor model for BO (left) and VC (right) under value weighting, using VYP with different vintage-year cutoffs (asymptotic estimates). For each asset class, the left chart shows the standard baseline (full NAV as final cash flow), while the right chart applies a 50\% discount to all final NAVs.}
+	\caption{\textbf{Sensitivity analysis ($MKT$ factor).} Single-factor model for BO (left) and VC (right) under value weighting, using VYP with different vintage-year cutoffs (asymptotic estimates). For each asset class, the left chart shows the standard baseline (full NAV as final cash flow), while the right chart applies a 50\% discount to all final NAVs.}
 	\label{fig:max_vintage_BOVC_MKT}
 \end{figure}
 
@@ -983,7 +998,7 @@ Figure~\ref{fig:max_vintage_BOVC_MKT_alpha} confirms that unseasoned post-2016 v
 		\centering
 		\includegraphics[width=0.99\textwidth]{empirical_bovc_us/max_vintage_VC_US_Alpha_MKT_combined_NC}
 	\end{minipage}
-	\caption{\textbf{Sensitivity analysis ($\alpha + MKT$ factor):} Two-factor model for BO (left) and VC (right) under value weighting, using VYP with different vintage-year cutoffs (asymptotic estimates). For each asset class, the left chart shows the standard baseline (full NAV as final cash flow), while the right chart applies a 50\% discount to all final NAVs.}
+	\caption{\textbf{Sensitivity analysis ($\alpha + MKT$ factors).} Two-factor model for BO (left) and VC (right) under value weighting, using VYP with different vintage-year cutoffs (asymptotic estimates). For each asset class, the left chart shows the standard baseline (full NAV as final cash flow), while the right chart applies a 50\% discount to all final NAVs.}
 	\label{fig:max_vintage_BOVC_MKT_alpha}
 \end{figure}
 
@@ -1021,7 +1036,7 @@ Under FW, the effect is more pronounced, particularly at longer Horizons (15-yea
 		\centering
 		\includegraphics[width=0.99\textwidth]{empirical_bovc_us/nav_disc_VC_US_MKT_combined_NC}
 	\end{minipage}
-	\caption{\textbf{NAV discount sensitivity ($MKT$ factor):} Single-factor model for BO (left) and VC (right) using VYP and maximum vintage year 2010. Each panel shows asymptotic estimates under five NAV treatments: full NAV as final cash flow, 25\%, 50\%, 75\% constant discounts, and 100\% NAV write-off.}
+	\caption{\textbf{NAV discount sensitivity ($MKT$ factor).} Single-factor model for BO (left) and VC (right) using VYP and maximum vintage year 2010. Each panel shows asymptotic estimates under five NAV treatments: full NAV as final cash flow, 25\%, 50\%, 75\% constant discounts, and 100\% NAV write-off.}
 	\label{fig:nav_disc_BOVC_MKT}
 \end{figure}
 
@@ -1060,7 +1075,7 @@ This constraint likely explains why \cite{KN16} use individual funds in their SH
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.99\textwidth]{simulation/bias_comparison1}
-	\caption{\textbf{Simulation ($\beta_{\textrm{MKT}}$, $\alpha$):} Single-fund vs.\ vintage-year portfolios.}
+	\caption{\textbf{Simulation results ($\alpha + MKT$ factors).} Single-fund vs.\ vintage-year portfolios.}
 	\label{fig:simulation_funds_vs_vyps}
 \end{figure}
 
@@ -1076,20 +1091,21 @@ Shrinking $V$ from 39 to 10 years elevates variance only moderately for the earl
 This hierarchy is even more pronounced in the two-factor setting, where increasing $n/V$ aggressively dampens spurious $\alpha$ variance.
 These findings provide an empirical rationale for the finite-sample superiority of \cite{DLP12} infill asymptotics (fixing $V$, $n_v \to \infty$) over purely time-series aggregation.
 
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.99\textwidth]{simulation/bias_comparison2}
+	\caption{\textbf{Simulation results ($MKT$ factor).} Varying vintages $V$ and portfolio sizes $n/V$.}
+	\label{fig:sim_vary_vin_sizes}
+\end{figure}
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.99\textwidth]{simulation/bias_comparison3}
-	\caption{\textbf{Simulation ($\beta_{\textrm{MKT}}$, $\alpha$):} Varying vintages $V$ and portfolio sizes $n/V$.}
+	\caption{\textbf{Simulation results ($\alpha + MKT$ factors).} Varying vintages $V$ and portfolio sizes $n/V$.}
 	\label{fig:sim_vary_vin_sizes_alpha}
 \end{figure}
 
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.99\textwidth]{simulation/bias_comparison2}
-	\caption{\textbf{Simulation ($\beta_{\textrm{MKT}}$):} Varying vintages $V$ and portfolio sizes $n/V$.}
-	\label{fig:sim_vary_vin_sizes}
-\end{figure}
+
 
 
 \paragraph{Two-factor models ($q^5$ factors):}
@@ -1122,7 +1138,7 @@ These results counsel caution when interpreting two-factor SDF estimates and ind
 		\bottomrule
 		\multicolumn{9}{l}{\footnotesize True values: $\beta_{\mathrm{MKT}}=1$, $\beta_{\mathrm{2nd}}=0.5$.}
 	\end{tabular}
-	\caption{Two-factor simulation summary: mean estimates and standard deviations at the shortest (0\,yr) and the 15-year Horizon.}
+	\caption{\textbf{Two-factor simulation summary.} Mean estimates and standard deviations at the shortest (0\,yr) and the 15-year Horizon.}
 	\label{tab:sim_q5_summary}
 \end{table}
 
@@ -1131,7 +1147,7 @@ These results counsel caution when interpreting two-factor SDF estimates and ind
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.99\textwidth]{simulation/bias_comparison4zoom}
-	\caption{\textbf{Simulation ($q^5$ factors):} Two-factor models using VYP.}
+	\caption{\textbf{Simulation results ($q^5$ factors).} Two-factor models using VYP.}
 	\label{fig:sim_q_factors}
 \end{figure}
 
@@ -1146,7 +1162,7 @@ These results show that the bias-minimizing Horizon can extend well beyond a fun
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.99\textwidth]{simulation/bias_comparison_lifetime}
-	\caption{\textbf{Simulation ($\beta_{\textrm{MKT}}$, $\alpha$):} Varying fund lifetimes using VYP with the following yearly investment-period/holding-period pairs: 1/1, 2/2, 3/3, 3/6, and 3/10 (from left to right).}
+	\caption{\textbf{Simulation results ($\alpha + MKT$ factors).} Varying fund lifetimes using VYP with the following yearly investment-period/holding-period pairs: 1/1, 2/2, 3/3, 3/6, and 3/10 (from left to right).}
 	\label{fig:sim_lifetimes}
 \end{figure}
 
@@ -1215,7 +1231,7 @@ This three-way split is repeated across rolling vintage-year windows (Table~\ref
 			\bottomrule
 		\end{tabular}
 	}
-	\caption{Partitions used for $hv$-block cross-validation. The number of active folds truncates dynamically based on the maximum vintage year cutoff of the specific estimation run.}
+	\caption{\textbf{Partitions used for $hv$-block cross-validation.} The number of active folds truncates dynamically based on the maximum vintage year cutoff of the specific estimation run.}
 	\label{tab:hv_block_cv}
 \end{table}
 
@@ -1251,16 +1267,8 @@ All R code and data (including the previous simulations) are available in an onl
 \subsection{Baseline: single market-factor models}
 \label{sec:empirical_single_bovc}
 
-Tables~\ref{tab:empirical_bo_mkt}--\ref{tab:empirical_vc_mkt} and Figure~\ref{fig:empirical_BOVC_MKT} report the single-factor MKT model for BO and VC across Horizons from 0 to 30 years.
+Figure~\ref{fig:empirical_BOVC_MKT} and  Tables~\ref{tab:empirical_bo_mkt}--\ref{tab:empirical_vc_mkt} report the single-factor MKT model for BO and VC across Horizons from 0 to 30 years.
 As anticipated by the simulation study, the market beta declines with the compounding Horizon for both asset classes.
-
-For BO under EW, $\hat{\beta}_{\mathrm{MKT}}$ ranges from approximately 1.20--1.24 at short Horizons (0--5~years) and decreases to 0.68 at 25--30~years; under FW, the corresponding range is 1.22--1.23 down to 0.71.
-The divergence between asymptotic and cross-validation diagnostics persists: asymptotic $t$-ratios ($t_A$) are moderate at short Horizons (e.g., 0.94--1.05 under EW at 0--5~years) and decline further at longer Horizons, while the cross-validation stability ratios remain high throughout ($\mathrm{SR}_{CV}$ ranging from 4.98 to 10.01 under EW and from 2.59 to 8.09 under FW), indicating comparatively stable estimates across data subsets.
-
-For VC, the market beta is substantially higher across all Horizons, consistent with venture capital's greater sensitivity to systematic risk.
-Under EW, $\hat{\beta}_{\mathrm{MKT}}$ reaches approximately 1.97--2.00 at 2.5--5~years and converges toward 1.05--1.18 beyond 25~years; under FW, the corresponding range is 1.66 down to 0.82--0.90.
-Despite the higher parameter variability reflected in larger asymptotic standard errors (SE$_A$ of 1.28--1.83), the cross-validation stability diagnostics indicate comparatively stable estimates ($\mathrm{SR}_{CV}$ of 3.65--4.55 under EW; 3.53--7.57 under FW), although somewhat lower than the BO stability ratios due to the more heterogeneous VC fund universe.
-As horizon-specific diagnostics rather than direct structural estimates, the converged long-horizon coefficients (BO $\approx 0.68$, VC $\approx 1.1$ under EW) remain economically interpretable: BO funds, which invest in mature companies with stable cash flows, load less on market risk than VC funds, which back early-stage ventures with highly uncertain outcomes.
 
 \begin{figure}[htbp]
 	\centering
@@ -1272,17 +1280,25 @@ As horizon-specific diagnostics rather than direct structural estimates, the con
 		\centering
 		\includegraphics[width=0.99\textwidth]{empirical_bovc_us/empirical_VC_US_MKT}
 	\end{minipage}
-	\caption{\textbf{Empirical ($MKT$ factor):} Single-factor model for BO (left) and VC (right) using VYP and maximum vintage year 2010.}
+	\caption{\textbf{Empirical results  for BO and VC ($MKT$ factor).} Single-factor model for BO (left) and VC (right) using VYP and maximum vintage year 2010.}
 	\label{fig:empirical_BOVC_MKT}
 \end{figure}
+
+For BO under EW, $\hat{\beta}_{\mathrm{MKT}}$ ranges from approximately 1.20--1.24 at short Horizons (0--5~years) and decreases to 0.68 at 25--30~years; under FW, the corresponding range is 1.22--1.23 down to 0.71.
+The divergence between asymptotic and cross-validation diagnostics persists: asymptotic $t$-ratios ($t_A$) are moderate at short Horizons (e.g., 0.94--1.05 under EW at 0--5~years) and decline further at longer Horizons, while the cross-validation stability ratios remain high throughout ($\mathrm{SR}_{CV}$ ranging from 4.98 to 10.01 under EW and from 2.59 to 8.09 under FW), indicating comparatively stable estimates across data subsets.
+
+For VC, the market beta is substantially higher across all Horizons, consistent with venture capital's greater sensitivity to systematic risk.
+Under EW, $\hat{\beta}_{\mathrm{MKT}}$ reaches approximately 1.97--2.00 at 2.5--5~years and converges toward 1.05--1.18 beyond 25~years; under FW, the corresponding range is 1.66 down to 0.82--0.90.
+Despite the higher parameter variability reflected in larger asymptotic standard errors (SE$_A$ of 1.28--1.83), the cross-validation stability diagnostics indicate comparatively stable estimates ($\mathrm{SR}_{CV}$ of 3.65--4.55 under EW; 3.53--7.57 under FW), although somewhat lower than the BO stability ratios due to the more heterogeneous VC fund universe.
+As horizon-specific diagnostics rather than direct structural estimates, the converged long-horizon coefficients (BO $\approx 0.68$, VC $\approx 1.1$ under EW) remain economically interpretable: BO funds, which invest in mature companies with stable cash flows, load less on market risk than VC funds, which back early-stage ventures with highly uncertain outcomes.
+
+
 
 % Auto-generated by plot_empirical_estimates.R
 
 \begin{table}[htbp]
 	\centering
 	\footnotesize
-	\caption{Empirical Estimates: BO --- Single-Factor (MKT) Model}
-	\label{tab:empirical_bo_mkt}
 	\begin{tabular}{l *{5}{r} *{5}{r}}
 		\toprule
 		& \multicolumn{5}{c}{Equal-Weighted (EW)} & \multicolumn{5}{c}{Value-Weighted (FW)} \\
@@ -1304,8 +1320,11 @@ As horizon-specific diagnostics rather than direct structural estimates, the con
 		30 yr & 0.681 & 1.992 & 0.139 & 0.34 & 4.98 & 0.712 & 1.682 & 0.250 & 0.42 & 2.59 \\
 		\bottomrule
 	\end{tabular}
-	\par\vspace{2pt}
-	{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. Significance markers based on $t_A$ are reported for completeness only: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+	\caption{\textbf{Empirical estimates for BO ($MKT$ factor).}
+		{\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. Significance markers based on $t_A$ are reported for completeness only: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+	}
+	\label{tab:empirical_bo_mkt}
+
 \end{table}
 
 % Auto-generated by plot_empirical_estimates.R
@@ -1313,8 +1332,6 @@ As horizon-specific diagnostics rather than direct structural estimates, the con
 \begin{table}[htbp]
 	\centering
 	\footnotesize
-	\caption{Empirical Estimates: VC --- Single-Factor (MKT) Model}
-	\label{tab:empirical_vc_mkt}
 	\begin{tabular}{l *{5}{r} *{5}{r}}
 		\toprule
 		& \multicolumn{5}{c}{Equal-Weighted (EW)} & \multicolumn{5}{c}{Value-Weighted (FW)} \\
@@ -1336,8 +1353,11 @@ As horizon-specific diagnostics rather than direct structural estimates, the con
 		30 yr & 1.045 & 1.582 & 0.262 & 0.66 & 3.65 & 0.817 & 3.084 & 0.206 & 0.26 & 3.53 \\
 		\bottomrule
 	\end{tabular}
-	\par\vspace{2pt}
-	{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. Significance markers based on $t_A$ are reported for completeness only: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+	\caption{\textbf{Empirical estimates for VC ($MKT$ factor).}
+	{\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. Significance markers based on $t_A$ are reported for completeness only: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+	}
+	\label{tab:empirical_vc_mkt}
+
 \end{table}
 
 
@@ -1346,8 +1366,22 @@ As horizon-specific diagnostics rather than direct structural estimates, the con
 \subsection{Robustness: two-factor $\alpha+MKT$ models}
 \label{sec:empirical_alpha_bovc}
 
-Tables~\ref{tab:empirical_bo_alpha}--\ref{tab:empirical_vc_alpha} and Figure~\ref{fig:empirical_BOVC_Alpha} present the two-factor MKT~+~$\alpha$ model for BO and VC.
+Figure~\ref{fig:empirical_BOVC_Alpha} and Tables~\ref{tab:empirical_bo_alpha}--\ref{tab:empirical_vc_alpha} present the two-factor MKT~+~$\alpha$ model for BO and VC.
 The results show the instability anticipated by the simulation study: once an alpha intercept is introduced, separation between the intercept and the MKT loading weakens materially.
+
+\begin{figure}[htbp]
+	\centering
+	\begin{minipage}{0.49\textwidth}
+		\centering
+		\includegraphics[width=0.99\textwidth]{empirical_bovc_us/empirical_BO_US_Alpha}
+	\end{minipage}
+	\begin{minipage}{0.49\textwidth}
+		\centering
+		\includegraphics[width=0.99\textwidth]{empirical_bovc_us/empirical_VC_US_Alpha}
+	\end{minipage}
+	\caption{\textbf{Empirical results  for BO and VC ($\alpha + MKT$ factors).} Two-factor model for BO (left) and VC (right) using VYP and maximum vintage year 2010.}
+	\label{fig:empirical_BOVC_Alpha}
+\end{figure}
 
 For BO, the alpha term absorbs a substantial share of the variation that otherwise loads on the market factor: under EW, $\hat{\alpha}$ ranges from 0.003 to 0.006 per month (and -0.001 for 17.5~years) and the MKT coefficient oscillates between 0.35 and 1.01, with no stable convergence across Horizons.
 Under FW, $\hat{\alpha}$ is persistently around 0.004--0.008 per month while the MKT loading falls to values between 0.11 and 0.44.
@@ -1363,27 +1397,13 @@ Under FW, the instability is somewhat attenuated ($\hat{\alpha}$ remains close t
 
 The BO and VC two-factor results therefore reinforce the same conclusion: among the specifications considered here, single-factor MKT models are the most stable for private-equity SDF estimation in our sample.
 
-\begin{figure}[htbp]
-	\centering
-	\begin{minipage}{0.49\textwidth}
-		\centering
-		\includegraphics[width=0.99\textwidth]{empirical_bovc_us/empirical_BO_US_Alpha}
-	\end{minipage}
-	\begin{minipage}{0.49\textwidth}
-		\centering
-		\includegraphics[width=0.99\textwidth]{empirical_bovc_us/empirical_VC_US_Alpha}
-	\end{minipage}
-	\caption{\textbf{Empirical ($MKT + \alpha$ model):} Two-factor model for BO (left) and VC (right) using VYP and maximum vintage year 2010.}
-	\label{fig:empirical_BOVC_Alpha}
-\end{figure}
+
 
 % Auto-generated by plot_empirical_estimates.R
 
-\begin{table}[htbp]
+\begin{table}[H]
 	\centering
 	\footnotesize
-	\caption{Empirical Estimates: BO --- MKT + Alpha Model}
-	\label{tab:empirical_bo_alpha}
 	\begin{tabular}{l *{5}{r} *{5}{r}}
 		\toprule
 		& \multicolumn{5}{c}{Equal-Weighted (EW)} & \multicolumn{5}{c}{Value-Weighted (FW)} \\
@@ -1423,18 +1443,18 @@ The BO and VC two-factor results therefore reinforce the same conclusion: among 
 		%30 yr & 0.002 & 0.021 & 0.004 & 0.10 & 0.36 & 0.005 & 0.137 & 0.005 & 0.04 & 0.62 \\
 		\bottomrule
 	\end{tabular}
-	\par\vspace{2pt}
-	{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. Significance markers based on $t_A$ are reported for completeness only: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+	\caption{\textbf{Empirical estimates for BO ($\alpha + MKT$ factors).}
+	{\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. Significance markers based on $t_A$ are reported for completeness only: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+	}
+	\label{tab:empirical_bo_alpha}
 \end{table}
 
 
 % Auto-generated by plot_empirical_estimates.R
 
-\begin{table}[htbp]
+\begin{table}[H]
 	\centering
 	\footnotesize
-	\caption{Empirical Estimates: VC --- MKT + Alpha Model}
-	\label{tab:empirical_vc_alpha}
 	\begin{tabular}{l *{5}{r} *{5}{r}}
 		\toprule
 		& \multicolumn{5}{c}{Equal-Weighted (EW)} & \multicolumn{5}{c}{Value-Weighted (FW)} \\
@@ -1474,14 +1494,16 @@ The BO and VC two-factor results therefore reinforce the same conclusion: among 
 		%30 yr & -0.009 & 0.029 & 0.001 & -0.29 & -9.19 & -0.009 & 0.011 & 0.002 & -0.82 & -5.48 \\
 		\bottomrule
 	\end{tabular}
-	\par\vspace{2pt}
-	{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. Significance markers based on $t_A$ are reported for completeness only: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+	\caption{\textbf{Empirical estimates for VC ($\alpha + MKT$ factors).}
+		{\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. Significance markers based on $t_A$ are reported for completeness only: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+		}
+	\label{tab:empirical_vc_alpha}
 \end{table}
 
 
 
 
-\subsection{Two-factor $q^5$-factor models}
+\subsection{Robustness: two-factor $q^5$-factor models}
 \label{sec:empirical_q_factors_bovc}
 
 We now pair MKT with each of the four non-market $q^5$ factors (ME, IA, ROE, EG) in two-factor specifications estimated separately for BO and VC.
@@ -1496,7 +1518,7 @@ At the same time, the asymptotic standard errors are frequently erratic and some
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.99\textwidth]{empirical_bovc_us/empirical_BO_US_Multi.pdf}
-	\caption{\textbf{Empirical results ($q^5$-factors):} Two-factor model for BO funds using VYP and maximum vintage year 2010.}
+	\caption{\textbf{Empirical results for BO and VC ($q^5$-factors).} Two-factor model for BO funds using VYP and maximum vintage year 2010.}
 	\label{fig:empirical_BO_q_factors}
 \end{figure}
 
@@ -1508,7 +1530,7 @@ Across specifications, the resulting estimates are materially less stable and le
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=0.99\textwidth]{empirical_bovc_us/empirical_VC_US_Multi.pdf}
-	\caption{\textbf{Empirical results ($q^5$-factors):} Two-factor model for VC funds using VYP and maximum vintage year 2010.}
+	\caption{\textbf{Empirical results for BO and VC ($q^5$-factors).} Two-factor model for VC funds using VYP and maximum vintage year 2010.}
 	\label{fig:empirical_VC_q_factors}
 \end{figure}
 
@@ -1538,11 +1560,25 @@ More broadly, our results suggest that progress on richer private-equity SDF mod
 Promising directions include better integration of interim valuation information and cash-flow dynamics, regularization or model-selection methods for sparse multi-factor settings, and principled procedures for choosing the set of discounting dates $\mathcal{T}$.
 These extensions would help clarify when Horizon averaging improves finite-sample performance enough to justify the associated change in estimand.
 
+\ifSubmissionMode
+
+\newpage
+\begingroup
+\parindent 0pt
+\parskip 2ex
+\def\enotesize{\normalsize}
+\renewcommand{\notesname}{Notes}
+\theendnotes
+\endgroup
+
+\fi
+
 %% References
+\newpage
 \bibliographystyle{apalike}
 \bibliography{sdf_paper_refs}
 
-%\newpage
+\newpage
 
 \input{sdf_paper_online_appendices.tex}
 
