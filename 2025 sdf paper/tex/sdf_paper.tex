@@ -154,7 +154,7 @@ Section~\ref{sec:conclusion} concludes.
 \section{Methodology}
 \label{sec:spatial_sdf_methodology}
 
-We now formalize a semiparametric framework for SDF estimation with pooled cash flows. 
+We now formalize a semiparametric framework for SDF estimation with pooled cash flows based on the seminal approach of \citet{DLP12}. 
 Section~\ref{sec:asset_pricing_pooled} establishes the theoretical asset-pricing conditions and highlights how the choice of discounting date induces the Compounding-Horizon Wedge. 
 Section~\ref{sec:fundwise_lmd_estimator} uses this insight to introduce a generalized Least-Mean-Distance estimator that endogenizes the discounting dates. 
 Section~\ref{sec:asymptotic_framework} summarizes the increasing-domain asymptotic benchmark and SHAC inference used to interpret the empirical results under overlapping vintage-year dependence. 
@@ -505,7 +505,7 @@ Larger values of the horizon $H$ offer more regularization, but a larger departu
 \end{figure}
 
 For $\mathcal{T}_{i,H}=\{t_i^0,t_i^0+1,\dots,\min(t_i^0+12H,T_i^{\max})\}$, the estimator targets the horizon-specific pseudo-true parameter $\theta_H^{\dagger}$, which coincides with the structural parameter $\theta_0$ only when $H=0$. For $H>0$, the estimator trades structural fidelity against finite-sample regularization by averaging pricing errors over discounting dates that may incorporate the Compounding-Horizon Wedge from Section~\ref{sec:asset_pricing_pooled}.
-Online Appendix~\ref{sec:appendix_bias_variance} analyzes this mechanism in rigorous detail, providing an exact Mean Squared Error (MSE) decomposition that mathematically formalizes how $\mathcal{T}$-averaging dampens finite-sample criterion volatility at the cost of shifting the population pseudo-true target point.
+Online Appendix~\ref{sec:appendix_bias_variance} analyzes this target shift mechanism in rigorous detail, providing an exact Mean Squared Error (MSE) decomposition that mathematically formalizes how $\mathcal{T}$-averaging dampens finite-sample criterion volatility at the cost of shifting the population pseudo-true target point.
 
 \paragraph{Restriction used for identification and asymptotic theory.} 
 In the consistency analysis below, we specialize the generalized criterion to $\mathcal{T}_i = \{t_i^0\}$. Under Proposition~\ref{theo:inception_value}, this yields a valid pooled fund-level zero-moment restriction at the structural parameter $\theta_0$.
@@ -917,7 +917,7 @@ For non-liquidated funds, we treat the latest NAV as final cash flow.
 \begin{figure}[ht]
 	\centering
 	\includegraphics[width=\textwidth]{empirical_bovc_us/cumcashflowsVC.pdf}
-	\caption{\textbf{Cumulative cash flows of VC fund.} J-curves by vintage year for VC funds in Preqin dataset scaled by fund commitment. Post-2010 vintage years are shown as green lines. Based on the sensitivity analysis in Section~\ref{sec:empirical_vintage_cutoffs_bovc}, these vintages are excluded from the empirical estimates in Section~\ref{sec:empirical_results_bovc} to limit reliance on unrealized NAVs.}
+	\caption{\textbf{Cumulative cash flows of VC funds.} J-curves by vintage year for VC funds in Preqin dataset scaled by fund commitment. Post-2010 vintage years are shown as green lines. Based on the sensitivity analysis in Section~\ref{sec:empirical_vintage_cutoffs_bovc}, these vintages are excluded from the empirical estimates in Section~\ref{sec:empirical_results_bovc} to limit reliance on unrealized NAVs.}
 	\label{fig:preqin_cashflows_vc}
 \end{figure}
 
@@ -1177,10 +1177,11 @@ These results show that the bias-minimizing Horizon can extend well beyond a fun
 
 A central finding concerns the choice of $\mathcal{T}$.
 Theoretically, discounting exclusively to inception ($H{=}0$), i.e.\ the \cite{DLP12} framework, yields unbiased estimates under the exact-pricing restriction (Equation~\eqref{eq:deal_pricing}).
-However, in the reported designs, bias is minimized not at $H{=}0$ but around 12.5--15 years: at short Horizons, idiosyncratic noise interacts non-linearly with estimation, inducing severe factor-loading bias.
-Averaging pricing errors over multiple dates acts as a finite-sample stabilization device, improving the mean estimate far more than it reduces standard errors, while introducing the timing component of Section~\ref{sec:asset_pricing_pooled}.
+However, in the reported simulation designs, bias is minimized not at $H{=}0$ but around 12.5--15 years: at short Horizons, idiosyncratic noise interacts non-linearly with estimation, inducing severe factor-loading bias.
+Averaging pricing errors over multiple dates acts as a finite-sample stabilization device, improving the mean estimate far more than it reduces standard errors, while introducing the target shift mentioned in Section~\ref{sec:fundwise_lmd_estimator}.
 Our shorter-lifetime simulations indicate that the optimal horizon requires tailored calibration rather than a simple fund-life heuristic.
-We analyze these results theoretically in Appendix~\ref{sec:appendix_bias_variance}.
+But, because the finite-sample gains from horizon averaging are DGP-dependent and come with the horizon-specific target shift, horizon choice should at present be viewed as a tuning decision guided by simulations, stability diagnostics, and economic judgment rather than by a fully developed optimality theory.
+We further analyze these results theoretically in Appendix~\ref{sec:appendix_bias_variance}.
 
 \paragraph{Simulation conclusion:}
 To conclude, our simulation study supports several implementation choices used in the empirical application. 
