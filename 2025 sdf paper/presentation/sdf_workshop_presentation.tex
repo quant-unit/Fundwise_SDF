@@ -344,9 +344,6 @@ Nonlinear least-mean-distance:
 
 
 
-
-
-
 % Appendix
 
 
@@ -498,6 +495,46 @@ Nonlinear least-mean-distance:
 	
 	\vspace{0.4em}
 	\textbf{Reason:} asymptotic approximations are fragile with only 20--40 vintage portfolios.
+\end{frame}
+
+\begin{frame}[t]{HV Cross Validation}
+	\centering
+	
+	\footnotesize
+	\textcolor{blue!55!black}{\textbf{Estimation sample}}
+	\hspace{1.2em}
+	\textcolor{orange!80!black}{\textbf{$h$-block removed}}
+	\hspace{1.2em}
+	\textcolor{green!45!black}{\textbf{$v$-block validated}}
+	
+	\vspace{0.55em}
+	
+	{\small
+	\setlength{\tabcolsep}{4.5pt}
+	\renewcommand{\arraystretch}{1.12}
+	\begin{tabular}{@{}clcccc@{}}
+		\toprule
+		\textbf{Fold} &
+		\textbf{\textcolor{blue!55!black}{Train pre}} &
+		\textbf{\textcolor{orange!80!black}{Gap $h$}} &
+		\textbf{\textcolor{green!45!black}{Validate $v$}} &
+		\textbf{\textcolor{orange!80!black}{Gap $h$}} &
+		\textbf{\textcolor{blue!55!black}{Train post}} \\
+		\midrule
+		F1 & Start--1984 & 1985--1987 & 1988--1990 & 1991--1993 & 1994--end \\
+		F2 & Start--1987 & 1988--1990 & 1991--1993 & 1994--1996 & 1997--end \\
+		F3 & Start--1990 & 1991--1993 & 1994--1996 & 1997--1999 & 2000--end \\
+		F4 & Start--1993 & 1994--1996 & 1997--1999 & 2000--2002 & 2003--end \\
+		F5 & Start--1996 & 1997--1999 & 2000--2002 & 2003--2005 & 2006--end \\
+		F6 & Start--1999 & 2000--2002 & 2003--2005 & 2006--2008 & 2009--end \\
+		F7 & Start--2002 & 2003--2005 & 2006--2008 & 2009--2011 & 2012--end \\
+		\bottomrule
+	\end{tabular}}
+	
+	\vspace{0.35em}
+	
+	\raggedright
+	\scriptsize Symmetric $h$-blocks buffer dependence around each validation window; active folds truncate automatically once the maximum vintage cutoff is reached (shown here for the pre-2011 empirical sample).
 \end{frame}
 
 
