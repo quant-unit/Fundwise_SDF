@@ -57,9 +57,9 @@
 	
 	\vspace{0.6em}
 	\begin{itemize}
-		\item Goal: recover latent market exposure from \emph{cash flow data}.
-		\item Research question: \\ How stable are these semiparametric SDF estimators in finite samples?
-		\item Plan: naive approach first, then semiparametric SDF estimation.
+		\item \textbf{Goal}: Recover latent market exposure from \emph{cash flow data}.
+		\item \textbf{Research question:} How stable are semiparametric SDF estimators in finite samples?
+		%\item \textbf{Plan today}: Naive approach first, then semiparametric SDF estimation.
 	\end{itemize}
 	
 	\vspace{0.6em}
@@ -69,7 +69,7 @@
 		\item Risk-adjusted benchmarks for private equity funds.
 		\item Holistic risk management for public and private portfolios.
 		\item More realistic strategic asset allocation decisions.
-		\item Cash-flow based risk assessment for private ``in-house" projects.
+		\item Cash-flow based risk assessment for corporate projects.
 	\end{itemize}
 \end{frame}
 
@@ -488,7 +488,7 @@ Nonlinear least-mean-distance:
 
 \begin{frame}{Estimator: Inference Strategy}
 	\begin{itemize}
-		\item Asymptotic covariance: sandwich form $\Sigma=H^{-1}\Lambda H^{-1}$.
+		\item Asymptotic covariance: sandwich form $\Sigma=H^{-1}\Lambda H^{-1}$ with Hessian matrix $H$ and (long-run)  score covariance matrix $\Lambda$.
 		\item Long-run dependence handled by SHAC (spatial HAC) with vintage-distance kernel.
 		\item Small-sample reliability checked via \textbf{$hv$-block cross-validation}.
 	\end{itemize}
@@ -497,7 +497,7 @@ Nonlinear least-mean-distance:
 	\textbf{Reason:} asymptotic approximations are fragile with only 20--40 vintage portfolios.
 \end{frame}
 
-\begin{frame}[t]{HV-Block Cross Validation}
+\begin{frame}[t]{Model Selection: HV-Block Cross Validation}
 	\centering
 	
 	\footnotesize
