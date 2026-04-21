@@ -155,6 +155,135 @@ Aggregate this score across many sampled assignments:
 
 The preferred model-design pair \((M,\eta,\Pi)\) is the one with the lowest average holdout pricing loss. Parameter stability is still informative, but the primary ranking criterion should be predictive pricing performance: does the fitted SDF price cash flows that were not used in estimation?
 
+\subsection{Choice of Pricing Moment}
+\label{sec:moment_choice}
+
+The pricing error \(m_{n,j}(\theta;M,\eta)\) in the loss \(L\) is a design choice,
+not a primitive. Two canonical families appear in the private-capital SDF
+literature: the \emph{dollar NPV} moment of \citet{DriessenLinPhalippou2012}
+and the \emph{PME-ratio} moment of \citet{KaplanSchoar2005},
+\citet{DriessenLinPhalippou2009}, and \citet{AngChenGoetzmannPhalippou2018}.
+Because the resampling-based ranking of \((M,\eta,\Pi)\) can in principle be
+sensitive to this choice, we discuss both here and treat the NPV moment as
+the baseline, the PME-ratio as a robustness check.
+
+\paragraph{Dollar NPV moment.}
+For fold cell \(j\) in split \(n\), aggregate discounted cash flows into one
+cumulative pricing error,
+\[
+m^{\mathrm{NPV}}_{n,j}(\theta;M,\eta)
+=\sum_{i\in C_{n,j}} w_i\sum_{t=0}^{T_i}\Psi_{0,t}(\theta;M,\eta)\,CF_{t,i},
+\qquad CF_{t,i}=D_{t,i}-X_{t,i},
+\]
+where \(X_{t,i}\) are contributions, \(D_{t,i}\) distributions (including
+terminal NAV for seasoned funds), and \(\Psi_{0,t}\) the cumulative SDF. At
+the population parameter, \(E[m^{\mathrm{NPV}}_{n,j}(\theta_0)]=0\): the
+risk-adjusted NPV of fund cash flows vanishes.
+
+\emph{Pros.}
+(i)~\emph{Linearity} in cash flows yields tractable GMM derivatives,
+influence functions, and CLT-based inference.
+(ii)~\emph{Additivity} across funds makes the fold structure of
+Section~\ref{sec:algorithm}, as well as subsampling and the bootstrap,
+transparent: the cell moment is the sum of fund-level moments, and the split
+moment is the sum of cell moments.
+(iii)~\emph{Compatibility with the Euler NAV restriction} for unseasoned
+vintages: the one-period quarterly Euler error
+\(\eta_{t,i}(\theta)\), discounted to time zero and summed, telescopes into
+\(m^{\mathrm{NPV}}\) when \(\mathrm{NAV}_{0,i}=\mathrm{NAV}_{T_i,i}=0\). The
+same pricing object is therefore used for seasoned and unseasoned vintages,
+up to a finite-sample NAV correction that vanishes as funds mature. No
+denominator can be near zero; there is no ratio instability.
+
+\emph{Cons.}
+(i)~\emph{Scale-dependence.} A \$1B fund with a 1\% relative NPV error
+contributes ten times more to the moment than a \$100M fund with the same
+relative error, so efficient GMM weighting implicitly tilts the estimator
+toward mega-funds. The influence function is mechanically heavy-tailed in
+the fund-size distribution rather than in genuine pricing disagreement.
+(ii)~\emph{Dollar-denominated comparisons across vintages} with
+heterogeneous aggregate commitments are not directly meaningful; normalization
+is left to the econometrician.
+(iii)~\emph{Sign cancellation.} A cross-sectional mean of zero is consistent
+with systematic under-pricing of one subgroup offsetting over-pricing of
+another, which the scalar moment cannot detect. This motivates the
+fine-grained fold structure but does not eliminate the concern within a
+fold.
+
+\paragraph{PME-ratio moment.}
+Define the risk-adjusted PME of fund \(i\) as
+\[
+\mathrm{PME}_i(\theta;M,\eta)
+=\frac{\sum_{t}\Psi_{0,t}(\theta;M,\eta)\,D_{t,i}}
+{\sum_{t}\Psi_{0,t}(\theta;M,\eta)\,X_{t,i}},
+\]
+from which two natural cell-level moments follow: the \emph{average-PME}
+form
+\(
+m^{\mathrm{PME}}_{n,j}(\theta)
+=|C_{n,j}|^{-1}\sum_{i\in C_{n,j}}\bigl(\mathrm{PME}_i(\theta)-1\bigr)
+\)
+and the \emph{pooled-PME} form
+\(
+m^{\mathrm{PME\text{-}pool}}_{n,j}(\theta)
+=\bigl(\sum_{i,t}\Psi_{0,t}D_{t,i}\bigr)/\bigl(\sum_{i,t}\Psi_{0,t}X_{t,i}\bigr)-1.
+\)
+Both have mean zero at \(\theta_0\) under standard regularity, but they
+estimate different population objects (mean of a ratio versus ratio of
+means).
+
+\emph{Pros.}
+(i)~\emph{Scale-invariance.} The ratio is unit-free, so fund-size
+heterogeneity does not mechanically up-weight mega-funds. A \$100M fund and
+a \$1B fund enter the cross-sectional moment on equal footing.
+(ii)~\emph{Practitioner interpretability.} PME is the native performance
+metric of the industry; reporting results in the same units aids
+dissemination.
+(iii)~\emph{Bounded downside.} The fund-level PME is bounded below by zero,
+so \(\mathrm{PME}_i-1\) is bounded below by \(-1\): a single disaster fund
+cannot dominate the moment the way it can dominate a dollar NPV.
+
+\emph{Cons.}
+(i)~\emph{Nonlinearity.} The moment is a ratio in \(\theta\); its derivative
+involves the ratio of two correlated sums and is numerically fragile when
+the denominator (discounted contributions) is small. This occurs
+mechanically for young funds with back-loaded capital calls --- precisely
+the vintages that the Euler NAV restriction is designed to retain.
+(ii)~\emph{Jensen-style bias between forms.} The average-PME and pooled-PME
+moments can differ in finite samples by a term of order
+\(\mathrm{Var}(X_i)/\bar X^2\); the two are asymptotically equivalent only
+under degenerate size distributions. Researchers must commit to one and
+defend it.
+(iii)~\emph{No telescoping with the Euler NAV restriction.} Integrating
+unseasoned vintages \(\mathcal V^U\) into a PME framework typically requires
+treating the latest \(\mathrm{NAV}_{T_i,i}\) as a terminal distribution and
+discounting it over the fund's entire remaining horizon --- exactly the
+long-horizon discounting mechanism that motivates \(\epsilon^U\) in
+Section~\ref{sec:euler_nav}. The PME-ratio framework therefore reintroduces
+the exploding-alpha sensitivity for \(\mathcal V^U\) that the NPV/Euler
+combination was designed to eliminate.
+(iv)~\emph{Inference.} Upper-tail skewness in \(\mathrm{PME}_i\) (funds can
+return many times their capital, but cannot lose more than it) distorts
+CLT-based standard errors and \(t\)-statistics unless explicitly
+robustified, e.g., by bootstrapping the cell-level moment or by employing
+median-based loss functions.
+
+\paragraph{Choice for the empirical implementation.}
+The telescoping compatibility with the Euler NAV restriction and the
+tractability of inference make the dollar NPV moment our primary
+specification: it delivers a unified pricing restriction across
+\(\mathcal V^S\) and \(\mathcal V^U\) without introducing long-horizon NAV
+discounting through the back door. We additionally report two variants as
+robustness checks:
+(a)~a scale-normalized NPV, \(m^{\mathrm{NPV}}_{n,j}/\sum_{i\in C_{n,j}}K_i\)
+where \(K_i\) is committed capital, which preserves linearity while
+neutralizing the large-fund tilt; and
+(b)~the pooled-PME moment restricted to seasoned vintages
+\(\mathcal V^S\), which is where PME is unambiguously well-defined. Stability
+of the preferred \((M,\eta,\Pi)\) across these three moments is the
+appropriate robustness diagnostic: agreement suggests genuine model fit,
+while disagreement would flag moment-induced identification.
+
 \section{Why Validation Is Needed}
 
 If a model has \(p\) parameters and we estimate it on exactly \(p\) moments, the in-sample fit can look deceptively good. This is especially dangerous in small PE samples because exact identification can hide instability. The validation fold creates a more demanding question: after fitting the model on \(P\) moments, does it also price a held-out PE cash-flow portfolio?
@@ -207,6 +336,13 @@ The empirical question is not only which SDF factors perform best, but also whic
 The empirical algorithm in Section~\ref{sec:algorithm} excludes insufficiently seasoned vintages. This wastes data from recent vintages that carry useful pricing information. Including them naively---by treating the latest reported NAV as a terminal distribution---amplifies alpha instability, because a single large NAV position is discounted over the fund's entire remaining horizon.
 
 We propose a different treatment. For unseasoned vintages, replace the single cumulative pricing restriction with a sequence of one-period Euler restrictions on quarterly NAV returns. This retains the information from recent vintages while avoiding long-horizon discounting. The resulting estimator is a \emph{NAV-bridged cash-flow estimator}: asymptotically a pure cash-flow estimator, with well-conditioned finite-sample corrections for young funds.
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=\linewidth]{../figure/sampling_scheme_nav_pricing.pdf}
+	\caption{Within-vintage fold assignment under the NAV-bridged cash-flow estimator. Unseasoned vintages 2011--2012 (\(\mathcal V^U\), grey band) are included in estimation and validation like the seasoned vintages (\(\mathcal V^S\)), but contribute the one-period Euler NAV error \(\epsilon^U\) in place of the cumulative cash-flow error \(\epsilon^S\).}
+	\label{fig:nav-pricing-scheme}
+\end{figure}
 
 \subsection{Seasoned and unseasoned vintage sets}
 
