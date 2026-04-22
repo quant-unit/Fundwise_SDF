@@ -5,9 +5,85 @@
 \section*{Online appendices}
 
 
+%Appendix~\ref{sec:appendix_notation} provides a comprehensive summary of the notation.
 Appendix~\ref{sec:appendix_bias_variance} analyzes the target shift and finite-sample stabilization under $\mathcal{T}$-averaging.
 Appendix~\ref{sec:proofs_asymptotics_H} provides the regularity conditions, inference details, and mathematical proofs.
 Appendix~\ref{sec:dlp_results_comparison} compares our simulation and empirical results to their \cite{DLP12} counterparts.
+
+\iffalse
+
+\section{Notation Guide}
+\label{sec:appendix_notation}
+
+This appendix provides a comprehensive summary of the notation used throughout the paper. Table~\ref{tab:notation_asset_pricing} summarizes the key variables for the deal-level data generation process and the pooled cash-flow pricing framework. Table~\ref{tab:notation_estimator} summarizes the notation for the generalized Least-Mean-Distance estimator and its increasing-domain asymptotic benchmark.
+
+\begin{table}[H]
+	\centering
+	\small
+	\begin{tabular}{@{}ll@{}}
+		\toprule
+		Symbol & Description \\
+		\midrule
+		$n$ & Number of cross-sectional units (funds or portfolios) \\
+		$V$ & Number of distinct vintage years \\
+		$n_v$ & Number of portfolios in vintage year $v$ \\
+		$v_i$ & Vintage year of fund/portfolio $i$ \\
+		$t_i^0$ & Inception date of fund $i$ \\
+		$J_i$ & Number of deals for fund $i$ \\
+		$K_{i,j}$ & Number of divestment cash flows for deal $j$ of fund $i$ \\
+		$cf_{i,j,t}$ & Net cash flow of deal $j$ in fund $i$ at time $t$ \\
+		$CF_{i,t}$ & Net cash flow of fund $i$ at time $t$ \\
+		$P_{\tau,t,i}$ & Time-$\tau$ price of a single time-$t$ cash flow \\
+		$PV_i(\theta)$ & Pooled present value \\
+		${LCV}_{i,\tau}$ & Latent continuation value of fund $i$ at date $\tau$ \\
+		$T, T_i^{\max}$ & Final period and maximum fund lifetime \\
+		$\tau$ & Generic discounting or revaluation date \\
+		$\mathcal{F}_{\tau}$ & Information set (filtration) at time $\tau$ \\
+		$\mathrm{Inv}_{i,j}, \mathrm{Div}_{i,j,k}$ & Investment and divestment cash flows \\
+		$t_{i,j}^{\mathrm{Inv}}, t_{i,j,k}^{\mathrm{Div}}$ & Deal investment and divestment dates \\
+		$m_{i,j}^{\mathrm{NFV}}(\cdot)$ & NFV-type theoretical moment \\
+		$\Psi_t$\ , $M_t$ & Multi-period and single-period SDF \\
+		$\Psi_{\tau,t}(\theta)$ & SDF ratio $\Psi_t / \Psi_\tau$, parameterized by $\theta$ \\
+		$\theta \in \mathbb{R}^p$ & SDF parameter vector (e.g., intercept and factor loadings) \\
+		$\theta_0$ & True parameter vector \\
+		$\delta_{i,j}$ & Deal-level pricing error \\
+		\bottomrule
+	\end{tabular}
+	\caption{\textbf{Key notation for asset pricing and pooled cash flows.}}
+	\label{tab:notation_asset_pricing}
+\end{table}
+
+\begin{table}[H]
+	\centering
+	\small
+	\begin{tabular}{@{}ll@{}}
+		\toprule
+		Symbol & Description \\
+		\midrule
+		$\epsilon_{\tau,i}$ & Fund pricing error at discounting date $\tau$ \\
+		$\bar{\epsilon}_i, \bar{\epsilon}^{(H)}_i$ & Weighted average pricing error (generic and horizon-specific) \\
+		$H$ & Horizon parameter \\
+		$\mathcal{T}_i, \mathcal{T}_{i,H}$ & Set of discounting dates (generic and horizon-specific) \\
+		$w_i$ & Weighting factor for fund $i$ \\
+		$L(\cdot)$ & Loss function (e.g., $L(x) = x^2$) \\
+		$Q_H(\theta)$ & Horizon-specific population objective function \\
+		$Q_n(\theta), Q_{n,H}(\theta)$ & Sample objective function (generic and horizon-specific) \\
+		$s_i^{(H)}(\theta)$ & Unit score contribution \\
+		$d_{i,j}$ & Economic distance between units $i$ and $j$ \\
+		$K(\cdot), k_{i,j}$ & Symmetric SHAC kernel function and generic weights \\
+		$b_V$ & SHAC bandwidth parameter \\
+		$\hat{\theta}, \hat{\theta}_H$ & LMD Estimator (generic and horizon-specific targets) \\
+		$\theta_H^\dagger$ & Horizon-specific pseudo-true parameter vector \\
+		$\mathcal{H}_H$ & Hessian of population objective at $\theta_H^\dagger$ \\
+		$\Lambda_H$ & Long-run covariance matrix of the score \\
+		$\Sigma_H$ & Asymptotic covariance matrix of $\hat{\theta}_H$ \\
+		\bottomrule
+	\end{tabular}
+	\caption{\textbf{Key notation for the LMD estimator and asymptotic benchmark.}}
+	\label{tab:notation_estimator}
+\end{table}
+
+\fi
 
 \section{Target shift and finite-sample stabilization under $\mathcal{T}$-averaging}
 \label{sec:appendix_bias_variance}

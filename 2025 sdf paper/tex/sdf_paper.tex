@@ -105,11 +105,11 @@ But this is not merely a statistical refinement: once pricing errors are evaluat
 We formalize this mechanism as the \emph{Compounding-Horizon Wedge} and show that horizon choice creates a tradeoff between finite-sample stabilization and population target shift.
 At the same time, the simulation evidence below shows that this estimand shift need not be purely a cost: over an intermediate range of horizons, horizon averaging can improve finite-sample recoverability not only by lowering dispersion, but also by reducing higher-order small-sample bias of the estimator around its horizon-specific target.
 
-We develop this framework in the context of private-equity cash flows and apply it to Preqin data on 894 buyout and 931 venture-capital funds (North America, USD, vintages 1982--2010).
+We develop this framework in the context of private-equity cash flows and apply it to Preqin data on 894 Buyout and 931 Venture Capital funds (North America, USD, vintages 1982--2010).
 The empirical results deliver three main findings.
-First, parsimonious single-factor market models yield comparatively stable estimates across a broad range of compounding horizons, with market betas of roughly 0.8--1.2 for buyout and 1.0--1.9 for venture capital, depending on horizon and weighting scheme.
+First, parsimonious single-factor market models yield comparatively stable estimates across a broad range of compounding horizons, with market betas of roughly 0.8--1.2 for Buyout and 1.0--1.9 for Venture Capital, depending on horizon and weighting scheme.
 Second, once an $\alpha$ intercept or a second factor is introduced, estimates become highly unstable: market betas oscillate, sign reversals occur, and asymptotic standard errors become erratic, consistent with weak identification rather than a well-determined multifactor structure.
-Third, including unseasoned post-2010 vintages with large reported NAV components mechanically inflates estimated market betas (for buyout, from about 1.2 to 2.4), underscoring that sample construction is itself an identification choice in private-equity asset pricing.
+Third, including unseasoned post-2010 vintages with large reported NAV components mechanically inflates estimated market betas (for Buyout, from about 1.2 to 2.4), underscoring that sample construction is itself an identification choice in private-equity asset pricing.
 
 These findings do not imply that private-equity alpha is zero or that multifactor models are wrong; they indicate that semiparametric alpha estimates from currently available pooled cash-flow panels are weakly identified and highly sensitive to implementation choices.
 That qualification matters for interpreting both positive and negative findings on private-equity outperformance across the broader literature.
@@ -146,7 +146,7 @@ In our pooled non-traded cash-flow setting, the key issue is instead that horizo
 The remainder of the paper proceeds as follows.
 Section~\ref{sec:spatial_sdf_methodology} develops the generalized semiparametric estimator and the corresponding asymptotic inference framework.
 Section~\ref{sec:empirical_application} discusses implementation choices and studies finite-sample behavior in simulation.
-Section~\ref{sec:empirical_results_bovc} presents the empirical application to buyout and venture-capital funds.
+Section~\ref{sec:empirical_results_bovc} presents the empirical application to Buyout and Venture Capital funds.
 Section~\ref{sec:conclusion} concludes.
 
 
@@ -159,47 +159,10 @@ Section~\ref{sec:asset_pricing_pooled} establishes the theoretical asset-pricing
 Section~\ref{sec:fundwise_lmd_estimator} uses this insight to introduce a generalized Least-Mean-Distance estimator that endogenizes the discounting dates. 
 Section~\ref{sec:asymptotic_framework} summarizes the increasing-domain asymptotic benchmark and SHAC inference used to interpret the empirical results under overlapping vintage-year dependence. 
 Section~\ref{sec:comparison_to_similar_estimators} demonstrates how this LMD estimator nests the framework of \cite{DLP12} as a special case and relates to \cite{KN16}.
+%A comprehensive notation guide is provided in Online Appendix~\ref{sec:appendix_notation}.
 
 \subsection{Asset pricing for pooled cash flows}
 \label{sec:asset_pricing_pooled}
-
-\begin{table}[ht]
-	\centering
-	\small
-	\begin{tabular}{@{}ll@{}}
-		\toprule
-		Symbol & Description \\
-		\midrule
-		$n$ & Number of cross-sectional units (funds or portfolios) \\
-		$V$ & Number of distinct vintage years \\
-		$n_v$ & Number of portfolios in vintage year $v$ \\
-		$v_i$ & Vintage year of fund/portfolio $i$ \\
-		$t_i^0$ & Inception date of fund $i$ \\
-		$J_i$ & Number of deals for fund $i$ \\
-		$K_{i,j}$ & Number of divestment cash flows for deal $j$ of fund $i$ \\
-		$cf_{i,j,t}$ & Net cash flow of deal $j$ in fund $i$ at time $t$ \\
-		$CF_{i,t}$ & Net cash flow of fund $i$ at time $t$ \\
-		$P_{\tau,t,i}$ & Time-$\tau$ price of a single time-$t$ cash flow \\
-		$PV_i(\theta)$ & Pooled present value \\
-		${LCV}_{i,\tau}$ & Latent continuation value of fund $i$ at date $\tau$ \\
-		$T, T_i^{\max}$ & Final period and maximum fund lifetime \\
-		$\tau$ & Generic discounting or revaluation date \\
-		$\mathcal{F}_{\tau}$ & Information set (filtration) at time $\tau$ \\
-		$\mathrm{Inv}_{i,j}, \mathrm{Div}_{i,j,k}$ & Investment and divestment cash flows \\
-		$t_{i,j}^{\mathrm{Inv}}, t_{i,j,k}^{\mathrm{Div}}$ & Deal investment and divestment dates \\
-		$m_{i,j}^{\mathrm{NFV}}(\cdot)$ & NFV-type theoretical moment \\
-		$\Psi_t$\ , $M_t$ & Multi-period and single-period SDF \\
-		$\Psi_{\tau,t}(\theta)$ & SDF ratio $\Psi_t / \Psi_\tau$, parameterized by $\theta$ \\
-		$\theta \in \mathbb{R}^p$ & SDF parameter vector (e.g., intercept and factor loadings) \\
-		$\theta_0$ & True parameter vector \\
-		$\delta_{i,j}$ & Deal-level pricing error \\
-		\bottomrule
-	\end{tabular}
-	\caption{\textbf{Key notation for asset pricing and pooled cash flows.}}
-	\label{tab:notation_asset_pricing}
-\end{table}
-
-
 
 Because private equity funds invest capital over multiple quarters, any fund-level pricing restriction must aggregate deal-level moments across different investment dates.
 This subsection asks under what conditions such a pooled cash-flow stream satisfies a valid stochastic-discount-factor pricing restriction.
@@ -406,35 +369,7 @@ As we demonstrate in later sections, averaging pricing errors over extended hori
 \subsection{Least-Mean-Distance estimator}
 \label{sec:fundwise_lmd_estimator}
 
-\begin{table}[ht]
-	\centering
-	\small
-	\begin{tabular}{@{}ll@{}}
-		\toprule
-		Symbol & Description \\
-		\midrule
-		$\epsilon_{\tau,i}$ & Fund pricing error at discounting date $\tau$ \\
-		$\bar{\epsilon}_i, \bar{\epsilon}^{(H)}_i$ & Weighted average pricing error (generic and horizon-specific) \\
-		$H$ & Horizon parameter \\
-		$\mathcal{T}_i, \mathcal{T}_{i,H}$ & Set of discounting dates (generic and horizon-specific) \\
-		$w_i$ & Weighting factor for fund $i$ \\
-		$L(\cdot)$ & Loss function (e.g., $L(x) = x^2$) \\
-		$Q_H(\theta)$ & Horizon-specific population objective function \\
-		$Q_n(\theta), Q_{n,H}(\theta)$ & Sample objective function (generic and horizon-specific) \\
-		$s_i^{(H)}(\theta)$ & Unit score contribution \\
-		$d_{i,j}$ & Economic distance between units $i$ and $j$ \\
-		$K(\cdot), k_{i,j}$ & Symmetric SHAC kernel function and generic weights \\
-		$b_V$ & SHAC bandwidth parameter \\
-		$\hat{\theta}, \hat{\theta}_H$ & LMD Estimator (generic and horizon-specific targets) \\
-		$\theta_H^\dagger$ & Horizon-specific pseudo-true parameter vector \\
-		$\mathcal{H}_H$ & Hessian of population objective at $\theta_H^\dagger$ \\
-		$\Lambda_H$ & Long-run covariance matrix of the score \\
-		$\Sigma_H$ & Asymptotic covariance matrix of $\hat{\theta}_H$ \\
-		\bottomrule
-	\end{tabular}
-	\caption{\textbf{Key notation for the LMD estimator and asymptotic benchmark.}}
-	\label{tab:notation_estimator}
-\end{table}
+
 
 In this subsection, we define a generalized fund-level criterion that averages pricing errors across a user-specified set of discounting dates $\mathcal{T}_i$. 
 This nests the inception-only NPV criterion of \cite{DLP12} as a special case and allows us to study how horizon averaging trades structural validity against finite-sample regularization. 
