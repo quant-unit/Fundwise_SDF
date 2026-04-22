@@ -1,4 +1,14 @@
 \@doanenote {1}
+macro:->Corresponding
+Author:
+Christian
+Tausch.
+Tel:
++49895432880333.
+Email:
+christian.tausch@quant-unit.com
+\@endanenote 
+\@doanenote {2}
 macro:->At
 the
 boundary
@@ -34,7 +44,7 @@ same
 argument
 applies.
 \@endanenote 
-\@doanenote {2}
+\@doanenote {3}
 macro:->As
 with
 any

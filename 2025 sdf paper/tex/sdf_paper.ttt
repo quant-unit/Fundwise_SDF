@@ -1,73 +1,5 @@
 \begin{table}[ht]
 \centering
-\small
-\begin{tabular}{@{}ll@{}}
-\toprule
-Symbol & Description \\
-\midrule
-$n$ & Number of cross-sectional units (funds or portfolios) \\
-$V$ & Number of distinct vintage years \\
-$n_v$ & Number of portfolios in vintage year $v$ \\
-$v_i$ & Vintage year of fund/portfolio $i$ \\
-$t_i^0$ & Inception date of fund $i$ \\
-$J_i$ & Number of deals for fund $i$ \\
-$K_{i,j}$ & Number of divestment cash flows for deal $j$ of fund $i$ \\
-$cf_{i,j,t}$ & Net cash flow of deal $j$ in fund $i$ at time $t$ \\
-$CF_{i,t}$ & Net cash flow of fund $i$ at time $t$ \\
-$P_{\tau,t,i}$ & Time-$\tau$ price of a single time-$t$ cash flow \\
-$PV_i(\theta)$ & Pooled present value \\
-${LCV}_{i,\tau}$ & Latent continuation value of fund $i$ at date $\tau$ \\
-$T, T_i^{\max}$ & Final period and maximum fund lifetime \\
-$\tau$ & Generic discounting or revaluation date \\
-$\mathcal{F}_{\tau}$ & Information set (filtration) at time $\tau$ \\
-$\mathrm{Inv}_{i,j}, \mathrm{Div}_{i,j,k}$ & Investment and divestment cash flows \\
-$t_{i,j}^{\mathrm{Inv}}, t_{i,j,k}^{\mathrm{Div}}$ & Deal investment and divestment dates \\
-$m_{i,j}^{\mathrm{NFV}}(\cdot)$ & NFV-type theoretical moment \\
-$\Psi_t$\ , $M_t$ & Multi-period and single-period SDF \\
-$\Psi_{\tau,t}(\theta)$ & SDF ratio $\Psi_t / \Psi_\tau$, parameterized by $\theta$ \\
-$\theta \in \mathbb{R}^p$ & SDF parameter vector (e.g., intercept and factor loadings) \\
-$\theta_0$ & True parameter vector \\
-$\delta_{i,j}$ & Deal-level pricing error \\
-\bottomrule
-\end{tabular}
-\caption{Key notation for asset pricing and pooled cash flows (Section~\ref{sec:asset_pricing_pooled}).}
-\label{tab:notation_asset_pricing}
-\end{table}
-\efloatseparator
- 
-\begin{table}[ht]
-\centering
-\small
-\begin{tabular}{@{}ll@{}}
-\toprule
-Symbol & Description \\
-\midrule
-$\epsilon_{\tau,i}$ & Fund pricing error at discounting date $\tau$ \\
-$\bar{\epsilon}_i, \bar{\epsilon}^{(H)}_i$ & Weighted average pricing error (generic and horizon-specific) \\
-$H$ & Horizon parameter \\
-$\mathcal{T}_i, \mathcal{T}_{i,H}$ & Set of discounting dates (generic and horizon-specific) \\
-$w_i$ & Weighting factor for fund $i$ \\
-$L(\cdot)$ & Loss function (e.g., $L(x) = x^2$) \\
-$Q_H(\theta)$ & Horizon-specific population objective function \\
-$Q_n(\theta), Q_{n,H}(\theta)$ & Sample objective function (generic and horizon-specific) \\
-$s_i^{(H)}(\theta)$ & Unit score contribution \\
-$d_{i,j}$ & Economic distance between units $i$ and $j$ \\
-$K(\cdot), k_{i,j}$ & Symmetric SHAC kernel function and generic weights \\
-$b_V$ & SHAC bandwidth parameter \\
-$\hat{\theta}, \hat{\theta}_H$ & LMD Estimator (generic and horizon-specific targets) \\
-$\theta_H^\dagger$ & Horizon-specific pseudo-true parameter vector \\
-$\mathcal{H}_H$ & Hessian of population objective at $\theta_H^\dagger$ \\
-$\Lambda_H$ & Long-run covariance matrix of the score \\
-$\Sigma_H$ & Asymptotic covariance matrix of $\hat{\theta}_H$ \\
-\bottomrule
-\end{tabular}
-\caption{Key notation for the LMD estimator and asymptotic benchmark (Sections \ref{sec:fundwise_lmd_estimator}--\ref{sec:asymptotic_framework}).}
-\label{tab:notation_estimator}
-\end{table}
-\efloatseparator
- 
-\begin{table}[ht]
-\centering
 \footnotesize
 \begin{tabular}{@{}l p{3.2cm} p{3.2cm} p{3.5cm}@{}}
 \toprule
@@ -119,7 +51,7 @@ $\Sigma_H$ & Asymptotic covariance matrix of $\hat{\theta}_H$ \\
 & Both (tested empirically) \\
 \bottomrule
 \end{tabular}
-\caption{Comparison of SDF estimation frameworks for private equity.}
+\caption{\textbf{Comparison of SDF estimation frameworks for private equity.}}
 \label{tab:comparison}
 \end{table}
 \efloatseparator
@@ -150,7 +82,7 @@ start-2002 & 2003,2004,2005 & 2006,2007,2008 & 2009,2010,2011 & 2012-end \\
 \bottomrule
 \end{tabular}
 }
-\caption{Partitions used for $hv$-block cross-validation. The number of active folds truncates dynamically based on the maximum vintage year cutoff of the specific estimation run.}
+\caption{\textbf{Partitions used for $hv$-block cross-validation.} The number of active folds truncates dynamically based on the maximum vintage year cutoff of the specific estimation run.}
 \label{tab:hv_block_cv}
 \end{table}
 \efloatseparator
@@ -158,8 +90,6 @@ start-2002 & 2003,2004,2005 & 2006,2007,2008 & 2009,2010,2011 & 2012-end \\
 \begin{table}[htbp]
 \centering
 \footnotesize
-\caption{Empirical Estimates: BO --- Single-Factor (MKT) Model}
-\label{tab:empirical_bo_mkt}
 \begin{tabular}{l *{5}{r} *{5}{r}}
 \toprule
 & \multicolumn{5}{c}{Equal-Weighted (EW)} & \multicolumn{5}{c}{Value-Weighted (FW)} \\
@@ -181,16 +111,17 @@ Horizon & $\hat{\beta}$ & SE$_A$ & SD$_{CV}$ & $t_A$ & $\mathrm{SR}_{CV}$ & $\ha
 30 yr & 0.681 & 1.992 & 0.139 & 0.34 & 4.98 & 0.712 & 1.682 & 0.250 & 0.42 & 2.59 \\
 \bottomrule
 \end{tabular}
-\par\vspace{2pt}
-{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. Significance markers based on $t_A$ are reported for completeness only: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+\caption{\textbf{Empirical estimates for BO ($MKT$ factor).}
+{\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. Significance markers based on $t_A$ are reported for completeness only: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+}
+\label{tab:empirical_bo_mkt}
+
 \end{table}
 \efloatseparator
  
 \begin{table}[htbp]
 \centering
 \footnotesize
-\caption{Empirical Estimates: VC --- Single-Factor (MKT) Model}
-\label{tab:empirical_vc_mkt}
 \begin{tabular}{l *{5}{r} *{5}{r}}
 \toprule
 & \multicolumn{5}{c}{Equal-Weighted (EW)} & \multicolumn{5}{c}{Value-Weighted (FW)} \\
@@ -212,16 +143,17 @@ Horizon & $\hat{\beta}$ & SE$_A$ & SD$_{CV}$ & $t_A$ & $\mathrm{SR}_{CV}$ & $\ha
 30 yr & 1.045 & 1.582 & 0.262 & 0.66 & 3.65 & 0.817 & 3.084 & 0.206 & 0.26 & 3.53 \\
 \bottomrule
 \end{tabular}
-\par\vspace{2pt}
-{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. Significance markers based on $t_A$ are reported for completeness only: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+\caption{\textbf{Empirical estimates for VC ($MKT$ factor).}
+{\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. Significance markers based on $t_A$ are reported for completeness only: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+}
+\label{tab:empirical_vc_mkt}
+
 \end{table}
 \efloatseparator
  
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
 \footnotesize
-\caption{Empirical Estimates: BO --- MKT + Alpha Model}
-\label{tab:empirical_bo_alpha}
 \begin{tabular}{l *{5}{r} *{5}{r}}
 \toprule
 & \multicolumn{5}{c}{Equal-Weighted (EW)} & \multicolumn{5}{c}{Value-Weighted (FW)} \\
@@ -261,16 +193,16 @@ Horizon & $\hat{\beta}$ & SE$_A$ & SD$_{CV}$ & $t_A$ & $\mathrm{SR}_{CV}$ & $\ha
 %30 yr & 0.002 & 0.021 & 0.004 & 0.10 & 0.36 & 0.005 & 0.137 & 0.005 & 0.04 & 0.62 \\
 \bottomrule
 \end{tabular}
-\par\vspace{2pt}
-{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. Significance markers based on $t_A$ are reported for completeness only: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+\caption{\textbf{Empirical estimates for BO ($\alpha + MKT$ factors).}
+{\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. Significance markers based on $t_A$ are reported for completeness only: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+}
+\label{tab:empirical_bo_alpha}
 \end{table}
 \efloatseparator
  
-\begin{table}[htbp]
+\begin{table}[H]
 \centering
 \footnotesize
-\caption{Empirical Estimates: VC --- MKT + Alpha Model}
-\label{tab:empirical_vc_alpha}
 \begin{tabular}{l *{5}{r} *{5}{r}}
 \toprule
 & \multicolumn{5}{c}{Equal-Weighted (EW)} & \multicolumn{5}{c}{Value-Weighted (FW)} \\
@@ -310,8 +242,10 @@ Horizon & $\hat{\beta}$ & SE$_A$ & SD$_{CV}$ & $t_A$ & $\mathrm{SR}_{CV}$ & $\ha
 %30 yr & -0.009 & 0.029 & 0.001 & -0.29 & -9.19 & -0.009 & 0.011 & 0.002 & -0.82 & -5.48 \\
 \bottomrule
 \end{tabular}
-\par\vspace{2pt}
-{\scriptsize\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. Significance markers based on $t_A$ are reported for completeness only: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+\caption{\textbf{Empirical estimates for VC ($\alpha + MKT$ factors).}
+{\textit{Notes:} $\hat{\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. Significance markers based on $t_A$ are reported for completeness only: $^{*}$\,$p<0.05$, $^{**}$\,$p<0.01$, $^{***}$\,$p<0.005$.}
+}
+\label{tab:empirical_vc_alpha}
 \end{table}
 \efloatseparator
  

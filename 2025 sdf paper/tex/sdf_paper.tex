@@ -20,6 +20,7 @@
 % Toggle this boolean to easily switch between visually nice working mode (false) and JFEC submission formatting (true)
 \newif\ifSubmissionMode
 \SubmissionModefalse % Set to \SubmissionModetrue before submitting
+%\SubmissionModetrue
 
 \ifSubmissionMode
   \usepackage{endnotes}
@@ -159,7 +160,6 @@ Section~\ref{sec:asset_pricing_pooled} establishes the theoretical asset-pricing
 Section~\ref{sec:fundwise_lmd_estimator} uses this insight to introduce a generalized Least-Mean-Distance estimator that endogenizes the discounting dates. 
 Section~\ref{sec:asymptotic_framework} summarizes the increasing-domain asymptotic benchmark and SHAC inference used to interpret the empirical results under overlapping vintage-year dependence. 
 Section~\ref{sec:comparison_to_similar_estimators} demonstrates how this LMD estimator nests the framework of \cite{DLP12} as a special case and relates to \cite{KN16}.
-%A comprehensive notation guide is provided in Online Appendix~\ref{sec:appendix_notation}.
 
 \subsection{Asset pricing for pooled cash flows}
 \label{sec:asset_pricing_pooled}
@@ -255,8 +255,7 @@ Suppose Equation~\eqref{eq:deal_pricing} holds.
 \end{lemma}
 
 \begin{proof}
-Consider part (1). Applying the law of iterated expectations,\footnote{At the boundary $\tau = t_{i,j}^{\mathrm{Inv}}$, the SDF ratio $\Psi_{t_{i,j}^{\mathrm{Inv}}}/\Psi_{\tau} = 1$ is a trivial constant, so the covariance with $\delta_{i,j}$ is zero and the same argument applies.} 
-since $\tau \le t_{i,j}^{\mathrm{Inv}}$, the SDF ratio is known at $t_{i,j}^{\mathrm{Inv}}$ and can be factored out yielding
+Consider part (1). Applying the law of iterated expectations, since $\tau \le t_{i,j}^{\mathrm{Inv}}$, the SDF ratio $\Psi_{t_{i,j}^{\mathrm{Inv}}}/\Psi_\tau$ is $\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$-measurable and can be factored out, yielding
 \[
 \mathbb{E} \left[ \frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{\tau}} \delta_{i,j} \mid \mathcal{F}_{\tau} \right] 
 = 
@@ -440,7 +439,7 @@ Larger values of the horizon $H$ offer more regularization, but a larger departu
 \end{figure}
 
 For $\mathcal{T}_{i,H}=\{t_i^0,t_i^0+1,\dots,\min(t_i^0+12H,T_i^{\max})\}$, the estimator targets the horizon-specific pseudo-true parameter $\theta_H^{\dagger}$, which coincides with the structural parameter $\theta_0$ only when $H=0$. For $H>0$, the estimator trades structural fidelity against finite-sample regularization by averaging pricing errors over discounting dates that may incorporate the Compounding-Horizon Wedge from Section~\ref{sec:asset_pricing_pooled}.
-Online Appendix~\ref{sec:appendix_bias_variance} analyzes this target shift mechanism in rigorous detail, providing an exact Mean Squared Error (MSE) decomposition that mathematically formalizes how $\mathcal{T}$-averaging dampens finite-sample criterion volatility at the cost of shifting the population pseudo-true target point.
+Supplementary Appendix~\ref{sec:appendix_bias_variance} analyzes this target shift mechanism in rigorous detail, providing an exact Mean Squared Error (MSE) decomposition that mathematically formalizes how $\mathcal{T}$-averaging dampens finite-sample criterion volatility at the cost of shifting the population pseudo-true target point.
 
 \paragraph{Restriction used for identification and asymptotic theory.} 
 In the consistency analysis below, we specialize the generalized criterion to $\mathcal{T}_i = \{t_i^0\}$. Under Proposition~\ref{theo:inception_value}, this yields a valid pooled fund-level zero-moment restriction at the structural parameter $\theta_0$.
@@ -537,12 +536,12 @@ and let the corresponding population target be
 
 The asymptotic benchmark is intentionally formulated around \(\theta_H^\dagger\), not around \(\theta_0\). For \(H=0\), the pooled inception-only criterion coincides with the structural pricing restriction of Section~\ref{sec:asset_pricing_pooled}; the benchmark target is structural when the inception-only population criterion is uniquely maximized at \(\theta_0\). For \(H>0\), the criterion generally targets a pseudo-true parameter \(\theta_H^\dagger \neq \theta_0\), because averaging over \(\tau>t_i^0\) may embed the Compounding-Horizon Wedge at the population level.
 
-We use increasing-domain asymptotics indexed by vintage years, with local overlap dependence and bounded within-vintage clustering; the full regularity conditions are stated in Online Appendix~\ref{sec:proofs_asymptotics_H}. 
+We use increasing-domain asymptotics indexed by vintage years, with local overlap dependence and bounded within-vintage clustering; the full regularity conditions are stated in Supplementary Appendix~\ref{sec:proofs_asymptotics_H}. 
 Under those conditions, the estimator fits the semiparametric extremum framework of \citet{PP97} and \citet{NM94}, while the required uniform law of large numbers and random-field central limit theorem follow from \citet{JP09,JP12}.
 
 \begin{proposition}[Consistency around the horizon-specific target]
 \label{prop:consistency_H}
-Under the regularity conditions stated in Online Appendix~\ref{sec:proofs_asymptotics_H},
+Under the regularity conditions stated in Supplementary Appendix~\ref{sec:proofs_asymptotics_H},
 \[
 \hat{\theta}_H
 \xrightarrow{p}
@@ -555,7 +554,7 @@ This is the horizon-indexed analogue of the standard extremum-estimator consiste
 
 \begin{proposition}[Asymptotic normality around the horizon-specific target]
 \label{prop:clt_H}
-Under the regularity conditions stated in Online Appendix~\ref{sec:proofs_asymptotics_H},
+Under the regularity conditions stated in Supplementary Appendix~\ref{sec:proofs_asymptotics_H},
 \[
 \sqrt{n}
 \left(
@@ -593,7 +592,7 @@ K\!\left(
 \frac{d_{i,j}}{b_V}
 \right),
 \end{equation}
-where \(d_{i,j}\) is the vintage-year distance metric and \(b_V\) is the SHAC bandwidth; the full assumptions and implementation details are given in Online Appendix~\ref{sec:proofs_asymptotics_H}. 
+where \(d_{i,j}\) is the vintage-year distance metric and \(b_V\) is the SHAC bandwidth; the full assumptions and implementation details are given in Supplementary Appendix~\ref{sec:proofs_asymptotics_H}. 
 The resulting asymptotic covariance matrix is
 \begin{equation}
 \label{eq:avar_H}
@@ -992,7 +991,7 @@ Rather than imposing a model-based residual-value adjustment \citep{JLRS20,brown
 \label{sec:simulation_study}
 
 
-Our Monte Carlo experiments examine the finite-sample bias and variance of the estimator.\footnote{As with any simulation study, it investigates the ability to identify the assumed data generating process rather than validating the corresponding SDF model itself.}
+Our Monte Carlo experiments examine the finite-sample bias and variance of the estimator. By construction, these simulations assess the estimator's ability to recover the parameters of an assumed data-generating process, rather than the empirical validity of the underlying SDF model itself.
 Specifically, we investigate (i) the efficiency gains of vintage-year portfolios versus individual funds; (ii) the tradeoff between the time-series ($V$) and cross-sectional ($n/V$) dimensions; (iii) multivariate identification under idiosyncratic noise; and (iv) the optimal choice of the maximum compounding Horizon $\mathcal{T}$.
 
 The baseline simulation uses historical $q$-investment factor paths from 1986 to 2005 and generates 20 funds per vintage year ($V{=}20$).
@@ -1525,11 +1524,6 @@ These extensions would help clarify when Horizon averaging improves finite-sampl
 
 \input{sdf_paper_online_appendices.tex}
 
-
-
-%\input{bonus/npv_benchmarks.tex}
-%\input{empirical_bovc_global.tex}
-%\input{empirical_pe_global.tex}
 
 
 \end{document}
