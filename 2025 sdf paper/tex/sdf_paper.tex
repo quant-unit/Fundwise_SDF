@@ -16,11 +16,13 @@
 % use double spacing
 \usepackage{setspace}
 \usepackage{url}
+\usepackage{ifthen}
+
 
 % Toggle this boolean to easily switch between visually nice working mode (false) and JFEC submission formatting (true)
 \newif\ifSubmissionMode
 \SubmissionModefalse % Set to \SubmissionModetrue before submitting
-%\SubmissionModetrue
+\SubmissionModetrue
 
 \ifSubmissionMode
   \usepackage{endnotes}
@@ -62,6 +64,8 @@
   \renewcommand{\arraystretch}{2}
 \fi
 
+\unless\ifSubmissionMode
+
 \begin{center}
 % Option 1:
 	%{\Large\bfseries Semiparametric SDF Estimators \\[0.5ex] for Pooled, Non-Traded Cash Flows\par}
@@ -71,6 +75,7 @@
 	{\Large\bfseries Identification and Stability of SDF Estimators \\[0.5ex] for Pooled, Non-traded Cash Flows\par}
 \end{center}
 
+\fi
 
 \begin{abstract}
 	We develop a semiparametric Least-Mean-Distance framework for identifying stochastic discount factors from pooled, non-traded cash flows under cross-sectional dependence induced by overlapping payoff streams.
@@ -86,8 +91,12 @@
 
 
 %% main text
+\ifSubmissionMode
+\section*{Introduction}
+\else
 \section{Introduction}
 \label{sec:introduction}
+\fi
 
 % Option A:
 %Do private equity funds deliver abnormal performance, and how should their systematic risk be measured?
