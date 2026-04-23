@@ -22,12 +22,12 @@
 % Toggle this boolean to easily switch between visually nice working mode (false) and JFEC submission formatting (true)
 \newif\ifSubmissionMode
 \SubmissionModefalse % Set to \SubmissionModetrue before submitting
-\SubmissionModetrue
+%\SubmissionModetrue
 
 \ifSubmissionMode
   \usepackage{endnotes}
   \let\footnote=\endnote
-  \usepackage[nomarkers, figlist, notablist]{endfloat}
+  \usepackage[nomarkers, nolists, tablesfirst]{endfloat}
 \fi
 
 \usepackage[outdir=./]{epstopdf}
@@ -60,6 +60,7 @@
 \input{sdf_paper_titlepage.tex}
 
 \ifSubmissionMode
+	\setcounter{page}{2}
   \doublespacing
   \renewcommand{\arraystretch}{2}
 \fi
@@ -1515,15 +1516,20 @@ These extensions would help clarify when Horizon averaging improves finite-sampl
 
 \input{sdf_paper_online_appendices.tex}
 
+\ifSubmissionMode
+%% JFEC order: text -> figure legends -> references -> notes -> tables -> figures
+
+%% Figure legends
+\newpage
+\listoffigures
+
 %% References
 \newpage
 \bibliographystyle{apalike}
 \bibliography{sdf_paper_refs}
 
 \iffalse
-
-\ifSubmissionMode
-
+%% Notes (endnotes converted from footnotes)
 \newpage
 \begingroup
 \parindent 0pt
@@ -1532,11 +1538,16 @@ These extensions would help clarify when Horizon averaging improves finite-sampl
 \renewcommand{\notesname}{Notes}
 \theendnotes
 \endgroup
-
 \fi
 
+%% Tables and Figures (tablesfirst option ensures tables precede figures)
+\processdelayedfloats
+
+\else
+%% Non-submission mode: standard order
+\newpage
+\bibliographystyle{apalike}
+\bibliography{sdf_paper_refs}
 \fi
-
-
 
 \end{document}
