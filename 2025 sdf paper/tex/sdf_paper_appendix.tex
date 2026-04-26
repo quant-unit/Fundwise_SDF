@@ -1,0 +1,108 @@
+
+\documentclass[12pt]{article}
+
+% Packages
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage[T1]{fontenc}
+\usepackage{newtxtext}
+\usepackage{newtxmath}
+\usepackage{natbib}
+\usepackage{graphicx}
+% Margin for JFEC
+\usepackage[letterpaper, margin=1in]{geometry}
+\usepackage[margin=1.1cm]{caption}
+% use double spacing
+\usepackage{setspace}
+\usepackage{url}
+\usepackage{ifthen}
+
+
+% Toggle this boolean to easily switch between visually nice working mode (false) and JFEC submission formatting (true)
+\newif\ifSubmissionMode
+\SubmissionModefalse % Set to \SubmissionModetrue before submitting
+\SubmissionModetrue
+
+\ifSubmissionMode
+\usepackage{endnotes}
+\let\footnote=\endnote
+\usepackage[nomarkers, nolists, tablesfirst]{endfloat}
+\fi
+
+\usepackage[outdir=./]{epstopdf}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{standalone}
+\usepackage{xcolor}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{tcolorbox}
+\usepackage{multirow}
+\usepackage{xr-hyper}
+
+\externaldocument[]{sdf_paper}
+
+\newtheorem{assume}{Assumption}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{remark}{Remark}
+\newtheorem{definition}{Definition}
+\newtheorem{example}{Example}
+\newtheorem{theorem}{Theorem}
+
+
+% logo
+\usepackage{fancyhdr}
+
+
+
+\begin{document}
+	
+
+\ifSubmissionMode
+\setcounter{page}{2}
+\doublespacing
+\renewcommand{\arraystretch}{2}
+\fi
+
+\input{sdf_paper_online_appendices.tex}
+
+
+
+\ifSubmissionMode
+%% JFEC order: text -> figure legends -> references -> notes -> tables -> figures
+
+%% Figure legends
+\newpage
+\listoffigures
+
+%% References
+\newpage
+\bibliographystyle{apalike}
+\bibliography{sdf_paper_refs}
+
+\iffalse
+%% Notes (endnotes converted from footnotes)
+\newpage
+\begingroup
+\parindent 0pt
+\parskip 2ex
+\def\enotesize{\normalsize}
+\renewcommand{\notesname}{Notes}
+\theendnotes
+\endgroup
+\fi
+
+%% Tables and Figures (tablesfirst option ensures tables precede figures)
+\processdelayedfloats
+
+\else
+%% Non-submission mode: standard order
+\newpage
+\bibliographystyle{apalike}
+\bibliography{sdf_paper_refs}
+\fi
+
+\end{document}
