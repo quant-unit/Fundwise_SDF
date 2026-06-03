@@ -68,6 +68,76 @@ Suppose a candidate SDF has three parameters: an alpha term and two factor loadi
 \item score the fitted SDF on the validation moment (calculate out-of-sample pricing error).
 \end{itemize}
 
+In stylized notation, the example can be summarized with one simple three-parameter SDF and one resampled moment per fold. Let the parameter vector be
+\[
+\theta=(\alpha,\beta_1,\beta_2)^\prime,
+\]
+and let the one-period discount factor be
+\[
+M_{t-1,t}(\theta)=\frac{1}{1+\alpha+\beta_1 f_{1,t}+\beta_2 f_{2,t}},
+\qquad
+\Psi_{0,t}(\theta)=\prod_{s=1}^{t} M_{s-1,s}(\theta),
+\]
+where \(f_{1,t}\) and \(f_{2,t}\) are two benchmark factor realizations. For sampled split \(n\), let \(C_{n,v,r}\) be the funds from vintage \(v\) assigned to fold \(r\in\{1,2,3,4\}\), with \(r=1,2,3\) used for estimation and \(r=4\) used for validation. Write \(CF_{t,i}=D_{t,i}-X_{t,i}\), and partition active vintages into seasoned and unseasoned sets, \(\mathcal V=\mathcal V^S\cup\mathcal V^U\). The vintage-level pricing restriction is then
+\[
+\epsilon_{n,v,r}(\theta)=
+\begin{cases}
+\epsilon_{n,v,r}^{S}(\theta)
+=
+\dfrac{1}{|C_{n,v,r}|}
+\sum\limits_{i\in C_{n,v,r}}
+\dfrac{1}{K_i}
+\sum\limits_{t=1}^{T_i}
+\Psi_{0,t}(\theta)\,CF_{t,i},
+& v\in\mathcal V^S,
+\\[1.1em]
+\epsilon_{n,v,r}^{U}(\theta)
+=
+\dfrac{1}{|C_{n,v,r}|}
+\sum\limits_{i\in C_{n,v,r}}
+\dfrac{1}{K_i}
+\sum\limits_{t=1}^{T_i}
+\Psi_{0,t-1}(\theta)\,\eta_{t,i}(\theta),
+& v\in\mathcal V^U,
+\end{cases}
+\]
+where the unseasoned one-period Euler error is
+\[
+\eta_{t,i}(\theta)
+=
+M_{t-1,t}(\theta)\bigl(CF_{t,i}+\mathrm{NAV}_{t,i}\bigr)-\mathrm{NAV}_{t-1,i}.
+\]
+The resampled fold moment is the cross-vintage average
+\[
+m_{n,r}(\theta)=\frac{1}{|\mathcal V|}\sum_{v\in\mathcal V}\epsilon_{n,v,r}(\theta).
+\]
+Because \(\theta\) has three components, the three estimation folds deliver three stylized moment conditions,
+\[
+m_{n,1}(\theta)=0,
+\qquad
+m_{n,2}(\theta)=0,
+\qquad
+m_{n,3}(\theta)=0,
+\]
+or equivalently
+\[
+\hat\theta_n
+=
+\arg\min_{\theta}
+\sum_{r=1}^{3} m_{n,r}(\theta)^2.
+\]
+The held-out fourth fold then gives the validation score
+\[
+S_n(\hat\theta_n)=m_{n,4}(\hat\theta_n)^2.
+\]
+Our resampling-based approach repeats this exercise many times: for each draw \(n=1,\dots,N\), we redraw the partition and thereby obtain a new quartet of fold moments \(\{m_{n,1},m_{n,2},m_{n,3},m_{n,4}\}\).
+For a fully liquidated fund with \(\mathrm{NAV}_{0,i}=\mathrm{NAV}_{T_i,i}=0\), the discounted Euler restriction telescopes to the seasoned NPV restriction:
+\[
+\sum_{t=1}^{T_i}\Psi_{0,t-1}(\theta)\,\eta_{t,i}(\theta)
+=
+\sum_{t=1}^{T_i}\Psi_{0,t}(\theta)\,CF_{t,i}.
+\]
+
 Figures \ref{fig:sampling-scheme} and \ref{fig:vintage-portfolio-scheme} show the two baseline ways to build these folds. In both figures, each dot is one fund. Vintages 2005--2010 lie above the approach boundary and use cash-flow discounting, while vintages 2011--2012 lie below it and use the NAV-return discounting approach.
 
 \begin{figure}[H]
@@ -370,9 +440,9 @@ The exponential \(\exp(-a\,\tau)\) parameterizes alpha as a continuously compoun
 The paper should still compare alpha definitions:
 
 \begin{itemize}
-\item \textbf{Cumulative alpha:} the recommended baseline, estimated from benchmark-discounted cash flows.
-\item \textbf{Error-term alpha ($\mathbb{E}[\epsilon]$):} alpha as the mean error-term component, as in the machine-learning approach of \citet{TauschPietz2024}.
+\item \textbf{Cumulative alpha:} the recommended baseline, estimated from SDF-discounted cash flows.
 \item \textbf{Intercept alpha:} a DLP12-style robustness specification, useful for comparison but vulnerable to exploding-alpha behavior in small or weakly identified samples \citep{DriessenLinPhalippou2012,DriessenLinPhalippou2008WP}.
+\item \textbf{Error-term alpha ($\mathbb{E}[\epsilon]$):} alpha as the mean error-term component, as in the machine-learning approach of \citet{TauschPietz2024}.
 \end{itemize}
 
 The empirical question is not only which SDF factors perform best, but also which alpha definition yields stable and predictive PE pricing moments.
