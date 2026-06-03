@@ -10,7 +10,6 @@
 \definecolor{esttwo}{HTML}{4DAF4A}
 \definecolor{estthree}{HTML}{A6D96A}
 \definecolor{validblue}{HTML}{2C7FB8}
-\definecolor{ignoredgray}{HTML}{BDBDBD}
 \definecolor{gridgray}{HTML}{ECECEC}
 \definecolor{textgray}{HTML}{303030}
 \definecolor{bandgray}{HTML}{F5F5F5}
@@ -33,7 +32,7 @@
 	\node[anchor=west, font=\scriptsize, text=textgray] at (0,0.72)
 		{Each dot is one fund; folds are assigned within vintage year.};
 
-	% Light background for young vintages excluded from estimation and validation.
+	% Light background for young vintages below the approach boundary.
 	\fill[bandgray] (0.5,-5.5) rectangle (14.5,-7.52);
 
 	% Grid and y-axis labels.
@@ -83,14 +82,18 @@
 	\funddot{5}{-5}{estone} \funddot{6}{-5}{esttwo} \funddot{7}{-5}{estthree} \funddot{8}{-5}{validblue}
 	\funddot{9}{-5}{estone}
 
-	% 2011 and 2012: ignored because these vintages are too young / not liquidated enough.
-	\foreach \x in {1,...,7} {\funddot{\x}{-6}{ignoredgray}}
-	\foreach \x in {1,...,6} {\funddot{\x}{-7}{ignoredgray}}
+	% 2011: 7 funds.
+	\funddot{1}{-6}{estone} \funddot{2}{-6}{esttwo} \funddot{3}{-6}{estthree} \funddot{4}{-6}{validblue}
+	\funddot{5}{-6}{estone} \funddot{6}{-6}{esttwo} \funddot{7}{-6}{estthree}
 
-	% Cutoff annotation.
+	% 2012: 6 funds.
+	\funddot{1}{-7}{estone} \funddot{2}{-7}{esttwo} \funddot{3}{-7}{estthree} \funddot{4}{-7}{validblue}
+	\funddot{5}{-7}{estone} \funddot{6}{-7}{esttwo}
+
+	% Approach-boundary annotation.
 	\draw[densely dashed, textgray, line width=0.35pt] (0.5,-5.5) -- (14.5,-5.5);
-	\node[anchor=west, font=\tiny, text=textgray] at (9.55,-5.25)
-		{seasoning cutoff after 2010};
+	\node[anchor=west, align=left, font=\tiny, text=textgray, fill=white, fill opacity=0.9, text opacity=1, inner sep=1pt] at (9.7,-4.92)
+		{approach boundary after 2010:\\cash-flow above, NAV-return below};
 
 	% Legend, placed to the right to avoid crowding the x-axis.
 	\node[anchor=west, font=\bfseries\scriptsize, text=textgray] at (16.2,0.18)
@@ -107,9 +110,6 @@
 	\funddot{16.35}{-2.57}{validblue}
 	\node[anchor=west, font=\scriptsize, text=textgray] at (16.8,-2.57)
 		{Validation fold};
-	\funddot{16.35}{-3.22}{ignoredgray}
-	\node[anchor=west, font=\scriptsize, text=textgray] at (16.8,-3.22)
-		{Ignored: too young / not liquidated};
 
 	\node[anchor=west, align=left, text width=3.7cm, font=\tiny, text=textgray] at (16.2,-4.45)
 		{Schematic counts are illustrative. In the empirical figure, the x-axis can use actual fund counts and the colors can use the realized random partition.};

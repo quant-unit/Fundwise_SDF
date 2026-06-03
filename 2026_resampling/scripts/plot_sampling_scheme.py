@@ -29,8 +29,10 @@ VINTAGE_COUNTS = {
     2012: 6,
 }
 
-ACTIVE_VINTAGES = set(range(2005, 2011))
-IGNORED_VINTAGES = {2011, 2012}
+SEASONED_VINTAGES = set(range(2005, 2011))
+UNSEASONED_VINTAGES = {2011, 2012}
+APPROACH_BOUNDARY_YEAR = max(SEASONED_VINTAGES)
+APPROACH_BOUNDARY_LABEL = "approach boundary after 2010:\ncash-flow above, NAV-return below"
 
 FOLD_SEQUENCE = [
     ("estimation_fold_1", "Estimation fold 1", "#1B7837"),
@@ -38,21 +40,14 @@ FOLD_SEQUENCE = [
     ("estimation_fold_3", "Estimation fold 3", "#A6D96A"),
     ("validation_fold", "Validation fold", "#2C7FB8"),
 ]
-IGNORED_FOLD = ("ignored", "Ignored: too young / not liquidated", "#BDBDBD")
 
 
-def build_points(
-    vintage_counts: dict[int, int],
-    ignored_vintages: set[int] = IGNORED_VINTAGES,
-) -> list[dict[str, object]]:
+def build_points(vintage_counts: dict[int, int]) -> list[dict[str, object]]:
     """Return one plotting record per fund dot."""
     points: list[dict[str, object]] = []
     for vintage, count in vintage_counts.items():
         for fund_index in range(1, count + 1):
-            if vintage in ignored_vintages:
-                fold_key, fold_label, color = IGNORED_FOLD
-            else:
-                fold_key, fold_label, color = FOLD_SEQUENCE[(fund_index - 1) % len(FOLD_SEQUENCE)]
+            fold_key, fold_label, color = FOLD_SEQUENCE[(fund_index - 1) % len(FOLD_SEQUENCE)]
             points.append(
                 {
                     "vintage": vintage,
@@ -63,6 +58,24 @@ def build_points(
                 }
             )
     return points
+
+
+def add_approach_boundary(ax, y_pos: dict[int, int]) -> None:
+    ax.axhline(
+        y_pos[APPROACH_BOUNDARY_YEAR] - 0.5,
+        color="#303030",
+        linewidth=0.8,
+        linestyle=(0, (7, 5)),
+    )
+    ax.text(
+        9.55,
+        y_pos[APPROACH_BOUNDARY_YEAR] + 0.05,
+        APPROACH_BOUNDARY_LABEL,
+        fontsize=8.7,
+        color="#303030",
+        va="top",
+        bbox={"boxstyle": "round,pad=0.12", "facecolor": "white", "edgecolor": "none", "alpha": 0.9},
+    )
 
 
 def plot_sampling_scheme(out_dir: Path) -> None:
@@ -98,15 +111,7 @@ def plot_sampling_scheme(out_dir: Path) -> None:
             zorder=3,
         )
 
-    ax.axhline(y_pos[2010] - 0.5, color="#303030", linewidth=0.8, linestyle=(0, (7, 5)))
-    ax.text(
-        9.7,
-        y_pos[2010] - 0.32,
-        "seasoning cutoff after 2010",
-        fontsize=9,
-        color="#303030",
-        va="bottom",
-    )
+    add_approach_boundary(ax, y_pos)
 
     ax.set_title(
         "Example split: three estimation folds plus one validation fold",
@@ -119,7 +124,7 @@ def plot_sampling_scheme(out_dir: Path) -> None:
     ax.text(
         0,
         1.02,
-        "Each dot is one fund; folds are assigned within vintage year.",
+        "Each dot is one fund; folds are assigned within vintage year across both pricing approaches.",
         transform=ax.transAxes,
         fontsize=11,
         color="#303030",
@@ -144,9 +149,9 @@ def plot_sampling_scheme(out_dir: Path) -> None:
 
     handles = [
         Line2D([0], [0], marker="o", linestyle="", markersize=8, markerfacecolor=color, markeredgecolor="white")
-        for _, _, color in FOLD_SEQUENCE + [IGNORED_FOLD]
+        for _, _, color in FOLD_SEQUENCE
     ]
-    labels = [label for _, label, _ in FOLD_SEQUENCE + [IGNORED_FOLD]]
+    labels = [label for _, label, _ in FOLD_SEQUENCE]
     ax.legend(
         handles,
         labels,
@@ -191,7 +196,7 @@ def plot_sampling_scheme_nav_pricing(out_dir: Path) -> None:
         ) from exc
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    points = build_points(VINTAGE_COUNTS, ignored_vintages=set())
+    points = build_points(VINTAGE_COUNTS)
     vintages = sorted(VINTAGE_COUNTS)
     y_pos = {vintage: len(vintages) - 1 - i for i, vintage in enumerate(vintages)}
 
@@ -212,18 +217,10 @@ def plot_sampling_scheme_nav_pricing(out_dir: Path) -> None:
             zorder=3,
         )
 
-    ax.axhline(y_pos[2010] - 0.5, color="#303030", linewidth=0.8, linestyle=(0, (7, 5)))
-    ax.text(
-        9.7,
-        y_pos[2010] - 0.32,
-        "NAV return pricing after 2010",
-        fontsize=9,
-        color="#303030",
-        va="bottom",
-    )
+    add_approach_boundary(ax, y_pos)
 
     ax.set_title(
-        "Example split with NAV pricing: unseasoned vintages are included",
+        "Example split under the NAV-bridged cash-flow estimator",
         loc="left",
         fontsize=15,
         fontweight="bold",
@@ -233,7 +230,7 @@ def plot_sampling_scheme_nav_pricing(out_dir: Path) -> None:
     ax.text(
         0,
         1.02,
-        "Each dot is one fund; folds are assigned within vintage year.",
+        "Each dot is one fund; folds are assigned within vintage year across both pricing approaches.",
         transform=ax.transAxes,
         fontsize=11,
         color="#303030",

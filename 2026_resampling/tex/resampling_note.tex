@@ -11,6 +11,7 @@
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{float}
 
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0.5em}
@@ -30,10 +31,10 @@ The paper asks a simple empirical question: which stochastic discount factor (SD
 Three difficulties make this question hard to answer with existing methods.
 
 \textbf{Difficulty 1: moment construction matters.}
-Private-equity samples are small, lumpy, and organized by vintage year. An SDF model can look good or bad depending on how funds are grouped into pricing moments. Existing approaches commit to one grouping---typically single funds or vintage-year portfolios---and treat it as fixed. But the choice of grouping is itself consequential for estimation, and there is no a priori reason to prefer one admissible grouping over another.
+Private-equity samples are small, lumpy, and organized by vintage year. An SDF model can look good or bad depending on how funds are grouped into pricing moments. Existing approaches commit to one grouping---typically single funds (e.g., \cite{AngChenGoetzmannPhalippou2018}) or vintage-year portfolios (e.g., \cite{DriessenLinPhalippou2012})--and treat it as fixed. But the choice of grouping is itself consequential for estimation, and there is no a priori reason to prefer one admissible grouping over another.
 
 \textbf{Difficulty 2: unseasoned vintages create a dilemma.}
-Recent vintage years carry valuable pricing information---they reflect current market conditions and expand the factor-path coverage of the sample---but including them naively destabilizes estimation. The standard approach treats the latest reported NAV as a terminal cash flow and discounts it over the fund's entire remaining horizon. This creates two problems. First, it concentrates a large share of the fund's discounted value at a single calendar date---the dataset endpoint---so that the estimator's fit becomes disproportionately sensitive to the macro state at that date rather than to the fund's lifetime factor exposure. Second, the terminal NAV is an appraisal, not a realized payoff; its co-movement with public indices may differ systematically from that of actual divestitures. Researchers therefore face a dilemma: exclude recent vintages and waste data, or include them and accept fragile estimates driven by one macro-state realization.
+Recent vintage years carry valuable pricing information---they reflect current market conditions and expand the factor-path coverage of the sample---but including them naively destabilizes (or biases) estimation. The standard approach treats the latest reported NAV as a terminal cash flow and discounts it over the fund's entire remaining horizon. This creates two problems. First, it concentrates a large share of the fund's discounted value at a single calendar date---the dataset endpoint---so that the estimator's fit becomes disproportionately sensitive to the macro state at that date rather than to the fund's lifetime factor exposure. Second, the terminal NAV is an appraisal, not a realized payoff; its co-movement with public indices may differ systematically from that of actual divestitures. Researchers therefore face a dilemma: exclude recent vintages and waste data, or include them and accept fragile estimates driven by one macro-state realization.
 
 \textbf{Difficulty 3: exploding-alpha degeneracy in finite samples.}
 Independently of the unseasoned-vintage problem, NPV-style SDF estimation suffers from a finite-sample pathology first documented by \citet{DriessenLinPhalippou2012}. In the standard multiplicative SDF parameterization, cash flows are discounted by a cumulative factor that includes \((1+\alpha)^{-T}\). When \(\alpha\) is large and positive, this factor drives all discount factors toward zero for large \(T\), making every fund's pricing error approximately zero regardless of the factor loadings~\(\beta\). The result is a ridge of spurious near-minima along the alpha axis of the objective function that prevents reliable joint identification of \(\alpha\) and~\(\beta\). The problem is most severe when fund horizons are long and early cash flows are small relative to later ones, which is precisely the cash-flow shape of a typical PE fund. Existing mitigants include ratio or log transformations of the pricing restriction \citep{DriessenLinPhalippou2008WP}, horizon averaging, and box constraints on~\(\alpha\), but none eliminates the underlying mechanism.
@@ -64,22 +65,22 @@ Suppose a candidate SDF has three parameters: an alpha term and two factor loadi
 \item build three estimation folds,
 \item build one validation fold,
 \item estimate the SDF on the three estimation moments,
-\item score the fitted SDF on the validation moment.
+\item score the fitted SDF on the validation moment (calculate out-of-sample pricing error).
 \end{itemize}
 
-Figures \ref{fig:sampling-scheme} and \ref{fig:vintage-portfolio-scheme} show the two benchmark ways to build these folds. In both figures, each dot is one fund and the active vintages are 2005--2010. Vintages 2011--2012 are excluded because they are too young or not sufficiently liquidated.
+Figures \ref{fig:sampling-scheme} and \ref{fig:vintage-portfolio-scheme} show the two baseline ways to build these folds. In both figures, each dot is one fund. Vintages 2005--2010 lie above the approach boundary and use cash-flow discounting, while vintages 2011--2012 lie below it and use the NAV-return discounting approach.
 
-\begin{figure}[t]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{../figure/sampling_scheme.pdf}
 \caption{Proposed within-vintage fund resampling scheme. Each active vintage is split into three estimation cells and one validation cell. Fold 1 contains the dark-green funds from every vintage, fold 2 contains the medium-green funds from every vintage, fold 3 contains the light-green funds from every vintage, and the validation fold contains the blue funds from every vintage.}
 \label{fig:sampling-scheme}
 \end{figure}
 
-\begin{figure}[t]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{../figure/sampling_scheme_vintage_portfolios.pdf}
-\caption{Traditional shuffled vintage-year portfolio scheme. Funds are first aggregated into whole vintage-year portfolios, and whole vintages are then assigned to folds. Here, 2005 and 2009 enter estimation fold 1, 2006 and 2010 enter estimation fold 2, 2007 enters estimation fold 3, and 2008 is the validation fold.}
+\caption{Traditional shuffled vintage-year portfolio scheme. Funds are first aggregated into whole vintage-year portfolios, and whole vintages are then assigned to folds. Here, 2005 and 2009 enter estimation fold 1, 2006 and 2010 enter estimation fold 2, 2007 and 2011 enter estimation fold 3, and 2008 and 2012 form the validation fold.}
 \label{fig:vintage-portfolio-scheme}
 \end{figure}
 
@@ -292,9 +293,8 @@ unseasoned vintages \(\mathcal V^U\) into a PME framework typically requires
 treating the latest \(\mathrm{NAV}_{T_i,i}\) as a terminal distribution and
 discounting it over the fund's entire remaining horizon --- exactly the
 long-horizon discounting mechanism that motivates \(\epsilon^U\) in
-Section~\ref{sec:euler_nav}. The PME-ratio framework therefore reintroduces
-the exploding-alpha sensitivity for \(\mathcal V^U\) that the NPV/Euler
-combination was designed to eliminate.
+Section~\ref{sec:euler_nav}. 
+%The PME-ratio framework therefore reintroduces the exploding-alpha sensitivity for \(\mathcal V^U\) that the NPV/Euler combination was designed to eliminate.
 (iv)~\emph{Inference.} Upper-tail skewness in \(\mathrm{PME}_i\) (funds can
 return many times their capital, but cannot lose more than it) distorts
 CLT-based standard errors and \(t\)-statistics unless explicitly
@@ -371,7 +371,7 @@ The paper should still compare alpha definitions:
 
 \begin{itemize}
 \item \textbf{Cumulative alpha:} the recommended baseline, estimated from benchmark-discounted cash flows.
-\item \textbf{Error-term alpha:} alpha as the mean pricing-error component, as in the machine-learning approach of \citet{TauschPietz2024}.
+\item \textbf{Error-term alpha ($\mathbb{E}[\epsilon]$):} alpha as the mean error-term component, as in the machine-learning approach of \citet{TauschPietz2024}.
 \item \textbf{Intercept alpha:} a DLP12-style robustness specification, useful for comparison but vulnerable to exploding-alpha behavior in small or weakly identified samples \citep{DriessenLinPhalippou2012,DriessenLinPhalippou2008WP}.
 \end{itemize}
 
@@ -393,7 +393,7 @@ Together, these mechanisms ensure that the exploding-alpha issue is a finite-sam
 \section{Euler NAV Restrictions for Unseasoned Vintages}
 \label{sec:euler_nav}
 
-The empirical algorithm in Section~\ref{sec:algorithm} excludes insufficiently seasoned vintages. This wastes data from recent vintages that carry useful pricing information. Including them naively---by treating the latest reported NAV as a terminal distribution---amplifies alpha instability, because a single large NAV position is discounted over the fund's entire remaining horizon.
+Excluding insufficiently seasoned vintages in the empirical algorithm in Section~\ref{sec:algorithm}, wastes data from recent vintages that carry useful pricing information. Including them naively---by treating the latest reported NAV as a terminal distribution---amplifies alpha instability, because a single large NAV position is discounted over the fund's entire remaining horizon.
 
 We propose a different treatment. For unseasoned vintages, replace the single cumulative pricing restriction with a sequence of one-period Euler restrictions on quarterly NAV returns. This retains the information from recent vintages while avoiding long-horizon discounting. The resulting estimator is a \emph{NAV-bridged cash-flow estimator}: asymptotically a pure cash-flow estimator, with well-conditioned finite-sample corrections for young funds.
 
