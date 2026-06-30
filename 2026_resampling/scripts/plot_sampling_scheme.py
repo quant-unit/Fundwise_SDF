@@ -32,7 +32,7 @@ VINTAGE_COUNTS = {
 SEASONED_VINTAGES = set(range(2005, 2011))
 UNSEASONED_VINTAGES = {2011, 2012}
 APPROACH_BOUNDARY_YEAR = max(SEASONED_VINTAGES)
-APPROACH_BOUNDARY_LABEL = "approach boundary after 2010:\ncash-flow above, NAV-return below"
+APPROACH_BOUNDARY_LABEL = "approach boundary after 2010:\ncash-flow above, normalized Euler below"
 
 FOLD_SEQUENCE = [
     ("estimation_fold_1", "Estimation fold 1", "#1B7837"),
@@ -183,8 +183,8 @@ def plot_sampling_scheme(out_dir: Path) -> None:
 
 
 def plot_sampling_scheme_nav_pricing(out_dir: Path) -> None:
-    """NAV-pricing variant: unseasoned vintages (2011, 2012) are included and
-    receive fold assignments like seasoned vintages rather than being ignored."""
+    """Hybrid-estimator variant: unseasoned vintages (2011, 2012) are included
+    and receive fold assignments like seasoned vintages rather than being ignored."""
     try:
         import matplotlib.pyplot as plt
         from matplotlib.lines import Line2D
@@ -220,7 +220,7 @@ def plot_sampling_scheme_nav_pricing(out_dir: Path) -> None:
     add_approach_boundary(ax, y_pos)
 
     ax.set_title(
-        "Example split under the NAV-bridged cash-flow estimator",
+        "Example split under the hybrid estimator",
         loc="left",
         fontsize=15,
         fontweight="bold",

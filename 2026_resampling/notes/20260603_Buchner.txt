@@ -1,0 +1,10 @@
+Buchner 2026-06-03
+
+New discussion points and ideas:
+
+- slice dataset in a way to estimate factor models (beta factors) per vintage year bucket (e.g. 2002 BO factor, 2020 VC factor, etc)
+	- also floating buckets around vintage years are possible to capture factor estimates "around this vintage year"
+- hybrid SDF model for cash flows for seasoned vintages and NAV returns for unseasoned vintages has two competitors we want to include in our general framework
+	- 1) Seasoned Vintages: normal SDF on CF approach, Unseasoned Vintages: improved terminal-NAV-adjustment models + CF SDF (NAV adjustment could be grounded in empirical NAV discount data from the private market e.g. from Setter Capital secondary transaction dataset)
+	- 2) Use NAV returns for all seasoned + unseasoned vintages
+	---> We want hybrid model with full slice and dice flexibility of data (via "smart" tailored resampling designs --> center around flexible resampling schemes in communication the idea in paper) and SDF methodology
