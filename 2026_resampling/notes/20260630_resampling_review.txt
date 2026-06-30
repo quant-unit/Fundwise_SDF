@@ -1,0 +1,97 @@
+Resampling note review 2026-06-30
+
+CENTRAL ISSUE — folds are not the identifying moments (now written into tex,
+sec:identification_rank):
+- "p params -> P=p folds -> p moments" is wrong. Under within-vintage
+  resampling the estimation folds are EXCHANGEABLE subsamples of the same
+  funds, so they share one population moment m-bar(theta). Stacked Jacobian
+  = 1_P (d m-bar/d theta'), rank <= 1. Rank condition rank(dG/dtheta')=p
+  fails for p>=2 no matter how many folds.
+- Identifying rank lives in the CROSS-VINTAGE Jacobian J = d(g_v)/dtheta'
+  (|A| x p), because vintages are NOT exchangeable (different factor paths).
+  Scalar collapse replaces J by its column sum 1'J -> destroys the rank.
+- Resolution (keep within-vintage design): identification comes from the
+  within-fold vintage / strategy-vintage moment VECTOR; folds are only the
+  holdout split. P=p_max is a comparability convention, not identification.
+- Diagnostic: Jacobian rank/condition number at theta-hat, NOT moment count.
+  Finite-sample "identification" is only cell-sampling noise -> weak ID a la
+  Stock-Wright (2000). Report condition number + cross-split dispersion.
+
+Does subagging/U-statistic idea fix this? NO. Bagging reduces variance/stabilizes
+but cannot create population rank -> would give false precision (tight bag around
+a pseudo-true point). Fix identification first (vector moments), THEN subagging
+is a legitimate add-on (variance reduction + closed-form U-stat score).
+
+STATUS 2026-06-30: all items below are now INTEGRATED into resampling_note.tex
+(compiles clean, no undefined refs/citations). The creative ideas further down
+remain open / for discussion.
+
+Other confirmed fixes (DONE — in tex):
+- t=0 vs t=1 inconsistency: guiding example sums Psi*CF from t=1 (tex:84,94),
+  but g_i^S (tex:229) and appendix NPV (tex:630) sum from t=0. Use t=0. Matters:
+  undiscounted t=0 contribution anchors NPV at -X_0 as alpha->inf, which BOUNDS
+  the exploding-alpha ridge (ties to "early cash flows small" remark).
+- Guiding-example SDF M=1/(1+a+b1 f1+b2 f2) bundles alpha inside the factor =
+  the DLP12 intercept alpha the paper recommends AGAINST as baseline (should be
+  cumulative alpha). Either switch example or add a caveat.
+- Orphan refs in .bib, should be cited: Racine2000 (hv-block CV for dependent
+  data -> within-vintage holdout shares macro states, not hv-clean),
+  StockWright2000 (weak ID -> now cited via new subsection),
+  CuiFengHong2024 (regularized GMM time-varying -> fused-lasso vintage betas).
+- Asymptotic argument (tex:503) claims "independent" vintage realizations;
+  vintages overlap in calendar/macro time -> use weak dependence/mixing, and
+  note V->inf is a thin asymptotic (~30-40 vintages).
+- Seasoning threshold uses NAV / committed capital (tex:333); prefer unrealized
+  fraction RVPI/(RVPI+DPI).
+- Lambda_i called "predetermined" (tex:105) but c_s tuned to pricing moments
+  (tex:415) = mild circularity; cross-fit or drop c_s in baseline.
+- Within-vintage holdout shares factor paths -> low power to discriminate SDF
+  factor specs; cross-vintage / rolling-origin is where model discrimination
+  happens.
+
+Key creative ideas (see chat for detail):
+1. [DRAFTED into tex, \subsection{The resampling estimator as subagging},
+   label sec:subagging] Frame method as subagging (Buhlmann-Yu 2002) of the
+   split GMM estimator. Closed-form partition moments for the linear baseline:
+   E_Pi[eps]=grand mean, Var_Pi = (sigma_v^2/|C|)(1-(|C|-1)/(|I_v|-1)) (SRSWOR
+   U-statistic) -> removes N tuning, gives analytic N target, motivates
+   antithetic/stratified Pi. COMPLEMENTS the ID fix (sec:identification_rank),
+   does not replace it (bagging can't create rank).
+2. [DRAFTED into tex, \subsection{A NAV-free common evaluation target},
+   label sec:navfree] Cross-approach comparability (was the open problem):
+   score ALL approaches A/B/C on a common NAV-FREE realized-cash-flow target
+   (g_i^real on funds realized by tau'). Principle: evaluation metric never
+   touches a NAV. Two informative designs: rolling-origin (prospective, =
+   S^roll special case) and leave-future-out (retrospective, full panel).
+   Auxiliary diagnostic: backtest the appraisal via implied NAV-hat_{s,i}(theta)
+   = SDF price of realized tail vs reported NAV. Selection caveat (conditions
+   on realized funds) handled by coverage reporting + paired diff cancellation.
+3. [DRAFTED into tex, \subsection{Identification-robust inference for alpha},
+   label sec:robust_alpha] Exploding alpha: profiled Anderson-Rubin/Stock-Wright
+   S-set CS_{1-a}(alpha)={alpha0: T_n(alpha0)<=c} (correct coverage on ridge,
+   unbounded set reveals weak ID); pooled-PME alpha-anchor (ratio invariant to
+   common discount rescaling -> alpha-sensitivity survives on ridge where NPV
+   collapses); hard SDF-positivity 1+a+b'f_t>0 + pre-registered bounded-alpha box.
+4. [DRAFTED into tex, \subsection{Inference for score differences}, label
+   sec:inference, in sec:algorithm] Naive paired-t is anti-conservative:
+   S_d^2/N -> 0 in #draws N while real (finite-fund) uncertainty doesn't
+   (Bengio-Grandvalet 2004 impossibility). Fix = Nadeau-Bengio 2003 corrected
+   variance Var_corr(d-bar) = (1/N + n_test/n_train) S_d^2; in balanced
+   within-vintage design n_test/n_train = h/P, so baseline (P=p_max,h=1) adds
+   S_d^2/p_max (non-vanishing). Gold standard = nested cluster bootstrap
+   (resample funds by vintage/strategy-vintage/GP, rerun whole pipeline per
+   draw). Plus multiplicity: report a model confidence set, not a single winner.
+5. [DRAFTED into tex as a footnote in sec:subagging] Antithetic/stratified
+   partitions Pi (stratify funds within vintage by size/strategy/duration, fill
+   P+h cells by balanced allocation) -> matched cell composition shrinks
+   between-cell variance, replaces sigma_v^2 by smaller within-stratum
+   dispersion. Caveats noted: variance formula must use stratified sampling
+   variance; hold Pi fixed across compared models.
+6. [DRAFTED into tex, end of sec:vintage_betas, bold-para style] Age-varying
+   beta(a_{i,t}) (J-curve: low exposure early, levered-equity-like near exit) as
+   alternative/complement to vintage-varying beta; holdout loss arbitrates.
+   Key caveat written in: age-period-cohort collinearity (period=vintage+age) —
+   macro "period" already in f_t, so age-beta vs vintage-beta separated only via
+   factor structure/nonlinearity; don't stack unrestricted linear vintage+age.
+7. Pre-register Lambda and d_i from external curves (no reference to pricing
+   errors) to kill circularity.
