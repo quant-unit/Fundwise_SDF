@@ -12,11 +12,14 @@
 \usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage{float}
+\usepackage{xcolor}
 
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0.5em}
 \setlist[itemize]{leftmargin=1.3em,itemsep=0.2em,topsep=0.2em}
 \setlist[enumerate]{leftmargin=1.5em,itemsep=0.2em,topsep=0.2em}
+
+\newcommand{\tbd}[1]{\textbf{[TBD: #1]}}
 
 \begin{document}
 
@@ -25,778 +28,600 @@
 \today
 
 \section{Introduction}
+\label{sec:intro}
 
-Which stochastic discount factor (SDF) model gives the most credible risk adjustment for private-equity cash flows? This paper argues that the answer depends critically on a question that existing work treats as settled: \emph{how should the pricing moments be constructed?}
+Which stochastic discount factor (SDF) model gives the most credible risk adjustment for private-equity (PE) cash flows? Before that question can even be posed to the data, a more basic one must be answered: \emph{how should the pricing moments be constructed?} PE samples are small, lumpy, and organized by vintage year, and an SDF model can look good or bad depending on how funds are grouped into pricing moments. Existing approaches commit to one grouping---single funds \citep{AngChenGoetzmannPhalippou2018} or vintage-year portfolios \citep{DriessenLinPhalippou2012}---and treat it as fixed. This paper shows that the grouping choice is not innocuous, and that it has an answer.
 
-\textbf{The core problem: moment construction is consequential.}
-Private-equity samples are small, lumpy, and organized by vintage year. An SDF model can look good or bad depending on how funds are grouped into pricing moments. Existing approaches commit to one grouping---typically single funds (e.g., \cite{AngChenGoetzmannPhalippou2018}) or vintage-year portfolios (e.g., \cite{DriessenLinPhalippou2012})---and treat it as fixed. But the choice of grouping is itself consequential for estimation, and there is no a priori reason to prefer one admissible grouping over another.
+We derive the resampling design from three finite-sample requirements and arrive at \emph{blocked vintage cross-validation with pooled moments}: funds are pooled into one pricing moment per vintage; candidate SDFs are estimated on the vintage moment vector with a contiguous block of vintages (plus a buffer) held out; the held-out vintages are scored with an exactly unbiased estimate of their squared population pricing error; and all admissible blocks are enumerated. The preferred model is the one with the lowest average held-out pricing loss. The three requirements, developed in Section~\ref{sec:optimality}, are worth stating up front because each eliminates a natural competitor design:
 
-We propose to make the grouping itself part of the empirical design. We repeatedly draw random within-vintage fund partitions, estimate the SDF on partition-induced moments, and evaluate pricing errors on held-out moments. The preferred SDF model is the one with the lowest average holdout pricing loss across many admissible partitions. We call this \emph{resampling-based model selection}: moment construction becomes a testable design choice rather than a fixed input.
+\begin{enumerate}
+\item \textbf{Pool what is exchangeable.} Funds within a vintage are exchangeable, so the pooled vintage moment is sufficient for the vintage's pricing error: any random within-vintage sub-grouping equals the pooled moment plus mean-zero partition noise, and conditioning on the pooled moment weakly reduces every convex risk (Rao--Blackwell)---a finite-sample statement requiring no asymptotics. Randomizing fund cells \emph{inside} the estimation moments is therefore strictly dominated; it also creates a rank-deficiency trap, because stacked exchangeable fold moments share a single population moment and cannot identify a multi-parameter SDF (Appendix~\ref{app:identification}).
+\item \textbf{Hold out what identifies.} A holdout can discriminate between SDF specifications only if the held-out moments embody variation the estimation moments do not. The identifying variation is cross-vintage---each vintage lives through a different factor path---so the holdout must be at the vintage layer. Fund-level holdouts within the same vintages hold the factor history fixed: whatever a specification fits about the vintage moments, including spurious fit to the single realized factor path, transfers one-for-one to the holdout, and the expected score gap between models collapses to their in-sample gap as fund counts grow. Because adjacent vintages overlap in calendar time, the held-out vintages form a contiguous block separated from the estimation set by a buffer, in the spirit of \(hv\)-block cross-validation for dependent data \citep{Racine2000}; and the block must be sizeable, because with twenty-odd vintages a leave-one-out design leaves all candidate models fitting nearly the same sample.
+\item \textbf{Score without a noise floor.} The squared held-out vintage moment estimates the squared population pricing error \emph{plus} a fund-sampling noise floor that depends on fund counts and on the model itself. A U-statistic over fund pairs removes the floor exactly, so scores are unbiased for the squared population error conditional on the vintage's factor history and comparable across vintages, models, and designs.
+\end{enumerate}
 
-Two additional difficulties arise within this framework and must be handled by modular design choices:
+In short: \emph{pool the exchangeable, hold out the identifying variation, score without bias.} Design choices that can be derived, we derive---the resampling scheme itself. Design choices that cannot, we rank empirically by held-out pricing loss: the SDF factor structure, the moment family, the treatment of young funds, the alpha definition.
 
-\textbf{Unseasoned vintages create a dilemma.}
-Recent vintage years carry valuable pricing information---they reflect current market conditions and expand the factor-path coverage of the sample---but including them naively destabilizes (or biases) estimation. The standard approach treats the latest reported NAV as a terminal cash flow and discounts it back to the fund inception date. This creates two problems. First, it concentrates a large share of the fund's discounted value at a single calendar date---the dataset endpoint---so that the estimator's fit becomes disproportionately sensitive to the macro state at that date rather than to the fund's lifetime factor exposure. Second, the terminal NAV is an appraisal, not a realized payoff; its co-movement with public indices may differ systematically from that of actual divestitures. Researchers therefore face a dilemma: exclude recent vintages and waste data, or include them and accept fragile estimates driven by one macro-state realization. Rather than commit to one approach, our framework accommodates and empirically compares three competing strategies for unseasoned vintages (Section~\ref{sec:unseasoned}).
+Two design problems confront every PE SDF study, and we resolve both inside the framework.
 
-\textbf{Exploding-alpha degeneracy in finite samples.}
-NPV-style SDF estimation suffers from a finite-sample pathology first documented by \citet{DriessenLinPhalippou2012}. In the standard multiplicative SDF parameterization, cash flows are discounted by a cumulative factor that includes \((1+\alpha)^{-T}\). When \(\alpha\) is large and positive, this factor drives all discount factors toward zero, making every fund's pricing error approximately zero regardless of the factor loadings~\(\beta\). The result is a ridge of spurious near-minima along the alpha axis of the objective function. The problem is most severe when fund horizons are long and early cash flows are small relative to later ones, which is precisely the cash-flow shape of a typical PE fund. Validation folds are useful for model comparison, but they do not by themselves solve this pathology: if the candidate cumulative SDF collapses all long-horizon discounted cash flows, a held-out NPV moment can collapse as well. We therefore treat exploding alpha as a separate identification and stability issue, handled through alpha design, economically admissible parameter restrictions, and diagnostics for boundary solutions (Section~\ref{sec:identification}).
+\emph{Unseasoned vintages.} Recent vintages carry valuable pricing information---they reflect current market conditions and extend the factor-path coverage of the panel---but their value is still locked in appraised net asset values (NAVs). The standard treatment discounts the latest NAV back to the fund's inception date as a terminal cash flow. This concentrates a large share of each young fund's discounted value at a single calendar date, the dataset endpoint, and it treats an appraisal as if it were a realized payoff. Researchers therefore face a dilemma: exclude recent vintages and waste data, or include them and accept fragile, NAV-driven estimates. We propose a \emph{hybrid} estimator: seasoned vintages contribute realized-cash-flow NPV moments, while unseasoned vintages contribute normalized one-period Euler errors on quarterly NAV returns---short-horizon restrictions that never discount an appraisal over a long horizon. The hybrid is disciplined by an evaluation principle we state as a design rule: \emph{the criterion used to compare models and designs never touches a NAV.} In the blocked scheme this rule is satisfied by construction, because unseasoned vintages enter estimation only and are never scored; out-of-time (rolling-origin) validation on subsequently realized cash flows makes the principle operational prospectively.
 
-\textbf{Summary of the approach.} The method has three interrelated goals:
-\begin{itemize}
-\item \textbf{Model selection:} rank SDF models by out-of-sample pricing performance across many resampled moment constructions.
-\item \textbf{Design comparison:} compare whether within-vintage fund resampling or traditional vintage-year portfolio construction yields more stable and predictive pricing moments.
-\item \textbf{Efficient use of the vintage panel:} include all available vintages---seasoned and unseasoned---through flexible, smart resampling designs tailored to different approaches for handling unseasoned data.
-\end{itemize}
+\emph{Alpha design.} The baseline parameterizes abnormal performance as a cumulative, NPV-style alpha in the direct-alpha and generalized-PME tradition \citep{GredilGriffithsStucke2023,KortewegNagel2016,KortewegNagel2025}, not as a per-period intercept inside the one-period discount factor as in \citet{DriessenLinPhalippou2012}. Besides its natural long-horizon interpretation, the cumulative design has a practical advantage: it does not suffer from the \emph{exploding-alpha} degeneracy of the intercept parameterization, in which driving \(\alpha\to\infty\) sends all discounted cash flows to zero, so that each fund's pricing error collapses to its undiscounted time-zero flows and a ridge of spurious near-minima appears whenever those undiscounted flows are small. Under the baseline design with time-zero indexing, the undiscounted initial capital call anchors the objective away from zero, and the Euler block actively penalizes extreme alpha. We therefore treat exploding alpha as a solved design issue in the main text and relegate its full anatomy, together with identification-robust inference for alpha, to Appendix~\ref{app:alpha}.
 
-The paper is closest in spirit to \citet{KortewegNagel2016} because the estimator works with aggregated pricing moments, and to \citet{DriessenLinPhalippou2012} because the moments price private cash flows directly. The new contribution is a general resampling-based model selection framework that (i)~treats moment construction as a testable design choice, (ii)~nests competing approaches to unseasoned vintages as special cases and ranks them empirically, and (iii)~can accommodate time-varying factor specifications through vintage-stratified estimation (Section~\ref{sec:vintage_betas}).
-\citet{brown2023nowcasting} also use NAVs to estimate the risk and return of PE funds, and \citet{GhyselsGredilAndreou2025} construct high-frequency PE returns from NAV-based state-space models and use them for factor analysis and spanning tests.
+The empirical strategy has two parts. A compact \emph{semi-synthetic simulation} (Section~\ref{sec:simulation}) holds the real design fixed---historical factor paths, the actual vintage structure and fund counts of the estimation panel---and synthesizes only cash flows under a known SDF. It delivers the three quantities no real-data check can: selection frequencies (does the criterion find the true factor model?), small-sample bias of the estimated alpha and loadings, and the size of the corrected tests. It also verifies the derivation's central prediction empirically: fund-level cross-validation fails to discriminate factor models, while blocked vintage cross-validation succeeds. The \emph{empirical application} (Section~\ref{sec:empirics}) then estimates and ranks candidate SDF models on a buyout (BO) fund sample, with diagnostics that separate genuine pricing ability from design artifacts.
+
+The paper makes four contributions.
+\begin{enumerate}
+\item \textbf{A resampling framework for PE SDFs, derived rather than asserted.} Blocked vintage cross-validation with pooled moments and unbiased U-statistic scoring, obtained from three finite-sample requirements; the block enumeration is exhaustive, so no Monte Carlo tuning parameter remains. Inference for score differences corrects the anti-conservative naive resampled \(t\)-statistic \citep{BengioGrandvalet2004,NadeauBengio2003} and reports a model confidence set \citep{HansenLundeNason2011}.
+\item \textbf{An identification analysis of resampled pricing moments.} Exchangeable fund-level folds are redundant moments in the precise GMM sense; the vintage cross-section carries the identifying rank. Pooling implements the fix by construction (Appendix~\ref{app:identification} gives the formal treatment).
+\item \textbf{A hybrid treatment of unseasoned vintages with NAV-free evaluation.} Realized cash flows are used wherever they exist; NAV information enters only through short-horizon Euler restrictions on young funds; and no NAV ever enters a comparison score.
+\item \textbf{Simulation and empirical evidence}: semi-synthetic verification of the framework's selection and inference properties, and an empirical ranking of SDF models for buyout funds.
+\end{enumerate}
+
+\textbf{Related literature.} The paper is closest in spirit to \citet{KortewegNagel2016} because the estimator works with aggregated pricing moments and an NPV-style abnormal-performance object, and to \citet{DriessenLinPhalippou2012} because the moments price private cash flows directly; \citet{AngChenGoetzmannPhalippou2018} estimate PE returns from fund-level cash flows in a Bayesian time-series framework, and \citet{KaplanSchoar2005} introduce the PME benchmark that underlies the ratio moment family. On the NAV side, \citet{brown2023nowcasting} nowcast fund NAVs and \citet{GhyselsGredilAndreou2025} construct high-frequency PE return indices from NAV-based state-space models; our Euler block uses NAV returns only for young funds and only over one-quarter horizons. On the methodology side, we import results from the cross-validation literature: dependent-data blocking \citep{Racine2000}, the insight that small holdout fractions overfit in model selection \citep{Shao1993,ArlotCelisse2010}, the impossibility of unbiased variance estimation for resampled scores \citep{BengioGrandvalet2004} and its practical correction \citep{NadeauBengio2003}, and the analysis of bagging \citep{BuhlmannYu2002}. Relative to all of these, the new element is a resampling design derived for the PE moment structure---pooled vintage moments, blocked vintage holdout, unbiased scoring---rather than an off-the-shelf cross-validation bolted onto an existing estimator.
+
+Section~\ref{sec:example} gives a guiding example. Section~\ref{sec:framework} sets out the pricing moments. Section~\ref{sec:scheme} develops the blocked vintage cross-validation scheme, its optimality argument, identification, and inference. Section~\ref{sec:unseasoned} develops the hybrid treatment of unseasoned vintages and the NAV-free evaluation target. Section~\ref{sec:alpha_design} explains the cumulative alpha design. Section~\ref{sec:simulation} presents the semi-synthetic simulation design and Section~\ref{sec:empirics} the buyout application. Section~\ref{sec:conclusion} concludes. Appendices collect the formal identification analysis, the exploding-alpha anatomy, alternative unseasoned-vintage treatments, the moment-family comparison, and a research agenda.
 
 \section{Guiding Example}
+\label{sec:example}
 
-Suppose a candidate SDF has three parameters: an alpha term and two factor loadings. Then we need at least three pricing moments to estimate it. A natural resampling design is therefore:
-
-\begin{itemize}
-\item build three estimation folds,
-\item build one validation fold,
-\item estimate the SDF on the three estimation moments,
-\item score the fitted SDF on the validation moment (calculate out-of-sample pricing error).
-\end{itemize}
-
-In stylized notation, the example can be summarized with one simple three-parameter SDF and one resampled moment per fold. Let the parameter vector be
+Suppose a candidate SDF has three parameters: a cumulative alpha \(a\) and two factor loadings,
 \[
-\theta=(\alpha,\beta_1,\beta_2)^\prime,
+\theta=(a,\beta_1,\beta_2)^\prime.
 \]
-and let the one-period discount factor be
+The baseline one-period discount factor is the cumulative-alpha (direct-alpha-style) form
 \[
-M_{t-1,t}(\theta)=\frac{1}{1+\alpha+\beta_1 f_{1,t}+\beta_2 f_{2,t}},
-\qquad
-\Psi_{0,t}(\theta)=\prod_{s=1}^{t} M_{s-1,s}(\theta),
-\]
-where \(f_{1,t}\) and \(f_{2,t}\) are two benchmark factor realizations. For transparency the running example uses the additive period-by-period intercept form of \(\alpha\); this is the parameterization we later label DLP12-style and flag as the most exposed to exploding alpha (Section~\ref{sec:alpha_design}). The recommended baseline instead uses a cumulative, NPV-style alpha, and the resampling machinery is identical for either choice. For sampled split \(n\), let \(C_{n,v,r}\) be the funds from vintage \(v\) assigned to fold \(r\in\{1,2,3,4\}\), with \(r=1,2,3\) used for estimation and \(r=4\) used for validation. Write \(CF_{t,i}=D_{t,i}-X_{t,i}\) for net cash flow, let \(K_i\) denote fund \(i\)'s committed capital, and partition active vintages into seasoned and unseasoned sets, \(\mathcal V=\mathcal V^S\cup\mathcal V^U\). For the unseasoned block, let \(R^H_{t,i}\) denote the gross quarterly Horizon-IRR return computed from beginning NAV, ending NAV, and dated capital calls and distributions within quarter \(t\). The vintage-level pricing restriction is then
-\[
-\epsilon_{n,v,r}(\theta)=
-\begin{cases}
-\epsilon_{n,v,r}^{S}(\theta)
+M_{t-1,t}(\theta)
 =
-\dfrac{1}{|C_{n,v,r}|}
-\sum\limits_{i\in C_{n,v,r}}
-\dfrac{1}{K_i}
-\sum\limits_{t=0}^{T_i}
+\frac{e^{-a\,\Delta_t}}{1+r_{f,t}+\beta_1 f_{1,t}+\beta_2 f_{2,t}},
+\qquad
+\Psi_{0,t}(\theta)=\prod_{s=1}^{t} M_{s-1,s}(\theta)
+=
+\frac{e^{-a\,\tau_t}}{B_{0,t}(\beta)},
+\]
+where \(r_{f,t}\) is the risk-free rate, \(f_{1,t}\) and \(f_{2,t}\) are excess returns on two traded factor portfolios, \(\Delta_t\) is the period length, \(\tau_t\) the elapsed time from the vintage inception date, and \(B_{0,t}(\beta)\) the cumulative benchmark return implied by the loadings. Setting \(a=0\) recovers pure benchmark discounting; \(a\) is a continuously compounded abnormal return earned on top of the factor benchmark (Section~\ref{sec:alpha_design}).
+
+The panel in Figure~\ref{fig:block-scheme} has eight active vintages: 2005--2010 are seasoned (\(\mathcal V^S\)) and 2011--2012 are unseasoned (\(\mathcal V^U\)). Write \(CF_{t,i}=D_{t,i}-X_{t,i}\) for fund \(i\)'s net cash flow (distributions minus contributions) and \(K_i\) for its committed capital. Every vintage contributes \emph{one} pooled pricing moment. For a seasoned vintage it is the average relative NPV error over \emph{all} of its \(n_v\) funds,
+\[
+\epsilon_{v}(\theta)
+=
+\frac{1}{n_v}
+\sum_{i\in\mathcal I_v}
+\frac{1}{K_i}
+\sum_{t=0}^{T_i}
 \Psi_{0,t}(\theta)\,CF_{t,i},
-& v\in\mathcal V^S,
-\\[1.1em]
-\epsilon_{n,v,r}^{U}(\theta)
-=
-\dfrac{1}{|C_{n,v,r}|}
-\sum\limits_{i\in C_{n,v,r}}
-\Lambda_i\,
-\dfrac{1}{T_i}
-\sum\limits_{t=1}^{T_i}
-e^H_{t,i}(\theta),
-& v\in\mathcal V^U,
-\end{cases}
+\qquad v\in\mathcal V^S,
 \]
-where the unseasoned one-period Euler error is
-\[
-e^H_{t,i}(\theta)
-=
-M_{t-1,t}(\theta)R^H_{t,i}-1.
-\]
-Here \(e^H_{t,i}(\theta)\) is already a relative quarterly pricing error, while \(\Lambda_i\) is a deterministic duration-matching normalizer based on fund age and strategy (Section~\ref{sec:euler_approach}) that maps the fund-average relative Euler error into an NPV-like quantity per committed dollar.
-The resampled fold moment is the cross-vintage average
-\[
-m_{n,r}(\theta)=\frac{1}{|\mathcal V|}\sum_{v\in\mathcal V}\epsilon_{n,v,r}(\theta).
-\]
-Because \(\theta\) has three components, we write three stylized scalar fold conditions for exposition,\footnote{This scalar-per-fold device is only illustrative. As Section~\ref{sec:identification_rank} shows, exchangeable folds share a single population moment, so the parameters are in fact identified by the cross-section of vintages \emph{within} each fold, not by the three folds; the fold count fixes the estimation/validation split rather than the number of identifying moments.}
-\[
-m_{n,1}(\theta)=0,
-\qquad
-m_{n,2}(\theta)=0,
-\qquad
-m_{n,3}(\theta)=0,
-\]
-or equivalently
-\[
-\hat\theta_n
-=
-\arg\min_{\theta}
-\sum_{r=1}^{3} m_{n,r}(\theta)^2.
-\]
-The held-out fourth fold then gives the validation score
-\[
-S_n(\hat\theta_n)=m_{n,4}(\hat\theta_n)^2.
-\]
-Our resampling-based approach repeats this exercise many times: for each draw \(n=1,\dots,N\), we redraw the partition and thereby obtain a new quartet of fold moments \(\{m_{n,1},m_{n,2},m_{n,3},m_{n,4}\}\).
+with the time-zero capital call entering undiscounted (\(\Psi_{0,0}=1\)). For an unseasoned vintage it is a normalized one-period Euler error built from quarterly NAV returns using the same one-period SDF (Section~\ref{sec:unseasoned}); unseasoned vintages support estimation but are never scored.
 
-Figures \ref{fig:sampling-scheme} and \ref{fig:vintage-portfolio-scheme} show the two baseline ways to build these folds. In both figures, each dot is one fund. Vintages 2005--2010 lie above the approach boundary and use cash-flow discounting, while vintages 2011--2012 lie below it and use the normalized Euler approach.
+The scheme holds out whole vintages in contiguous blocks. With block length \(d=2\) and a buffer of \(g=1\) vintage on each side, the block \(\{2007,2008\}\) shown in the figure implies buffer vintages \(\{2006,2009\}\) (excluded entirely) and the estimation set \(\{2005,2010,2011,2012\}\). The estimator minimizes the squared pooled vintage moments on the estimation set,
+\[
+\hat\theta_b
+=
+\arg\min_{\theta\in\Theta}\;
+\frac{1}{|\mathcal E_b|}\sum_{v\in\mathcal E_b}\epsilon_{v}(\theta)^2 ,
+\]
+which here stacks four moment conditions---two seasoned NPV moments and two unseasoned Euler moments---against three parameters; identification comes from the four vintages' distinct factor paths (Section~\ref{sec:identification_rank}). The held-out block is then scored with an \emph{unbiased} estimate of each held-out vintage's squared population pricing error,
+\[
+S_b(\hat\theta_b)=\tfrac12\bigl[\widehat U_{2007}(\hat\theta_b)+\widehat U_{2008}(\hat\theta_b)\bigr],
+\]
+where \(\widehat U_v\) averages products of fund-pair pricing errors within the vintage and thereby strips out the fund-sampling noise floor (Section~\ref{sec:estimator}).
+
+There is no Monte Carlo in this construction: the admissible blocks are simply the five contiguous windows \(\{2005\text{--}06\},\{2006\text{--}07\},\{2007\text{--}08\},\{2008\text{--}09\},\{2009\text{--}10\}\), each is estimated and scored in turn, and models are ranked by the average score across the five blocks. In the empirical application the seasoned range is longer (around twenty vintages) and the baseline block holds out roughly one-fifth of it.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\linewidth]{../figure/sampling_scheme.pdf}
-\caption{Proposed within-vintage fund resampling scheme. Each active vintage is split into three estimation cells and one validation cell. Fold 1 contains the dark-green funds from every vintage, fold 2 contains the medium-green funds from every vintage, fold 3 contains the light-green funds from every vintage, and the validation fold contains the blue funds from every vintage.}
-\label{fig:sampling-scheme}
+\includegraphics[width=\linewidth]{../figure/sampling_scheme_vintage_blocks.pdf}
+\caption{Blocked vintage holdout, showing one of the five admissible blocks. Funds are pooled within each vintage into one pricing moment. The held-out block \{2007, 2008\} (blue) is scored; the buffer vintages 2006 and 2009 (open circles) are excluded because their funds' lives overlap the block almost completely; the remaining vintages (green) form the estimation set. Unseasoned vintages 2011--2012 (grey band) contribute normalized one-period Euler moments to estimation but are never scored, so every reported score is built from realized cash flows only.}
+\label{fig:block-scheme}
 \end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\linewidth]{../figure/sampling_scheme_vintage_portfolios.pdf}
-\caption{Traditional shuffled vintage-year portfolio scheme. Funds are first aggregated into whole vintage-year portfolios, and whole vintages are then assigned to folds. Here, 2005 and 2009 enter estimation fold 1, 2006 and 2010 enter estimation fold 2, 2007 and 2011 enter estimation fold 3, and 2008 and 2012 form the validation fold.}
-\label{fig:vintage-portfolio-scheme}
-\end{figure}
-
-\section{Framework and Notation}
-\label{sec:framework}
-
-Let \(v=1,\dots,V\) index active vintage years, and let \(\mathcal I_v\) be the set of funds in vintage \(v\). Let \(M\) denote a candidate SDF model with parameter vector \(\theta\in\Theta_M\subset\mathbb R^{p(M)}\).
-
-We use \(P\) estimation folds and \(h\) holdout folds. For the guiding three-parameter example, \(P=3\) and \(h=1\). When comparing models with different numbers of parameters, a clean implementation is to use a common number of estimation folds \(P=p_{\max}\), where \(p_{\max}=\max_M p(M)\). As Section~\ref{sec:identification_rank} explains, \(P\) governs the holdout architecture and cross-model comparability, not the identification of \(\theta\), which comes from the within-fold vintage cross-section.
-
-\subsection{Within-vintage resampling}
-
-In the proposed design, every fold contains funds from every active vintage. This keeps the vintage-year support fixed across estimation and validation moments. The folds differ because they contain different funds, not because they represent different macro or vintage states. This is the cleanest design for asking whether an SDF prices PE cash flows robustly across fund-level resamples.
-
-For sampled split \(n=1,\dots,N\), split the funds within each vintage into \(P+h\) cells:
-\[
-\mathcal P_{n,v}
-=
-\{C_{n,v,1},\dots,C_{n,v,P+h}\},
-\qquad
-C_{n,v,r}\subset \mathcal I_v.
-\]
-The cells are disjoint and cover the funds in vintage \(v\). The \(r\)th cross-vintage fold is
-\[
-F_{n,r}
-=
-\{C_{n,1,r},C_{n,2,r},\dots,C_{n,V,r}\}.
-\]
-Thus fold \(r\) contains one fund sub-sample from every active vintage.
-
-At the single-fund level, the number of admissible assignments is usually too large to enumerate. We therefore draw Monte Carlo samples from a partition rule \(\Pi\):
-\[
-\mathcal P_n
-\sim
-\Pi(\cdot \mid P,h,\mathcal I_1,\dots,\mathcal I_V).
-\]
-For now, \(\Pi\) should be simple and transparent: random assignment within each vintage, subject to no empty cells and reasonable balance in fund counts or economic size.
-
-\subsection{Vintage-year portfolio benchmark}
-
-In the traditional design, the primitive object is a vintage-year portfolio. A fold contains whole vintages, not fund sub-samples from all vintages. This is easy to explain and resembles standard PE portfolio construction. But the validation moment now differs from the estimation moments in vintage composition. A failure on the validation fold may therefore reflect poor SDF pricing, or it may reflect extrapolation across vintage states.
-
-The notation is the same at the fold level, but the economic object differs: \(F_{n,r}\) now contains whole vintage-year portfolios rather than within-vintage fund cells.
-
-\subsection{Design comparison}
-
-The first version of the paper should focus on this contrast. If within-vintage resampling delivers more stable estimates and lower holdout pricing errors, the evidence favors building all-vintage subportfolios before estimating the SDF. If shuffled vintage-year portfolios perform similarly, the simpler vintage-year construction may be sufficient.
 
 \section{Pricing Moments}
-\label{sec:pricing_moments}
+\label{sec:framework}
 
-For a fold \(F_{n,r}\), let \(\epsilon_{n,v,r}(\theta;M,\eta)\) be the pricing error from the vintage component of that fold. The design choice \(\eta\) collects choices such as the alpha definition, loss function, and cash-flow weighting.
+\subsection{Funds, vintages, and seasoning}
+\label{sec:seasoning}
 
-The aggregated fold moment is
+Let \(v=1,\dots,V\) index active vintage years, ordered by year, and \(\mathcal I_v\) the \(n_v\) funds of vintage \(v\), each with committed capital \(K_i\), strategy \(s(i)\), and quarterly contributions \(X_{t,i}\), distributions \(D_{t,i}\), and reported NAVs. Let \(M\) denote a candidate SDF model with parameters \(\theta\in\Theta_M\subset\mathbb R^{p(M)}\), and let \(\eta\) collect the remaining design choices (moment family, weighting, seasoning threshold, terminal-NAV convention).
+
+A vintage \(v\) is \emph{unseasoned} (\(v\in\mathcal V^U\)) if its aggregate residual NAV is large relative to the value it has already realized; otherwise it is \emph{seasoned} (\(v\in\mathcal V^S\)). A convenient scale-free criterion is the unrealized-value fraction \(\mathrm{RVPI}/(\mathrm{RVPI}+\mathrm{DPI})\) exceeding a threshold \(\delta\); scaling residual NAV by committed capital is an alternative, but that denominator can remain near or above one for strong funds long after they are effectively mature. In practice, \(\delta\in[0.10,0.20]\) is a sensible range. ``Seasoned'' therefore does not require residual NAV to be exactly zero; it means the remaining NAV is small enough that the vintage is treated as effectively mature.
+
+How to handle the small residual NAV of a seasoned vintage is itself a design choice in \(\eta\): exclude it, include it as a final distribution, or apply a de minimis adjustment. The important requirement is consistency: once a terminal-NAV convention is chosen, it must be applied identically in estimation, scoring, robustness checks, and common-score comparisons.
+
+\subsection{Fund-level pricing errors}
+\label{sec:fund_moments}
+
+For seasoned funds, the baseline contribution is the relative NPV error per dollar committed,
 \[
-m_{n,r}(\theta;M,\eta)
-=
-\sum_{v\in A_{n,r}}
-\omega_{n,v,r}\,
-\epsilon_{n,v,r}(\theta;M,\eta),
+g_i^S(\theta)=\frac{1}{K_i}\sum_{t=0}^{T_i}\Psi_{0,t}(\theta)\,CF_{t,i},
+\qquad v(i)\in\mathcal V^S,
 \]
-where \(A_{n,r}\) is the set of vintages represented in fold \(r\), and \(\omega_{n,v,r}\) are vintage or value weights. Under within-vintage resampling, \(A_{n,r}\) is the full active vintage set for every fold. Under shuffled vintage-year portfolios, \(A_{n,r}\) is only the set of whole vintages assigned to fold \(r\).
+with the cumulative SDF \(\Psi_{0,t}(\theta)\) of Section~\ref{sec:example} and the time-zero call entering undiscounted. At the population parameter, \(E[g_i^S(\theta_0)]=0\): the risk-adjusted NPV of fund cash flows vanishes. For unseasoned funds, the baseline contribution is the normalized one-period Euler error \(g_i^U(\theta)\) constructed in Section~\ref{sec:euler_block}: a fund-average quarterly NAV-return pricing error rescaled by a deterministic duration factor into the same per-committed-dollar units. The empirical baseline is therefore \emph{hybrid}: cumulative NPV for \(\mathcal V^S\), normalized Euler for \(\mathcal V^U\). Both blocks are relative pricing errors, and neither requires ratio denominators that can approach zero.
 
-This distinction is the core empirical design choice. The proposed method creates comparable fold moments that all span the same vintage domain. The benchmark creates moments from different vintage domains.
+The NPV moment is the baseline moment family; the PME-ratio family of \citet{KaplanSchoar2005} and \citet{AngChenGoetzmannPhalippou2018} serves as a robustness check, restricted to seasoned vintages because integrating young funds into a PME requires discounting a terminal NAV back to inception---exactly the mechanism the Euler block avoids. The two families estimate different population objects (the expectation of a ratio is not the ratio of expectations), so agreement of the preferred model across families indicates genuine fit while disagreement flags moment-induced selection. Appendix~\ref{app:moment_details} gives the detailed comparison.
 
-\paragraph{Scalar versus vector fold losses.}
-The baseline collapses the vintage components into one scalar fold moment \(m_{n,r}\). This is simple and keeps the number of moments close to the number of parameters, but it can hide sign cancellation: overpricing one vintage can offset underpricing another. A natural refinement is to keep the vintage or strategy-vintage components as a vector,
+\subsection{Pooled vintage moments and weights}
+\label{sec:vintage_moments}
+
+The primitive estimation object is the \emph{pooled vintage moment}: the average pricing error over all funds of a vintage,
 \[
-\boldsymbol\epsilon_{n,r}(\theta)
+\epsilon_v(\theta)
 =
-\left(\epsilon_{n,v,r}(\theta):v\in A_{n,r}\right),
+\frac{1}{n_v}\sum_{i\in\mathcal I_v} g_i(\theta),
 \qquad
-L_{n,r}^{\mathrm{vec}}(\theta)
+g_i=g_i^S \text{ or } g_i^U,
+\]
+collected into the vintage moment vector \(\boldsymbol\epsilon(\theta)=(\epsilon_v(\theta))_v\) with weights \(\omega_v\). The baseline sets \(\omega_v\) equal across vintages, so each vintage contributes equally regardless of fund count or aggregate capital; value weighting is a design alternative in \(\eta\). Under this two-layer normalization (per-committed-dollar at the fund level, equal weights at the vintage level), the moments are comparable across (i)~vintages with different numbers of funds, (ii)~vintages with different aggregate capital, and (iii)~seasoned cash-flow errors and unseasoned normalized Euler errors.
+
+Why the \emph{pooled} average over all funds, rather than sub-portfolios? Because funds within a vintage are exchangeable, any random sub-grouping produces moments that equal the pooled moment plus mean-zero noise---randomization inside the estimation moments only injects variance and, if sub-groups are stacked as separate moment conditions, a rank-deficiency trap. Section~\ref{sec:optimality} makes both points precise; the constructive consequence is that all resampling in this paper operates \emph{across} vintages, never within them.
+
+The scalar aggregate \(\sum_v\omega_v\epsilon_v(\theta)\) is \emph{not} the estimation objective: collapsing the vector to its average hides sign cancellation (overpricing one vintage offsetting underpricing another) and destroys the identifying rank of the moment system (Section~\ref{sec:identification_rank}). We retain it only as a reported diagnostic: a small vector loss with a small scalar aggregate indicates uniform pricing; a small scalar aggregate with a large vector loss indicates cancellation.
+
+\section{Blocked Vintage Cross-Validation}
+\label{sec:scheme}
+
+\subsection{The scheme}
+\label{sec:blocks}
+
+Order the seasoned vintages by year. A \emph{block} is a contiguous window \(\mathcal H_b\subset\mathcal V^S\) of \(d\) vintages; its \emph{buffer} \(\mathcal G_b\) consists of the \(g\) vintages adjacent to the block on each side; the \emph{estimation set} is everything else,
+\[
+\mathcal E_b=\mathcal V\setminus(\mathcal H_b\cup\mathcal G_b),
+\]
+which always includes the unseasoned vintages \(\mathcal V^U\). The admissible blocks are the \(B=|\mathcal V^S|-d+1\) contiguous windows in the seasoned range; the scheme enumerates all of them. Blocks are drawn only from \(\mathcal V^S\): unseasoned vintages support estimation but are never scored, so every reported score is built from realized cash flows only (Section~\ref{sec:navfree}).
+
+The buffer exists because vintages are not calendar-separated: a 2007 fund's life overlaps a 2008 fund's life almost completely, so holding out 2008 while estimating on 2007 would leak most of the held-out information back into estimation. Removing the immediate neighbors implements the logic of \(hv\)-block cross-validation for dependent data \citep{Racine2000} at the vintage level. Complete separation is unattainable---distant vintages still share some calendar quarters, since funds live ten to fifteen years---so the buffer reduces rather than eliminates overlap; the rolling-origin design of Section~\ref{sec:navfree}, which truncates the information set in calendar time, is the fully separated (but one-sided) extreme of the same family, with the terminal block as its holdout.
+
+Two tuning constants remain, and both are pre-registered rather than optimized: the block length \(d\) and the buffer width \(g\). The baseline sets \(d\approx 0.2\,|\mathcal V^S|\) and \(g=1\); Section~\ref{sec:optimality} explains why \(d\) must be a sizeable fraction of the panel, and the simulation (Section~\ref{sec:simulation}) documents sensitivity to both.
+
+\subsection{Why this scheme: three finite-sample requirements}
+\label{sec:optimality}
+
+The scheme is not one design among many; it is the one that survives three requirements, each of which eliminates a natural competitor. All three arguments are finite-sample---none appeals to large-\(V\) asymptotics, which would be out of place in a panel of twenty-odd vintages.
+
+\textbf{R1: Pool what is exchangeable.} Fix any \(\theta\) and any vintage \(v\). Conditional on the vintage's factor history, the funds' pricing errors \(g_i(\theta)\) are exchangeable draws around the vintage population error \(\bar g_v(\theta)\). Any moment built from a random sub-group of funds is therefore the pooled moment plus mean-zero partition noise, and by Rao--Blackwell (conditioning on the pooled moment and applying Jensen's inequality) replacing sub-group moments by the pooled moment weakly reduces every convex criterion---strictly, unless the sub-grouping is trivial. Appendix~\ref{app:identification} quantifies the injected noise in closed form and adds the identification half of the argument: sub-group moments stacked as separate GMM conditions are \emph{exchangeable duplicates} sharing one population moment, so their Jacobian has rank one and cannot identify \(p\ge 2\) parameters. Estimation must therefore use the pooled vintage moment vector: this both minimizes the attainable fund-noise floor and removes the redundant-moment trap by construction.
+
+\textbf{R2: Hold out what identifies.} A holdout discriminates between two SDF specifications only if the held-out moments respond to the specifications differently than the estimation moments do---otherwise the score comparison merely replays the estimation comparison on noisier data. Under fund-level holdouts within the same vintages, the estimation and holdout moments share identical factor histories: their population values coincide vintage by vintage, so whatever a specification fits about the vintage moments---including spurious fit to the single realized factor draw---transfers one-for-one to the holdout. The expected score gap between two models then equals their in-sample population gap, and the only thing the holdout penalizes is estimation noise from finite fund counts, a penalty that disappears exactly when the data improve. Discrimination requires holding out \emph{vintages}, whose factor paths the estimation set has genuinely not used. Two small-sample corollaries follow. First, the block must be contiguous with a buffer, because adjacent vintages are near-duplicates in calendar time (R2 would otherwise be undone by leakage). Second, the block must be a sizeable fraction of the panel: with \(|\mathcal V^S|\approx 20\), a leave-one-vintage-out design estimates every candidate on \(19\) of \(20\) vintages, so all candidates produce near-identical fits and near-identical scores---no discrimination. Holding out \(20\text{--}25\%\) forces genuine extrapolation across factor paths.\footnote{The same conclusion is known asymptotically: cross-validation with a vanishing holdout fraction overfits in model selection, and consistency requires the holdout fraction to remain large \citep{Shao1993,ArlotCelisse2010}. We emphasize the small-sample version of the argument: with few effective observations, small holdouts simply cannot separate candidate fits.}
+
+\textbf{R3: Score without a noise floor.} The squared held-out moment is a biased estimate of what model selection needs:
+\[
+E\bigl[\epsilon_v(\theta)^2\,\big|\,\text{factor path}\bigr]
+=\bar g_v(\theta)^2+\frac{\sigma_v^2(\theta)}{n_v},
+\]
+where \(\sigma_v^2(\theta)\) is the cross-fund variance of \(g_i(\theta)\) within the vintage. The floor \(\sigma_v^2(\theta)/n_v\) depends on the fund count \emph{and on the model}, so raw squared scores conflate mean pricing error with cross-fund dispersion and are not comparable across vintages, models, or designs with different cell sizes. The fix is exact and costless: the U-statistic over fund pairs,
+\[
+\widehat U_v(\theta)
 =
-\boldsymbol\epsilon_{n,r}(\theta)^\prime
-W_{n,r}
-\boldsymbol\epsilon_{n,r}(\theta),
-\]
-where \(W_{n,r}\) is diagonal, shrinkage, or block-cluster weighted. This does create more moment conditions in the GMM sense if used for estimation, so it may require regularization or a model with fewer free parameters. As a first pass, the scalar moment can remain the baseline and the vector loss can be used as a diagnostic score: does the model price each vintage or strategy-vintage cell, not just their average?
-
-\subsection{Fund weights and vintage weights}
-\label{sec:fund_vintage_weights}
-
-The fund-level scaling and vintage weight are design choices that determine the economic content of the fold moment. For seasoned funds, the baseline contribution is
-\[
-g_i^S(\theta;M,\eta)=\frac{1}{K_i}\sum_{t=0}^{T_i}\Psi_{0,t}(\theta;M,\eta)\,CF_{t,i},
-\]
-so each seasoned fund contributes a \emph{relative} NPV error per dollar committed. For unseasoned funds, the analogous baseline contribution is the normalized Euler error \(g_i^U(\theta;M,\eta)\) defined in Section~\ref{sec:euler_approach}: a fund-average one-period Horizon-IRR Euler error rescaled by a deterministic duration factor. At the cell level, we average over the funds in the cell. At the vintage level, the baseline sets \(\omega_{n,v,r}=1/|A_{n,r}|\) (equal vintage weights), so that each vintage contributes equally to the fold moment regardless of the number of funds or aggregate capital it contains.
-
-Under this hybrid three-layer normalization (fund \(\to\) cell \(\to\) vintage), the fold moment becomes
-\[
-m_{n,r}(\theta;M,\eta)
+\frac{1}{n_v(n_v-1)}\sum_{i\ne j} g_i(\theta)\,g_j(\theta)
 =
-\frac{1}{|A_{n,r}|}
-\left[
-\sum_{v\in\mathcal V^S\cap A_{n,r}}
-\frac{1}{|C_{n,v,r}|}\sum_{i\in C_{n,v,r}} g_i^S(\theta;M,\eta)
-\;+\;
-\sum_{v\in\mathcal V^U\cap A_{n,r}}
-\frac{1}{|C_{n,v,r}|}\sum_{i\in C_{n,v,r}} g_i^U(\theta;M,\eta)
-\right].
-\]
-This is an average, across vintages, of the average relative pricing error per fund. For seasoned vintages the object is a relative NPV error; for unseasoned vintages it is a duration-matched relative Euler error expressed in comparable per-committed-dollar units. It is therefore comparable across: (i)~vintages with different numbers of funds, (ii)~vintages with different aggregate capital, (iii)~seasoned vintages with cash-flow errors and unseasoned vintages with normalized Euler errors (Section~\ref{sec:euler_approach}), and (iv)~estimation folds and validation folds.
-
-\subsection{Choice of pricing moment}
-\label{sec:moment_choice}
-
-The pricing error in the loss \(L\) is a design choice, not a primitive. Two canonical families appear in the private-capital SDF literature: the \emph{dollar NPV} moment of \citet{DriessenLinPhalippou2012} and the \emph{PME-ratio} moment of \citet{KaplanSchoar2005}, \citet{DriessenLinPhalippou2009}, and \citet{AngChenGoetzmannPhalippou2018}. We treat the NPV moment as the baseline and the PME-ratio as a robustness check.
-
-\paragraph{NPV moment (baseline).}
-For seasoned funds, aggregate discounted cash flows into one cumulative pricing error per dollar committed. For unseasoned funds, use the normalized Euler fund moment \(g_i^U(\theta;M,\eta)\) from Section~\ref{sec:euler_approach}. The empirical baseline is therefore hybrid: cumulative NPV for \(\mathcal V^S\), normalized Euler for \(\mathcal V^U\). The NPV moment is linear in cash flows, additive across funds, and compatible with the normalized Euler NAV restriction for unseasoned vintages. Both blocks are expressed as per-committed-dollar pricing errors, and neither requires ratio denominators that can approach zero.
-
-\paragraph{PME-ratio moment (robustness check).}
-Define the risk-adjusted PME of fund \(i\) as the ratio of discounted distributions to discounted contributions. This is scale-invariant and has natural practitioner interpretability, but it is not the same statistical object as the NPV moment. If \(D_i^\ast(\theta)\) and \(X_i^\ast(\theta)\) denote discounted distributions and contributions, the NPV restriction is \(E[D_i^\ast(\theta_0)-X_i^\ast(\theta_0)]=0\). It does not generally imply \(E[D_i^\ast(\theta_0)/X_i^\ast(\theta_0)]=1\), because the expectation of a ratio is not the ratio of expectations and depends on the joint distribution of numerator and denominator. The average-PME and pooled-PME moments therefore estimate different population objects and require separate interpretation. The PME ratio is also nonlinear in~\(\theta\), numerically fragile when the denominator is small, and has no clean short-horizon analogue for unseasoned vintages---integrating \(\mathcal V^U\) into a PME framework typically requires treating the latest NAV as a terminal distribution and discounting it back to the fund inception date, reintroducing the long-horizon instability the normalized Euler block is designed to avoid. We therefore restrict the PME robustness check to seasoned vintages \(\mathcal V^S\). Detailed pros and cons of each moment family are given in Appendix~\ref{app:moment_details}.
-
-\paragraph{Robustness diagnostic.}
-Stability of the preferred model-design pair \((M,\eta,\Pi)\) across the hybrid NPV/Euler baseline, the raw dollar NPV, and the pooled-PME moment (restricted to \(\mathcal V^S\)) is the appropriate robustness diagnostic: agreement suggests genuine model fit, while disagreement would flag moment-induced identification.
-
-\section{Estimation and Holdout Scoring}
-\label{sec:estimation}
-
-For each sampled split \(n\), let \(\mathcal E=\{1,\ldots,P\}\) be the estimation-fold indices and let \(\mathcal H=\{P+1,\ldots,P+h\}\) be the holdout-fold indices. In the baseline case \(h=1\), write \(r_H=P+1\) for the single holdout fold. The split-specific estimator solves
-\[
-\hat\theta_n(M,\eta,\Pi)
-=
-\arg\min_{\theta\in\Theta_M}
-\frac{1}{P}\sum_{j\in\mathcal E}
-L\!\left(m_{n,j}(\theta;M,\eta)\right).
-\]
-
-The validation score is the pricing loss on the held-out fold(s):
-\[
-S_n(M,\eta,\Pi)
-=
-\frac{1}{|\mathcal H|}
-\sum_{r\in\mathcal H}
-L\!\left(m_{n,r}(\hat\theta_n(M,\eta,\Pi);M,\eta)\right).
-\]
-
-Aggregate this score across many sampled assignments:
-\[
-\mathrm{Score}_N(M,\eta,\Pi)
-=
-\frac{1}{N}\sum_{n=1}^{N} S_n(M,\eta,\Pi).
-\]
-
-The preferred model-design pair \((M,\eta,\Pi)\) is the one with the lowest average holdout pricing loss. Parameter stability is still informative, but the primary ranking criterion should be predictive pricing performance: does the fitted SDF price cash flows that were not used in estimation?
-
-\subsection{Why validation is needed}
-
-If a model has \(p\) parameters and we estimate it on exactly \(p\) moments, the in-sample fit can look deceptively good. This is especially dangerous in small PE samples because exact identification can hide instability. The validation fold creates a more demanding model-selection question: after fitting the model on \(P\) moments, does it also price a held-out PE cash-flow portfolio? This validation exercise should not be interpreted as a cure for the exploding-alpha pathology; that issue requires the separate identification and stability checks in Section~\ref{sec:identification}.
-
-\subsection{Identification: the folds are not the identifying moments}
-\label{sec:identification_rank}
-
-It is tempting to read the guiding example as ``\(p(M)\) parameters, therefore \(P=p(M)\) estimation folds, therefore \(p(M)\) moment conditions.'' This counting is misleading. Under within-vintage resampling the \(P\) estimation folds are \emph{exchangeable subsamples of the same fund populations}, and exchangeable moments are redundant for identification in the precise GMM sense. We keep within-vintage resampling as the design, but it is important to be explicit about what does---and does not---identify the SDF parameters.
-
-Fix a split \(n\) and recall the fold moment
-\[
-m_{n,r}(\theta)=\frac{1}{|A_{n,r}|}\sum_{v\in A_{n,r}}\epsilon_{n,v,r}(\theta),
+\epsilon_v(\theta)^2-\frac{\widehat\sigma_v^2(\theta)}{n_v},
 \qquad
-\epsilon_{n,v,r}(\theta)=\frac{1}{|C_{n,v,r}|}\sum_{i\in C_{n,v,r}} g_i(\theta).
+E\bigl[\widehat U_v(\theta)\,\big|\,\text{factor path}\bigr]=\bar g_v(\theta)^2 ,
 \]
-Within a vintage, the cells \(C_{n,v,1},\dots,C_{n,v,P}\) are a random partition of the same funds, so each fund-cell average is an unbiased draw of the vintage population pricing error
-\[
-\bar g_v(\theta)=E\!\left[g_i(\theta)\mid i\in\text{vintage }v\right],
-\qquad
-E\!\left[\epsilon_{n,v,r}(\theta)\right]=\bar g_v(\theta)\ \ \text{for every }r.
-\]
-Hence every estimation fold has the \emph{same} population moment,
-\[
-E\!\left[m_{n,r}(\theta)\right]
-=\frac{1}{|A_{n,r}|}\sum_{v\in A_{n,r}}\bar g_v(\theta)
-=:\bar m(\theta),
-\qquad r=1,\dots,P.
-\]
-Stacking the \(P\) fold moments into \(G(\theta)=\bigl(E[m_{n,1}(\theta)],\dots,E[m_{n,P}(\theta)]\bigr)^\prime=\bar m(\theta)\,\mathbf 1_P\) yields a Jacobian that is an outer product,
-\[
-\frac{\partial G(\theta_0)}{\partial\theta^\prime}
-=\mathbf 1_P\,\frac{\partial \bar m(\theta_0)}{\partial\theta^\prime},
-\qquad
-\operatorname{rank}\!\left(\frac{\partial G(\theta_0)}{\partial\theta^\prime}\right)\le 1.
-\]
-The local identification (rank) condition \(\operatorname{rank}\bigl(\partial G(\theta_0)/\partial\theta^\prime\bigr)=p(M)\) therefore fails for any \(p(M)\ge 2\), no matter how many folds are used: the \(P\) folds restrict only the single scalar combination \(\bar m(\theta)=0\) and leave a \((p(M)-1)\)-dimensional set of observationally equivalent parameters. A pricing moment is \emph{nonredundant} only if its population pricing error is not a linear combination of the others and its derivative with respect to \(\theta\) adds independent rank; replicated exchangeable folds are duplicates on both counts.
+is unbiased for the squared population pricing error in finite samples. Where fund-level splitting survives, this is it: \(\widehat U_v\) is precisely the average product of pricing errors across independent fund pairs---the two-half-samples idea reduced to its unbiased core. Two remarks. First, \(\widehat U_v\) can be negative in samples where the vintage is priced well; that is the price of unbiasedness and is harmless for averaging and for paired comparisons (we report raw \(\epsilon_v^2\) alongside as a bounded-below companion). Second, unbiasedness requires cross-fund independence conditional on the factor path; funds sharing a general partner violate it mildly, and the refinement is to restrict the U-statistic to cross-GP pairs.
 
-The redundancy is structural, not a feature of any particular SDF. Folds are exchangeable, so they share one population moment and one Jacobian row. Vintages are \emph{not} exchangeable: each vintage lives through a different factor path and cash-flow timing, so the sensitivities \(\partial\bar g_v(\theta_0)/\partial\theta^\prime\) differ across \(v\). The identifying rank lives in the cross-vintage Jacobian
-\[
-J(\theta_0)=\frac{\partial}{\partial\theta^\prime}
-\bigl(\bar g_{v}(\theta_0)\bigr)_{v\in A}\ \in\ \mathbb R^{|A|\times p(M)},
-\qquad
-\text{identification}\iff \operatorname{rank}\,J(\theta_0)=p(M),
-\]
-i.e.\ at least \(p(M)\) vintages (or strategy--vintage cells) with linearly independent pricing-error sensitivities. Collapsing each fold to a scalar replaces \(J\) by its column sum \(\mathbf 1^\prime J\), a single row, discarding exactly the cross-vintage rank that identifies the factor loadings. This is the precise content of the scalar-versus-vector distinction in Section~\ref{sec:pricing_moments}: the vintage (or strategy--vintage) component vector \(\boldsymbol\epsilon_{n,r}(\theta)\) is not an optional refinement but the object that carries identification.
-
-Two consequences for the empirical design follow.
-
-\emph{Identification and resampling play orthogonal roles.} The vintage cross-section \emph{within} a fold supplies the rank condition; the partition \emph{into} folds supplies the holdout split. We therefore retain within-vintage resampling, but the estimator at each split minimizes a loss over the within-fold vintage moment vector \(\boldsymbol\epsilon_{n,r}(\theta)\) of Section~\ref{sec:pricing_moments}, not over a single scalar per fold. The number of estimation folds is then governed by the desired holdout architecture, not by \(p(M)\); the convention \(P=p_{\max}\) should be read as a device for cross-model comparability, not as the source of identification.
-
-\emph{A weak-identification diagnostic, not a counting rule.} Because \(P\ge p(M)\) moments can still be rank deficient, the relevant check is the rank or condition number of the estimated moment Jacobian at \(\hat\theta_n\), not the moment count. In finite samples the scalar fold moments differ only through sampling noise in cell composition, so the between-fold Jacobian variation is \(O(1/|C_{n,v,r}|)\) and vanishes as cells grow: the scalar-fold estimator is weakly identified in the sense of \citet{StockWright2000}, and its apparent finite-sample precision is an artifact of that noise. We therefore report the Jacobian condition number alongside the cross-split dispersion of \(\hat\theta_n\) and the boundary/non-convergence frequencies of Section~\ref{sec:algorithm} as identification diagnostics.
-
-\subsection{The resampling estimator as subagging}
-\label{sec:subagging}
-
-Averaging over sampled partitions is not merely a convenience: it is \emph{subagging} (subsample aggregating) of the split-level estimator \citep{BuhlmannYu2002}. Each draw \(n\) supplies a partition, the split-level GMM solution \(\hat\theta_n\) is the base estimator, and the framework reports two bagged objects---a bagged parameter \(\bar\theta_N=\tfrac1N\sum_n\hat\theta_n\) and the bagged score \(\mathrm{Score}_N=\tfrac1N\sum_n S_n\). Reading the method this way clarifies both what the averaging buys and what it cannot.
-
-\emph{What it buys.} Bagging smooths the discontinuous dependence of the base estimator on the partition and reduces its variance, with the largest gains for unstable estimators \citep{BuhlmannYu2002}---exactly the regime of small PE samples with occasional boundary or near-degenerate solutions. The bagged score is a smoother, lower-variance model-selection criterion than any single split, and the paired-difference comparison of Section~\ref{sec:algorithm} operates on this bag.
-
-\emph{What it cannot buy.} Subagging stabilizes an estimator; it does not create identification. If the base estimator is built from exchangeable scalar fold moments, its split-level Jacobian is rank deficient (Section~\ref{sec:identification_rank}) and averaging many such solutions only produces a tight bag around a partition-induced pseudo-value---false precision. Subagging is therefore valuable \emph{on top of} the vector-moment identification of Section~\ref{sec:identification_rank}, not as a substitute for it.
-
-\paragraph{Closed-form partition moments for the linear baseline.}
-For the baseline NPV/normalized-Euler moment, which is linear in the fund-level contributions \(g_i(\theta)\) at fixed \(\theta\), the average over random within-vintage partitions has a closed form, so the Monte Carlo over \(\Pi\) is unnecessary for the fold \emph{moment} itself. Let \(\bar g_v(\theta)=|\mathcal I_v|^{-1}\sum_{i\in\mathcal I_v}g_i(\theta)\) be the within-vintage grand mean and \(\sigma_v^2(\theta)\) the within-vintage cross-sectional variance of \(g_i(\theta)\). Under a uniform random partition of \(\mathcal I_v\) into equal cells, each cell mean is a simple random sample without replacement, so
-\[
-\mathbb E_{\Pi}\!\left[\epsilon_{n,v,r}(\theta)\right]=\bar g_v(\theta),
-\qquad
-\mathrm{Var}_{\Pi}\!\left[\epsilon_{n,v,r}(\theta)\right]
-=\frac{\sigma_v^2(\theta)}{|C_{n,v,r}|}\left(1-\frac{|C_{n,v,r}|-1}{|\mathcal I_v|-1}\right).
-\]
-The cell mean is thus a one-sample U-statistic, and the partition-induced variance of the fold moment is governed by the within-vintage dispersion \(\sigma_v^2\) and the finite-population correction. Three consequences follow. First, the baseline score can be reported against the exact grand-mean moment, with \(N\) controlling only the residual nonlinear pieces---the estimation map \(\hat\theta_n\), a nonlinear loss \(L\), or the PME ratio---rather than treated as a free tuning knob. Second, the variance formula gives an analytic target for how many draws \(N\) achieve a desired score precision. Third, because the noise scales with \(\sigma_v^2\), balancing cells on the fund characteristics that drive \(g_i\) (size, strategy, duration)---antithetic or stratified partitions in place of uniform draws---reduces partition variance for free and tightens the paired model comparison.\footnote{Concretely, within each vintage stratify funds into bins by the characteristics that drive \(g_i\)---committed size, strategy, and duration---and fill the \(P+h\) cells by allocating bins as evenly as possible (a balanced or antithetic assignment) rather than by independent uniform draws. Each cell then has matched composition, so the between-cell variance of \(\epsilon_{n,v,r}\) shrinks and the finite-population factor \(\sigma_v^2\) is effectively replaced by the smaller within-stratum dispersion. This only changes the partition rule \(\Pi\): the cells remain valid estimation/holdout splits, but the variance formula above must then use the stratified sampling variance, and any paired model comparison must hold \(\Pi\) fixed across the models being compared.}
-
-\subsection{Two validation targets}
-
-The empirical implementation should distinguish two validation targets.
-
-\paragraph{Within-vintage holdout validation.}
-The baseline resampling design holds out funds within the same active vintage set. Estimation and validation folds therefore share the same vintage-year support but contain different funds. This target asks whether the fitted SDF prices fund-level cash-flow variation that was not used in estimation, conditional on the same vintage and macro-state support. Because estimation and validation folds share the same calendar and macro-state support, this is a \emph{within-state} holdout: it does not test generalization across macro regimes, and in the terminology of dependent-data cross-validation it is not \(hv\)-block separated \citep{Racine2000}. It is nonetheless the cleanest target for comparing SDF factor specifications and moment-construction rules within a given treatment of unseasoned vintages; the rolling-origin target below supplies the across-state counterpart.
-
-\paragraph{Rolling-origin / out-of-time validation.}
-To compare unseasoned-vintage approaches, the cleanest target is a forward-looking rolling-origin design. Pick an historical information date \(\tau\). Using only information available at \(\tau\), classify then-seasoned and then-unseasoned vintages, estimate \(\hat\theta_{\tau}^{(k)}\) under each approach \(k\in\{A,B,C\}\), and record which vintages were treated as unseasoned at that date. Then move the evaluation date forward until those vintages have become seasoned, and score every approach on the same realized-cash-flow criterion:
-\[
-S_{\tau}^{\mathrm{roll}}(k)
-=
-L\!\left(
-\sum_{v\in\mathcal V_{\tau}^{U}\cap \mathcal V_{\tau+\ell}^{S}}
-\omega_{v,\tau+\ell}\,
-\epsilon^{S}_{v,\tau+\ell}\!\left(\hat\theta_{\tau}^{(k)}\right)
-\right).
-\]
-This score asks which approach, when forced to use only the information available at \(\tau\), produces parameters that later price the realized cash flows of the same vintages once their NAV uncertainty has resolved. Repeating the exercise across rolling origins \(\tau\) gives a paired, common-scale comparison of the unseasoned-vintage approaches.
-
-The main empirical specifications should be:
-
-\begin{itemize}
-\item \textbf{Main comparison:} \(P=p_{\max}\), \(h=1\), so all candidate models are compared on a common fold architecture.
-\item \textbf{Exact-identified diagnostic:} \(P=p(M)\), \(h=0\), to study feasibility and parameter instability.
-\item \textbf{Model-specific validation:} \(P=p(M)\), \(h=1\), to compare exact-identified estimation plus one holdout fold.
-\item \textbf{Scheme comparison:} run the same model list under within-vintage resampling and shuffled vintage-year portfolios.
-\item \textbf{Rolling-origin comparison:} estimate each unseasoned-vintage approach using historical information dates and score later on common realized-cash-flow moments.
-\end{itemize}
-
-\section{Approaches to Unseasoned Vintages}
-\label{sec:unseasoned}
-
-Partition the active vintages into seasoned and unseasoned sets,
-\[
-\mathcal V = \mathcal V^S \cup \mathcal V^U.
-\]
-A vintage \(v\) is \emph{unseasoned} (\(v\in\mathcal V^U\)) if its aggregate residual NAV is large relative to the value it has already realized; otherwise it is \emph{seasoned} (\(v\in\mathcal V^S\)). A convenient scale-free criterion is the unrealized-value fraction \(\mathrm{RVPI}/(\mathrm{RVPI}+\mathrm{DPI})\) exceeding a threshold \(\delta\); scaling residual NAV by committed capital is an alternative, but that denominator can remain near or above one for strong funds long after they are effectively mature. In practice, \(\delta\in[0.10,0.20]\) is a sensible range. Thus ``seasoned'' does not require residual NAV to be exactly zero; it means the remaining NAV is small enough that the vintage is treated as effectively mature for the chosen empirical design. For seasoned vintages, the pricing restriction is the standard cumulative cash-flow error as defined in Section~\ref{sec:pricing_moments}.
-
-How to handle the small residual NAV of a seasoned vintage is itself a design choice in \(\eta\). One can exclude residual NAV, include it as a final distribution, or apply a de minimis NAV adjustment. The important requirement is consistency: once a terminal-NAV convention is chosen for a specification, it must be applied identically in estimation folds, holdout folds, robustness checks, and common-score comparisons.
-
-The central question is how to include unseasoned vintages---or whether to include them at all. Rather than commit to one approach a priori, our framework accommodates three competing strategies and lets the resampling-based holdout loss rank them empirically.
+\textbf{The fate of fund-level folds.} The within-vintage fund-partition design of Figure~\ref{fig:fund-scheme}---randomly splitting each vintage's funds into estimation and validation cells---is dominated on all three counts: it randomizes inside estimation moments (against R1), its holdout shares the factor history with estimation (against R2), and its cell-level scores carry the largest noise floors (against R3). It nonetheless retains three legitimate jobs, and we use it for all three: the fund-pair structure inside \(\widehat U_v\); \emph{stability diagnostics} (the dispersion of \(\hat\theta\) under fund resampling measures sensitivity to sample composition); and cross-fitting of any tuned nuisance objects. What it cannot do is select models, and the simulation of Section~\ref{sec:simulation} documents this failure directly.
 
 \begin{figure}[t]
-	\centering
-	\includegraphics[width=\linewidth]{../figure/sampling_scheme_nav_pricing.pdf}
-	\caption{Within-vintage fold assignment under the hybrid cash-flow / normalized-Euler estimator. Unseasoned vintages 2011--2012 (\(\mathcal V^U\), grey band) are included in estimation and validation like the seasoned vintages (\(\mathcal V^S\)), but contribute the normalized one-period Euler NAV error \(\epsilon^U\) in place of the cumulative cash-flow error \(\epsilon^S\).}
-	\label{fig:nav-pricing-scheme}
+\centering
+\includegraphics[width=\linewidth]{../figure/sampling_scheme.pdf}
+\caption{The dominated alternative: within-vintage fund-level folds. Each vintage's funds are randomly split into estimation cells (greens) and a validation cell (blue). Estimation and validation cells share every vintage's factor history, so the holdout cannot discriminate between factor specifications (requirement R2); random cells also inject partition noise into estimation (R1) and carry the largest fund-noise floors (R3). The design is retained only for stability diagnostics and nuisance cross-fitting.}
+\label{fig:fund-scheme}
 \end{figure}
 
-\subsection{Approach A: NAV-adjusted cash-flow SDF}
-\label{sec:nav_adjusted}
+\subsection{Estimator, score, and enumeration}
+\label{sec:estimator}
 
-The most direct strategy adjusts the terminal NAV before applying the standard cumulative cash-flow SDF. For seasoned vintages, the pricing restriction is unchanged. For unseasoned vintages, the latest reported NAV is multiplied by an empirical discount factor \(d_i\) before being treated as a terminal distribution:
+For block \(b=1,\dots,B\), the split-level estimator minimizes the weighted squared pooled vintage moments on the estimation set over the admissible parameter region,
 \[
-\widetilde{D}_{T_i,i} = D_{T_i,i} + d_i \cdot \mathrm{NAV}_{T_i,i},
+\hat\theta_b(M,\eta)
+=
+\arg\min_{\theta\in\Theta_M}\;
+\sum_{v\in\mathcal E_b}\omega_v\,\epsilon_v(\theta)^2 ,
 \]
-where \(d_i\in(0,1]\) is the NAV discount. The fund then enters the standard CF-SDF pricing restriction using \(\widetilde{D}_{T_i,i}\) as the terminal cash flow.
-
-The discount \(d_i\) can be calibrated from empirical secondary-market transaction data---for example, from the Setter Capital secondary transaction dataset, which provides observed bid--ask spreads and transaction prices for LP interests as a function of fund age, strategy, and market conditions. This grounds the NAV adjustment in real transaction data rather than arbitrary assumptions.
-
-\emph{Advantages.} The approach is conceptually simple and uses the same cumulative SDF for all vintages, maintaining a unified pricing framework. The NAV discount directly addresses the appraisal-bias concern by marking the terminal position to secondary-market levels.
-
-\emph{Limitations.} The discounted NAV is still treated as a terminal cash flow and discounted back to the fund inception date, so the estimator retains sensitivity to the macro state at the dataset endpoint. The discount function \(d_i\) introduces model risk: it must be estimated or calibrated from secondary-market data that may not be representative of the broader PE universe, and it may vary with market conditions in ways that interact with the SDF specification.
-
-\subsection{Approach B: NAV-return SDF for all vintages}
-\label{sec:nav_return}
-
-An alternative strategy abandons the cash-flow pricing restriction entirely and instead prices quarterly NAV returns for \emph{all} vintages---seasoned and unseasoned alike. For each fund \(i\) with quarterly NAV observations, define \(R^H_{t,i}\) as the gross quarterly Horizon-IRR return that solves
+where \(\Theta_M\) imposes economically admissible restrictions fixed before any score is computed: positivity of the one-period benchmark denominator over the observed factor support and a bounded box for the cumulative alpha. (A bias-corrected variant that replaces \(\epsilon_v^2\) by \(\widehat U_v\) in the \emph{objective} is a robustness option; with pooled moments the estimation-side floor \(\sigma_v^2/n_v\) is already the smallest attainable, so the baseline keeps the standard GMM objective.) The block score applies the unbiased statistic to the held-out vintages,
 \[
-\mathrm{NAV}_{t-1,i} R
+S_b(M,\eta)
+=
+\frac{1}{d}\sum_{v\in\mathcal H_b}\widehat U_v\bigl(\hat\theta_b(M,\eta)\bigr),
+\qquad
+\mathrm{Score}(M,\eta)
+=
+\frac{1}{B}\sum_{b=1}^{B} S_b(M,\eta).
+\]
+The preferred model-design pair is the one with the lowest average held-out loss: an unbiased estimate of the mean squared population pricing error of vintages the estimator has not seen, evaluated at parameters estimated without those vintages or their immediate neighbors. Because the blocks are enumerated exhaustively, there is no simulation noise in \(\mathrm{Score}\) itself; the only randomness left in the pipeline is the bootstrap used for inference. Interior vintages appear in more blocks than edge vintages; we report per-vintage holdout coverage and, as a robustness check, a coverage-reweighted score.
+
+All candidate models are estimated and scored on the identical block sequence, so comparisons are paired block by block. Model-specific diagnostics recorded per block are the estimated moment Jacobian's condition number, boundary and non-convergence flags, and the seasoned/unseasoned split of estimation-side fit.
+
+\subsection{Identification: vintages carry the rank}
+\label{sec:identification_rank}
+
+It is tempting to think that more folds, cells, or splits mean more moment conditions. The opposite discipline applies: only \emph{vintages} (or strategy--vintage cells) are distinct moments. Funds within a vintage are exchangeable, so any two sub-groups of the same vintage share one population moment and one Jacobian row; stacking them adds no rank (Appendix~\ref{app:identification}). Vintages are not exchangeable: each lives through a different factor path and cash-flow timing, so the sensitivities \(\partial\bar g_v(\theta_0)/\partial\theta^\prime\) differ across \(v\). Local identification on estimation set \(\mathcal E_b\) requires the cross-vintage Jacobian
+\[
+J_b(\theta_0)=\frac{\partial}{\partial\theta^\prime}\bigl(\bar g_{v}(\theta_0)\bigr)_{v\in\mathcal E_b}\in\mathbb R^{|\mathcal E_b|\times p(M)}
+\]
+to have rank \(p(M)\): at least \(p(M)\) estimation vintages with linearly independent pricing-error sensitivities.
+
+This puts a hard feasibility constraint on the block geometry: \(|\mathcal E_b|=V-d-|\mathcal G_b|\) must comfortably exceed \(p(M)\), and---because adjacent vintages have highly correlated factor paths---the \emph{effective} rank of \(J_b\) can be lower than its row count. The block length \(d\) therefore trades off discrimination (R2 wants \(d\) large) against estimability (identification wants \(\mathcal E_b\) rich); the pre-registered baseline \(d\approx0.2\,|\mathcal V^S|\), \(g=1\) leaves roughly three-quarters of the vintages in estimation. The relevant empirical check is not a moment count but the rank or condition number of the estimated Jacobian at \(\hat\theta_b\), reported per block alongside cross-block parameter dispersion and boundary frequencies. Note also that the unseasoned Euler vintages, though never scored, contribute estimation-side rank: they extend the factor-path coverage to the most recent calendar years.
+
+\subsection{Block averaging as subagging}
+\label{sec:subagging}
+
+Averaging over the enumerated blocks is subsample aggregation---\emph{subagging}---of the block-level estimator \citep{BuhlmannYu2002}, with the vintage subsets as the subsamples. The framework reports two bagged objects: the bagged parameter \(\bar\theta=\tfrac1B\sum_b\hat\theta_b\) and the score \(\mathrm{Score}\). Bagging smooths the dependence of the nonlinear argmin on the vintage composition and reduces its variance, with the largest gains for unstable estimators---exactly the regime of small PE panels with occasional boundary or near-degenerate solutions. The cross-block dispersion of \(\hat\theta_b\) is itself informative: it is a delete-\(d\)-jackknife-style stability measure taken at the vintage level, which is the correct cluster level for PE dependence. What block averaging cannot do is create identification: if the block-level moments were rank deficient, averaging many rank-deficient solutions would produce a tight bag around a pseudo-value---false precision (Appendix~\ref{app:identification}). Subagging is valuable on top of the pooled vintage-vector identification, not as a substitute for it.
+
+\subsection{Inference for score differences}
+\label{sec:inference}
+
+Model rankings need uncertainty measures. For two model-design pairs \(a\) and \(b\), compute their scores on the same block and form the paired difference \(d_b(a,b)=S_b(a)-S_b(b)\). Pairing matters because both models face the same estimation vintages, the same held-out vintages, and the same factor realizations, which removes a large amount of design noise from the comparison.
+
+The naive standard error \(S_d^2/B\) treats the \(B\) paired differences as independent. They are not: the blocks overlap heavily in their estimation sets, and neighboring blocks share held-out vintages, so \(\mathrm{Cov}(d_b,d_{b'})>0\). The genuine uncertainty lives in the finite, dependent cross-section of vintages and funds and does not shrink with the number of evaluation windows---the cross-validation variance problem of \citet{BengioGrandvalet2004}, who show that no unbiased estimator of the variance of a resampled score exists. Three complementary responses:
+\begin{itemize}
+\item \emph{Corrected \(t\).} The correction of \citet{NadeauBengio2003} inflates the naive variance by the held-out-to-estimation ratio,
+\[
+\widehat{\mathrm{Var}}_{\mathrm{corr}}(\bar d)
+=\left(\frac{1}{B}+\frac{d}{|\mathcal E_b\cap\mathcal V^S|}\right)S_d^2 ,
+\]
+which converges to a positive limit rather than to zero as evaluation windows accumulate. Because the enumerated blocks are ordered in time, a heteroskedasticity-and-autocorrelation-robust variance over the block sequence is a natural companion; agreement between the two is reassuring.
+\item \emph{Cluster bootstrap.} The more faithful alternative resamples at the dependence-relevant cluster level---vintages, or GP families within vintages---and reruns the entire pipeline (blocks, estimation, scores) per bootstrap draw, taking the distribution of \(\bar d^{\,\ast}(a,b)\) as the sampling distribution of the score gap.
+\item \emph{Multiplicity.} Because the goal is to rank several models, per-pair tests are embedded in a model-confidence-set procedure \citep{HansenLundeNason2011}: we report the set of statistically indistinguishable top models rather than a single winner whose lead is within the corrected standard error.
+\end{itemize}
+Boundary-alpha solutions are reported as a paired diagnostic as well: if one model wins only because it frequently lands on the alpha boundary, the ranking is not economically interpretable.
+
+\section{Unseasoned Vintages: A Hybrid Cash-Flow/Euler Estimator}
+\label{sec:unseasoned}
+
+\subsection{The dilemma}
+
+Unseasoned vintages carry valuable pricing information, but their value is still locked in appraised NAVs. The standard treatment---discounting the latest NAV back to fund inception as a terminal cash flow---creates two problems. First, it concentrates a large share of the fund's discounted value at a single calendar date, the dataset endpoint, so the estimator's fit becomes disproportionately sensitive to the macro state at that date rather than to the fund's lifetime factor exposure. Second, the terminal NAV is an appraisal, not a realized payoff; its co-movement with public indices may differ systematically from that of actual divestitures. Excluding recent vintages wastes data; including them naively buys fragile, NAV-driven estimates.
+
+Our resolution keeps realized cash flows wherever they exist and confines NAV information to short horizons: seasoned vintages contribute the cumulative NPV moment \(g_i^S\), unseasoned vintages contribute normalized one-period Euler errors on quarterly NAV returns. In the blocked scheme the division of labor is strict: unseasoned vintages support \emph{estimation}---they extend factor-path coverage to the most recent years and add identifying rank---but they are never scored. Two alternative treatments---adjusting terminal NAVs with secondary-market discounts, and pricing NAV returns for the entire sample---are natural competitors; we develop them, and the design for racing all three, in Appendix~\ref{app:unseasoned_alt}, and summarize the comparison in Section~\ref{sec:alternatives}.
+
+\subsection{The normalized one-period Euler block}
+\label{sec:euler_block}
+
+\textbf{One-period Euler pricing error.} For a fund \(i\) in an unseasoned vintage with quarterly NAV observations at dates \(t=0,1,\dots,T_i\), define \(R^H_{t,i}\) as the gross quarterly Horizon-IRR return that solves
+\[
+\mathrm{NAV}_{t-1,i}\,R
 {}+
-\sum_{\ell\in\mathcal X_{t,i}} X_{\ell,i} R^{1-\lambda_{\ell,t,i}}
+\sum_{\ell\in\mathcal X_{t,i}} X_{\ell,i}\, R^{1-\lambda_{\ell,t,i}}
 =
 \mathrm{NAV}_{t,i}
 {}+
-\sum_{\ell\in\mathcal D_{t,i}} D_{\ell,i} R^{1-\lambda_{\ell,t,i}},
+\sum_{\ell\in\mathcal D_{t,i}} D_{\ell,i}\, R^{1-\lambda_{\ell,t,i}},
 \]
-where \(\mathcal X_{t,i}\) and \(\mathcal D_{t,i}\) are the dated capital calls and distributions inside the quarter, and \(\lambda_{\ell,t,i}\in[0,1]\) is the fraction of the quarter elapsed when cash flow \(\ell\) occurs. The one-period Euler pricing error is
-\[
-e^H_{t,i}(\theta)=M_{t-1,t}(\theta)R^H_{t,i}-1.
-\]
-The fund-level moment is then a time-series average of these quarterly Euler errors, and the fold moment aggregates across funds and vintages as in Section~\ref{sec:pricing_moments}. If only quarter-end NAVs and aggregate quarterly net cash flows are available, the simple return \((CF_{t,i}+\mathrm{NAV}_{t,i})/\mathrm{NAV}_{t-1,i}\) can be used as a coarse approximation, but the Horizon-IRR construction is the preferred definition because it accounts for intra-quarter cash-flow timing.
-
-\emph{Advantages.} The approach is internally consistent: the same pricing restriction applies to all vintages, eliminating the need for a seasoned/unseasoned partition or a NAV discount model. Each quarterly Euler error depends only on the one-period SDF, avoiding the exploding-alpha degeneracy entirely. This approach is closest in spirit to the NAV-return literature: \citet{brown2023nowcasting} nowcast fund NAVs, while \citet{GhyselsGredilAndreou2025} construct high-frequency PE returns from NAV-based state-space models and use them for factor analysis and spanning tests.
-
-\emph{Limitations.} The approach relies on NAV quality for the \emph{entire} sample, including seasoned vintages where realized cash flows are available and arguably preferable. For seasoned vintages, the cumulative CF-SDF restriction uses actual divestitures whose co-movement with public factors is genuine, whereas the NAV-return Euler restriction uses appraisals whose co-movement may be smoothed or biased. The approach therefore trades the unseasoned-vintage dilemma for a different concern: using appraisals where realized payoffs exist.
-
-\subsection{Approach C: hybrid cash-flow / normalized-Euler estimator (proposed)}
-\label{sec:euler_approach}
-
-The proposed approach uses the standard cumulative cash-flow pricing error for seasoned vintages and replaces it with a sequence of normalized one-period Euler restrictions on quarterly Horizon-IRR NAV returns for unseasoned vintages. Crucially, we do \emph{not} discount those quarterly errors back to the initial date with the candidate cumulative SDF, because that would reconstruct the same long-horizon terminal-NAV exposure that Approach~A retains. Instead, we average relative quarterly Euler errors within fund and then rescale the result by an exogenous duration factor chosen to make young-fund moments comparable in magnitude to seasoned NPV moments.
-
-\paragraph{One-period Euler pricing error.}
-For a fund \(i\) in an unseasoned vintage with quarterly NAV observations at dates \(t=0,1,\dots,T_i\), compute the gross quarterly Horizon-IRR return \(R^H_{t,i}\) from beginning NAV, ending NAV, and dated within-quarter cash flows as in Section~\ref{sec:nav_return}. Define the relative one-period pricing error for quarter \(t\) as
+where \(\mathcal X_{t,i}\) and \(\mathcal D_{t,i}\) are the dated capital calls and distributions inside the quarter and \(\lambda_{\ell,t,i}\in[0,1]\) is the fraction of the quarter elapsed when cash flow \(\ell\) occurs. If only quarter-end NAVs and aggregate quarterly net cash flows are available, the simple return \((CF_{t,i}+\mathrm{NAV}_{t,i})/\mathrm{NAV}_{t-1,i}\) is a coarse approximation, but the Horizon-IRR construction is preferred because it accounts for intra-quarter timing. The relative one-period pricing error for quarter \(t\) is
 \[
 e^H_{t,i}(\theta)
 =
-\Psi_{t-1,t}(\theta)R^H_{t,i}-1,
+M_{t-1,t}(\theta)\,R^H_{t,i}-1,
+\qquad
+E\!\left[e^H_{t,i}(\theta_0)\mid\mathcal F_{t-1}\right]=0,
 \]
-where \(\Psi_{t-1,t}(\theta)\) is the one-period stochastic discount factor. The conditional Euler restriction is
-\[
-E\!\left[e^H_{t,i}(\theta_0)\mid \mathcal F_{t-1}\right]=0.
-\]
-This says that, conditional on information available at the start of the quarter, the Horizon-IRR return has unit risk-adjusted price under the true SDF. The conditional statement is important: predictable normalizations and instruments preserve the moment only under a conditional Euler restriction, not merely under an unconditional mean-zero restriction.
+with the same one-period SDF \(M_{t-1,t}(\theta)\) as the seasoned block. The conditional statement matters: predetermined normalizations and instruments preserve the moment only under a conditional Euler restriction. Crucially, these quarterly errors are \emph{not} discounted back to the initial date with the candidate cumulative SDF---doing so would algebraically reconstruct the discounted terminal-NAV term the block is designed to avoid (Appendix~\ref{app:no_discount_to_zero}).
 
-\paragraph{Normalization and scale matching.}
-The Horizon-IRR Euler error is already a relative quarterly pricing error. Average it within fund:
+\textbf{Normalization and scale matching.} Average the relative quarterly errors within fund,
 \[
 \bar r_i(\theta)
 =
-\frac{1}{T_i}\sum_{t=1}^{T_i} e^H_{t,i}(\theta).
+\frac{1}{T_i}\sum_{t=1}^{T_i} e^H_{t,i}(\theta),
 \]
-This object is a mean relative quarterly pricing error. To map \(\bar r_i(\theta)\) into NPV-like units, let \(s(i)\) denote the strategy of fund \(i\), let \(\bar u_s(a)\) be a benchmark age-\(a\) profile of \(\mathrm{NAV}/K\) for strategy \(s\), and let \(q_{a-1}\) be a deterministic discount sequence (baseline \(q_{a-1}=1\), optional risk-free discounting as a robustness check). Define the duration-matching factor
+and rescale by a deterministic duration factor that maps the fund-average relative error into NPV-like units per committed dollar. Let \(\bar u_s(a)\) be a benchmark age-\(a\) profile of \(\mathrm{NAV}/K\) for strategy \(s\), and \(q_{a-1}\) a deterministic discount sequence (baseline \(q_{a-1}=1\)). Define
 \[
 \Lambda_i
 =
 c_{s(i)}\sum_{a=1}^{T_i} q_{a-1}\,\bar u_{s(i)}(a),
-\]
-where \(c_{s(i)}\) is an optional strategy-specific calibration constant. In the simplest implementation \(c_{s(i)}=1\). If the raw duration scale still leaves systematic size gaps, \(c_{s(i)}\) can be chosen so that near-boundary seasoned and unseasoned funds have similar median absolute pricing moments within strategy. Because this last step touches realized pricing errors, \(c_{s(i)}\) is then a nuisance parameter that must be calibrated on the estimation folds only and frozen for holdout scoring (the cross-fitting rule below); the baseline \(c_{s(i)}=1\) sidesteps the issue entirely by keeping \(\Lambda_i\) outside the SDF.
-
-The normalized unseasoned fund moment is
-\[
+\qquad
 g_i^U(\theta)
 =
 \Lambda_i\,\bar r_i(\theta),
 \]
-and for an unseasoned vintage \(v\in\mathcal V^U\) and fund cell \(C_{n,v,r}\), define the cell-level pricing error as
-\[
-\epsilon_{n,v,r}^{U}(\theta)
-=
-\frac{1}{|C_{n,v,r}|}
-\sum_{i\in C_{n,v,r}} g_i^U(\theta).
-\]
+with \(c_{s(i)}=1\) in the baseline, which keeps \(\Lambda_i\) entirely outside the SDF and outside the pricing errors. The interpretation is simple: \(\bar r_i\) is the average relative quarterly mispricing, and \(\Lambda_i\) is an externally chosen capital-at-risk duration---how much \(\mathrm{NAV}/K\) exposure a typical fund of that age and strategy carries over its observed life. If the relative quarterly mispricing is roughly stable, \(e^H_{t,i}(\theta)\approx\rho_i(\theta)\), then \(g_i^U(\theta)\approx\rho_i(\theta)\Lambda_i\), the same order as a life-of-fund NPV error per committed dollar. The pooled unseasoned vintage moment \(\epsilon_v(\theta)\) is the average of \(g_i^U(\theta)\) over the vintage's funds, exactly as in the seasoned block. A deterministic-duration variant that weights the quarterly errors directly, \(g_i^{U,\mathrm{det}}(\theta)=\sum_t q_{t-1}\bar u_{s(i)}(t)\,e^H_{t,i}(\theta)\), serves as a robustness check on the scale matching.
 
-This normalization has a simple economic interpretation. The term \(\bar r_i(\theta)\) is the average relative quarterly pricing error. The factor \(\Lambda_i\) is an externally chosen capital-at-risk duration: it measures how much \(\mathrm{NAV}/K\) exposure a typical fund of that age and strategy carries over its observed life. If the relative quarterly mispricing is roughly stable, \(e^H_{t,i}(\theta)\approx \rho_i(\theta)\), then
-\[
-g_i^U(\theta)\approx \rho_i(\theta)\,\Lambda_i,
-\]
-so the young-fund moment is of the same order as a life-of-fund NPV error per committed dollar. This is the sense in which the normalization is ``smart'': it matches scales without using the candidate cumulative SDF itself.
+\textbf{Cross-fitting nuisance choices.} Any nuisance component used to build the unseasoned moments---the threshold \(\delta\) if tuned, the duration profile \(\bar u_s(a)\), an optional scale constant \(c_s\)---must be selected without reference to held-out scores, and in rolling-origin designs using only information observable at the origin date. Pre-registering \(\Lambda_i\) from external NAV-profile curves, with no reference to pricing errors, eliminates the circularity concern entirely and is the baseline.
 
-\paragraph{Simple deterministic-duration robustness check.}
-As a robustness check, one can avoid the fund-average-then-rescale structure and instead use a deterministic weighted sum of quarterly relative Euler errors:
-\[
-g_i^{U,\mathrm{det}}(\theta)
-=
-\sum_{t=1}^{T_i} q_{t-1}\,\bar u_{s(i)}(t)\,e^H_{t,i}(\theta).
-\]
-This is not the main specification, but it is useful because it removes the optional calibration constant \(c_s\) and makes the role of the duration profile transparent. If the preferred model changes only under this alternative, the empirical result is likely sensitive to scale matching rather than to the SDF's ability to price the underlying young-fund return moments.
+\textbf{NAV quality and the Euler restriction.} For traded assets, no-arbitrage forces the one-period Euler condition to hold; for PE funds, NAVs are appraisals whose co-movement with public factors may be smoothed or biased, so the restriction holds only approximately---and appraisal smoothing biases measured loadings in a predictable direction (toward zero). The hybrid design controls this concern in four ways. First, only unseasoned vintages rely on NAV-based moments at all; seasoned vintages are priced from realized cash flows. Second, even within \(\mathcal V^U\) the block uses one-quarter NAV return changes, not a terminal NAV discounted over a decade. Third, no NAV-based moment is ever scored: the Euler block can tilt \(\hat\theta\), but it cannot make a bad model look good on the reported criterion. Fourth, as the panel grows, vintages migrate from \(\mathcal V^U\) to \(\mathcal V^S\), so the estimator is increasingly cash-flow dominated. The simulation stresses the residual exposure directly by switching appraisal smoothing on and off (Section~\ref{sec:simulation}).
 
-\emph{Advantages.} Realized cash flows are used where available (seasoned vintages); NAV-based moments are confined to unseasoned vintages where no alternative exists. The short-horizon Euler restriction avoids both the terminal-NAV discounting of Approach~A and the full-sample NAV reliance of Approach~B. The duration-matching normalization makes the young-fund block directly comparable to the seasoned NPV block.
-
-\emph{Limitations.} The approach introduces a seasoned/unseasoned boundary that is itself a design choice (the threshold \(\delta\)), as well as the duration-matching normalizer \(\Lambda_i\), which is calibrated outside the SDF. The resampling framework can test sensitivity to these choices by varying \(\delta\) and the \(\Lambda_i\) specification and comparing holdout losses.
-
-\subsection{Letting the framework decide}
-
-The three approaches differ in how they treat unseasoned vintages, but all produce vintage-level pricing errors \(\epsilon_{n,v,r}(\theta)\) that plug into the same fold-moment structure:
-\[
-m_{n,r}(\theta;M,\eta)
-=
-\sum_{v\in A_{n,r}}
-\omega_{n,v,r}\,\epsilon_{n,v,r}(\theta;M,\eta).
-\]
-The entire estimation and validation machinery of Section~\ref{sec:estimation} applies without modification to each approach individually. Within a given approach, the resampling-based holdout loss provides a clear ranking of SDF models: the model with the lowest average holdout pricing loss is the one that best prices held-out moments \emph{as defined by that approach}.
-
-\paragraph{Cross-fitting nuisance choices.}
-Any nuisance component used to build the unseasoned moments---the NAV discount \(d_i\), the threshold \(\delta\) if it is tuned, the benchmark duration profile \(\bar u_s(a)\), the optional scale constant \(c_s\), and any secondary-market NAV-discount model---should be estimated or selected using only the estimation side of the split. The fitted nuisance component is then frozen when computing holdout losses. In rolling-origin validation, the same rule is chronological: nuisance objects must use only information that would have been observable at the origin date \(\tau\).
-
-\paragraph{Cross-approach comparability.}
-Comparing holdout losses \emph{across} approaches is less straightforward, because the three approaches define different moment conditions. Approach~A evaluates a cumulative CF-SDF error with an adjusted terminal NAV; Approach~B evaluates one-period Euler errors on NAV returns; Approach~C evaluates a mixture of cumulative CF errors and normalized Euler errors. These moment conditions differ in scale, economic content, and sensitivity to the SDF parameters, so a holdout loss of, say, 0.02 under one approach and 0.05 under another does not imply that the first approach ``works better''---the two numbers measure different things.
-
-This is an important open question that requires careful resolution. One possible path is to separate \emph{estimation} from \emph{evaluation}: estimate \(\hat\theta\) using each approach's own moments, but evaluate all three on a \emph{common} criterion that does not depend on the approach. A natural candidate is the seasoned-vintage cash-flow pricing error, using the same terminal-NAV convention across approaches, since realized cash flows are the gold standard and all three approaches agree on their treatment of seasoned vintages. Each approach produces a different \(\hat\theta_n^{(k)}\), but one can always evaluate
-\[
-S_n^{\mathrm{common}}(\hat\theta_n^{(k)})
-=
-\frac{1}{|\mathcal H|}
-\sum_{r\in\mathcal H}
-L\!\left(\sum_{v\in\mathcal V^S\cap A_{n,r}}
-\omega_{n,v,r}\,\epsilon^S_{n,v,r}(\hat\theta_n^{(k)})\right),
-\qquad k\in\{A,B,C\},
-\]
-asking: \emph{which estimation approach produces the \(\hat\theta\) that best prices held-out realized cash flows from seasoned vintages?} The rolling-origin design above is the sharper version of the same idea for unseasoned vintages: estimate at historical date \(\tau\), when the approaches genuinely differ in how they treat young funds, and evaluate later on realized cash-flow pricing errors after those funds have seasoned. We formalize this common criterion---and the principle that it must never contain a NAV term---in Section~\ref{sec:navfree}.
-
-\paragraph{Diagnostics.}
-To diagnose whether the estimator disproportionately fits one group, the empirical implementation should report separate holdout losses for \(\mathcal V^S\) and \(\mathcal V^U\):
-\[
-\begin{aligned}
-S_n^S(M,\eta,\Pi)
-&=
-\frac{1}{|\mathcal H|}
-\sum_{r\in\mathcal H}
-L\!\left(\sum_{v\in\mathcal V^S\cap A_{n,r}}
-\omega_{n,v,r}\,\epsilon^S_{n,v,r}(\hat\theta_n)\right),
-\\
-S_n^U(M,\eta,\Pi)
-&=
-\frac{1}{|\mathcal H|}
-\sum_{r\in\mathcal H}
-L\!\left(\sum_{v\in\mathcal V^U\cap A_{n,r}}
-\omega_{n,v,r}\,\epsilon^U_{n,v,r}(\hat\theta_n)\right).
-\end{aligned}
-\]
-If the average \(\bar S^U\) is systematically lower than \(\bar S^S\), the unseasoned-vintage restrictions are being trivially satisfied and contribute little to identification; if \(\bar S^U \gg \bar S^S\), the short NAV histories are dominating the holdout loss and the model selection may be driven by NAV fit rather than cash-flow fit.
-
-\subsection{A NAV-free common evaluation target}
+\subsection{NAV-free evaluation}
 \label{sec:navfree}
 
-The comparability problem has a clean resolution once we insist on one principle: \emph{the metric used to compare approaches must never touch a NAV.} The three approaches differ precisely in how heavily they lean on appraisals, and appraisal quality is the very thing in doubt; any evaluation criterion that contains a NAV term therefore cannot adjudicate between them on neutral ground. Realized contributions and distributions, by contrast, are observed without appraisal error and are treated identically by all three approaches. They are the natural common currency, and the seasoned-only criterion \(S_n^{\mathrm{common}}\) of the previous subsection is the special case that uses them.
+Because the hybrid estimator leans on appraisals for part of the sample, its evaluation must not. We state this as a design rule: \emph{the metric used to compare models and designs never touches a NAV.} Realized contributions and distributions are observed without appraisal error; they are the natural common currency for scoring. The blocked scheme satisfies the rule by construction---held-out blocks are drawn from seasoned vintages only---so the headline score is already NAV-free. Two further designs extend the rule to the questions the blocked scheme cannot answer.
 
-\paragraph{The target.}
-Fix an evaluation date \(\tau'\) and let \(\mathcal R_{\tau'}\) be the set of funds that are \emph{realized} as of \(\tau'\)---those whose residual NAV has fallen below the de minimis seasoning threshold \(\delta\). For such a fund the entire life is observed in realized cash flows, so its NAV-free pricing error is just the seasoned contribution \(g_i^S\) of Section~\ref{sec:fund_vintage_weights} evaluated on a now-complete fund,
+\textbf{The realized-fund target.} Fix an evaluation date \(\tau'\) and let \(\mathcal R_{\tau'}\) be the funds that are realized as of \(\tau'\)---residual NAV below the de minimis threshold. For such funds the entire life is observed in realized cash flows, so the NAV-free pricing error is the seasoned contribution evaluated on a now-complete fund,
 \[
 g_i^{\mathrm{real}}(\theta)
 =
 \frac{1}{K_i}\sum_{t=0}^{T_i}\Psi_{0,t}(\theta)\,CF_{t,i},
 \qquad i\in\mathcal R_{\tau'},
 \]
-with any de minimis residual NAV handled by the \emph{single} terminal-NAV convention shared across all approaches. No discounted appraisal enters. Aggregating to held-out cells exactly as in Section~\ref{sec:estimation} gives, for each approach \(k\in\{A,B,C\}\), the common score
-\[
-S_n^{\mathrm{real}}\!\left(\hat\theta_n^{(k)}\right)
-=
-\frac{1}{|\mathcal H|}\sum_{r\in\mathcal H}
-L\!\left(
-\sum_{v\in A_{n,r}}\omega_{n,v,r}\,
-\frac{1}{|C_{n,v,r}|}\!\!\sum_{i\in C_{n,v,r}\cap\mathcal R_{\tau'}}\!\!
-g_i^{\mathrm{real}}\!\left(\hat\theta_n^{(k)}\right)
-\right).
-\]
-Because the map \(S_n^{\mathrm{real}}(\cdot)\) is identical across approaches and free of NAVs, the three approaches differ only in how their parameters \(\hat\theta_n^{(k)}\) were \emph{estimated}, not in how they are \emph{scored}. A value of \(0.02\) for one approach and \(0.05\) for another is now genuinely comparable: it asks which estimation route delivers the SDF that best prices fully realized cash flows. The principle is to state this as a design rule, not an option---evaluation is always NAV-free, regardless of which moments were used to estimate.
+with any de minimis residual handled by the single terminal-NAV convention shared across all specifications. Vintage-level aggregation and U-statistic scoring proceed exactly as in Section~\ref{sec:estimator}, so specifications differ only in how their parameters were \emph{estimated}, never in how they are \emph{scored}.
 
-\paragraph{Two ways to make the held-out funds informative.}
-The target discriminates between approaches only if the held-out realized funds were treated \emph{differently} by the three approaches at estimation time; otherwise all approaches impose the same seasoned cash-flow restriction on those funds and the scores coincide by construction. Two designs achieve this.
+\textbf{Two designs that make the target informative.} The target discriminates between treatments of unseasoned vintages only if the held-out realized funds were treated differently at estimation time.
 \begin{itemize}
-\item \emph{Rolling origin (prospective).} This is the design of Section~\ref{sec:estimation}: estimate \(\hat\theta_\tau^{(k)}\) using only information available at \(\tau\), when the target funds were still unseasoned and the approaches genuinely disagree about them, then score on \(g_i^{\mathrm{real}}\) once those funds have realized at \(\tau+\ell\). The rolling-origin score \(S_\tau^{\mathrm{roll}}\) is exactly \(S_n^{\mathrm{real}}\) restricted to \(\mathcal V_\tau^{U}\cap\mathcal V_{\tau+\ell}^{S}\).
-\item \emph{Leave-future-out (retrospective).} Without rolling the information set back, hold out the \emph{realized continuation} of currently-seasoned funds: estimate each approach using cash flows and NAVs only up to an elapsed fund age \(\bar a\)---so the approaches differ on the not-yet-realized tail---and score on the realized cash flows after \(\bar a\). This uses the full panel and is cheaper than full rolling-origin re-estimation, at the cost of not being a real-time experiment.
+\item \emph{Rolling origin (prospective).} Pick a historical information date \(\tau\). Using only information available at \(\tau\), classify then-seasoned and then-unseasoned vintages and estimate \(\hat\theta_\tau\). Move the evaluation date forward until the then-unseasoned vintages have seasoned, and score \(\hat\theta_\tau\) on their realized cash flows. This is the terminal-block member of the block family, with the information set also truncated: fully out-of-time, at the cost of being one-sided and feasible only for origins old enough that their young vintages have since realized.
+\item \emph{Leave-future-out (retrospective).} Without rolling the information set back, truncate each currently-seasoned fund at an elapsed age \(\bar a\), estimate on the truncated panel---where the treatments genuinely differ about the unrealized tail---and score on the realized cash flows after \(\bar a\). This uses the full panel and is cheaper than rolling-origin re-estimation, at the cost of not being a real-time experiment.
 \end{itemize}
-In both designs the chronological cross-fitting rule of the previous subsection applies: every nuisance object must use only pre-evaluation information.
 
-\paragraph{Backtesting the appraisal (auxiliary diagnostic).}
-The same realized continuations support a direct, dollar-denominated test of the appraisal-bias concern that motivates the entire unseasoned-vintage problem. At a freeze date with elapsed quarters \(s\), the model-implied value at \(s\) of the fund's later-realized cash flows is
+\textbf{A selection caveat.} The realized-fund target conditions on funds that have realized by the evaluation date, so slow-to-liquidate funds are under-represented. Two safeguards keep the target honest: report the share of estimation-time funds that qualify (coverage), and rely on the \emph{paired} comparison, in which every specification is scored on the same realized funds at the same origin, so the selection cancels in the cross-specification difference even if it biases the level.
+
+\textbf{Group-wise diagnostics.} Although unseasoned vintages are never scored, the implementation reports their estimation-side fit separately. If the Euler moments are trivially satisfied at \(\hat\theta_b\), they contribute little identifying content; if they are in sharp tension with the seasoned moments, the hybrid compromise---and possible appraisal bias---is doing real work, and the appraisal backtest of Appendix~\ref{app:backtest} localizes where.
+
+\subsection{Alternative treatments}
+\label{sec:alternatives}
+
+Two competitors to the hybrid block are developed in Appendix~\ref{app:unseasoned_alt}. \emph{Approach A} keeps the cumulative cash-flow SDF for all vintages but multiplies each unseasoned fund's terminal NAV by an empirical secondary-market discount before discounting it to inception; it is conceptually simple and marks appraisals to transaction levels, but it retains the long-horizon terminal-NAV exposure and adds a discount-model nuisance. \emph{Approach B} abandons cash-flow pricing entirely and prices quarterly NAV returns for \emph{all} vintages, in the spirit of the NAV-return literature \citep{brown2023nowcasting,GhyselsGredilAndreou2025}; it is internally consistent and avoids long-horizon discounting, but it relies on appraisal quality even where realized cash flows exist. The hybrid (Approach C) is the paper's baseline because it uses realized cash flows wherever available and confines NAV reliance to short horizons on young funds. All three produce vintage-level pricing errors that plug into the same blocked machinery, and the NAV-free rolling-origin score of Section~\ref{sec:navfree} is the common criterion that can rank them; Appendix~\ref{app:unseasoned_alt} specifies the horse race.
+
+\section{Alpha Design}
+\label{sec:alpha_design}
+
+The resampling method does not by itself decide what alpha should mean. The baseline is the cumulative, NPV-style alpha already embedded in the SDF of Section~\ref{sec:example}: the cumulative discount factor \(\Psi_{0,t}(\theta)=e^{-a\tau_t}/B_{0,t}(\beta)\) discounts by the factor benchmark and credits a continuously compounded abnormal rate \(a\). This is the direct-alpha/GPME tradition \citep{GredilGriffithsStucke2023,KortewegNagel2016,KortewegNagel2025}: alpha is a long-horizon abnormal-performance object, which is the natural quantity for PE cash flows; the discretely compounded \((1+\alpha)^{-t}\) is equivalent up to \(a=\log(1+\alpha)\). The main alternative, retained for comparison in the design vector and discussed in Appendix~\ref{app:agenda}, is the per-period intercept alpha of \citet{DriessenLinPhalippou2012}, in which \(\alpha\) sits inside the one-period factor denominator.
+
+\textbf{Vintage-implied alpha as a diagnostic.} For fixed loadings \(\hat\beta\), each vintage has a well-defined implied cumulative alpha: \(a_v(\hat\beta)\) solves the IRR-type equation
+\[
+\sum_t \frac{cf_{v,t}}{B_{0,t}(\hat\beta)}\,e^{-a\,\tau_{v,t}}=0
+\]
+on the vintage's pooled cash-flow series, which has a single inception origin and, under a single sign change (calls before distributions), a unique root. In estimation, a common \(a\) is part of \(\theta\); in diagnostics, the cross-vintage dispersion of \(\{a_v(\hat\beta)\}\)---and in particular the gap between held-out and estimation vintages' implied alphas per block---measures how sensitive the alpha estimate is to which vintages are used. A large spread flags a weakly identified aggregate alpha.
+
+\textbf{No exploding-alpha degeneracy.} A known finite-sample pathology of NPV-style SDF estimation, first documented by \citet{DriessenLinPhalippou2012}, is worth stating precisely because it is often described imprecisely. The problem is \emph{not} the length of the discounting horizon per se. It is a limit: as \(\alpha\to\infty\), every discounted cash flow is driven to zero, so each fund's pricing error converges to its \emph{undiscounted} cash flows---the flows at elapsed time zero. If the moment is constructed so that these undiscounted flows are small (for example, sums indexed from \(t=1\), or tiny first calls), the squared loss along the large-\(\alpha\) direction approaches zero and a ridge of spurious near-minima appears. Two design features block this, and it is the \emph{indexing} that does the heavy lifting: with time-zero indexing, the undiscounted anchor is the full initial capital call per committed dollar, so the loss along the ridge is bounded below by the squared anchor---far above the interior minimum---under either alpha design. The cumulative parameterization adds separability (alpha multiplies benchmark-discounted flows, so the vintage-implied alpha is a unique interior IRR-type root rather than a boundary escape), and the unseasoned Euler block reinforces the discipline from the other side: as \(\alpha\to\infty\) the one-period SDF collapses and \(e^H_{t,i}\to-1\), the maximal relative pricing error, so extreme alpha is actively penalized rather than rewarded. We therefore need only two cheap safeguards in the empirical work---a pre-registered bounded alpha box and a reported frequency of boundary solutions---and refer the full anatomy of the degeneracy, together with identification-robust (Anderson--Rubin-type) confidence sets for alpha, to Appendix~\ref{app:alpha}.
+
+\section{Semi-Synthetic Simulation Evidence}
+\label{sec:simulation}
+
+Three properties of the framework cannot be established on real data alone: whether the criterion selects the \emph{true} factor model (selection power and size), how biased the estimated alpha and loadings are in panels of this size, and whether the corrected tests have honest size. A compact semi-synthetic simulation delivers all three while staying as close to the actual empirical problem as possible: everything observable about the design is held \emph{real}, and only the unobservable---the data-generating SDF---is synthetic.
+
+\textbf{Design.} The simulation fixes, from the buyout panel of Section~\ref{sec:empirics}: the historical factor and risk-free paths; the vintage years; the number of funds and commitment sizes per vintage; and empirical age profiles of capital calls and exit timing. Synthetic cash flows are then generated under a known SDF: fund \(i\) of vintage \(v\) calls capital along the empirical call profile; each called dollar exits after a holding period drawn from the empirical exit-age distribution; and exit proceeds compound the benchmark at the true parameters plus idiosyncratic noise,
+\[
+D \;=\; X\cdot\exp\!\Bigl(\textstyle\sum_{s\in\text{holding period}}\bigl[a_0\Delta_s+\log(1+r_{f,s}+\beta_0^\prime f_s)\bigr]\;+\;\sigma\,\varepsilon_i-\tfrac12\sigma^2\Bigr),
+\qquad \varepsilon_i\sim N(0,1),
+\]
+so the true risk-adjusted NPV is zero at \((a_0,\beta_0)\) by construction. Unseasoned funds' NAVs are model-consistent continuation values, optionally passed through an AR(1) smoothing filter with parameter \(\phi\) to mimic appraisal smoothing. True specifications vary over an alpha-only model, a one-factor model, and a two-factor model, with empirically plausible \((a_0,\beta_0,\sigma)\); the candidate set is the design-table model list.
+
+\textbf{Reported experiments.} Four experiments, one table each:
+\begin{enumerate}
+\item \emph{Selection.} Frequency with which each candidate is selected---and the model confidence set covers the truth---under (i)~blocked vintage cross-validation, (ii)~within-vintage fund-level cross-validation, and (iii)~in-sample GMM objective comparison. The central prediction of Section~\ref{sec:optimality}: as fund counts grow, (ii) drifts toward the largest candidate while (i) concentrates on the truth. \tbd{table}
+\item \emph{Estimation.} Bias and RMSE of \(\hat a\) and \(\hat\beta\) at the panel's actual size; boundary frequencies; distribution of Jacobian condition numbers across blocks. \tbd{table}
+\item \emph{Inference.} Empirical size of nominal-5\% paired tests using the naive resampled \(t\), the corrected \(t\), and the vintage-cluster bootstrap. \tbd{table}
+\item \emph{Appraisal stress.} Sensitivity of \(\hat\theta\) and of the seasoned-only score to the smoothing parameter \(\phi\) and to the seasoning threshold \(\delta\), quantifying how much protection the never-score-a-NAV rule actually buys. \tbd{table}
+\end{enumerate}
+Block-geometry sensitivity (\(d\), \(g\)) is reported alongside experiment 1. The simulation deliberately conditions on the single realized factor history, exactly as the estimator does; it therefore measures uncertainty from fund-level idiosyncrasies and appraisal behavior, not factor-path uncertainty, and its scope should be read accordingly.
+
+\section{Empirical Application: Buyout Funds}
+\label{sec:empirics}
+
+The empirical implementation applies the framework to a single-strategy buyout sample. Restricting to one strategy keeps the vintage moment vector homogeneous, avoids strategy-mix confounds, and is where fund counts per vintage are largest.
+
+\subsection{Data}
+
+\tbd{Buyout fund sample: source, coverage, filters. Required fields: fund-level quarterly contributions, distributions, and NAVs, net of fees; committed capital; vintage year. Target panel: seasoned vintages roughly 1999--2014, unseasoned vintages thereafter, classified by the unrealized-value fraction with \(\delta=0.15\) at the estimation date. Report funds per vintage, aggregate commitments, and the seasoned/unseasoned boundary implied by \(\delta\).}
+
+\subsection{Design}
+\label{sec:design}
+
+Table~\ref{tab:design} pre-registers the design space. All candidate models are estimated and scored on the identical enumerated block sequence, so all comparisons are paired.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{ll}
+\toprule
+Component & Specification (baseline first) \\
+\midrule
+SDF models \(M\) & risk-free only; market (one factor); levered market; \tbd{final list} \\
+Alpha design & cumulative alpha (baseline); DLP12 intercept alpha (comparison only) \\
+Moment family & hybrid NPV/Euler (baseline); pooled PME on \(\mathcal V^S\) (robustness) \\
+Unseasoned treatment & Euler block in estimation, never scored (baseline); exclude \(\mathcal V^U\) (robustness) \\
+Seasoning threshold & \(\delta=0.15\); \(\delta\in\{0.10,0.20\}\) (robustness) \\
+Vintage weights & equal (baseline); value weights (robustness) \\
+Holdout scheme & blocked vintage CV: \(d=\lceil 0.2\,|\mathcal V^S|\rceil\), \(g=1\), enumerated (baseline); \\
+ & \quad \(d\), \(g\) variations and random vintage subsets (robustness); \\
+ & \quad within-vintage fund CV (stability diagnostic only) \\
+Scoring & U-statistic \(\widehat U_v\), seasoned held-out vintages only; raw \(\epsilon_v^2\) as companion \\
+Admissible set \(\Theta_M\) & benchmark-denominator positivity on observed support; \(a\in[\underline a,\bar a]\) pre-registered \\
+\bottomrule
+\end{tabular}
+\caption{Pre-registered design space for the buyout application.}
+\label{tab:design}
+\end{table}
+
+\subsection{Algorithm}
+\label{sec:algorithm}
+
+For each candidate model \(M\) and design \(\eta\):
+\begin{enumerate}
+\item Classify vintages into \(\mathcal V^S\) and \(\mathcal V^U\) at the estimation date; fix nuisance objects (duration profiles \(\bar u_s\), terminal-NAV convention) from pre-registered external inputs.
+\item Enumerate the admissible blocks: contiguous windows of length \(d\) in \(\mathcal V^S\), each with buffer \(g\); verify rank feasibility of every estimation set (condition number of the estimated Jacobian).
+\item For each block \(b\): build pooled vintage moments on \(\mathcal E_b\); estimate \(\hat\theta_b\) over \(\Theta_M\); score the held-out vintages with \(\widehat U_v(\hat\theta_b)\); record convergence, boundary, and conditioning diagnostics.
+\item Aggregate: \(\mathrm{Score}\), bagged \(\bar\theta\), cross-block parameter dispersion, per-vintage holdout coverage.
+\item Rank model-design pairs by \(\mathrm{Score}\); report the model confidence set under corrected and bootstrap inference.
+\end{enumerate}
+
+Alongside the mean held-out loss, we report: the median and dispersion of block scores; raw \(\epsilon_v^2\) companions to \(\widehat U_v\); the scalar-aggregate cancellation diagnostic of Section~\ref{sec:vintage_moments}; estimation-side seasoned/unseasoned fit; vintage-implied-alpha dispersion; and the fund-level stability diagnostic (dispersion of \(\hat\theta\) under within-vintage fund resampling, Figure~\ref{fig:fund-scheme}).
+
+\subsection{Main results}
+
+\tbd{Main ranking table: candidate models \(\times\) \{\(\mathrm{Score}\), corrected SE of paired difference to best model, model-confidence-set membership, boundary frequency, median Jacobian condition number\}, under the baseline design. Headline questions: (i) which factor structure prices held-out buyout vintages best; (ii) how large is the estimated cumulative alpha in the preferred model, with its identification-robust confidence set from Appendix~\ref{app:alpha} as a companion; (iii) how stable are the loadings across blocks.}
+
+\subsection{Out-of-time validation of the unseasoned block}
+
+\tbd{Rolling-origin exercise: estimate at origins \(\tau\) (e.g., annual origins over 2012--2020) under (i) the hybrid baseline and (ii) the exclusion benchmark; score on the NAV-free realized-fund target of Section~\ref{sec:navfree} once the then-unseasoned vintages have seasoned; report paired differences with corrected standard errors and target coverage. If the data supports it, add Approaches A and B from Appendix~\ref{app:unseasoned_alt} to the race.}
+
+\subsection{Implementation and placebo checks}
+\label{sec:placebo}
+
+\textbf{Alpha-injection invariance check.} Tilting every observed cash flow and NAV by a known abnormal rate, \(\widetilde{CF}_{t,i}=CF_{t,i}\,e^{a_0\tau_t}\), shifts the pricing-consistent alpha by exactly \(a_0\) and leaves the loadings and all pricing errors unchanged: the tilted panel satisfies every moment at \((a+a_0,\beta)\) if and only if the original satisfies it at \((a,\beta)\). Because the invariance is exact, this is an \emph{implementation} check, not a statistical one: re-running the pipeline on tilted panels verifies the optimizer, the moment code, and the placement of the pre-registered alpha box (which is the only element that can break the invariance), while statistical recovery evidence comes from the simulation of Section~\ref{sec:simulation}. \tbd{one-line result.}
+
+\textbf{Factor-scramble placebo.} Destroy the alignment between cash flows and factor realizations while preserving both marginals: replace the factor path with a calendar-shifted (or block-permuted) path and re-run the pipeline. Factor loadings can then no longer reflect genuine risk adjustment, so the held-out advantage of factor models over the alpha-only benchmark should collapse toward zero across blocks. A model that still ``wins'' on scrambled factors is winning through design overfitting, not pricing ability; a ranking that collapses under the placebo and is strong on the real alignment is evidence that the blocked score responds to genuine factor--cash-flow covariation. \tbd{placebo table.}
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+Private-equity SDF estimation has always involved consequential moment-construction choices; this paper makes them explicit and, where possible, derives them. The resampling design itself is derived from three finite-sample requirements---pool the exchangeable, hold out the identifying variation, score without bias---yielding blocked vintage cross-validation with pooled moments and unbiased U-statistic scoring, enumerated exhaustively so that no Monte Carlo tuning remains. Around this core, the paper commits to design choices that remove two chronic pathologies at the root---a hybrid cash-flow/Euler treatment under which no appraisal is ever discounted over a long horizon or admitted into a comparison score, and a cumulative alpha that is anchored against the exploding-alpha degeneracy---and ranks what remains, the SDF models themselves, by their ability to price buyout vintages they have not seen. A semi-synthetic simulation verifies that the criterion can find true factor structure where fund-level cross-validation cannot, and the buyout application puts the framework to work. Extensions the framework accommodates but this paper does not pursue---vintage-stratified and age-varying factor exposures, alternative alpha definitions, and richer moment weighting---are collected as a research agenda in Appendix~\ref{app:agenda}.
+
+\appendix
+
+\section{Identification and Pooling: Formal Analysis}
+\label{app:identification}
+
+This appendix formalizes the two structural claims behind requirement R1 of Section~\ref{sec:optimality}: stacked fund-level folds are redundant moments (rank), and randomized sub-group moments are dominated by the pooled moment (Rao--Blackwell).
+
+\subsection{Exchangeable folds are rank deficient}
+
+Consider the (rejected) fold estimator that partitions each vintage's funds into cells \(C_{v,1},\dots,C_{v,P}\), collapses each fold \(r\) to the aggregate \(m_{r}(\theta)=\sum_{v}\omega_{v}\,\epsilon_{v,r}(\theta)\) with \(\epsilon_{v,r}\) the cell mean, and stacks the \(P\) folds as a GMM system.
+
+Within a vintage, the cells are a random partition of the same funds, so each cell mean is an unbiased draw of the vintage population pricing error:
+\[
+\bar g_v(\theta)=E\!\left[g_i(\theta)\mid i\in\text{vintage }v\right],
+\qquad
+E\!\left[\epsilon_{v,r}(\theta)\right]=\bar g_v(\theta)\quad\text{for every }r.
+\]
+Hence every fold has the same population moment, \(E[m_{r}(\theta)]=\sum_v\omega_v\bar g_v(\theta)=:\bar m(\theta)\) for \(r=1,\dots,P\). Stacking the \(P\) fold moments into \(G(\theta)=\bar m(\theta)\,\mathbf 1_P\) yields a Jacobian that is an outer product,
+\[
+\frac{\partial G(\theta_0)}{\partial\theta^\prime}
+=\mathbf 1_P\,\frac{\partial \bar m(\theta_0)}{\partial\theta^\prime},
+\qquad
+\operatorname{rank}\!\left(\frac{\partial G(\theta_0)}{\partial\theta^\prime}\right)\le 1.
+\]
+The local identification (rank) condition fails for any \(p(M)\ge 2\), no matter how many folds are used: the \(P\) folds restrict only the single scalar combination \(\bar m(\theta)=0\) and leave a \((p(M)-1)\)-dimensional set of observationally equivalent parameters. A pricing moment is \emph{nonredundant} only if its population pricing error is not a linear combination of the others and its derivative with respect to \(\theta\) adds independent rank; replicated exchangeable folds are duplicates on both counts.
+
+The redundancy is structural, not a feature of any particular SDF. Folds are exchangeable, so they share one population moment and one Jacobian row. Vintages are not exchangeable: each vintage lives through a different factor path and cash-flow timing, so the sensitivities \(\partial\bar g_v(\theta_0)/\partial\theta^\prime\) differ across \(v\). The identifying rank lives in the cross-vintage Jacobian
+\[
+J(\theta_0)=\frac{\partial}{\partial\theta^\prime}
+\bigl(\bar g_{v}(\theta_0)\bigr)_{v}\ \in\ \mathbb R^{V\times p(M)},
+\qquad
+\text{identification}\iff \operatorname{rank}\,J(\theta_0)=p(M).
+\]
+Collapsing across vintages replaces \(J\) by its column sum \(\mathbf 1^\prime J\), a single row, discarding exactly the cross-vintage rank that identifies the factor loadings. This is why estimation operates on the pooled vintage moment \emph{vector}.
+
+\textbf{Weak identification and diagnostics.} In finite samples the scalar fold moments differ only through sampling noise in cell composition, so the between-fold Jacobian variation is \(O(1/|C_{v,r}|)\) and vanishes as cells grow: the fold estimator is weakly identified in the sense of \citet{StockWright2000}, and its apparent finite-sample precision is an artifact of that noise. Because even many stacked moments can be rank deficient, the relevant empirical check is the rank or condition number of the estimated moment Jacobian at \(\hat\theta\), not the moment count; it is reported per block in Section~\ref{sec:algorithm}.
+
+\subsection{Pooling as Rao--Blackwellization}
+\label{app:rao_blackwell}
+
+Fix \(\theta\) and vintage \(v\) with \(n_v\) funds, and let \(\epsilon_v(\theta)\) be the pooled mean of \(g_i(\theta)\). Under a uniform random partition into cells of size \(|C|\), each cell mean is a simple random sample without replacement, so
+\[
+\mathbb E_{\Pi}\!\left[\epsilon_{v,r}(\theta)\right]=\epsilon_v(\theta),
+\qquad
+\mathrm{Var}_{\Pi}\!\left[\epsilon_{v,r}(\theta)\right]
+=\frac{\widehat\sigma_v^2(\theta)}{|C|}\left(1-\frac{|C|-1}{n_v-1}\right),
+\]
+where \(\widehat\sigma_v^2(\theta)\) is the within-vintage cross-sectional variance and the expectation is over partitions holding the data fixed. Cell-based moments are therefore mean-preserving spreads of the pooled moment. For any criterion \(Q\) that is convex in the moment vector at fixed \(\theta\) (all quadratic losses used here), Jensen's inequality gives
+\[
+\mathbb E_{\Pi}\bigl[Q(\boldsymbol\epsilon_{\Pi}(\theta))\bigr]\;\ge\;Q(\boldsymbol\epsilon(\theta)),
+\]
+with equality only for trivial partitions: randomizing inside the moments inflates every convex objective in expectation, and the pooled moment vector is the Rao--Blackwellization of any cell-based construction. The same decomposition exhibits the fund-noise floor removed by the U-statistic score of Section~\ref{sec:optimality}: \(E[\epsilon_v(\theta)^2\mid\text{path}]=\bar g_v(\theta)^2+\sigma_v^2(\theta)/n_v\), while \(E[\widehat U_v(\theta)\mid\text{path}]=\bar g_v(\theta)^2\) exactly.
+
+\textbf{Subagging cannot create rank.} Averaging estimators over subsamples stabilizes them; it does not create identification. If the base estimator is built from exchangeable fold moments, its Jacobian is rank deficient and averaging many such solutions only produces a tight bag around a partition-induced pseudo-value---false precision. Block averaging (Section~\ref{sec:subagging}) is valuable on top of the pooled vintage-vector identification, not as a substitute for it.
+
+\section{The Exploding-Alpha Degeneracy}
+\label{app:alpha}
+
+This appendix records the anatomy of the exploding-alpha pathology and inference tools for specifications that are exposed to it (notably the DLP12 intercept design retained as a comparison in Table~\ref{tab:design}). Under the baseline design the pathology is disciplined by construction (Section~\ref{sec:alpha_design}); the material here is the referee-proof backstop.
+
+\subsection{Anatomy}
+
+\textbf{Mechanism.} The degeneracy is a limit, not a horizon effect. As \(\alpha\to\infty\), every discounted cash flow is driven to zero, so each fund's pricing error converges to its undiscounted cash flows---the flows at elapsed time zero. The squared loss along the large-\(\alpha\) direction therefore approaches the squared undiscounted anchor. Spurious near-minima arise exactly when that anchor is small: moment sums indexed from \(t=1\), gradual capital calls with tiny first flows, or origins placed before meaningful flows. In the intercept parameterization \(M_{t-1,t}=1/(1+\alpha+\beta^\prime f_t)\) the collapse direction additionally kills all \(\beta\)-sensitivity, producing a ridge along which the objective is nearly flat in every coordinate \citep{DriessenLinPhalippou2012,DriessenLinPhalippou2008WP}.
+
+\textbf{The initial-contribution anchor.} When the time-zero capital call enters the cumulative moment undiscounted (\(\Psi_{0,0}=1\)), driving \(\alpha\to\infty\) sends the seasoned NPV moment to \(-X_{0,i}/K_i\neq 0\) rather than to zero, so the squared loss is bounded below by the squared anchor and the ridge is self-limiting. This is why the paper indexes seasoned cash flows from \(t=0\) throughout, and why the magnitude of the early-call anchor is a sample-specific diagnostic for exposure to the pathology.
+
+\textbf{Population uniqueness.} The pathology is a finite-sample phenomenon. Under increasing-domain asymptotics indexed by vintage years, the cross-vintage moment averages over many vintage realizations of the cumulative SDF. These realizations are not independent---adjacent vintages overlap in calendar time and share factor paths---so the relevant condition is weak dependence (mixing) across vintages, and the limit should be read as a thin asymptotic (one new vintage per year, perhaps thirty to forty in total). Subject to this caveat, the population criterion is uniquely minimized at \(\theta_0\) under standard conditions: no single alpha value can simultaneously zero out the discounted cash flows of many vintage realizations with heterogeneous timing and factor paths.
+
+\textbf{Safeguards in the framework.} Four mechanisms limit the pathology in finite samples: (i)~the time-zero anchor above; (ii)~the unseasoned Euler block, whose one-period errors satisfy \(e^H_{t,i}\to-1\) as \(\alpha\to\infty\)---the maximal relative error---so extreme alpha is penalized, not rewarded; (iii)~economically admissible restrictions imposed before scoring (benchmark-denominator positivity over the observed factor support, a pre-registered bounded alpha box); and (iv)~cross-block diagnostics---weakly identified specifications display high parameter dispersion across blocks, frequent boundary solutions, and non-convergence. Held-out scoring alone is \emph{not} a cure: a degenerate cumulative SDF that collapses all long-horizon discounted cash flows can make held-out NPV moments small as well.
+
+\subsection{Identification-robust inference for \texorpdfstring{\(\alpha\)}{alpha}}
+
+Where the ridge is potentially active, Wald-type confidence intervals for \(\alpha\) are unreliable precisely when they are needed. The natural tools are weak-identification-robust statistics.
+
+\textbf{A profiled robust confidence set.} Treat \(\beta\) as nuisance and profile it out at each hypothesized \(\alpha\): for a grid of values \(\alpha_0\), refit the remaining parameters on the estimation vintages and evaluate the continuously-updated GMM objective \(T(\alpha_0)=\min_{\beta}Q(\alpha_0,\beta)\). Under \(H_0:\alpha=\alpha_0\) an Anderson--Rubin / Stock--Wright \(S\)-statistic is asymptotically \(\chi^2\) regardless of identification strength \citep{StockWright2000}, so inverting it,
+\[
+\mathrm{CS}_{1-a}(\alpha)=\bigl\{\alpha_0:\ T(\alpha_0)\le c_{1-a}\bigr\},
+\]
+yields a confidence set with correct coverage even on the ridge. The payoff is diagnostic as much as inferential: when \(\alpha\) is weakly identified the set is wide or unbounded above, displaying the ridge honestly, whereas a Wald interval would report spurious precision. The profiled curve \(T(\cdot)\) pairs with the vintage-implied-alpha dispersion of Section~\ref{sec:alpha_design}: a flat right tail of \(T\) and a large spread of \(\{a_v\}\) are two readings of the same weak identification.
+
+\textbf{A PME anchor that breaks the degeneracy.} The NPV moment loses its grip on \(\alpha\) in the large-\(\alpha\) region because its sensitivity \(\partial m^{\mathrm{NPV}}/\partial\alpha\) collapses as the cumulative discount factors vanish. The pooled-PME moment of Appendix~\ref{app:moment_details} does not share this defect: being a ratio, it is invariant to a common rescaling of all discount factors and responds instead to the \emph{relative} reweighting across maturities that \(\alpha\) controls, so its \(\alpha\)-sensitivity does not vanish on the ridge. Stacking a single pooled-PME moment (restricted to \(\mathcal V^S\), where it is well defined) alongside the NPV moments keeps the \(\alpha\)-column of the moment Jacobian away from zero and locally re-identifies \(\alpha\), while the linear NPV moments continue to do the efficient work for \(\beta\).
+
+\section{Alternative Treatments of Unseasoned Vintages}
+\label{app:unseasoned_alt}
+
+This appendix develops the two competitors to the hybrid Euler block of Section~\ref{sec:euler_block} and the design that races all three on a common criterion.
+
+\subsection{Approach A: NAV-adjusted cash-flow SDF}
+\label{app:nav_adjusted}
+
+Adjust the terminal NAV before applying the standard cumulative cash-flow SDF. For seasoned vintages, the pricing restriction is unchanged. For unseasoned vintages, the latest reported NAV is multiplied by an empirical discount factor before being treated as a terminal distribution:
+\[
+\widetilde{D}_{T_i,i} = D_{T_i,i} + d_i \cdot \mathrm{NAV}_{T_i,i},
+\qquad d_i\in(0,1],
+\]
+after which the fund enters the standard CF-SDF pricing restriction with \(\widetilde D_{T_i,i}\) as terminal cash flow. The discount \(d_i\) can be calibrated from secondary-market transaction data---for example, the Setter Capital secondary transaction dataset, which records bid--ask spreads and transaction prices for LP interests as a function of fund age, strategy, and market conditions---grounding the adjustment in observed prices rather than assumptions.
+
+\emph{Advantages.} Conceptually simple; one cumulative SDF for all vintages; the discount directly addresses appraisal bias by marking the terminal position to secondary-market levels.
+
+\emph{Limitations.} The discounted NAV is still a terminal cash flow discounted back to inception, so the estimator retains its sensitivity to the macro state at the dataset endpoint. The discount function \(d_i\) introduces model risk: secondary-market data may not represent the broader PE universe, and \(d_i\) may vary with market conditions in ways that interact with the SDF specification. As a nuisance object, \(d_i\) must be pre-registered from external curves or cross-fitted (never tuned against scores; chronological in rolling-origin designs).
+
+\subsection{Approach B: NAV-return SDF for all vintages}
+\label{app:nav_return}
+
+Abandon the cash-flow pricing restriction entirely and price quarterly Horizon-IRR NAV returns for \emph{all} vintages, seasoned and unseasoned alike, using the one-period Euler error \(e^H_{t,i}(\theta)\) of Section~\ref{sec:euler_block}; the fund-level moment is the time-series average of quarterly errors, aggregated to pooled vintage moments as usual. This is closest in spirit to the NAV-return literature: \citet{brown2023nowcasting} nowcast fund NAVs, and \citet{GhyselsGredilAndreou2025} construct high-frequency PE returns from NAV-based state-space models.
+
+\emph{Advantages.} Internally consistent: one restriction for all vintages, no seasoned/unseasoned partition, no NAV discount model. Each quarterly error depends only on the one-period SDF, so long-horizon discounting instabilities never arise.
+
+\emph{Limitations.} NAV quality matters for the \emph{entire} sample, including seasoned vintages where realized cash flows are available and arguably preferable: divestiture cash flows co-move genuinely with public factors, appraisals may co-move in a smoothed or biased way. The approach trades the unseasoned-vintage dilemma for full-sample appraisal reliance.
+
+\subsection{Racing the approaches on a common criterion}
+\label{app:horse_race}
+
+Comparing held-out losses \emph{across} approaches is not meaningful directly: the approaches define different moment conditions with different scales, economic content, and parameter sensitivities. The resolution is the NAV-free principle of Section~\ref{sec:navfree}: estimate \(\hat\theta^{(k)}\) under each approach \(k\in\{A,B,C\}\) using its own moments, but score all of them with the identical realized-cash-flow map. Within the blocked scheme, the common criterion is the U-statistic score of Section~\ref{sec:estimator} applied to seasoned held-out vintages,
+\[
+S_b^{\mathrm{common}}(k)
+=
+\frac{1}{d}\sum_{v\in\mathcal H_b}\widehat U_v\bigl(\hat\theta_b^{(k)}\bigr),
+\qquad k\in\{A,B,C\},
+\]
+which is identical across approaches and free of NAVs. The sharper prospective version is the rolling-origin score: estimate at a historical date \(\tau\), when the approaches genuinely disagree about the then-unseasoned vintages \(\mathcal V^U_\tau\), and score later on the realized cash flows of exactly those vintages once they have seasoned,
+\[
+S_{\tau}^{\mathrm{roll}}(k)
+=
+\frac{1}{|\mathcal V_{\tau}^{U}\cap \mathcal V_{\tau+\ell}^{S}|}
+\sum_{v\in\mathcal V_{\tau}^{U}\cap \mathcal V_{\tau+\ell}^{S}}
+\widehat U_v^{\mathrm{real}}\bigl(\hat\theta_{\tau}^{(k)}\bigr),
+\]
+where \(\widehat U_v^{\mathrm{real}}\) is the U-statistic built from the realized-fund errors \(g_i^{\mathrm{real}}\) of Section~\ref{sec:navfree}. Every nuisance object (the NAV discount \(d_i\), duration profiles, thresholds) must use only information observable at \(\tau\). The selection caveat and its safeguards (coverage reporting; paired differences on identical realized funds) are as in Section~\ref{sec:navfree}.
+
+\subsection{Backtesting the appraisal}
+\label{app:backtest}
+
+The same realized continuations support a direct, dollar-denominated diagnostic of the appraisal-bias concern that motivates the entire problem. At a freeze date with elapsed quarters \(s\), the model-implied value of the fund's later-realized cash flows is
 \[
 \widehat{\mathrm{NAV}}_{s,i}(\theta)
 =
 \frac{1}{\Psi_{0,s}(\theta)}\sum_{t>s}\Psi_{0,t}(\theta)\,CF_{t,i},
 \]
-the cumulative-SDF price of the realized tail, renormalized to date \(s\). The appraisal gap \(\mathrm{NAV}_{s,i}-\widehat{\mathrm{NAV}}_{s,i}(\theta)\) has a benchmark term built only from realized flows. This is a diagnostic rather than the comparison metric---it asks whether an approach's fitted SDF rationalizes reported NAVs as fair risk-adjusted values---and it localizes \emph{where} (which strategies, ages, or vintages) appraisals and model values diverge, which is exactly the smoothing/bias that Approaches~A and~B are most exposed to.
-
-\paragraph{A selection caveat.}
-\(S_n^{\mathrm{real}}\) conditions on \(i\in\mathcal R_{\tau'}\): only funds that have actually realized by the evaluation date enter the score, so slow-to-liquidate or lingering failed funds are under-represented and the target carries a mild survivorship/look-ahead selection. Two safeguards keep it honest. First, report the share of estimation-time funds that qualify for the target (coverage). Second, rely on the \emph{paired} comparison of Section~\ref{sec:algorithm}, in which every approach is scored on the \emph{same} realized funds at the same origin \(\tau\); the selection then cancels in the cross-approach difference \(S_n^{\mathrm{real}}(\hat\theta_n^{(a)})-S_n^{\mathrm{real}}(\hat\theta_n^{(b)})\) even though it may bias the level of either score.
-
-\section{Identification and Stability}
-\label{sec:identification}
-
-The exploding-alpha issue---where an arbitrarily large \(\alpha\) drives cumulative discount factors to zero, creating a ridge of spurious near-minima---is a \emph{finite-sample} pathology, not an asymptotic one. Under increasing-domain asymptotics indexed by vintage years, as \(V\to\infty\) the cross-vintage moment averages over many vintage realizations of the cumulative SDF. These realizations are not independent---adjacent vintages overlap in calendar time and share macro and factor paths---so the relevant condition is weak dependence (mixing) across vintages rather than independence, and the limit should be read as a thin asymptotic (one new vintage per year, perhaps thirty to forty in total). Subject to this caveat, the global minimum of the population criterion \(Q(\theta)\) is uniquely attained at \(\theta_0\) under standard identification conditions, and the spurious near-minima created by extreme alpha values vanish: no single alpha value can simultaneously zero out the discounted cash flows of many vintage realizations with heterogeneous timing and factor paths.
-
-In finite samples, the exploding-alpha ridge must be handled explicitly. The useful safeguards are:
-
-\begin{enumerate}
-\item \textbf{Short-horizon Euler restrictions.} Under the hybrid approach~C, unseasoned vintages contribute one-period Horizon-IRR Euler errors whose sensitivity to \(\alpha\) is proportional to the quarter length \(\Delta t\), not exponential in the fund horizon \(T\). The duration-matching factor \(\Lambda_i\) is exogenous to the candidate cumulative SDF and does not reintroduce long-horizon alpha sensitivity. Under the full NAV-return approach~B, all vintages use one-period discounting, eliminating long-horizon alpha sensitivity in the NAV-return block. Even under approach~A, the NAV discount reduces the terminal position, partially mitigating the problem.
-\item \textbf{Explicit alpha discipline.} The estimation problem should impose economically admissible parameter restrictions, such as positivity of the one-period SDF over the observed factor support and bounded alpha regions chosen before looking at the holdout score. The cumulative-alpha/direct-alpha parameterization in Section~\ref{sec:alpha_design} is useful because it gives alpha an interpretable long-horizon abnormal-performance meaning, but it should still be accompanied by boundary-solution diagnostics.
-\item \textbf{Resampling diagnostics, not resampling cure.} Validation folds do not mechanically penalize exploding alpha, because a degenerate cumulative SDF can also make held-out NPV moments small. Resampling is still useful because it reveals instability: across many sampled splits, weakly identified specifications should display high parameter dispersion, frequent boundary solutions, non-convergence, or sensitivity to small changes in moment construction.
-\item \textbf{Asymptotic cash-flow dominance.} Under approaches A and C, only the most recent vintages within a bounded horizon \(D\) are classified as unseasoned. As the panel grows, \(|\mathcal V^U|/V\to 0\), so the contribution of any NAV-based block to the cross-vintage average vanishes. The estimator is therefore asymptotically cash-flow dominated.
-\end{enumerate}
-
-\paragraph{The initial-contribution anchor.} The indexing convention interacts with the pathology. When the time-zero capital call enters the cumulative moment undiscounted (\(\Psi_{0,0}=1\)), driving \(\alpha\to\infty\) sends the seasoned NPV moment to \(-X_{0,i}\neq 0\) rather than to zero, so the squared loss is bounded below by \(X_{0,i}^2\) and the ridge is self-limiting. The degeneracy therefore reappears precisely when the undiscounted early cash flows are small relative to later ones---the typical PE shape---which is why we index seasoned cash flows from \(t=0\) throughout (Sections~\ref{sec:pricing_moments} and \ref{app:moment_details}) and treat the magnitude of the early-call anchor as a sample-specific diagnostic for exposure to the pathology.
-
-Together, these mechanisms do not make exploding alpha disappear automatically. They make the pathology explicit, separate it from the model-selection role of validation, and give the empirical implementation concrete diagnostics for deciding when an SDF specification is too weakly identified to interpret.
-
-\paragraph{NAV quality and the Euler moment condition.}
-The conditional Euler moment \(E[e^H_{t,i}(\theta_0)\mid\mathcal F_{t-1}]=0\) makes a stronger claim: that the beginning-of-quarter information set prices the fund's Horizon-IRR return under the true SDF. For traded assets, no-arbitrage forces the analogous condition to hold. For private-equity funds, NAVs are appraisals whose co-movement with public factors may be smoothed or biased, so the Euler restriction holds only approximately. The paper's design controls this concern in three ways. First, under approaches A and C, only unseasoned vintages rely materially on NAV-based moments; seasoned vintages are priced with the chosen realized-cash-flow convention for any small residual NAV. Second, even within \(\mathcal V^U\), the normalized Euler block uses one-quarter NAV return changes rather than a single large terminal NAV discounted back to inception. Third, the asymptotic irrelevance property ensures that the fraction of moment conditions relying on NAV quality vanishes as the panel grows. Under approach B, NAV quality affects the entire sample, which is the price paid for internal consistency.
-
-\section{Alpha Design}
-\label{sec:alpha_design}
-
-The resampling method does not by itself decide what alpha should mean. The cleanest baseline is to use a cumulative, NPV-style alpha rather than a period-by-period intercept alpha.
-
-\subsection{Baseline: cumulative alpha}
-
-For fold \(F_{n,j}\), let \(B_t(\beta)\) be the cumulative benchmark return implied by factor loadings \(\beta\). A direct-alpha-style fold moment is
-\[
-\psi_{n,j}(a,\beta)
-=
-\sum_t \frac{cf_{n,j,t}}{B_t(\beta)}
-\exp\!\left(-a\,\tau_{n,j,t}\right),
-\]
-where \(cf_{n,j,t}\) is the fold cash flow at time \(t\), and \(\tau_{n,j,t}\) is elapsed time from the fold origin to date \(t\). For fixed \(\beta\), the fold-implied cumulative alpha solves
-\[
-\sum_t \frac{cf_{n,j,t}}{B_t(\beta)}
-\exp\!\left(-a_{n,j}(\beta)\,\tau_{n,j,t}\right)=0.
-\]
-
-This is close to the KN16/GPME/direct-alpha tradition because alpha is an NPV-style abnormal-performance object \citep{KortewegNagel2016,GredilGriffithsStucke2023,KortewegNagel2025}. It is also more natural for long-horizon PE cash flows than a monthly intercept alpha. The exponential \(\exp(-a\,\tau)\) parameterizes alpha as a continuously compounded rate; for estimation this is equivalent to the discretely compounded \((1+\alpha)^{-t}\) up to the reparameterization \(a=\log(1+\alpha)\).
-
-The fold-implied alpha \(a_{n,j}(\beta)\) serves a dual purpose in the resampling design. In \emph{estimation}, a common alpha \(a\) is estimated jointly with \(\beta\) across the \(P\) estimation folds by minimizing the aggregate loss over fold moments \(\psi_{n,j}(a,\beta)\). In \emph{diagnostics}, the fold-specific implied alpha \(a_{n,j}(\hat\beta)\) is computed for each fold (including the validation fold) by solving \(\psi_{n,j}(a,\hat\beta)=0\) at the estimated \(\hat\beta\). The cross-fold dispersion of \(\{a_{n,j}\}_{j=1}^{P+h}\) is then a model diagnostic: a large spread indicates that the alpha estimate is sensitive to which funds enter the fold, and therefore that the aggregate alpha is weakly identified.
-
-\subsection{Alternative alpha definitions}
-
-The resampling framework can also compare alpha definitions as part of the design vector \(\eta\): (i)~the cumulative alpha baseline above, (ii)~a DLP12-style intercept alpha, useful for comparison but vulnerable to exploding-alpha behavior in small or weakly identified samples \citep{DriessenLinPhalippou2012,DriessenLinPhalippou2008WP}, and (iii)~an error-term alpha (\(\mathbb{E}[\epsilon]\)) as in the machine-learning approach of \citet{TauschPietz2024}. The empirical question is not only which SDF factors perform best, but also which alpha definition yields stable and predictive PE pricing moments.
-
-\subsection{Identification-robust inference for \texorpdfstring{\(\alpha\)}{alpha}}
-\label{sec:robust_alpha}
-
-Because exploding alpha is a weak-identification problem (Section~\ref{sec:identification}), the natural inference tools are the weak-identification-robust statistics of the GMM literature rather than Wald-type confidence intervals, whose coverage is unreliable precisely when the alpha ridge is active. We recommend reporting a robust confidence set for \(\alpha\) and, optionally, a single anchoring moment that restores its identification.
-
-\paragraph{A profiled robust confidence set.}
-Treat \(\beta\) (and any remaining parameters) as nuisance and profile them out at each hypothesized \(\alpha\). For a grid of values \(\alpha_0\), refit the remaining parameters on the estimation folds and evaluate the continuously-updated GMM objective \(T_n(\alpha_0)=\min_{\beta}Q_n(\alpha_0,\beta)\). Under \(H_0:\alpha=\alpha_0\) an Anderson--Rubin / Stock--Wright \(S\)-statistic is asymptotically \(\chi^2\) regardless of identification strength \citep{StockWright2000}, so inverting it,
-\[
-\mathrm{CS}_{1-a}(\alpha)=\bigl\{\alpha_0:\ T_n(\alpha_0)\le c_{1-a}\bigr\},
-\]
-yields a confidence set with correct coverage even on the ridge. The payoff is diagnostic as much as inferential: when \(\alpha\) is weakly identified the set is wide or unbounded above, displaying the ridge honestly, whereas a Wald interval would report spurious precision. The profiled curve \(T_n(\cdot)\) is also the cleanest picture of the exploding-alpha pathology, and it pairs with the fold-implied-alpha dispersion of Section~\ref{sec:alpha_design}: a flat right tail of \(T_n\) and a large spread of \(\{a_{n,j}\}\) are two readings of the same weak identification.
-
-\paragraph{A PME anchor that breaks the degeneracy.}
-The NPV moment loses its grip on \(\alpha\) in the large-\(\alpha\) region because its sensitivity \(\partial m^{\mathrm{NPV}}/\partial\alpha\) collapses as the cumulative discount factors vanish. The pooled-PME moment of Appendix~\ref{app:moment_details} does not share this defect: being a ratio, it is invariant to a common rescaling of all discount factors and responds instead to the \emph{relative} reweighting across maturities that \(\alpha\) controls, so its \(\alpha\)-sensitivity does not vanish on the ridge. Stacking a single pooled-PME moment (restricted to \(\mathcal V^S\), where it is well defined) alongside the NPV moments therefore keeps the \(\alpha\)-column of the moment Jacobian away from zero and locally re-identifies \(\alpha\), while the linear NPV moments continue to do the efficient work for \(\beta\). Combined with the economically admissible restrictions of Section~\ref{sec:identification}---one-period SDF positivity \(1+\alpha+\beta^\prime f_t>0\) over the observed factor support, which is linear in \(\theta\), and a pre-registered bounded-\(\alpha\) box---this removes the inadmissible part of the ridge by construction and pins the admissible part with a moment that stays informative there.
-
-\section{Vintage-Stratified Factor Models}
-\label{sec:vintage_betas}
-
-The resampling framework naturally accommodates time-varying factor exposures. Instead of estimating a single \(\beta\) across all vintages, define vintage-bucket-specific loadings \(\beta_b\) for vintage bucket \(b\in\{B_1,\ldots,B_K\}\), where each bucket \(B_k\) collects vintages from a contiguous window (e.g., 2000--2004 buyout, 2015--2019 venture capital). The parameter vector becomes \(\theta=(\alpha,\beta_{B_1},\ldots,\beta_{B_K})^\prime\), and the resampling framework applies without modification: more parameters require more estimation folds, and the holdout loss automatically penalizes overfitting.
-
-\textbf{Floating buckets.} Overlapping vintage windows centered on each year---for example, a five-year window centered on 2010 that includes vintages 2008--2012---provide smooth estimates of how factor exposures evolve over time without sharp boundary effects. The bucket width is itself a tunable parameter that the resampling holdout loss can optimize.
-
-\textbf{Strategy-specific buckets.} Factor exposures likely differ across PE strategies. A natural extension defines buckets jointly over vintage year and strategy (e.g., ``2002 buyout factor,'' ``2020 venture capital factor''), so that the holdout loss can compare: (i)~pooled-\(\beta\) vs.\ bucket-\(\beta\), (ii)~narrow vs.\ wide bucket windows, and (iii)~strategy-specific vs.\ pooled-strategy buckets.
-
-\textbf{Partial pooling and fused exposure paths.} The free bucket model is easy to understand, but it can become noisy quickly: each additional vintage or strategy bucket adds parameters, and adjacent buckets may jump for sampling reasons rather than economic reasons. A more refined version keeps the bucket interpretation but regularizes the exposure path, in the spirit of regularized GMM for time-varying parameter models \citep{CuiFengHong2024}. One option is hierarchical shrinkage,
-\[
-\beta_b=\bar\beta+u_b,
-\qquad
-\sum_b \|u_b\|_2^2 \text{ penalized},
-\]
-which shrinks sparse or noisy buckets back toward a common exposure while allowing well-identified buckets to move away. Another option is a fused-lasso path penalty,
-\[
-\lambda\sum_{b=2}^{K}\|\beta_b-\beta_{b-1}\|_1,
-\]
-or its strategy-specific analogue, which encourages neighboring vintage buckets to share the same exposure unless the data strongly support a break. The advantage is a cleaner bias--variance tradeoff: the model can detect gradual time variation or discrete exposure regimes without estimating an unrelated \(\beta_b\) for every small cell. The tuning parameter \(\lambda\) becomes another design choice ranked by holdout loss.
-
-This vintage-stratified specification showcases the flexibility of the resampling framework. The question of whether factor exposures are time-varying is empirically testable within the framework, not assumed a priori. A model with vintage-stratified betas that achieves lower holdout loss than a pooled-beta model provides direct evidence of time variation in PE factor exposures---a finding of independent interest for the asset-pricing literature.
-
-\textbf{Age-varying exposures along the fund life.} Vintage buckets let factor loadings vary across cohorts, but PE risk arguably varies at least as much over a fund's \emph{own} life. A young fund is illiquid, partly drawn, and carries conservatively marked positions---a low measured market exposure during the J-curve; as portfolio companies mature and approach exit, the position behaves more like levered public equity, with higher exposure. This motivates loadings that depend on fund age \(a\) rather than, or in addition to, vintage. Writing \(a_{i,t}\) for the age of fund \(i\) at calendar quarter \(t\), the one-period SDF becomes
-\[
-M_{t-1,t}(\theta)=\frac{1}{1+\alpha+\beta(a_{i,t})^\prime f_t},
-\]
-with \(\beta(\cdot)\) a step function over age buckets or a smooth path regularized by the same fused-lasso or shrinkage penalty applied along the age axis. Identification comes from observing many funds at each age and from the within-fund time series of the Euler block, and the holdout loss arbitrates pooled-\(\beta\) vs.\ vintage-\(\beta\) vs.\ age-\(\beta\) vs.\ strategy-\(\times\)-age-\(\beta\) just as before. A model with age-varying \(\beta\) that lowers the holdout loss is direct evidence of a life-cycle in PE factor exposure---an effect of independent economic interest and, plausibly, the first-order form of time variation.
-
-\textbf{An age--period--cohort caveat.} Fund age, calendar period, and vintage are linearly dependent (period \(=\) vintage \(+\) age), the classic age--period--cohort collinearity, so one cannot freely include linear age, vintage, and calendar effects at once without a normalization. Here the macro ``period'' dimension is already carried by the factor realizations \(f_t\) inside the SDF, so age-\(\beta\) and vintage-\(\beta\) are separated only through the factor structure and the nonlinearity of the SDF, not through a free linear trend. The practical implication is to avoid stacking unrestricted linear vintage and age exposures simultaneously: identify one life-cycle axis at a time, or tie the two together with the shrinkage path above, and let the holdout loss decide whether the extra axis earns its parameters.
-
-\section{Literature Positioning}
-
-The paper can be positioned relative to the existing PE SDF literature along four dimensions:
-
-\begin{itemize}
-\item \textbf{From DLP12:} price private cash flows directly with an SDF \citep{DriessenLinPhalippou2012}.
-\item \textbf{From KN16:} use aggregated pricing moments and an NPV-style abnormal-performance object \citep{KortewegNagel2016,KortewegNagel2025}.
-\item \textbf{New here:} a general resampling-based model selection framework that treats the construction of PE pricing moments as a testable design choice. Instead of committing to one grouping, alpha definition, or unseasoned-vintage treatment, the framework varies these choices systematically and ranks them by holdout pricing loss.
-\item \textbf{Also new:} a three-competitor empirical horse race for unseasoned vintages---NAV-adjusted CF, full NAV returns, and hybrid normalized Euler---evaluated within a common resampling framework. The framework can further accommodate vintage-stratified factor models to test for time-varying risk exposures.
-\end{itemize}
-
-The paper is therefore not a repair of any existing SDF approach. It is a new empirical-design paper: how should we build, resample, and validate PE pricing moments when the sample is small and the moment construction is consequential? The resampling framework is the hero; individual design choices---moment type, alpha definition, unseasoned-vintage treatment, vintage-stratified betas---are its inputs.
-
-\section{Empirical Algorithm}
-\label{sec:algorithm}
-
-For each candidate model \(M\), alpha design \(\eta\), unseasoned-vintage approach (A, B, or C), and partition scheme \(\Pi\):
-
-\begin{enumerate}
-\item Partition vintages into seasoned (\(\mathcal V^S\)) and unseasoned (\(\mathcal V^U\)) sets (if using approach A or C).
-\item Choose \(P\) estimation folds and \(h\) holdout folds.
-\item Draw a sampled assignment \(n\) from \(\Pi\).
-\item Estimate or select nuisance objects using only the estimation folds (or only information available at the rolling-origin date).
-\item Build fold cash-flow portfolios and fold pricing moments \(m_{n,r}(\theta;M,\eta)\).
-\item Estimate \(\hat\theta_n(M,\eta,\Pi)\) on the \(P\) estimation folds.
-\item Evaluate the fitted model on the holdout fold(s).
-\item Repeat over many sampled assignments.
-\item Rank model-design pairs by average holdout pricing loss.
-\end{enumerate}
-
-Alongside the mean holdout loss, report diagnostics that help interpret the ranking:
-
-\begin{itemize}
-\item median and dispersion of holdout losses,
-\item dispersion of \(\hat\theta_n\) across assignments,
-\item frequency of non-convergence,
-\item frequency of boundary or exploding-alpha solutions,
-\item separate holdout losses for \(\mathcal V^S\) and \(\mathcal V^U\),
-\item sensitivity of results to within-vintage resampling versus shuffled vintage-year portfolios.
-\end{itemize}
-
-\subsection{Inference for score differences}
-\label{sec:inference}
-
-Model rankings should be accompanied by uncertainty measures. For two model-design pairs \(a\) and \(b\), compute their losses on the same sampled split \(n\) and form the paired difference
-\[
-d_n(a,b)=S_n(a)-S_n(b).
-\]
-The mean \(\bar d(a,b)\) estimates the score gap, while the dispersion of \(d_n(a,b)\) gives a standard error or bootstrap confidence interval for whether the gap is economically and statistically meaningful. Pairing matters because both models face the same split, vintage composition, factor realizations, and holdout funds; comparing paired differences removes a large amount of resampling noise. Since funds may be dependent within vintage years, strategies, or GP families, the bootstrap should resample at the relevant cluster level where identifiers are available (e.g., vintage, strategy-vintage cell, or GP). Boundary-alpha solutions should be reported as a paired diagnostic as well: if one model wins only because it frequently lands on the alpha boundary, that ranking is not economically interpretable.
-
-\paragraph{The resampled-\texorpdfstring{\(t\)}{t} statistic is anti-conservative.}
-The naive standard error treats the \(N\) paired differences \(\{d_n\}\) as independent and uses \(\widehat{\mathrm{Var}}(\bar d)=S_d^2/N\), where \(S_d^2\) is their sample variance. They are not independent: every split reuses the same underlying funds, so the splits overlap heavily and \(\mathrm{Cov}(d_n,d_m)>0\). As a consequence \(S_d^2/N\to 0\) as the number of \emph{draws} \(N\) grows with the fund sample held fixed, even though the genuine uncertainty---which lives in the finite, dependent cross-section of funds---does not shrink. Taken literally, the naive \(t\)-statistic can be pushed to any level of ``significance'' simply by drawing more partitions. This is the cross-validation variance problem of \citet{BengioGrandvalet2004}, who show that no unbiased estimator of the variance of a \(K\)-fold or resampled score exists.
-
-\paragraph{A corrected resampled-\texorpdfstring{\(t\)}{t} variance.}
-A practical remedy is the corrected variance of \citet{NadeauBengio2003}, which inflates the naive estimator by a term that does not vanish in \(N\):
-\[
-\widehat{\mathrm{Var}}_{\mathrm{corr}}(\bar d)
-=\left(\frac{1}{N}+\frac{n_{\mathrm{test}}}{n_{\mathrm{train}}}\right)S_d^2 .
-\]
-Here \(n_{\mathrm{test}}/n_{\mathrm{train}}\) is the ratio of held-out to estimation observations, which in the balanced within-vintage design with \(P\) estimation and \(h\) holdout cells is simply \(h/P\) by fund count. The correction term \((h/P)\,S_d^2\) is the irreducible component the naive estimator omits: in the baseline \(P=p_{\max},\,h=1\) it equals \(S_d^2/p_{\max}\), so the corrected standard error converges to a positive limit rather than to zero. Paired model comparisons should be reported with this corrected \(t\), not the naive one.
-
-\paragraph{A nested cluster bootstrap.}
-The corrected \(t\) still assumes exchangeable observations; PE funds are not, being dependent within vintage, strategy, and GP. The more faithful alternative is a nested cluster bootstrap that captures both the finite-sample fund uncertainty and this dependence: resample funds with replacement at the relevant cluster level (vintage, strategy-vintage cell, or GP), and for each bootstrap sample rerun the entire pipeline---redraw partitions, re-estimate \(\hat\theta\), recompute the holdout scores---taking the distribution of \(\bar d^{\,\ast}(a,b)\) across bootstrap replicates as the sampling distribution of the score gap. This is markedly more expensive, because it resamples over partitions \emph{within} each bootstrap draw; the \citet{NadeauBengio2003} correction is the cheap analytic stand-in, and agreement between the two is itself reassuring. Finally, because the goal is to rank several models rather than to compare a single pair, the per-pair tests should be embedded in a multiplicity-aware procedure---reporting a model confidence set of statistically indistinguishable top models rather than a single ``winner'' whose lead is within the corrected standard error.
-
-\appendix
+the cumulative-SDF price of the realized tail, renormalized to date \(s\). The appraisal gap \(\mathrm{NAV}_{s,i}-\widehat{\mathrm{NAV}}_{s,i}(\theta)\) then has a benchmark term built only from realized flows. This is a diagnostic rather than a comparison metric---it asks whether a fitted SDF rationalizes reported NAVs as fair risk-adjusted values, and it localizes \emph{where} (which strategies, ages, or vintages) appraisals and model values diverge, which is exactly the smoothing and bias that Approaches~A and~B are most exposed to.
 
 \section{Detailed Comparison of Pricing Moments}
 \label{app:moment_details}
 
-This appendix provides a detailed comparison of the dollar NPV and PME-ratio moment families. The main text uses the NPV moment as the baseline; the PME-ratio serves as a robustness check.
+This appendix compares the dollar NPV and PME-ratio moment families. The main text uses the (hybrid) NPV moment as the baseline; the PME-ratio serves as a robustness check on \(\mathcal V^S\).
 
 \paragraph{Dollar NPV moment.}
-For seasoned funds in fold cell \(j\) in split \(n\), aggregate discounted cash flows into one
+For seasoned funds of vintage \(v\), aggregate discounted cash flows into one
 cumulative pricing error,
 \[
-m^{\mathrm{NPV}}_{n,j}(\theta;M,\eta)
-=\sum_{i\in C_{n,j}} w_i\sum_{t=0}^{T_i}\Psi_{0,t}(\theta;M,\eta)\,CF_{t,i},
+m^{\mathrm{NPV}}_{v}(\theta;M,\eta)
+=\sum_{i\in \mathcal I_v} w_i\sum_{t=0}^{T_i}\Psi_{0,t}(\theta;M,\eta)\,CF_{t,i},
 \qquad CF_{t,i}=D_{t,i}-X_{t,i},
 \]
 where \(X_{t,i}\) are contributions, \(D_{t,i}\) are distributions, any small
 residual terminal NAV is handled according to the design convention in
 \(\eta\), and \(\Psi_{0,t}\) is the cumulative SDF. At
-the population parameter, \(E[m^{\mathrm{NPV}}_{n,j}(\theta_0)]=0\): the
+the population parameter, \(E[m^{\mathrm{NPV}}_{v}(\theta_0)]=0\): the
 risk-adjusted NPV of fund cash flows vanishes.
 
 \emph{Pros.}
 (i)~\emph{Linearity} in cash flows yields tractable GMM derivatives,
 influence functions, and CLT-based inference.
-(ii)~\emph{Additivity} across funds makes the fold structure of
-Section~\ref{sec:algorithm}, as well as subsampling and the bootstrap,
-transparent: the cell moment is the sum of fund-level moments, and the split
-moment is the sum of cell moments.
+(ii)~\emph{Additivity} across funds makes the pooled-moment and block
+structure of Section~\ref{sec:algorithm}, as well as the U-statistic score
+and the bootstrap, transparent: the vintage moment is the mean of fund-level
+moments.
 (iii)~\emph{Compatibility with the normalized Euler NAV restriction} for
 unseasoned vintages: the seasoned block remains a linear cash-flow NPV,
 while the unseasoned block uses lagged-scale one-period Euler errors rescaled
@@ -809,14 +634,16 @@ contributes ten times more to the moment than a \$100M fund with the same
 relative error, so efficient GMM weighting implicitly tilts the estimator
 toward mega-funds. The influence function is mechanically heavy-tailed in
 the fund-size distribution rather than in genuine pricing disagreement.
+(The per-committed-dollar normalization \(w_i=1/K_i\) of the main text
+removes this tilt at the fund level.)
 (ii)~\emph{Dollar-denominated comparisons across vintages} with
 heterogeneous aggregate commitments are not directly meaningful; normalization
 is left to the econometrician.
 (iii)~\emph{Sign cancellation.} A cross-sectional mean of zero is consistent
 with systematic under-pricing of one subgroup offsetting over-pricing of
 another, which the scalar moment cannot detect. This motivates the
-fine-grained fold structure but does not eliminate the concern within a
-fold.
+vintage-vector construction of Section~\ref{sec:vintage_moments} but does not
+eliminate the concern within a vintage.
 
 \paragraph{PME-ratio moment.}
 Define the risk-adjusted PME of fund \(i\) as
@@ -825,17 +652,17 @@ Define the risk-adjusted PME of fund \(i\) as
 =\frac{\sum_{t}\Psi_{0,t}(\theta;M,\eta)\,D_{t,i}}
 {\sum_{t}\Psi_{0,t}(\theta;M,\eta)\,X_{t,i}},
 \]
-from which two natural cell-level moments follow. The \emph{average-PME}
+from which two natural vintage-level moments follow. The \emph{average-PME}
 form is
 \[
-m^{\mathrm{PME}}_{n,j}(\theta)
+m^{\mathrm{PME}}_{v}(\theta)
 =
-|C_{n,j}|^{-1}
-\sum_{i\in C_{n,j}}\bigl(\mathrm{PME}_i(\theta)-1\bigr),
+n_v^{-1}
+\sum_{i\in \mathcal I_v}\bigl(\mathrm{PME}_i(\theta)-1\bigr),
 \]
 and the \emph{pooled-PME} form is
 \[
-m^{\mathrm{PME\text{-}pool}}_{n,j}(\theta)
+m^{\mathrm{PME\text{-}pool}}_{v}(\theta)
 =
 \frac{\sum_{i,t}\Psi_{0,t}(\theta)D_{t,i}}
 {\sum_{i,t}\Psi_{0,t}(\theta)X_{t,i}}
@@ -900,11 +727,11 @@ Integrating unseasoned vintages \(\mathcal V^U\) into a PME framework typically
 requires treating the latest \(\mathrm{NAV}_{T_i,i}\) as a terminal distribution
 and discounting it back to the fund inception date --- exactly the
 long-horizon discounting mechanism that the normalized Euler block is designed
-to avoid.
+to avoid. The PME robustness check is therefore restricted to \(\mathcal V^S\).
 (iv)~\emph{Inference.} Upper-tail skewness in \(\mathrm{PME}_i\) (funds can
 return many times their capital, but cannot lose more than it) distorts
 CLT-based standard errors and \(t\)-statistics unless explicitly
-robustified, e.g., by bootstrapping the cell-level moment or by employing
+robustified, e.g., by bootstrapping the vintage-level moment or by employing
 median-based loss functions.
 
 \section{Why We Do Not Discount Euler Errors to Time Zero}
@@ -914,7 +741,7 @@ Let
 \[
 \eta^{\$}_{t,i}(\theta)
 =
-\Psi_{t-1,t}(\theta)\bigl(CF_{t,i}+\mathrm{NAV}_{t,i}\bigr)
+M_{t-1,t}(\theta)\bigl(CF_{t,i}+\mathrm{NAV}_{t,i}\bigr)
 -\mathrm{NAV}_{t-1,i}
 \]
 denote the dollar NAV Euler error corresponding to the quarter-end net-cash-flow approximation. Multiplying \(\eta^{\$}_{t,i}(\theta)\) by \(\Psi_{0,t-1}(\theta)\) and summing would yield a valid moment, and for fully liquidated funds it would telescope. But for the young funds of actual interest it would recreate the long-horizon terminal-NAV term:
@@ -927,7 +754,38 @@ denote the dollar NAV Euler error corresponding to the quarter-end net-cash-flow
 \;-\;
 \mathrm{NAV}_{0,i}.
 \]
-For an unseasoned fund, \(\mathrm{NAV}_{T_i,i}\neq 0\), so discounting the quarterly Euler errors back to time zero reconstructs exactly the large terminal-NAV present-value term that generates instability. The normalized construction in Section~\ref{sec:euler_approach} sacrifices path-by-path telescoping in order to preserve the short-horizon dependence of the young-fund block on the candidate SDF.
+For an unseasoned fund, \(\mathrm{NAV}_{T_i,i}\neq 0\), so discounting the quarterly Euler errors back to time zero reconstructs exactly the large terminal-NAV present-value term that generates instability. The normalized construction in Section~\ref{sec:euler_block} sacrifices path-by-path telescoping in order to preserve the short-horizon dependence of the young-fund block on the candidate SDF.
+
+\section{Research Agenda}
+\label{app:agenda}
+
+This appendix collects extensions that the framework accommodates but the main paper does not pursue. Each is a well-posed follow-up project; none is required for the buyout application.
+
+\subsection{Vintage-stratified factor models}
+\label{app:vintage_betas}
+
+Instead of one \(\beta\) across all vintages, define vintage-bucket-specific loadings \(\beta_b\) for buckets \(b\in\{B_1,\ldots,B_K\}\) collecting contiguous vintage windows. The parameter vector becomes \(\theta=(a,\beta_{B_1},\ldots,\beta_{B_K})^\prime\) and the blocked framework applies without modification: the held-out loss automatically penalizes overfitting, and the identification requirement becomes enough estimation vintages with linearly independent sensitivities \emph{per bucket's parameters}---a binding constraint when whole blocks of vintages are held out, so bucket models need wider estimation sets or stronger pooling.
+
+\emph{Floating buckets.} Overlapping windows centered on each vintage year (e.g., a five-year window centered on 2010) give smooth estimates of how exposures evolve without sharp boundary effects; the window width is a tunable design parameter ranked by held-out loss.
+
+\emph{Strategy-specific buckets.} Buckets defined jointly over vintage year and strategy (``2002 buyout factor,'' ``2020 venture factor'') let the held-out loss compare pooled versus bucket \(\beta\), narrow versus wide windows, and strategy-specific versus pooled buckets.
+
+\emph{Partial pooling and fused exposure paths.} Free buckets get noisy quickly. Two regularizations keep the bucket interpretation while stabilizing the path, in the spirit of regularized GMM for time-varying parameter models \citep{CuiFengHong2024}: hierarchical shrinkage \(\beta_b=\bar\beta+u_b\) with \(\sum_b\|u_b\|_2^2\) penalized, and a fused-lasso path penalty \(\lambda\sum_{b\ge 2}\|\beta_b-\beta_{b-1}\|_1\) that encourages neighboring buckets to share an exposure unless the data support a break. The tuning parameter \(\lambda\) is another design choice ranked by held-out loss.
+
+\subsection{Age-varying exposures along the fund life}
+\label{app:age_betas}
+
+PE risk arguably varies at least as much over a fund's own life as across cohorts: a young fund is illiquid, partly drawn, and conservatively marked (low measured exposure during the J-curve); near exit it behaves more like levered public equity. Writing \(a_{i,t}\) for fund age, the one-period SDF becomes \(M_{t-1,t}(\theta)\) with loadings \(\beta(a_{i,t})\), a step function over age buckets or a smooth path regularized along the age axis. Identification comes from observing many funds at each age and from the within-fund time series of the Euler block; the held-out loss arbitrates pooled versus vintage versus age versus strategy-\(\times\)-age loadings. A caveat: fund age, calendar period, and vintage are linearly dependent (period \(=\) vintage \(+\) age), the classic age--period--cohort collinearity. The macro ``period'' dimension is carried by the factor realizations inside the SDF, so age and vintage loadings are separated only through the factor structure and the SDF's nonlinearity---avoid stacking unrestricted linear vintage and age exposures simultaneously, identify one life-cycle axis at a time, or tie them together with the shrinkage path above.
+
+\subsection{Alternative alpha definitions}
+\label{app:alt_alpha}
+
+The design vector can carry alpha definitions beyond the cumulative baseline: (i)~the DLP12-style per-period intercept alpha, retained as a comparison and the main consumer of the robust-inference toolkit of Appendix~\ref{app:alpha}; (ii)~an error-term alpha (\(\mathbb E[\epsilon]\)) as in the machine-learning approach of \citet{TauschPietz2024}. The empirical question is not only which SDF factors perform best, but which alpha definition yields stable and predictive PE pricing moments.
+
+\subsection{Moment weighting and block refinements}
+\label{app:weighting}
+
+The baseline uses equal vintage weights and a diagonal quadratic form. Refinements include value weights, shrinkage or block-cluster weighting toward efficient GMM weighting of the vintage vector, and strategy--vintage cells in multi-strategy samples (with the rank condition then counted at the cell level). On the holdout side, the block length \(d\) and buffer \(g\) can be studied as design parameters in their own right---including data-driven feasibility rules tied to the Jacobian condition number per block---and random (non-contiguous) vintage subsets provide a robustness check on the contiguity choice at the cost of weaker dependence control.
 
 \bibliographystyle{plainnat}
 \bibliography{resampling_refs}
