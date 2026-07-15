@@ -1,12 +1,12 @@
 # Fdb version 3
-["bibtex historical_transportability_note"] 1784123488 "historical_transportability_note.aux" "historical_transportability_note.bbl" "historical_transportability_note" 1784123489
+["bibtex historical_transportability_note"] 1784127203 "historical_transportability_note.aux" "historical_transportability_note.bbl" "historical_transportability_note" 1784127204
   "/usr/local/texlive/2017/texmf-dist/bibtex/bst/natbib/plainnat.bst" 1480098435 26816 ffe5423d2019860bad9f54bc402fac15 ""
-  "historical_transportability_note.aux" 1784123488 6364 e486298e70c74163f6ad7164b92c1d2e ""
-  "resampling_refs.bib" 1784123159 7233 a758985697b98294bbd1974315235b5d ""
+  "historical_transportability_note.aux" 1784127203 7311 078ccabb76e7e13fcd15421891e8e8fb ""
+  "resampling_refs.bib" 1784125265 7517 3f2d4ab732bedc98eb9acb9dd0ecb23d ""
   (generated)
-  "historical_transportability_note.bbl"
   "historical_transportability_note.blg"
-["pdflatex"] 1784123488 "historical_transportability_note.tex" "historical_transportability_note.pdf" "historical_transportability_note" 1784123489
+  "historical_transportability_note.bbl"
+["pdflatex"] 1784127203 "historical_transportability_note.tex" "historical_transportability_note.pdf" "historical_transportability_note" 1784127204
   "/usr/local/texlive/2017/texmf-dist/fonts/enc/dvips/base/8r.enc" 1480098666 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2017/texmf-dist/fonts/enc/dvips/base/ec.enc" 1480098666 12642 9742585e52c5b37e57ae9249e0b2585b ""
   "/usr/local/texlive/2017/texmf-dist/fonts/enc/dvips/newtx/ntx-ec-tlf.enc" 1480098668 2880 847ca622ad468c3dafba6a3f9d89a636 ""
@@ -157,12 +157,12 @@
   "/usr/local/texlive/2017/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1495593472 2350277 a699055bee05bf8a40b0504752487295 ""
   "/usr/local/texlive/2017/texmf-var/web2c/pdftex/pdflatex.fmt" 1521390409 4129592 17dd01f44dc5d311c7c930138a22c636 ""
   "/usr/local/texlive/2017/texmf.cnf" 1495593465 577 2b71d4d888f9e5560b2e99985915a9fa ""
-  "historical_transportability_note.aux" 1784123488 6364 e486298e70c74163f6ad7164b92c1d2e ""
-  "historical_transportability_note.bbl" 1784123488 3582 a18c2fc8a6563cb689358c964af008ca "bibtex historical_transportability_note"
-  "historical_transportability_note.out" 1784123488 2849 f57b2116bd9d2c5e599305a6e5ea2fd5 ""
-  "historical_transportability_note.tex" 1784123462 35598 33cf0b90f29170353b816978abf8a7f6 ""
+  "historical_transportability_note.aux" 1784127203 7311 078ccabb76e7e13fcd15421891e8e8fb ""
+  "historical_transportability_note.bbl" 1784127203 4124 dfa6e5bc6b443c703c1e1be5ec5586aa "bibtex historical_transportability_note"
+  "historical_transportability_note.out" 1784127203 3075 2434ed8a4dd33a5dcf135ac378b7064b ""
+  "historical_transportability_note.tex" 1784127192 47561 628bf3b5372bc32d4e4fcd36dfcaa1c3 ""
   (generated)
   "historical_transportability_note.log"
+  "historical_transportability_note.aux"
   "historical_transportability_note.pdf"
   "historical_transportability_note.out"
-  "historical_transportability_note.aux"

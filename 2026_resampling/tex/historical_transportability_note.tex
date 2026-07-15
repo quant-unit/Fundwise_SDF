@@ -76,7 +76,8 @@ maturity delay.
 The private-equity pricing literature has developed several ways to recover
 risk and performance from irregular, non-traded cash flows.
 \citet{DriessenLinPhalippou2012} estimate factor exposures and abnormal
-performance directly from fund cash flows, while
+performance directly from fund cash flows --- the discounting framework our
+estimator adopts throughout --- while
 \citet{AngChenGoetzmannPhalippou2018} recover a time series of private-equity
 returns from limited-partner cash flows. \citet{KortewegNagel2016} use a
 generalized public-market-equivalent approach to risk-adjust venture-capital
@@ -141,19 +142,15 @@ The paper makes four contributions.
 
 \subsection{The Private-Capital Data Trilemma}
 
-The empirical problem has three connected parts:
-\begin{enumerate}
-\item \textbf{Few vintages.} The relevant time-series sample contains only a
-      few dozen vintage years, and overlapping fund lives make its effective
-      temporal dimension smaller than its vintage count.
-\item \textbf{Historical relevance.} Adding older vintages reduces sampling
-      variance only if their pricing relations transport to the target period.
-      Under temporal instability, a precisely estimated full-history SDF can
-      be precisely wrong for a current fund.
-\item \textbf{Delayed outcomes.} The newest vintages contain the most current
-      economic information but do not yet reveal their full realized cash
-      flows. Discarding them mechanically makes a current estimator historical.
-\end{enumerate}
+The constraint introduced above has three connected parts: \emph{few
+vintages}, because a few dozen vintage years with overlapping fund lives carry
+an effective temporal dimension smaller than the vintage count;
+\emph{historical relevance}, because adding older vintages reduces sampling
+variance only if their pricing relations transport to the target period ---
+under instability a precisely estimated full-history SDF can be precisely
+wrong for a current fund; and \emph{delayed outcomes}, because the newest
+vintages contain the most current economic information but have not yet
+revealed their realized cash flows.
 
 These are not three independent nuisances. Shortening the estimation window
 raises temporal relevance but increases sampling uncertainty and concentrates
@@ -166,14 +163,12 @@ combination that produces the lowest forward realized-cash-flow loss.
 \subsubsection{What the data can and cannot establish}
 
 Thirty vintage years do not support a clean omnibus decision between a
-time-invariant SDF and every form of temporal instability. A failure to reject
-stability may reflect low power, while a local episode of poor performance need
+time-invariant SDF and every form of temporal instability: a failure to reject
+stability may reflect low power, and a local episode of poor performance need
 not identify a permanent break. The paper therefore reports economically
 interpretable loss differences, transport curves, and model sets across a
-small pre-specified design space. Statistical tests are companions to this
-evidence, not the sole basis for declaring a regime change. In the terminology
-of the forecasting literature, local forecast performance is the target;
-parameter instability is one possible explanation for its variation
+small pre-specified design space, treating local forecast performance as the
+target and parameter instability as one possible explanation for its variation
 \citep{Rossi2021}.
 
 \subsubsection{The cost of ignoring recent vintages}
@@ -188,34 +183,91 @@ solution. Whether short-horizon Euler information improves forward pricing is
 an empirical question.
 
 \subsection{Pricing Moments}
+\label{sec:moments}
+
+A candidate SDF specification $M$ fixes a parametric family of one-period
+realizations $M_{t-1,t}(\theta)$ with $\theta\in\Theta_M$; dependence on $M$
+is left implicit whenever it is clear from context. Every specification in
+this paper belongs to the benchmark-discounting family of
+\citet{DriessenLinPhalippou2012}: the one-period discount factor is the
+inverse gross return of a levered public benchmark,
+\[
+M_{t-1,t}(\beta)
+=
+\frac{1}{1+r_{f,t}+\beta\,(R_{m,t}-r_{f,t})},
+\]
+so that $\theta=\beta$, with the multifactor case replacing the single excess
+return by a vector of factor excess returns. Setting $\beta=0$ prices the
+risk-free asset and $\beta=1$ a self-financing public-market investment
+exactly, period by period: benchmark pricing is built into the functional
+form rather than imposed through auxiliary moments, and no separate
+price-of-risk parameter exists. The abnormal-return intercept of the
+original method is fixed at zero; Section~\ref{sec:pricinglaw} states the
+resulting estimand.\footnote{$\Theta_M$ bounds $\beta$ so that the levered
+benchmark return exceeds $-100\%$ in every sample quarter, keeping all
+discount factors positive.} Let
+$\Psi_{0,t}(\theta)=\prod_{s=1}^{t}M_{s-1,s}(\theta)$ denote the realized
+discount factor from fund inception to quarter $t$, with $\Psi_{0,0}=1$, so
+that the time-zero capital call enters undiscounted by construction.
 
 \subsubsection{Seasoned vintages}
 
-For seasoned fund $i$ of vintage $v$, let the realized pricing error per dollar
-committed be
+For seasoned fund $i$ of vintage $v$ with committed capital $K_i$, net dated
+cash flows $CF_{t,i}$ (calls negative, distributions positive), and last
+observed cash flow at $T_i$, the realized pricing error per committed dollar
+is
 \[
-g_i^S(\theta;M)
+g_i^S(\theta)
 =
-\frac{1}{K_i}\sum_{t=0}^{T_i}\Psi_{0,t}(\theta;M)CF_{t,i},
+\frac{1}{K_i}\sum_{t=0}^{T_i}\Psi_{0,t}(\theta)\,CF_{t,i},
 \]
-and let $\epsilon_v^S(\theta;M)$ be its pooled vintage mean. The time-zero
-capital call enters undiscounted. The realized-cash-flow block is the common
-estimation and evaluation currency throughout the paper.
+and the seasoned vintage moment is the equal-weighted fund mean
+$\epsilon_v^S(\theta)=N_v^{-1}\sum_{i\in v}g_i^S(\theta)$, where $N_v$ is the
+number of admissible funds in vintage $v$; commitment-weighted vintage means
+are a pre-specified robustness variant.
+
+The same object defines the paper's common evaluation currency. The realized
+evaluation loss of a parameter $\theta$ on a seasoned vintage $v$ is
+\[
+\widehat U_v^{\mathrm{real}}(\theta)=\epsilon_v^S(\theta)^2,
+\]
+the squared vintage-mean realized pricing error. Squaring the vintage mean,
+rather than averaging squared fund-level errors, targets systematic
+mispricing and prevents idiosyncratic fund noise --- which no SDF can price
+--- from dominating design comparisons; absolute rather than squared vintage
+errors are a robustness check. Because $\Psi_{0,t}$ compounds many quarterly
+SDF realizations, a small number of extreme discount-factor paths can
+dominate both estimation and evaluation. We therefore report the
+concentration of loss contributions across vintages and a winsorized-loss
+robustness variant.
 
 \subsubsection{Unseasoned vintages}
 
 For an unseasoned fund, the full NPV moment is unavailable without valuing the
 residual claim. The baseline bridge uses the short-horizon NAV Euler error
 \[
-e^H_{t,i}(\theta;M)
+e^H_{t,i}(\theta)
 =
-M_{t-1,t}(\theta;M)R^H_{t,i}-1,
+M_{t-1,t}(\theta)R^H_{t,i}-1,
 \]
 where $R^H_{t,i}$ is the quarterly Horizon-IRR return accounting for interim
-calls and distributions. Fund-quarter errors are aggregated and mapped into a
-vintage moment $\epsilon_v^U(\theta;M)$ using a pre-specified duration
-normalization. They are never discounted back to inception and never enter the
-comparison score. Reported NAVs are noisy appraisals, so this block is treated
+calls and distributions. The unseasoned vintage moment scales the pooled
+fund-quarter mean into the units of the seasoned block:
+\[
+\epsilon_v^U(\theta)
+=
+\bar D\cdot
+\frac{1}{n_v^U}\sum_{(i,t)\in v}e^H_{t,i}(\theta),
+\]
+where $n_v^U$ is the number of admissible fund-quarters of vintage $v$ and
+$\bar D$ is the median discounted duration, in quarters, of seasoned funds in
+the estimation sample, fixed before any out-of-sample comparison. The scaling
+has a first-order justification: a pricing error of $e$ per quarter sustained
+over a fund's life accumulates to a lifetime NPV error of approximately
+duration times $e$, so both blocks are expressed in NPV per committed dollar
+and can legitimately share one set of relevance weights. Euler errors are
+never discounted back to inception and never enter the comparison score.
+Reported NAVs are noisy appraisals, so this block is treated
 as a candidate information bridge rather than a traded-return restriction that
 must hold exactly. State-space corrected NAVs are a robustness extension, not
 the baseline \citep{brown2023nowcasting}.
@@ -253,22 +305,33 @@ parameters from a few dozen vintages. Setting $h=\infty$ removes time decay;
 setting $b=\infty$ removes state conditioning. Hard rolling windows are
 obtained by replacing the time-decay component with an indicator.
 
-Let $q_v$ be a pre-specified reliability weight and normalize $w_{v,T}q_v$ to
-sum to one within the relevant estimation block. For candidate unseasoned
-treatment $A\in\{\mathrm{Exclude},\mathrm{Hybrid}\}$, estimate
+Let $q_v$ be a reliability weight, set to the vintage fund count $N_v$ in the
+baseline; vintage-equal weighting ($q_v=1$) is a pre-specified robustness
+variant. The products $w_{v,T}q_v$ are normalized to sum to one jointly
+across all vintages entering the objective, seasoned and unseasoned alike, so
+that a vintage's relevance does not depend on the block through which it
+enters. For candidate unseasoned treatment
+$A\in\{\mathrm{Exclude},\mathrm{Hybrid}\}$, estimate
 \[
 \widehat\theta_T(M,h,b,A)
 =
 \arg\min_{\theta\in\Theta_M}
 \left\{
 \sum_{v\in\mathcal V_T^S}\widetilde w_{v,T}
-  \epsilon_v^S(\theta;M)^2
+  \epsilon_v^S(\theta)^2
 +
 \mathbf 1\{A=\mathrm{Hybrid}\}
 \sum_{v\in\mathcal V_T^U}\widetilde w_{v,T}
-  \epsilon_v^U(\theta;M)^2
+  \epsilon_v^U(\theta)^2
 \right\}.
 \]
+We collect a complete design in the tuple $c=(M,h,b,A)$ and write
+$\widehat\theta_T(c)$ below. Because unseasoned vintages are by construction
+the most recent, time decay concentrates weight on the Euler block: under
+short half-lives the hybrid objective becomes increasingly NAV-driven. Every
+configuration therefore reports its realized unseasoned weight share
+$\pi_U(T;h,b)=\sum_{v\in\mathcal V_T^U}\widetilde w_{v,T}$, which makes this
+interaction visible rather than leaving it implicit in the kernel.
 
 The design sequence moves from transparent to reasonably sophisticated while
 remaining feasible in a thin vintage panel:
@@ -284,11 +347,14 @@ A regularized time-varying parameter path of the form
 \[
 \min_{\{\theta_v\}}
 \sum_v\epsilon_v(\theta_v)^2
-+\lambda\sum_{v>1}\|\theta_v-\theta_{v-1}\|_2^2
++\kappa\sum_{v>1}\|\theta_v-\theta_{v-1}\|_2^2
 \]
-is the principal sophistication check \citep{CuiFengHong2024}. It is not the
-headline estimator unless it produces a clear forward improvement over the
-lower-dimensional weighting schemes.
+is the principal sophistication check \citep{CuiFengHong2024}. Its
+target-date parameter is the final element of the estimated path, and
+$\kappa$ is selected on strictly earlier origins under the sequential
+protocol of Section~\ref{sec:forward}. It is not the headline estimator
+unless it produces a clear forward improvement over the lower-dimensional
+weighting schemes.
 
 Every candidate must satisfy two feasibility restrictions before it can be
 scored: the weighted moment Jacobian must be sufficiently well conditioned,
@@ -296,20 +362,47 @@ and the weight concentration must leave an effective vintage count
 \[
 V_{\mathrm{eff}}(T)=\frac{1}{\sum_v\widetilde w_{v,T}^2}
 \]
-comfortably above the number of SDF parameters. This prevents an apparently
-local estimator from being driven by one historically similar vintage.
+comfortably above the number of SDF parameters. The count is computed both
+over all vintages and, with weights renormalized within the block, over the
+seasoned block alone; the threshold must hold for the seasoned block, since
+realized cash flows anchor identification. This prevents an apparently local
+estimator from being driven by one historically similar vintage or propped up
+by appraisal-based moments alone.
+
+\subsubsection{Pricing law versus performance measurement}
+\label{sec:pricinglaw}
+
+The estimator is a pricing-law estimator, not a performance measure. With the
+abnormal-return intercept fixed at zero, average in-window performance is
+absorbed into the exposure estimate through the premium channel: to first
+order the fitted exposure is $\beta^*\approx\beta+\alpha/\lambda$, where
+$\alpha$ is average abnormal performance and $\lambda$ the factor premium.
+The estimand is therefore the composite pricing-law beta --- the leverage on
+the public benchmark that best rationalizes the weighted history --- not a
+pure risk exposure. Freeing the intercept would separate the two in
+principle, but a per-period intercept compounded over decade-long fund lives
+is fragile in a thin vintage panel, and we exclude it by design. Statements
+about risk-adjusted performance in this paper therefore refer exclusively to
+out-of-window residuals --- realized pricing errors of vintages that did not
+enter, or received negligible weight in, the estimation sample. In-window
+residuals are diagnostics of fit, never evidence of abnormal performance.
+Section~\ref{sec:transportmeaning} turns this absorption into a testable
+implication for out-of-window residuals.
 
 \subsection{Historical Transportability}
 
 \subsubsection{The transportability matrix}
 
 Let $s$ index a historical estimation window and $t$ an excluded, fully
-realized evaluation vintage. Define the NAV-free transport loss
+realized evaluation vintage. Throughout this subsection $s$ denotes the
+window's information end date; where present, the time-decay and state
+kernels are centered on $s$ and $z_s$, and $A=\mathrm{Exclude}$ is imposed.
+Define the NAV-free transport loss
 \[
-L_{s\rightarrow t}(M,h,b)
+L_{s\rightarrow t}(c)
 =
 \widehat U_t^{\mathrm{real}}\!\left(
-  \widehat\theta_s(M,h,b,\mathrm{Exclude})
+  \widehat\theta_s(c)
 \right),
 \]
 where the evaluation score uses only realized fund cash flows. The exclusion
@@ -320,11 +413,12 @@ windows and evaluation vintages yields a
 columns are evaluation vintages, and each entry measures how well a pricing
 law travels across economic time.
 
-Aggregating by signed temporal distance $d=t-s$ gives the transport loss curve
+Aggregating by the signed temporal distance $d=t-s$, measured from the window
+end, gives the transport loss curve
 \[
-\mathcal T_{M,h}(d)
+\mathcal T_c(d)
 =
-\frac{1}{N_d}\sum_s L_{s\rightarrow s+d}(M,h,b).
+\frac{1}{N_d}\sum_s L_{s\rightarrow s+d}(c).
 \]
 Positive distances measure forward transportability; negative distances
 measure backward transportability. Only the former has a real-time forecasting
@@ -342,39 +436,104 @@ structural-break model.
 Adjacent vintage moments share public-factor histories because their funds
 remain active for many years. We therefore measure pairwise calendar-time
 overlap rather than treating vintage labels as independent by construction.
-Let $a_{v,t}$ denote vintage $v$'s discounted-cash-flow or Jacobian exposure to
-calendar period $t$. Define
+Let $a_{v,t}$ denote vintage $v$'s absolute discounted cash-flow exposure to
+calendar period $t$, evaluated at reference parameter values fixed in
+advance.\footnote{A Jacobian-based exposure measure yields an alternative
+overlap matrix and is reported as a variant.} Define
 \[
 O_{vv'}
 =
 \frac{\sum_t a_{v,t}a_{v',t}}
 {\sqrt{\sum_ta_{v,t}^2}\sqrt{\sum_ta_{v',t}^2}}.
 \]
-The overlap matrix is reported alongside the transportability matrix and is
-used to purge near-duplicate evaluation windows where feasible. Because
+The overlap matrix is reported alongside the transportability matrix.
+Estimation--evaluation pairs with overlap above a pre-specified threshold are
+flagged, and headline comparisons are re-reported excluding them. Because
 complete separation would eliminate most of the data, overlap is quantified
 and stress-tested rather than treated as a binary admissibility standard.
 
+\subsubsection{Absorbed premia, omitted factors, and the meaning of transport loss}
+\label{sec:transportmeaning}
+
+The premium channel of Section~\ref{sec:pricinglaw} has a testable
+implication. Let $\widehat\lambda_s$ and $\widehat\lambda_t$ denote the
+realized benchmark premia over the weighted estimation window and over the
+cash-flow-weighted life of evaluation vintage $t$. If true performance is
+$(\alpha,\beta)$, estimation forces
+$\beta^*=\beta+\alpha/\widehat\lambda_s$, and the signed transport residual
+is, to first order and in per-period units,\footnote{NPV residuals per
+committed dollar scale with fund duration; dividing by $\bar D$ of
+Section~\ref{sec:moments} expresses them in the per-period units used here.}
+\[
+\epsilon_t^S\!\left(\widehat\theta_s\right)
+\;\approx\;
+\alpha\left(1-\frac{\widehat\lambda_t}{\widehat\lambda_s}\right),
+\]
+linear in the realized evaluation premium with intercept $\alpha$ and slope
+$-(\beta^*-\beta)$. Under the composite null $\alpha=0$ the line is flat at
+zero. Regressing signed transport residuals on realized evaluation premia is
+therefore both a specification test of the zero-intercept design and, upon
+rejection, a first-order recovery of the split: the intercept estimates
+$\alpha$ and $\beta=\beta^*+\text{slope}$. With few effective windows this
+\emph{premium-exposure diagnostic} is reported with uncertainty bands, as a
+diagnostic rather than a second estimator.
+
+The same channel governs omitted factors. Decompose an omitted factor into
+its projection on the included benchmarks and an orthogonal remainder. The
+spanned component shifts the included exposures by the usual
+omitted-variable term and is harmless for pricing while factor correlations
+are stable. The unspanned premium component is observationally identical to
+$\alpha$: skill and unspanned factor premia are the same object in cash-flow
+data and are absorbed together into $\beta^*$. Three corollaries follow.
+\begin{enumerate}
+\item \textbf{Constant unspanned premia transport.} A stable absorbed
+      component enters $\beta^*$ identically in every window; transport
+      residuals remain mean-zero, and only their variance rises with premium
+      variability. The composite prices without the true factor model.
+\item \textbf{Time-varying unspanned premia are what transport failure
+      detects.} A premium that shifts across regimes makes a window-fitted
+      $\beta^*$ systematically misprice other windows. Loss rising with
+      temporal or state distance therefore has a direct asset-pricing
+      reading, and the premium-exposure diagnostic extends to candidate
+      premia --- realized credit or illiquidity-proxy returns --- to name
+      the missing factor.
+\item \textbf{The time--state kernel is the reduced-form hedge.}
+      Conditioning estimation windows on credit spreads, rates, and
+      valuations estimates the composite locally in states where omitted
+      premia are plausibly similar. The kernel does not claim to know the
+      missing factors; it conditions on their observable proxies.
+\end{enumerate}
+The multifactor menu addresses only the spanned component; the unspanned
+component is invisible inside any single window and visible only through
+transport. This is the information-theoretic limit of cash-flow data, and it
+is why the paper selects on forward transport loss rather than on in-window
+fit.
+
 \subsection{Unseasoned Vintages as Delayed Outcomes}
 
-At historical information date $\tau$, let $A$ denote a bridge for unseasoned
-vintages and estimate
+At historical information date $\tau$, estimate $\widehat\theta_\tau(c)$ by
+minimizing the weighted objective of the previous subsection using only fund
+information dated no later than $\tau$. Candidate bridges are compared on the
+identical realized-cash-flow target after the then-unseasoned vintages have
+seasoned:
 \[
-\widehat\theta_{\tau,h,A}(M)
-=
-\arg\min_{\theta\in\Theta_M}Q_{\tau,h,A}(\theta;M)
-\]
-using only fund information dated no later than $\tau$. Candidate bridges are
-compared on the identical realized-cash-flow target after the then-unseasoned
-vintages have seasoned:
-\[
-L_{\tau\rightarrow\tau+\ell}(M,h,A)
+L_{\tau\rightarrow\tau+\ell}(c)
 =
 \frac{1}{|\mathcal V^U_\tau\cap\mathcal V^S_{\tau+\ell}|}
 \sum_{v\in\mathcal V^U_\tau\cap\mathcal V^S_{\tau+\ell}}
 \widehat U_v^{\mathrm{real}}
-\!\left(\widehat\theta_{\tau,h,A}(M)\right).
+\!\left(\widehat\theta_\tau(c)\right).
 \]
+
+One convention deserves emphasis. The time and state kernels remain centered
+on the origin, $\tau$ and $z_\tau$, while the scored vintages were raised
+shortly before $\tau$ under possibly different states. The forward loss
+therefore validates the estimator as a pricing rule for recently raised
+funds, and its application to a fund raised at the current date extrapolates
+the transport pattern by one further step. We state this openly rather than
+re-center the kernel on each evaluation vintage, which would replace a single
+origin SDF with a vintage-indexed family at substantial computational cost
+and little expected gain when origin and formation states are close.
 
 The empirical comparison therefore selects a triplet: the SDF specification,
 the historical weighting rule, and the unseasoned-vintage treatment. Exclusion
@@ -404,14 +563,18 @@ ideal is conceptually useful even when empirically infeasible: it identifies
 the remaining source of look-ahead without pretending that an empty sample is
 a superior research design.}
 
-At each origin, tuning uses only earlier admissible origins. The outer origin
-is reserved for evaluation. With few origins, the tuning grid is intentionally
-coarse and common across SDF specifications. The empirical result is reported
-as a loss surface and a set of near-optimal configurations, alongside the
-single preferred configuration, so that small differences are not given a
-false winner-takes-all interpretation.
+The design grid is intentionally coarse and common across SDF specifications;
+Section~\ref{sec:forward} separates the paired comparison of fixed designs
+from the sequential evaluation of the selection rule itself. A further
+structural limitation is timing: because a vintage needs roughly a decade to
+season, the last scoreable origin precedes the end of the sample by
+approximately one seasoning lag. Statements about funds raised at the current
+date therefore extrapolate a selection rule whose direct validation
+necessarily ends earlier, and the paper says so rather than implying that
+pseudo-real-time evidence reaches the present.
 
 \subsection{Forward Selection Criterion}
+\label{sec:forward}
 
 Let $\mathcal O$ denote the admissible pseudo-real-time origins and
 $\mathcal H_\tau$ the vintages that were unseasoned at $\tau$ and later become
@@ -427,20 +590,45 @@ $c=(M,h,b,A)$, define
 \widehat U_v^{\mathrm{real}}
 \!\left(\widehat\theta_\tau(c)\right).
 \]
-The preferred design minimizes $\widehat R(c)$. All designs face the same
-origins and realized evaluation funds, so comparisons are paired. The paper
-emphasizes effect sizes, origin-by-origin stability, and sensitivity to the
-coarse tuning grid. With only a few dozen vintage years, formal rejections of
-equal predictive loss are interpreted cautiously.
+All designs face the same origins and realized evaluation funds, so
+comparisons are paired. Two protocols use this criterion for different
+purposes.
+
+\textbf{Protocol A: fixed-design comparison (headline).} Every design in the
+pre-specified grid is estimated at every admissible origin and scored on the
+identical origin--vintage cells. No tuning occurs; the coarse grid is the
+pre-registration. The preferred design minimizes $\widehat R(c)$ and is
+reported together with the model confidence set of designs whose forward loss
+is not significantly worse \citep{HansenLundeNason2011}, so that small
+differences are not given a false winner-takes-all interpretation.
+
+\textbf{Protocol B: sequential selection (implementability check).} Because
+the Protocol~A minimizer is chosen using all origins, we also evaluate the
+selection rule itself: at each origin $\tau$, the design minimizing
+$\widehat R$ computed over strictly earlier origins is scored on origin
+$\tau$ alone. The average of these sequentially selected losses measures what
+forward selection would have delivered in real time. With few origins this
+estimate is noisy, and it is reported as a check on Protocol~A rather than as
+the headline comparison.
+
+The paper emphasizes effect sizes, origin-by-origin stability, and
+sensitivity to the coarse grid. With only a few dozen vintage years, formal
+rejections of equal predictive loss are interpreted cautiously.
 
 \subsection{Inference and Reporting}
 
 Model comparisons use paired loss differences because every admissible design
-is evaluated on the same origin--vintage cells. Losses are first averaged
-within origin so that origins with many funds or newly seasoned vintages do not
-dominate mechanically. We report the mean paired difference, its distribution
-across origins, and block-bootstrap uncertainty that preserves adjacent-origin
-dependence. Parameter uncertainty for a selected SDF is assessed with vintage-
+is evaluated on the same origin--vintage cells \citep{GiacominiWhite2006}.
+Losses are first averaged within origin so that origins with many funds or
+newly seasoned vintages do not dominate mechanically. Because adjacent annual
+origins share most of their evaluation vintages, the same realized outcome
+enters $\widehat R$ at several origins, and the effective number of
+independent evaluations is far smaller than $|\mathcal O|$; the number of
+distinct evaluation vintages and funds behind each comparison is therefore
+reported alongside the origin-coverage table. We report the mean paired
+difference, its distribution across origins, and block-bootstrap uncertainty
+that preserves adjacent-origin dependence. The premium-exposure diagnostic of
+Section~\ref{sec:transportmeaning} is reported alongside these comparisons. Parameter uncertainty for a selected SDF is assessed with vintage-
 level resampling and calendar-overlap blocks. Given the short time series and
 the additional uncertainty created by model selection, confidence intervals
 and predictive-loss tests are interpreted as measures of precision rather than
@@ -522,13 +710,16 @@ from a small and unusual set of funds that happens to mature early.
 \subsection{Public Factors and Candidate SDFs}
 
 Public-market returns and the risk-free rate are obtained from \tbd{source} at
-the same frequency as the cash-flow discounting exercise. The main comparison
-uses a deliberately small SDF set: a risk-free benchmark, a one-factor public-
-equity SDF, a levered public-equity specification, and at most one established
-multifactor alternative. This keeps the empirical question focused on the
-historical information set rather than a factor zoo. Factor definitions,
-currency, return convention, and the mapping from quarterly factors to dated
-cash flows are fixed before inspecting forward pricing losses.
+the same frequency as the cash-flow discounting exercise. All candidate SDFs
+are members of the single benchmark-discounting family of
+Section~\ref{sec:moments}, and the main comparison uses a deliberately small
+nested set: $\beta=0$ (risk-free discounting), $\beta=1$ (the
+public-market-equivalent benchmark), a freely estimated one-factor $\beta$,
+and a freely estimated low-dimensional multifactor $\beta$ vector. This keeps
+the empirical question focused on the historical information set rather than
+on kernel functional forms or a factor zoo. Factor definitions, currency,
+return convention, and the mapping from quarterly factors to dated cash flows
+are fixed before inspecting forward pricing losses.
 
 \subsection{Economic-State Variables}
 
@@ -548,8 +739,9 @@ extrapolation problem and should not receive a falsely precise local estimate.
 Annual origins begin at the first date for which all candidate SDFs satisfy the
 minimum effective-vintage and Jacobian conditions. At each origin, cash flows,
 NAVs, factors, and state variables are truncated to their admissible information
-date. Hyperparameters are chosen using only earlier origins, and the current
-origin is used once for evaluation. The final extract does not reconstruct
+date. Under Protocol~A no origin-level tuning occurs; under the sequential
+Protocol~B, design selection at each origin uses strictly earlier origins
+only. The final extract does not reconstruct
 historical database coverage or later backfills; this pragmatic limitation is
 disclosed and tested by excluding observations with suspiciously late first
 reporting where such timestamps exist. The stronger literal real-time standard
@@ -569,7 +761,7 @@ descriptive feasibility audit, but before comparing out-of-sample losses.
 \toprule
 Object & Baseline candidates & Restriction or robustness \\
 \midrule
-SDF & Risk-free; public equity; levered equity; one multifactor model
+SDF (benchmark $\beta$) & $\beta=0$; $\beta=1$ (PME); estimated $\beta$; multifactor $\beta$
     & Common factor set at every origin \\
 Historical weighting & Expanding; rolling; exponential decay; time--state
     & Same candidate sequence for every SDF \\
@@ -583,7 +775,7 @@ Young-fund treatment & Exclude; short-horizon NAV Euler hybrid
     & Common later realized-cash-flow target \\
 Seasoning threshold & Residual value share at most 15\%
     & 10\%, 20\%, and zero residual value \\
-Feasibility & $V_{\mathrm{eff}}\geq\max\{8,3\dim(\theta)\}$
+Feasibility & $V_{\mathrm{eff}}\geq\max\{8,3\dim(\theta)\}$, incl.\ seasoned block
     & Jacobian conditioning reported separately \\
 \bottomrule
 \end{tabular}
@@ -627,7 +819,9 @@ realized vintages, and colors represent realized pricing loss. Signed-distance
 loss curves then summarize forward and backward transport. The empirical
 questions are whether loss rises with temporal distance, whether the pattern is
 asymmetric, and whether particular evaluation vintages are difficult for every
-historical window.
+historical window. Signed residuals are also plotted against realized
+evaluation-window premia, implementing the premium-exposure diagnostic of
+Section~\ref{sec:transportmeaning}.
 
 \subsection{How Much History Travels Forward?}
 
@@ -658,14 +852,16 @@ the estimation origin. We also relate the hybrid's gain to its NAV share and
 subsequent NAV revisions. This distinguishes useful early information from a
 mechanical fit to smoothed reported values.
 
-\subsection{The Preferred SDF and Current Risk-Adjusted Performance}
+\subsection{The Preferred SDF and the Pricing of Recent Vintages}
 
-The final results section re-estimates the forward-selected design at the
-current information date. We report SDF parameters, implied factor exposures,
-risk-adjusted performance, the weights assigned to every historical vintage,
-and sensitivity to all configurations whose forward loss is statistically and
-economically close to the minimum. The conventional expanding-history estimate
-is shown alongside it so that the effect of historical transportability is
+The final results section re-estimates the preferred design at the current
+information date. We report the estimated benchmark exposures, the weights
+assigned to every historical vintage, and the out-of-window pricing residuals
+of recent vintages under the estimated law. In-window residuals are
+shown only as fit diagnostics, since average in-window performance is
+absorbed by construction. Sensitivity is reported across all configurations
+in the model confidence set. The conventional expanding-history estimate is
+shown alongside it so that the effect of historical transportability is
 transparent.
 
 \section{Robustness and Method Validation}
