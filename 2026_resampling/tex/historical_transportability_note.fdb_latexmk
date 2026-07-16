@@ -1,12 +1,12 @@
 # Fdb version 3
-["bibtex historical_transportability_note"] 1784130264 "historical_transportability_note.aux" "historical_transportability_note.bbl" "historical_transportability_note" 1784130264
+["bibtex historical_transportability_note"] 1784186883 "historical_transportability_note.aux" "historical_transportability_note.bbl" "historical_transportability_note" 1784186946
   "/usr/local/texlive/2017/texmf-dist/bibtex/bst/natbib/plainnat.bst" 1480098435 26816 ffe5423d2019860bad9f54bc402fac15 ""
-  "historical_transportability_note.aux" 1784130264 6651 7ba8ad5d0ffff0c8ceb5050de6b3832d ""
+  "historical_transportability_note.aux" 1784186946 6815 6ce29385322cf2974bb957efb3f8eb0e ""
   "resampling_refs.bib" 1784125265 7517 3f2d4ab732bedc98eb9acb9dd0ecb23d ""
   (generated)
-  "historical_transportability_note.blg"
   "historical_transportability_note.bbl"
-["pdflatex"] 1784130264 "historical_transportability_note.tex" "historical_transportability_note.pdf" "historical_transportability_note" 1784130264
+  "historical_transportability_note.blg"
+["pdflatex"] 1784186946 "historical_transportability_note.tex" "historical_transportability_note.pdf" "historical_transportability_note" 1784186946
   "/usr/local/texlive/2017/texmf-dist/fonts/enc/dvips/base/8r.enc" 1480098666 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2017/texmf-dist/fonts/enc/dvips/base/ec.enc" 1480098666 12642 9742585e52c5b37e57ae9249e0b2585b ""
   "/usr/local/texlive/2017/texmf-dist/fonts/enc/dvips/newtx/ntx-ec-tlf.enc" 1480098668 2880 847ca622ad468c3dafba6a3f9d89a636 ""
@@ -72,6 +72,7 @@
   "/usr/local/texlive/2017/texmf-dist/fonts/type1/public/txfonts/rtxmi.pfb" 1480098746 13806 49b888f4605a088e66b9eb4fee320a6e ""
   "/usr/local/texlive/2017/texmf-dist/fonts/type1/public/txfonts/rtxr.pfb" 1480098746 6339 e2b78706efdc360ee6aec9b6e20211a7 ""
   "/usr/local/texlive/2017/texmf-dist/fonts/type1/public/txfonts/txmia.pfb" 1480098746 25407 1800fea88ccbac3fd18b8df8e1864f2e ""
+  "/usr/local/texlive/2017/texmf-dist/fonts/type1/public/txfonts/txsyc.pfb" 1480098746 27693 bfb340b71292c6ead561e4943433945d ""
   "/usr/local/texlive/2017/texmf-dist/fonts/type1/urw/times/utmri8a.pfb" 1480098746 45458 a3faba884469519614ca56ba5f6b1de1 ""
   "/usr/local/texlive/2017/texmf-dist/fonts/vf/public/newtx/ntxexx.vf" 1480098768 1648 0d93cbefa82585faadc39ecd0ea4f212 ""
   "/usr/local/texlive/2017/texmf-dist/fonts/vf/public/newtx/ntxmi.vf" 1480098768 1476 6240e7a54dc544d136187548d391217e ""
@@ -156,12 +157,12 @@
   "/usr/local/texlive/2017/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1495593472 2350277 a699055bee05bf8a40b0504752487295 ""
   "/usr/local/texlive/2017/texmf-var/web2c/pdftex/pdflatex.fmt" 1521390409 4129592 17dd01f44dc5d311c7c930138a22c636 ""
   "/usr/local/texlive/2017/texmf.cnf" 1495593465 577 2b71d4d888f9e5560b2e99985915a9fa ""
-  "historical_transportability_note.aux" 1784130264 6651 7ba8ad5d0ffff0c8ceb5050de6b3832d ""
-  "historical_transportability_note.bbl" 1784130264 3722 95b0393c8e64c135a7fe662f91197e7f "bibtex historical_transportability_note"
-  "historical_transportability_note.out" 1784130264 2801 1f5fca9e0f653f309181ca810cae8ab5 ""
-  "historical_transportability_note.tex" 1784130257 36992 1beb29142fe543def8a4e744e0f8b6fb ""
+  "historical_transportability_note.aux" 1784186946 6815 6ce29385322cf2974bb957efb3f8eb0e ""
+  "historical_transportability_note.bbl" 1784186883 3722 95b0393c8e64c135a7fe662f91197e7f "bibtex historical_transportability_note"
+  "historical_transportability_note.out" 1784186946 2807 6833e1c2bee9e50362977314df53d1a4 ""
+  "historical_transportability_note.tex" 1784186898 41447 f7431e1be83a3fd4b2915f9fe71dc854 ""
   (generated)
-  "historical_transportability_note.log"
+  "historical_transportability_note.pdf"
   "historical_transportability_note.aux"
   "historical_transportability_note.out"
-  "historical_transportability_note.pdf"
+  "historical_transportability_note.log"
