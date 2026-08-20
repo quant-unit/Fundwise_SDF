@@ -53,8 +53,10 @@ the same estimator may become precisely estimated for the wrong historical
 mixture. More funds within a vintage can measure that vintage more accurately,
 but they cannot create additional economic histories.
 
-Private equity makes this bias--variance problem unusually sharp. A long
-database contains only a few dozen vintage years; adjacent vintages share much
+Private equity makes the bias--variance trade-off unusually sharp: older
+vintages increase precision but may bias the estimate away from today's
+pricing relation. A long database contains only a few dozen vintage years;
+adjacent vintages share much
 of the same calendar history; and the vintages closest to the current state
 have not yet realized. Reaching backward increases precision but strengthens
 the assumption that old pricing relations remain relevant. Requiring cash-flow
