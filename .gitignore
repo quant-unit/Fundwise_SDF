@@ -1,6 +1,8 @@
 # general
 *.DS_Store
 
+*/.idea/*
+
 # tex related
 *.gz
 *.aux
