@@ -1,0 +1,1012 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[letterpaper,margin=1in]{geometry}
+\usepackage{booktabs,longtable,array}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{needspace}
+\usepackage[colorlinks,linkcolor=blue!45!black,urlcolor=blue!45!black]{hyperref}
+
+\setlist{itemsep=2pt,topsep=4pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.15}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\code}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\file}[1]{\path{#1}}
+\newcommand{\Tset}{\mathcal{T}_{i,H}}
+\newcommand{\G}{\mathcal{G}}
+\newcommand{\epsbar}{\bar{\epsilon}_i^{(H)}}
+
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\theoremstyle{plain}
+\newtheorem{result}{Result}
+\theoremstyle{definition}
+\newtheorem{assumption}{Assumption}
+\renewcommand{\theassumption}{\Alph{assumption}}
+
+\title{Review of the two referee reports\\[0.5ex]
+\large JFEC-2026-141, ``Identification and Stability of SDF Estimators for Pooled, Non-traded Cash Flows''}
+\author{}
+\date{13 November 2026}
+
+\begin{document}
+\maketitle
+\vspace{-3em}
+
+\begin{tabular}{@{}ll@{}}
+Paper & \code{tex/2026-04-26_sdf_paper.pdf}\\
+Sources & \code{tex/sdf_paper.tex}, \code{tex/sdf_paper_online_appendices.tex}\\
+Referee 1 (``R1'') & \code{referee_1.md}\\
+Referee 2 (``R2'') & \code{Reviewer 2 - JFEC-2026-141 .pdf}
+\end{tabular}
+
+Comments are cited as R1-2, R2-3.1 and so on, using the referees' own numbering.
+
+\tableofcontents
+
+%======================================================================
+\section{Bottom line}
+%======================================================================
+
+\begin{enumerate}
+\item \textbf{Both reports are largely right.} No major comment is simply wrong. A few of R2's are overstated or aimed at the wrong target (1c, 3.2, 3.3, parts of 1b and 4.3); these are marked in Section~\ref{sec:r2}.
+
+\item \textbf{The reports overlap on three issues, and those three are the revision.}
+\begin{itemize}
+\item The estimated object is a benchmark deflator, not an SDF (R1-1, R2-1a). See Section~\ref{sec:sdf}.
+\item The horizon theory: when is the estimator consistent, and what does $H$ actually do (R1-2, R2-2a, 2b, 3.1, 3.4). See Section~\ref{sec:horizon}.
+\item Positioning against the literature (R1-1, R1-4, R2-1b to 1d, 3.2).
+\end{itemize}
+
+\item \textbf{Almost none of this needs more pages.} The first and third issues are rewrites. The second can be answered with four short results that replace the heuristic in Appendix~B and are shorter than it. New computation is limited to one diagnostic rerun and, optionally, one robustness column and one extra simulation scenario.
+
+\item \textbf{The second issue changes the paper's story.} The Compounding-Horizon Wedge is zero in the paper's own model and simulation (Result~\ref{res:wedge}). Part of what the simulation calls finite-sample bias at $H=0$ does not go away with more vintages (Result~\ref{res:tilt}). The headline empirical finding (market beta is stable; alpha and second factors are not) is unaffected.
+
+\item \textbf{A claim-by-claim mathematical audit is in Section~\ref{sec:audit}.} Of 21 checkable claims, the referees' main line holds throughout. One claim does not hold as stated (R2-3.2: the wedge is not the Gredil--S{\o}rensen--Waller compounding error), and two are right but do not carry the weight R2 puts on them (R2-3.3: the realised-kernel problem is real and severe for genuine SDFs, but it does not apply to a benchmark deflator; R2-2c: the Merton bound is only a lower bound).
+
+\item \textbf{The cited papers have now been read (Section~\ref{sec:sources}).} Referee~2 reports them accurately with two exceptions: the manuscript's sentence about Korteweg and Nagel (2016) that R2-1b calls incorrect is a faithful paraphrase of their p.~1447, and the Gupta--Van Nieuwerburgh horizon is 64 quarters, not months. Two things in Korteweg and Nagel (2025) help the paper: they state the two-root property themselves, and their beta criterion is close to the manuscript's. Martin (2012), Merton (1980) and Flanagan (2025), added last, confirm the referee's use of them; Martin's own definition of the ``generic case'' explains why the realised-kernel problem does not transfer to a benchmark deflator.
+
+\item \textbf{A data-construction issue that neither referee raised} could move the empirical numbers: the empirical vintage-year portfolios are not constant-composition pools (Section~\ref{sec:vyp}). Check this before anything else.
+\end{enumerate}
+
+\subsection*{How I checked}
+
+\begin{itemize}
+\item Read both reports, the full main text and all four appendices.
+\item Compared the text with the code in \code{r_project/}: simulation DGP, objective function, Preqin preparation and table generation.
+\item Checked the prepared Preqin files for date frequency, portfolio aggregation and horizon saturation.
+\item Wrote three small stand-alone scripts, saved in this folder. They are not the paper's pipeline (simulated i.i.d.\ market instead of the historical path, one-factor model, grid search), so their numbers are indicative only.
+\begin{itemize}
+  \item \code{check_h0_tilt.py} and \code{check_identity_and_roots.py} replicate the baseline simulation.
+  \item \code{check_referee_math.py} runs the nine checks behind the audit in Section~\ref{sec:audit}.
+  \end{itemize}
+\item Read the passages the referees cite in Gredil--S{\o}rensen--Waller, Korteweg--Nagel (2016, 2025), Gupta--Van Nieuwerburgh, Driessen--Lin--Phalippou, Martin, Merton and Flanagan, and the online supplements of four of them; the copies are in the \code{papers} subfolder (Section~\ref{sec:sources}). Section~\ref{sec:notverified} lists what remains unchecked.
+\end{itemize}
+
+Effort labels: \textbf{S} = wording, a few sentences. \textbf{M} = up to about a page, one table, or one rerun with existing code. \textbf{L} = new analysis.
+
+%======================================================================
+\section{The horizon theory: four results}
+\label{sec:horizon}
+%======================================================================
+
+This section is my own derivation plus numerical checks. Please verify it before building on it.
+
+\subsection{Setup, in the paper's notation}
+
+For fund (or vintage-year portfolio) $i$ with cash flows $CF_{i,t}$ and inception date $t_i^0$, the paper defines
+\begin{align*}
+\Psi_{\tau,t}(\theta) &= \frac{\Psi_t(\theta)}{\Psi_\tau(\theta)}, &
+\epsilon_{\tau,i}(\theta) &= \sum_{t=0}^{T}\Psi_{\tau,t}(\theta)\,CF_{i,t}, &
+PV_i(\theta) &= \epsilon_{t_i^0,i}(\theta),
+\end{align*}
+the horizon set and the averaged error (with $w_i=1$)
+\[
+\Tset=\bigl\{t_i^0,\dots,\min(t_i^0+12H,\,T_i^{\max})\bigr\},
+\qquad
+\epsbar(\theta)=\frac{1}{|\Tset|}\sum_{\tau\in\Tset}\epsilon_{\tau,i}(\theta),
+\]
+and the estimator with its population target
+\[
+\hat\theta_H=\arg\min_\theta \frac1n\sum_{i=1}^n\bigl(\epsbar(\theta)\bigr)^2 ,
+\qquad
+\theta_H^\dagger=\arg\min_\theta \E\bigl[(\epsbar(\theta))^2\bigr].
+\]
+The discount factor of Eq.~(19) is the inverse of a levered benchmark return. Write
+\[
+R^b_{s,t}(\theta)=\prod_{u=s+1}^{t}\bigl(1+\alpha+r_{f,u}+\beta^\top F_u\bigr),
+\qquad
+\Psi_{s,t}(\theta)=\frac{1}{R^b_{s,t}(\theta)} .
+\]
+
+\subsection{Result 1: the averaged error is the inception NPV times a scalar}
+
+\begin{result}[Identity]
+\label{res:identity}
+For every $\tau$, $\theta$ and $i$,
+\[
+\epsilon_{\tau,i}(\theta)
+=\frac{\Psi_{t_i^0}(\theta)}{\Psi_\tau(\theta)}\sum_{t}\frac{\Psi_t(\theta)}{\Psi_{t_i^0}(\theta)}CF_{i,t}
+= PV_i(\theta)\,R^b_{t_i^0,\tau}(\theta),
+\]
+and therefore
+\begin{equation}
+\label{eq:identity}
+\epsbar(\theta)=PV_i(\theta)\cdot A_{i,H}(\theta),
+\qquad
+A_{i,H}(\theta)=\frac{1}{|\Tset|}\sum_{\tau\in\Tset}R^b_{t_i^0,\tau}(\theta)\;>\;0 .
+\end{equation}
+\end{result}
+
+This is algebra: the sum in $\epsilon_{\tau,i}$ runs over the whole cash-flow stream for every $\tau$, so $\Psi_\tau$ factors out. The code does exactly this (\code{helper/getNPVs.R} computes \code{DCF * ret[i]} and averages), and the replica confirms it to $10^{-15}$. Positivity of $A_{i,H}$ needs the monthly gross benchmark return to stay positive on the parameter set, which holds for US monthly data and the parameter bounds used.
+
+\textbf{What it implies.}
+\begin{itemize}
+\item Horizon averaging adds \emph{no new pricing error}. Every date-$\tau$ error of a fund is the same random variable $PV_i$, rescaled. This holds for post-inception dates as much as for the pre-inception dates R2 mentions in 2(b).
+\item Precise wording matters here. In GMM terms, $\E[PV_i\,A_{i,H}]=0$ is a different unconditional moment from $\E[PV_i]=0$: the weight $A_{i,H}$ is an ex-post compounded return and acts like an instrument. It is a valid instrument only if $PV_i$ has zero mean given the factor path (Result~\ref{res:wedge}). So the exact statement is ``no new residual, only an ex-post weight on the same one'', not ``no new moment''.
+\item The main text is compatible with this: it speaks of regularisation and of smoothing the criterion. Only the Appendix~B heuristic says otherwise, in three sentences of the appendix source file (lines 589, 607, 608: ``averaging combines additional pricing moments that are correlated, but not perfectly so'', ``combines multiple imperfectly correlated pricing moments'', ``informative but potentially biased moment components'') and in Remark~2. The arithmetic of Remark~2 is right, but conditional on a fund's NPV and the factor path the date-specific errors carry no independent noise. This answers R2-3.4.
+\item It gives the intuition R2-2(b) asks for. The $H=0$ criterion measures errors in inception dollars, so a higher discount rate shrinks every error; that is the exploding-alpha degeneracy. Compounding to later dates multiplies errors by $A_{i,H}(\theta)$, which grows with $\alpha$ and $\beta$ and so penalises high discount rates. $H$ picks the numeraire date and thereby the balance between the two.
+\end{itemize}
+
+\subsection{Result 2: the wedge is zero in the paper's own model}
+
+The paper's Eq.~(1) requires $\E[\delta_{i,j}\mid\mathcal F_{t^{\mathrm{Inv}}_{i,j}}]=0$. The simulation, and the DLP model it follows, satisfy something stronger.
+
+\begin{assumption}[DLP-type DGP]
+\label{ass:dlp}
+Each deal pays
+\[
+\mathrm{Div}_{i,j}=-\mathrm{Inv}_{i,j}\;R^b_{t^{\mathrm{Inv}}_{i,j},\,t^{\mathrm{Div}}_{i,j}}(\theta_0)\;N_{i,j},
+\qquad
+\E\bigl[N_{i,j}\mid\G\bigr]=1,
+\]
+where $\G$ is generated by the entire factor path and the deal timing, and the $N_{i,j}$ are independent across deals given $\G$.
+\end{assumption}
+
+In \code{simulation/simulation_improved.R} (lines 100 to 118) the deal multiple is $\prod_u(1+r_{f,u}+\beta_0F_u+e_u)$ with $e_u\sim N(0,\sigma^2)$ independent of the factors, so $N=\prod_u\bigl(1+e_u/(1+r_{f,u}+\beta_0F_u)\bigr)$ and Assumption~\ref{ass:dlp} holds (up to the default truncation, which is negligible at $\sigma=0.2$).
+
+\begin{result}[No wedge under Assumption~\ref{ass:dlp}]
+\label{res:wedge}
+Under Assumption~\ref{ass:dlp}, $\delta_{i,j}=\mathrm{Inv}_{i,j}(1-N_{i,j})$, so $\E[\delta_{i,j}\mid\G]=0$ and $\E[PV_i(\theta_0)\mid\G]=0$. Since $A_{i,H}(\theta_0)$ is $\G$-measurable,
+\[
+b_{H,i}=\E\bigl[\epsbar(\theta_0)\bigr]
+=\E\bigl[A_{i,H}(\theta_0)\,\E[PV_i(\theta_0)\mid\G]\bigr]=0
+\qquad\text{for every }H\ge 0 .
+\]
+Equivalently, $\Cov\bigl(\Psi_{t^{\mathrm{Inv}}_{i,j}}/\Psi_\tau,\ \delta_{i,j}\bigr)=0$ for every $\tau$.
+\end{result}
+
+Lemma~1 parts~2 and~3 are correct statements about a generic SDF, where pricing holds only in expectation and $\delta_{i,j}$ may covary with later kernel realisations. With the deflator of Eq.~(19) and a DLP-type DGP, pricing holds path by path given the factors, and the wedge is inactive. The wedge would reappear if deal errors were correlated with later factor realisations, for example under misspecification or exit timing on private information.
+
+\subsection{Result 3: with many funds per vintage, every horizon is consistent}
+
+\begin{result}[Consistency for all $H$ under infill]
+\label{res:consistency}
+Let unit $v$ pool $n_v$ funds of a vintage. Under Assumption~\ref{ass:dlp}, as $n_v\to\infty$ with the number of vintages fixed,
+$PV_v(\theta_0)\to 0$ almost surely given $\G$. By~\eqref{eq:identity},
+\[
+\frac1V\sum_{v}\bigl(PV_v(\theta)\,A_{v,H}(\theta)\bigr)^2=0
+\iff PV_v(\theta)=0\ \text{ for all }v,
+\]
+so the limit criterion has the same zero set for every $H$. If the $H=0$ estimator is consistent for $\theta_0$ (DLP's Theorem~1), so is $\hat\theta_H$ for every $H>0$.
+\end{result}
+
+This is R1-2's conjecture, and it is correct. Conditions: mean-one noise given the factor path and deal timing; funds per vintage diverge; positive benchmark gross returns; DLP's identification condition. I.i.d.\ factors, which R1 mentions, are not needed, because the argument conditions on the path.
+
+\subsection{Result 4: with few funds per vintage, no horizon targets \texorpdfstring{$\theta_0$}{theta0}, including \texorpdfstring{$H=0$}{H=0}}
+
+R2-3.1 argues from $\E[PV_i^2]=\Var(PV_i)+(\E[PV_i])^2$: correct specification removes the second term at $\theta_0$, but the first still depends on $\theta$. This does not need the identity; the identity only extends it to $H>0$.
+
+\begin{result}[Quadratic-loss tilt]
+\label{res:tilt}
+Take a single deal with $\mathrm{Inv}=-1$, invested at $a=t^0$ and exited at $b$, in the one-factor model without alpha. Under Assumption~\ref{ass:dlp},
+\begin{gather*}
+PV(\beta)=-1+N\,\rho(\beta),\qquad
+\rho(\beta)=\frac{R^b_{a,b}(\beta_0)}{R^b_{a,b}(\beta)},\\
+\rho(\beta_0)=1,\qquad \rho'(\beta_0)=-S,\qquad
+S=\sum_{u=a+1}^{b}\frac{F_u}{1+r_{f,u}+\beta_0F_u},
+\end{gather*}
+and the $H=0$ population criterion has gradient
+\begin{equation}
+\label{eq:tilt}
+\frac{d}{d\beta}\E\bigl[PV(\beta)^2\bigr]\Big|_{\beta_0}
+=2\,\E\bigl[(N-1)\,N\,\rho'(\beta_0)\bigr]
+=-2\,\E\bigl[S\cdot\Var(N\mid\G)\bigr].
+\end{equation}
+For general $H$ the gradient of $\E[PV^2A_H^2]$ at $\theta_0$ is
+$2\,\E\bigl[A_H\,\partial_\theta A_H\,PV^2\bigr]+2\,\E\bigl[A_H^2\,PV\,\partial_\theta PV\bigr]$.
+\end{result}
+
+\textbf{Reading \eqref{eq:tilt}.}
+\begin{itemize}
+\item The gradient is not zero, so $\beta_0$ is not the minimiser: $\theta_0^\dagger\neq\theta_0$ generically. It is zero only in knife-edge cases: no idiosyncratic noise, or $\E[S\cdot\Var(N\mid\G)]=0$.
+\item \emph{Sign.} $\E[S]>0$ whenever $\E[F/(1+r_f+\beta_0F)]>0$, that is whenever $\beta_0$ is below the growth-optimal leverage $\beta^\ast$ of Section~\ref{sec:sdf}. Then the gradient is negative and the minimiser sits \emph{above} $\beta_0$. In words: a higher beta shrinks discounted payoffs and with them the idiosyncratic variance of $PV$, and squared loss rewards that.
+\item \emph{Size.} With the simulation's monthly additive noise, $\Var(N\mid\G)=\prod_u\bigl(1+\sigma^2/(1+r_{f,u}+\beta_0F_u)^2\bigr)-1$. At $\sigma=0.2$ this is about $10$ for a five-year hold and about $110$ for a ten-year hold, which is why the tilt is large in the baseline design.
+\item \emph{Scaling.} Pooling $n$ deals with independent noise divides $\Var(\cdot\mid\G)$ and hence the gradient by $n$; to first order the shift is $\E[S\,\Var(N\mid\G)]/(n\,\E[S^2])$. It shrinks with funds per vintage and not with the number of vintages.
+\item \emph{Horizon.} For $H>0$ the first term, $2\,\E[A_H\,\partial_\beta A_H\,PV^2]$, is positive and grows with $H$. It pushes the minimiser down. The two terms offset at some intermediate $H$ that depends on the DGP.
+\end{itemize}
+
+The paper's formal results already allow for this: Proposition~2 is stated around $\theta_H^\dagger$, and Corollary~1 assumes that $\theta_0$ maximises the $H=0$ criterion. The prose, however, asserts it unconditionally in several places (``targets the structural parameter $\theta_0$'' in Section~1.2, ``yields unbiased estimates'' in the simulation section, and the conclusion).
+
+\needspace{10\baselineskip}
+\subsection{Numerical evidence}
+
+True $\beta_0=1$ throughout. ``Large $V$'' is one sample of 10{,}000 vintages, so sampling noise in $V$ is small; ``$V=20$'' is the mean estimate over 500 blocks of 20 vintages. Where two numbers are shown they are two seeds.
+
+\begin{center}
+\small
+\begin{tabular}{cc cc cc}
+\toprule
+& & \multicolumn{2}{c}{Large $V$ (10{,}000 vintages)} & \multicolumn{2}{c}{Mean over samples with $V=20$}\\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}
+Monthly $\sigma$ & Funds per vintage & $H=0$ & $H=15$ & $H=0$ & $H=15$\\
+\midrule
+0.2 & 1  & 1.58 / 1.86 & 1.17 / 1.48 & 1.48 / 1.51 & 0.91 / 0.95\\
+0.2 & 5  & 1.24 / 1.68 & 0.99 / 1.04 & 1.22 / 1.27 & 0.93 / 0.97\\
+0.2 & 20 & 1.20 / 1.11 & 1.02 / 1.00 & 1.13 / 1.13 & 0.99 / 0.98\\
+0.2 & 80 & 1.04 / 1.04 & 1.00 / 1.00 & 1.03 / 1.04 & 0.99 / 0.99\\
+\addlinespace
+0.1 & 1  & 1.14 & 1.01 & 1.14 & 1.00\\
+0.1 & 5  & 1.03 & 0.99 & 1.02 & 0.99\\
+0.1 & 20 & 1.01 & 1.00 & 1.01 & 1.00\\
+0.1 & 80 & 1.00 & 1.00 & 1.00 & 1.00\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+A second run (\code{check_identity_and_roots.py}, 10{,}000 vintages) adds a mean-moment estimator, the root of $\frac1n\sum_iPV_i(\beta)=0$, which has no quadratic-loss tilt:
+
+\begin{center}
+\small
+\begin{tabular}{ccc ccc}
+\toprule
+& Funds per & & \multicolumn{2}{c}{Least squares} & Mean-moment\\
+\cmidrule(lr){4-5}
+Monthly $\sigma$ & vintage & Seed & $H=0$ & $H=15$ & roots, $H=0$\\
+\midrule
+0.1 & 1 & 3 & 1.17 & 1.01 & 1.02 and 2.90\\
+0.1 & 1 & 4 & 1.15 & 1.01 & 1.00 and 2.94\\
+0.1 & 1 & 5 & 1.16 & 1.01 & 0.99 and 3.03\\
+0.1 & 5 & 3 & 1.04 & 1.00 & 0.99 and 2.89\\
+0.1 & 5 & 4 & 1.03 & 0.99 & 0.99 and 2.94\\
+0.2 & 1 & 3 & 1.86 & 1.48 & 1.07 and 2.93\\
+0.2 & 1 & 4 & 1.85 & 1.35 & 0.99 and 2.97\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+What the two tables show:
+\begin{itemize}
+\item At $H=0$ the least-squares estimate does not converge to 1 as vintages are added when funds per vintage are few. At $\sigma=0.1$ with one fund the plateau is stable at 1.14 to 1.17 across four seeds. Result~\ref{res:tilt} and R2-3.1 confirmed.
+\item It converges to 1 for every $H$ as funds per vintage grow. Result~\ref{res:consistency} and R1-2 confirmed.
+\item $H$ matters although the wedge is zero by construction (Result~\ref{res:wedge}), so the horizon effect in the simulation is the criterion tilt, not the wedge.
+\item The mean-moment estimator has a root at the truth and a second root near 2.9 to 3.0. The second root is the growth-optimal leverage of Result~\ref{res:roots}; its predicted value for the replica's parameters is 2.91.
+\item At $\sigma=0.2$ the large-$V$ values still differ across seeds. Squared compounded errors are heavy-tailed, which is relevant to R2-3.3.
+\item The $V=20$ means at $H=15$ sit slightly below the large-$V$ values for few funds, so there is a genuine small-sample effect as well.
+\item The pattern matches what the paper already reports: single-fund betas near 1.5 at short horizons, beta falling with $H$, and ``more funds per vintage beats more vintages''. The bias-minimising horizon of 12.5 to 15 years is where the two terms of Result~\ref{res:tilt} offset in this DGP, which is why it moves with fund lifetime in Figure~12.
+\end{itemize}
+
+\subsection{What this means for the paper}
+
+\begin{itemize}
+\item The trade-off ``finite-sample stabilisation versus wedge-driven target shift'' should be restated as two separate things.
+  \begin{itemize}
+  \item \emph{Moment level.} All discounting dates are valid under a DLP-type DGP. The wedge appears only for a genuine SDF or when deal errors are correlated with later factor realisations.
+  \item \emph{Criterion level.} $H$ sets the numeraire date and with it the sign and size of a quadratic-loss tilt of order $1/n_v$, plus the exposure to the exploding-alpha region.
+  \end{itemize}
+\item Abstract sentence~3, the first contribution, the closing paragraphs of Section~1.1, Appendix~B.4 onward and the conclusion need rewording. Appendix~B gets shorter.
+\item This is your call. It gives up the wedge as the central mechanism, but it turns the two referees' hardest comments into clean results and is cheaper than defending the current framing.
+\end{itemize}
+
+%======================================================================
+\section{Is the estimated object an SDF?}
+\label{sec:sdf}
+%======================================================================
+
+Both referees say no (R1-1, R2-1a). They are correct in the sense that matters, though ``not an SDF'' is too blunt. I derived this section before reading Korteweg and Nagel (2025); they make the central point themselves (the pricing condition for the benchmark beta has two solutions, one of which reproduces the SDF, and the reciprocal of the SDF is the growth-optimal portfolio). See Section~\ref{sec:sources}, Remarks~1 and~2.
+
+\subsection{What can be defended}
+
+\begin{itemize}
+\item By the paper's Eq.~(1), $\Psi(\theta_0)$ prices PE deal cash flows. In incomplete markets any discount factor that prices a given set of payoffs is an admissible SDF for that set.
+\item The functional form is the log-utility kernel family: $1/R^b$. With $\beta=1$ and no $\alpha$ it is the Kaplan--Schoar PME, which S{\o}rensen and Jagannathan (2015) interpret as an SDF valuation under log utility. The exponential-affine variant has the same form as Korteweg and Nagel's $\exp(a-b\,r_m)$. The difference from KN16 is not the functional form but which moments pin down the parameters.
+\end{itemize}
+
+\subsection{Why it is not ``the'' SDF}
+
+Take one period and one factor, $M(\beta)=1/(1+r_f+\beta F)$, and define
+\[
+g(\beta)=\E\!\left[\frac{F}{1+r_f+\beta F}\right],
+\qquad
+\beta^\ast:\ g(\beta^\ast)=0 .
+\]
+$\beta^\ast$ is the growth-optimal leverage, the first-order condition of $\max_\beta\E[\log(1+r_f+\beta F)]$; it is roughly the factor premium over its variance, about 2 to 3 for the US market (I have not computed it on the paper's factor sample).
+
+\begin{result}[Two roots]
+\label{res:roots}
+For a payoff with exposure $\beta_{PE}$ and no abnormal return,
+\begin{equation}
+\label{eq:roots}
+\E\!\left[\frac{1+r_f+\beta_{PE}F}{1+r_f+\beta F}\right]-1=(\beta_{PE}-\beta)\,g(\beta).
+\end{equation}
+The pricing moment therefore has exactly two roots: $\beta=\beta_{PE}$ and $\beta=\beta^\ast$. With i.i.d.\ factors the same holds over multiple periods, since the left side becomes $\bigl(1+(\beta_{PE}-\beta)g(\beta)\bigr)^{T}-1$.
+\end{result}
+
+Setting $\beta_{PE}=0$ and $\beta_{PE}=1$ in \eqref{eq:roots} gives the public-asset tests:
+\begin{center}
+\small
+\begin{tabular}{lll}
+\toprule
+Asset & Pricing error of $M(\beta)$ & Priced when\\
+\midrule
+T-bill & $-\beta\,g(\beta)$ & $\beta\in\{0,\beta^\ast\}$\\
+Market & $(1-\beta)\,g(\beta)$ & $\beta\in\{1,\beta^\ast\}$\\
+Both & & $\beta=\beta^\ast$ only\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Consequences:
+\begin{itemize}
+\item \textbf{The two roots are two different objects.} At $\beta_{PE}$ pricing holds path by path; this is the benchmark-deflator reading. At $\beta^\ast$ pricing holds only in expectation; this is the genuine log-utility SDF, which also prices the market and the T-bill.
+\item \textbf{The estimator picks the deflator root.} A mean-moment GMM cannot tell the roots apart. The LMD criterion squares each unit's error before averaging, so it rewards path-by-path fit and selects $\beta_{PE}$. The replica finds both roots of the mean moment (about 1.0 and 2.9 to 3.0), and least squares lands near the first.
+\item \textbf{Asset-specific parameters.} The paper estimates $\hat\beta\approx1.2$ for buyout and up to $1.9$ for venture. A kernel's parameters cannot depend on which asset is priced with it. This is the Korteweg--Nagel sentence R2 quotes.
+\item \textbf{T-bill.} At $\beta=1$ the deflator discounts a riskless cash flow at about the market's expected return: the monthly pricing error is $-g(1)\approx-(\mu-\sigma_F^2)$.
+\item \textbf{Alpha.} A kernel has no free intercept, because pricing the risk-free asset pins it. The $\alpha$ in Eq.~(19) is an excess return over the benchmark, as in DLP.
+\end{itemize}
+
+\subsection{Recommendation}
+
+\begin{itemize}
+\item \textbf{Reposition.} Keep the SDF pricing equation as the motivation in Section~1.1; Lemma~1 and Proposition~1 are stated for a generic $\Psi$ and are fine. Name the estimated object a ``PE-implied discount factor'' or ``benchmark deflator'' (a generalised, levered PME). Say once, early, that it belongs to the same family as the log-utility and Korteweg--Nagel kernels but is identified from PE cash flows, not from public-asset moments, and that $\alpha$ is a wedge on the benchmark return. Drop ``SDF estimator'' from the title and abstract.
+\item \textbf{Do not add traded-asset moments} (R2's alternative). By the table above, requiring $M(\beta)$ to price both public assets pins $\beta=\beta^\ast$, which is no longer a PE exposure. The paper would then estimate a KN16-type pricing error instead.
+\item \textbf{Optional, one line.} Report $\beta^\ast$ for the paper's factor sample next to $\hat\beta$. It needs only the factor data and makes the distinction concrete.
+\item \textbf{For the reply letter.} The DLP-type estimator has many published applications (the paper lists them), so documenting where it is and is not stable is useful even though it is not an SDF estimator.
+\end{itemize}
+
+%======================================================================
+\section{Mathematical audit of the referees' claims}
+\label{sec:audit}
+%======================================================================
+
+Sections~\ref{sec:horizon} and~\ref{sec:sdf} dealt with the two largest issues. This section goes through \emph{every} claim in the two reports that can be stated mathematically, states it formally, and gives a verdict with a proof and, where possible, a numerical check. All derivations are mine. The numerical checks are in \code{check_referee_math.py} (blocks C1 to C9, about two minutes to run); as before it is a stand-alone replica and not the paper's pipeline.
+
+\subsection{Verdict scale and summary}
+
+\begin{itemize}
+\item \textbf{Holds}: true as stated.
+\item \textbf{Holds, conditional}: true under conditions the referee did not state; the conditions are given.
+\item \textbf{Holds, incomplete}: true but not the whole mechanism.
+\item \textbf{Does not hold as stated}: the statement fails in the form given; what is true instead is given.
+\end{itemize}
+
+{\small
+\begin{longtable}{@{}L{0.7cm}L{1.6cm}L{6.0cm}L{2.5cm}L{4.4cm}@{}}
+\toprule
+ID & Source & Claim & Verdict & Basis\\
+\midrule
+\endhead
+\multicolumn{5}{@{}l}{\emph{A. What the estimated object is}}\\
+A1 & R1-1, R2-1a & The Eq.~(19) discount factor is the inverse of a levered benchmark return and is not an SDF, because it need not price traded assets & Holds & Result~\ref{res:roots}: it prices the market iff $\beta\in\{1,\beta^\ast\}$ and the T-bill iff $\beta\in\{0,\beta^\ast\}$. Confirmed in KN25\\
+A2 & R2-1a & $\alpha$ is a wedge on the benchmark return; a kernel's intercept is pinned by the risk-free asset & Holds & Result~\ref{res:pin}\\
+A3 & R2-1a & Adding $\E[MR^{mkt}]=1$ and $\E[MR^{f}]=1$ would make $\Psi$ an SDF & Holds, but it changes the estimand & Result~\ref{res:pin}: the two moments force $(\alpha,\beta)=(0,\beta^\ast)$\\
+\addlinespace
+\multicolumn{5}{@{}l}{\emph{B. The timing lemma}}\\
+B1 & R1-2, R2 summary & Valuation dates after the investment date break the zero moment through a covariance term & Holds, conditional & For a genuine SDF: Result~\ref{res:wedgeclosed} (closed form, check C3). Under a DLP-type DGP the term is zero: Result~\ref{res:wedge}, check C2\\
+B2 & R2-3.5(i) & In the proof of Lemma~1(1) the ratio is not $\mathcal F_\tau$-measurable; the step is iterated expectations & Holds & Section~\ref{sec:auditB}. The mathematics of the lemma is correct; only the prose is loose\\
+B3 & R2-3.5(ii) & $\E[\delta_{i,j}\mid\mathcal F_t]$ is a martingale started at zero; Eq.~(4) is not Eq.~(3) times a positive factor & Holds & Section~\ref{sec:auditB}\\
+B4 & R2-2b & For $\tau'<\tau\le t_i^0$, $\epsilon_{\tau',i}=(\Psi_\tau/\Psi_{\tau'})\,\epsilon_{\tau,i}$: pre-inception dates add valid moments but no independent variation & Holds, and more generally & Result~\ref{res:identity} holds for all dates (check C1). Validity differs by date: Result~\ref{res:instrument}. No effect on the estimate: check C5\\
+\addlinespace
+\multicolumn{5}{@{}l}{\emph{C. Consistency}}\\
+C1 & R1-2 & With a linear factor model and independent idiosyncratic shocks, multiple discounting dates are consistent as funds per period grow & Holds; i.i.d.\ factors not needed & Result~\ref{res:consistency}\\
+C2 & R2-3.1 & $\E[PV_i^2]=\Var(PV_i)+(\E[PV_i])^2$, so the $H=0$ minimiser is $\theta_0$ only in a knife-edge case & Holds & Result~\ref{res:tilt}; gradient formula confirmed within one standard error (check C4)\\
+C3 & R2-3.1 & DLP's infill drives $\Var(PV_i)$ to zero; bounded funds per vintage keep the tilt alive & Holds, with one precision & Result~\ref{res:vardecomp}: infill removes the idiosyncratic part of the variance at every $\theta$, not the whole variance\\
+C4 & R2-3.1 & A square-of-the-average (mean-moment) criterion fixes $H=0$ & Holds, conditional & No tilt (Section~\ref{sec:horizon}, second table). Two conditions: pick the right root (Result~\ref{res:roots}), and one moment identifies one parameter\\
+C5 & R2-2a, 3.1 & Simulating $H=0$ with fixed funds per vintage and many vintages separates the tilt from finite-sample error & Holds & Tables in Section~\ref{sec:horizon}\\
+\addlinespace
+\multicolumn{5}{@{}l}{\emph{D. The finite-sample mechanism}}\\
+D1 & R2-2a & Remark~2 concerns the variance of the criterion contribution, not of the estimator & Holds & Section~\ref{sec:auditD}: a counterexample in one line\\
+D2 & R2-3.4 & The dominant noise component is common across a fund's discounting dates, so averaging barely helps & Holds, in a stronger form & Result~\ref{res:identity}: given the NPV and the factor path there is no date-specific noise at all\\
+D3 & R2-1d, 3.4 & Deflating by the benchmark is strictly less noisy than discounting with the realised SDF; the extra term is $(\beta-\gamma)(r_m-\E r_m)$ & Holds, conditional & Result~\ref{res:noise} (lognormal model; equal when $\beta=\gamma$); check C6\\
+\addlinespace
+\multicolumn{5}{@{}l}{\emph{E. Links to other papers' results}}\\
+E1 & R2-3.2 & The wedge and GSW's compounding error are the same object; compounding biases $PV_i$ already at $H=0$ & Does not hold as stated & Section~\ref{sec:auditE} and Section~\ref{sec:sources}, Remark~3: under exact per-period pricing the compounding error has expectation zero while the wedge does not. The finite-sample part of R2's claim is supported by GSW\\
+E2 & R2-3.3 & Realised-kernel sample means are unreliable at PE horizons, and the LMD criterion is exposed, more so for $H>0$ & Holds, conditional & Result~\ref{res:kernel}: the size is $e^{\lambda^2h}$ and depends on kernel volatility. It does not carry over to the benchmark deflator; check C7. Mechanism confirmed in Martin (2012) and Gupta--Van Nieuwerburgh; see Section~\ref{sec:sources}, Remark~4\\
+\addlinespace
+\multicolumn{5}{@{}l}{\emph{F. Strength of identification}}\\
+F1 & R2-2c & Weak identification of $\alpha$ is the Merton (1980) problem of estimating means & Holds, incomplete & Result~\ref{res:info}: Merton gives the first factor; alpha--beta collinearity gives a second one that is specific to cash flows. Check C8. The bound is Merton's Appendix~A\\
+\addlinespace
+\multicolumn{5}{@{}l}{\emph{G. Data}}\\
+G1 & R2-4.1 & Smoothed NAVs lower measured betas, so ``co-movement'' cannot explain the beta inflation & Holds, conditional & Section~\ref{sec:auditG}: true for NAV \emph{return series}; it does not apply to a terminal NAV used as a cash flow\\
+G2 & this review & A larger terminal value raises the one-factor beta mechanically & Holds & Result~\ref{res:terminal}; check C9\\
+G3 & R2 minor 2 & $1.228/0.144=8.53\neq 8.09$ & Holds & The code uses the fold mean: $1.168/0.144=8.11$\\
+G4 & R2 minor 3 & Identical 25- and 30-year rows are horizon saturation & Holds & Longest buyout portfolio: 285 months\\
+\bottomrule
+\end{longtable}
+}
+
+One slip in the reports that does not matter for anything: R1 describes the KN16 kernel as linear in the market return, $M=a+bR$. It is exponential-affine, $M=\exp(a-b\,r_m)$ (their Eq.~1), which is also what the paper and R2 say.
+
+\subsection{A. What the estimated object is}
+
+Result~\ref{res:roots} covers A1. For A2 and A3, put the intercept back in.
+
+\begin{result}[Public assets pin both parameters]
+\label{res:pin}
+Let $M(\alpha,\beta)=1/(1+\alpha+r_f+\beta F)$ with constant $r_f$. If $M$ prices the T-bill and the market,
+$\E[M(1+r_f)]=1$ and $\E[M(1+r_f+F)]=1$, then $\alpha=0$ and $\beta=\beta^\ast$.
+\end{result}
+
+\begin{proof}
+Subtracting the two conditions gives $\E[MF]=0$. Since $M\,(1+\alpha+r_f+\beta F)=1$ identically,
+$1=(1+r_f)\E[M]+\alpha\,\E[M]+\beta\,\E[MF]=1+\alpha\,\E[M]$, so $\alpha=0$ because $\E[M]>0$. Then $\E[MF]=0$ is $g(\beta)=0$, i.e.\ $\beta=\beta^\ast$.
+\end{proof}
+
+So a member of this family that is an SDF for public assets has no free parameter left. Any estimate with $\hat\alpha\neq0$ or $\hat\beta\neq\beta^\ast$ is, by this result, not that SDF. This confirms A2 and shows what A3 would cost: the PE cash flows would no longer identify anything, they would only be priced.
+
+\subsection{B. The timing lemma}
+\label{sec:auditB}
+
+\textbf{B2 and B3: Lemma~1 is correct.} I re-derived the three parts.
+\begin{itemize}
+\item \emph{Part 1} ($\tau\le t^{\mathrm{Inv}}$). With $X=\Psi_{t^{\mathrm{Inv}}}/\Psi_\tau$, which is $\mathcal F_{t^{\mathrm{Inv}}}$-measurable, the tower property gives
+$\E[X\delta\mid\mathcal F_\tau]=\E\bigl[X\,\E[\delta\mid\mathcal F_{t^{\mathrm{Inv}}}]\mid\mathcal F_\tau\bigr]=0$. R2 is right that $X$ cannot be ``factored out'' of $\E[\,\cdot\mid\mathcal F_\tau]$; it is factored out of the inner expectation. The displayed equation in the paper already does this.
+\item \emph{Part 2} ($\tau>t^{\mathrm{Inv}}$). Now $X$ is $\mathcal F_\tau$-measurable, so $\E[X\delta\mid\mathcal F_\tau]=X\,\E[\delta\mid\mathcal F_\tau]$. The process $m_t=\E[\delta\mid\mathcal F_t]$, $t\ge t^{\mathrm{Inv}}$, is a Doob martingale with $m_{t^{\mathrm{Inv}}}=0$. It is zero at later dates only if nothing is learned about $\delta$, which fails as soon as $\delta$ is random. R2's reading is correct.
+\item \emph{Part 3.} $\E[YZ\mid\mathcal F]=\Cov(Y,Z\mid\mathcal F)+\E[Y\mid\mathcal F]\,\E[Z\mid\mathcal F]$ with $Z=\delta$ and $\E[\delta\mid\mathcal F_{t^{\mathrm{Inv}}}]=0$ gives the covariance expression. Correct.
+\end{itemize}
+
+\textbf{B1: is the covariance term actually nonzero?} Under the DLP-type DGP it is zero (Result~\ref{res:wedge}). Under a genuine SDF it is not, and it can be computed in closed form.
+
+\begin{result}[The wedge under a genuine SDF]
+\label{res:wedgeclosed}
+Let the log market return per period be $r_m=\mu_m+\sigma_mz$ with $z$ i.i.d.\ standard normal, and let
+$M=\exp(-r_f-\lambda z-\tfrac12\lambda^2)$ with $\lambda=(\mu_m+\tfrac12\sigma_m^2-r_f)/\sigma_m$, so that $M$ prices the market and the T-bill. Consider a deal with $\mathrm{Inv}=-1$ whose per-period gross return is lognormal with market loading $\beta$ and is exactly priced period by period, $\E[M R]=1$. For a valuation date $h'$ periods after the investment and no later than the exit,
+\[
+\E\!\left[\frac{\Psi_{t^{\mathrm{Inv}}}}{\Psi_{t^{\mathrm{Inv}}+h'}}\,\delta\right]
+= e^{(r_f+\beta\sigma_m\lambda)h'}-e^{(r_f+\lambda^2)h'} .
+\]
+It is zero if and only if $\beta\sigma_m=\lambda$, that is, if the deal is the growth-optimal portfolio; for $\beta<\lambda/\sigma_m$ it is negative and grows in magnitude with $h'$.
+\end{result}
+
+\begin{proof}
+$\delta=-1+\prod_{u\le h}M_uR_u$, so
+$\delta/\prod_{u\le h'}M_u=\prod_{u\le h'}R_u\prod_{h'<u\le h}M_uR_u-1/\prod_{u\le h'}M_u$.
+The second product has conditional mean one. Exact pricing of a lognormal return implies $\E[R]=e^{r_f+\beta\sigma_m\lambda}$, and $\E[1/M]=e^{r_f+\lambda^2}$.
+\end{proof}
+
+The first term is the asset's expected return, the second the expected growth of the inverse kernel. They agree only for the numeraire portfolio. This is the same dichotomy as in Result~\ref{res:roots}.
+
+\begin{result}[Which weights give valid moments]
+\label{res:instrument}
+Let $W_i$ be a weight on the inception NPV.
+\begin{enumerate}[label=(\alph*)]
+\item If $W_i$ is $\mathcal F_{t_i^0}$-measurable and the paper's Eq.~(1) holds, then $\E[W_iPV_i(\theta_0)]=0$.
+\item If $W_i$ is $\G$-measurable and Assumption~\ref{ass:dlp} holds, then $\E[W_iPV_i(\theta_0)]=0$.
+\end{enumerate}
+Pre-inception weights $\Psi_{\tau',t_i^0}(\theta_0)$ satisfy (a). Post-inception weights $R^b_{t_i^0,\tau}(\theta_0)$ satisfy only (b), and fail under a genuine SDF by Result~\ref{res:wedgeclosed}.
+\end{result}
+
+This is the precise version of R2-2(b): pre-inception dates are valid under the paper's own assumption, post-inception dates need the stronger DLP structure, and in both cases the residual is the same $PV_i$.
+
+\subsection{C. Consistency}
+
+C1 and C2 are Results~\ref{res:consistency} and~\ref{res:tilt}. For C3, R2's sentence needs one precision.
+
+\begin{result}[What pooling removes]
+\label{res:vardecomp}
+Let $PV_v(\theta)$ be the inception NPV of a pool of $n_v$ funds. Under Assumption~\ref{ass:dlp},
+\[
+\E\bigl[PV_v(\theta)^2\bigr]
+=\underbrace{\E\bigl[\Var(PV_v(\theta)\mid\G)\bigr]}_{O(1/n_v)\text{ for every }\theta}
++\underbrace{\E\bigl[(\E[PV_v(\theta)\mid\G])^2\bigr]}_{\ge 0,\ =0\text{ at }\theta_0}.
+\]
+As $n_v\to\infty$ only the second term remains, and it is minimised at $\theta_0$. With $n_v$ bounded the first term remains, and its gradient at $\theta_0$ is the tilt of Result~\ref{res:tilt}.
+\end{result}
+
+So infill does not drive $\Var(PV_v)$ to zero in general; it removes the idiosyncratic part at every $\theta$, and what is left vanishes at $\theta_0$. That is enough for R2's conclusion. It also shows why a common vintage shock (R2-4.3) would matter: it would sit in the first term without shrinking in $n_v$.
+
+On C4, the mean-moment criterion is consistent in the number of vintages with bounded $n_v$ because $\E[PV_i(\theta_0)]=0$ needs only Eq.~(1). Its two limitations are that it has a second root at $\beta^\ast$ (Result~\ref{res:roots}; both roots appear in the replica) and that one moment identifies one parameter, so a model with $\alpha$ needs a second moment with an $\mathcal F_{t_i^0}$-measurable instrument (Result~\ref{res:instrument}(a)).
+
+\subsection{D. The finite-sample mechanism}
+\label{sec:auditD}
+
+\textbf{D1.} Take any constant $c\neq0$. The criteria $\sum_i\epsbar(\theta)^2$ and $\sum_i\bigl(c\,\epsbar(\theta)\bigr)^2$ have the same minimiser, yet the variance of the criterion contribution differs by the factor $c^2$. So a lower variance of $\epsbar$ implies nothing about the variance of $\hat\theta_H$. What matters is the sandwich $\mathcal H_H^{-1}\Lambda_H\mathcal H_H^{-1}$, in which the scale cancels. By Result~\ref{res:identity} the change from $H=0$ to $H>0$ is the multiplication of $PV_i$ by $A_{i,H}(\theta)$; its effect on the estimator runs through the $\theta$-dependence of $A_{i,H}$, not through the variance of the product. R2 is right, and Remark~2 should not be offered as the mechanism.
+
+\textbf{D3.}
+\begin{result}[Noise of the two discounting routes]
+\label{res:noise}
+In a lognormal model let the $h$-period log payoff be $x=c_x+\beta r_m+e$ with $e$ independent of $r_m$, the log kernel $m=c_m-\gamma r_m$, and the log benchmark return $r^b=c_b+\beta r_m$. Then
+\[
+\Var(m+x)=(\beta-\gamma)^2\sigma_m^2h+\sigma_e^2h,
+\qquad
+\Var(x-r^b)=\sigma_e^2h .
+\]
+\end{result}
+
+Benchmark deflation removes the market-path term $(\beta-\gamma)(r_m-\E r_m)$ exactly, as R2 says. ``Strictly'' holds unless $\beta=\gamma$. The Monte Carlo values match the formulas to three digits (check C6).
+
+\subsection{E. Links to other papers' results}
+\label{sec:auditE}
+
+\textbf{E1: the wedge is not the compounding error.} GSW define the compounding error through products of the realised per-period errors $e_u=M_uR_u-1$ (their Proposition~1; R2 describes it accurately).
+\begin{itemize}
+\item Suppose per-period pricing is exact, $\E_{u-1}[M_uR_u]=1$. Then $\prod_uM_uR_u$ is a martingale, so $\E[\delta\mid\mathcal F_{t^{\mathrm{Inv}}}]=0$. This is the paper's Eq.~(1). The inception moment is unbiased in population however long the compounding.
+\item In the same case the $e_u$ are martingale differences, so every product $e_ue_{u'}$ has expectation zero: the compounding error has expectation zero. GSW note this themselves and attribute a nonzero expectation to autocorrelated errors.
+\item In the same case the wedge is \emph{not} zero for a genuine SDF (Result~\ref{res:wedgeclosed}; in the check it is $-0.034$, $-0.124$ and $-0.249$ per unit invested at one, three and five years, against closed-form values $-0.034$, $-0.124$, $-0.249$).
+\end{itemize}
+So the two objects differ. The compounding error describes how realised per-period errors along one history aggregate into the inception NPV: zero in expectation under exact pricing, slow to average out in a finite sample, and nonzero in expectation when errors are autocorrelated. The wedge arises from moving the valuation date and has a nonzero expectation under exact pricing. R2's follow-on claim, that compounding makes $PV_i$ biased ``at $H=0$'', does not hold for the population moment under the paper's Eq.~(1), but GSW's simulations support it as a finite-sample statement (Section~\ref{sec:sources}, Remark~3). What also stands from R2-3.2 is the attribution: the paper should relate the wedge to GSW, in particular to their Proposition~2, rather than claim to formalise their finding.
+
+\textbf{E2: the realised-kernel mechanism.}
+\begin{result}[Sample means of a realised kernel]
+\label{res:kernel}
+In the setting of Result~\ref{res:wedgeclosed} let $K_h=M_{0,h}\,e^{r_fh}=\exp(-\lambda\sqrt h\,z-\tfrac12\lambda^2h)$. Then
+\[
+\E[K_h]=1,\qquad \operatorname{median}(K_h)=e^{-\lambda^2h/2},\qquad
+\Pr(K_h<1)=\Phi\bigl(\tfrac12\lambda\sqrt h\bigr),\qquad \Var(K_h)=e^{\lambda^2h}-1,
+\]
+and $K_h\to0$ almost surely as $h\to\infty$. A sample mean of $n$ draws has relative standard error $\sqrt{(e^{\lambda^2h}-1)/n}$.
+\end{result}
+
+The mechanism R2 cites is therefore real, and its size is governed by $\lambda^2h$, the squared maximal Sharpe ratio times the horizon:
+
+\begin{center}
+\small
+\begin{tabular}{l cc cc}
+\toprule
+& \multicolumn{2}{c}{Median of $K_h$} & \multicolumn{2}{c}{$\Var(K_h)$}\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+Annual price of risk $\lambda$ & $h=5$ years & $h=10$ years & $h=5$ years & $h=10$ years\\
+\midrule
+0.27 (market only, replica) & 0.83 & 0.69 & 0.4 & 1.1\\
+0.5 & 0.54 & 0.29 & 2.5 & 11\\
+1.0 (rich multi-factor kernel) & 0.08 & 0.007 & 147 & 22{,}000\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+How large this is at PE horizons depends on the kernel. In the static lognormal market kernel above, with the annual Sharpe ratio of 0.34 that Gupta and Van Nieuwerburgh use for their simplest case, the median realisation is $e^{-0.34^2h/2}$: 0.56 at ten years and 0.40 at sixteen. Their Internet Appendix shows that in their own models the effect is much stronger: a mean value-added of about $-1.0$ per dollar under the benchmark model and $-0.83$ under a conditional CAPM, when the truth is zero (Section~\ref{sec:sources}). Their conditional CAPM is not the static kernel of Result~\ref{res:kernel}, so the numbers are not directly comparable, but the conclusion is the same: for methods that discount with a realised SDF, R2's point holds and is serious. Their horizon is in quarters, not months as R2 writes.
+
+It does not carry over to the paper's deflator as stated. The deflator is not a kernel normalised to mean one; the analogous variance terms $e^{x}-1$ at a ten-year horizon are:
+
+\begin{center}
+\small
+\begin{tabular}{lr}
+\toprule
+Source of dispersion & $e^{x}-1$\\
+\midrule
+Beta gap of 0.3 between payoff and deflator, $x=0.3^2\sigma_m^2h$ & 0.02\\
+Horizon weight $A_{i,H}$ at $H=15$, $x=\beta^2\sigma_m^2\cdot180$ & 0.44\\
+One deal with the simulation's idiosyncratic noise, $x=0.2^2\cdot120$ & 120\\
+300 pooled deals with that noise (20 funds of 15 deals) & 0.40\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Two things follow. R2's ``$H>0$ moves deeper into this pathology'' is right in direction (the weight $A_{i,H}$ adds dispersion) but the term is small. And the heavy tails that are visible in the paper's simulation come from compounded idiosyncratic noise at 20\% a month, not from the discount factor. That is a calibration point worth a sentence in the paper.
+
+\subsection{F. Strength of identification}
+
+\begin{result}[Linearised information about $\alpha$ and $\beta$]
+\label{res:info}
+Linearise the inception NPV of vintage $v$ around $\theta_0$: $PV_v(\theta)\approx u_v+g_{\alpha,v}(\alpha-\alpha_0)+g_{\beta,v}(\beta-\beta_0)$, with $u_v=PV_v(\theta_0)$ of variance $\sigma_u^2$. Least squares over $V$ vintages then gives
+\[
+\Var(\hat\alpha)\approx\frac{\sigma_u^2}{\sum_vg_{\alpha,v}^2}\cdot\frac{1}{1-\rho^2},
+\qquad
+\Var(\hat\beta)\approx\frac{\sigma_u^2}{\sum_vg_{\beta,v}^2}\cdot\frac{1}{1-\rho^2},
+\qquad
+\rho=\frac{\sum_vg_{\alpha,v}g_{\beta,v}}{\sqrt{\sum_vg_{\alpha,v}^2\sum_vg_{\beta,v}^2}} .
+\]
+\end{result}
+
+\begin{itemize}
+\item \emph{First factor.} $-g_{\alpha,v}$ is a duration (discounted payoffs times time held), and $\sigma_u$ grows like residual volatility times the square root of duration. So $\sigma_u/\sqrt{\sum_vg_{\alpha,v}^2}$ is of the order $\sigma_{\mathrm{res}}/\sqrt{\text{effective years}}$. This is the Merton bound, and R2 is right that it applies. Merton's Appendix~A gives exactly this form: the variance of the mean estimator is $\sigma^2/h$ for a span of $h$ years, whatever the sampling frequency.
+\item \emph{Second factor.} $g_{\beta,v}/g_{\alpha,v}$ is roughly the average factor return over vintage $v$'s holding periods. With holding periods of five to ten years and overlapping vintages, that average varies little across vintages, so the two gradients are nearly proportional and $\rho$ is close to one. This factor does not exist for traded returns, where beta is estimated from high-frequency covariances. The contrast is Merton's as well: covariance estimates improve with finer sampling, mean estimates do not.
+\end{itemize}
+
+In the replica (20 vintages, 20 funds each, i.i.d.\ market), across 200 samples (check C8):
+
+\begin{center}
+\small
+\begin{tabular}{lcc}
+\toprule
+& Median & 5\% to 95\% range\\
+\midrule
+$\rho$ between the two gradients & 0.84 & 0.09 to 0.98\\
+Variance inflation $1/(1-\rho^2)$ & 3.4 & 1.0 to 30\\
+Linearised s.e.\ of $\hat\beta$: without $\alpha$ $\to$ with $\alpha$ & 0.16 $\to$ 0.31 & \\
+Linearised s.e.\ of $\hat\alpha$ (\% a month): $\beta$ known $\to$ estimated & 0.09 $\to$ 0.17 & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+So adding $\alpha$ roughly doubles the standard error of $\hat\beta$ in a typical sample and multiplies it by five in an unlucky one. The linearisation understates the levels (the actual sampling s.d.\ of $\hat\beta$ without $\alpha$ in the same design is about 0.26 to 0.31, against 0.16), so read the ratios, not the levels. With the historical market path the collinearity may be stronger than with an i.i.d.\ market; I could not check this because the factor file is not in the repository.
+
+Verdict on R2-2(c): correct as a lower bound, and the paper should say so. But the finding is not only a corollary of Merton (1980). The second factor is specific to cash-flow identification and explains the paper's own observation that beta is stable alone and unstable next to alpha. That is the defensible contribution claim.
+
+\subsection{G. Data}
+\label{sec:auditG}
+
+\textbf{G1: smoothing.} If reported values follow $V^{\ast}_t=\sum_{k\ge0}w_kV_{t-k}$ with $w_k\ge0$ and $\sum_kw_k=1$, reported returns are approximately $r^{\ast}_t=\sum_kw_kr_{t-k}$. With serially uncorrelated market returns,
+$\Cov(r^{\ast}_t,r_{m,t})/\Var(r_{m,t})=w_0\beta\le\beta$. So smoothing lowers betas measured from NAV return series, as R2 says, and the paper's ``co-movement'' sentence cannot be the explanation. The argument is about return series, however. The paper uses the NAV once, as a terminal cash flow, where what matters is its level.
+
+\begin{result}[Terminal value and the one-factor beta]
+\label{res:terminal}
+For one unit write $PV(\beta;c)=P(\beta)+c\,X_T/R^b_{t^0,T}(\beta)$, where $X_T>0$ is the terminal value and $c$ a haircut factor. At a root $\beta(c)$ of $PV=0$,
+\[
+\frac{d\beta}{dc}=-\frac{X_T/R^b_{t^0,T}(\beta)}{\partial_\beta PV(\beta;c)}>0
+\qquad\text{whenever }\partial_\beta PV<0 .
+\]
+\end{result}
+
+$\partial_\beta PV<0$ is the normal case: with a positive realised factor premium, a higher beta discounts later inflows more. So a larger terminal value mechanically raises the beta that prices the cash flows, and a haircut lowers it monotonically. In the replica, scaling all payoffs after year ten by $c=1,\,0.75,\,0.5,\,0$ gives least-squares betas of $1.18,\,1.06,\,0.91,\,0.62$ (check C9). This matches the pattern in the paper's NAV-discount figures and is the channel I recommend stating instead of co-movement.
+
+\subsection{Numerical checks at a glance}
+
+{\small
+\begin{longtable}{@{}L{0.6cm}L{5.6cm}L{4.4cm}L{4.6cm}@{}}
+\toprule
+& Quantity & Theory & Simulation\\
+\midrule
+\endhead
+C1 & $\epsilon_{\tau,i}-PV_iR^b_{t_i^0,\tau}$ at $\tau=t_i^0-24$ and $t_i^0+60$ months & 0 & below $2\cdot10^{-14}$\\
+C2 & Mean of $\epsbar(\theta_0)$ under the DLP-type DGP, $H=-5,0,5,15$ & 0 & $t$-statistics $0.15$, $0.01$, $-0.02$, $-0.13$\\
+C3 & Wedge under a genuine SDF, 1, 3, 5 years after investment & $-0.034$, $-0.124$, $-0.249$ & $-0.034$, $-0.124$, $-0.249$ (s.e.\ $\le0.001$)\\
+C4 & Gradient of $\E[PV^2]$ at $\beta_0$, single deal & $-2\E[S\,\Var(N\mid\G)]=-0.0744$ & $-0.0747$ and $-0.0743$ (two seeds of 4 million deals, s.e.\ $0.0003$)\\
+C4 & Shift of the minimiser, pools of 1, 4, 16 deals & first order: $0.149$, $0.048$, $0.013$ & $0.169$, $0.048$, $0.013$\\
+C5 & Least-squares plateau, $H=-5,0,5,15$ (one fund per vintage, $\sigma=0.1$) & not 1 unless tilts offset & $1.13$, $1.14$, $1.11$, $1.00$\\
+C6 & $\Var\log(MX)$ and $\Var\log(X/R^b)$ & $0.419$ and $0.384$ & $0.419$ and $0.384$\\
+C7 & 30-draw mean of $K_h$ at 5, 10, 15 years, share below 0.8 ($\lambda=0.27$) & rises with $\lambda^2h$ & 3\%, 13\%, 21\%\\
+C8 & Variance inflation from adding $\alpha$ & $1/(1-\rho^2)$ & median 3.4\\
+C9 & Beta under terminal haircut $c=1,\,0.75,\,0.5,\,0$ & decreasing in the haircut & $1.18$, $1.06$, $0.91$, $0.62$\\
+C10 & Mean inception NPV at $\theta_0$ over samples of 20 vintages, cents per dollar & mean 0; skewed in finite samples & mean $-0.04$, median $-0.44$, s.d.\ $4.9$\\
+\bottomrule
+\end{longtable}
+}
+
+Two observations from this table that are not in the reports. First, C5 shows that averaging over pre-inception dates leaves the estimate where it is ($1.13$ against $1.14$), which is what R2-2(b) predicts. Second, C4 shows the shift scaling as one over the number of pooled deals ($\text{shift}\times n=0.17,\,0.19,\,0.20$), which is the quantitative content of ``more funds per vintage beats more vintages''.
+
+\needspace{10\baselineskip}
+\subsection{Check against the cited papers}
+\label{sec:sources}
+
+After the first version of this audit I read the passages the referees rely on, in copies that are now collected in the \code{papers} subfolder. Versions: Gredil, S{\o}rensen and Waller (drafts of December 2019 and February 2020); Korteweg and Nagel (2025, working-paper version) and (2016, \emph{Journal of Finance}); Gupta and Van Nieuwerburgh (2021, \emph{Journal of Finance}); Driessen, Lin and Phalippou (2012, \emph{JFQA}); S{\o}rensen and Jagannathan (2015); and, added last, Martin (2012, \emph{JPE}), Merton (1980, \emph{JFE}) and Flanagan (2025, \emph{Journal of Finance}). The online supplements of Gupta--Van Nieuwerburgh, Korteweg--Nagel (2016 and 2025) and Flanagan were read last; they are the final four rows of the table. Page numbers in the working-paper versions differ from the ones R2 gives for the published articles, so I confirm content, not page numbers.
+
+{\small
+\begin{longtable}{@{}L{2.3cm}L{4.4cm}L{5.0cm}L{3.6cm}@{}}
+\toprule
+Source & What the referee says it shows & What the source says & Consequence\\
+\midrule
+\endhead
+KN25, deflator & $1/R^b$ is not an SDF because it depends on an asset-specific $\beta$ (R2-1a) & Confirmed. A footnote adds that the reciprocal of the SDF is the growth-optimal portfolio return, and that $\gamma=1$ gives the PME & A1 stands. Section~\ref{sec:sdf} is in line with the source\\
+KN25, assumptions & IID, jointly lognormal payoffs and market returns; constant risk-free rate; horizon-independent, class-wide beta (R2-1c) & Confirmed & R2's description is accurate. It concerns KN25, not the papers the manuscript's sentence is about\\
+KN25, Eqs.~(11)--(15) & Benchmark deflation leaves only idiosyncratic noise; SDF discounting adds $(\beta-\gamma)(r_m-\E r_m)$ (R2-1d, 3.4) & Confirmed, including the qualification ``unless $\beta=\gamma$'' & D3 stands; Result~\ref{res:noise} reproduces their equations\\
+KN25, estimation of $\beta$ & $\beta$ is identified from cross-fund dispersion, $\alpha$ is disciplined by an SDF that prices public assets (R2-1d) & Confirmed, and more specific than R2 says: the pricing condition for $\beta$ has \emph{two} solutions, $b=\beta$ and $b=\gamma$, because $1/R^b$ and the SDF share the form $\exp(ah-b\,r_m)$. They select the $\beta$ solution as the one with the smaller cross-fund dispersion of deflated NPVs (their Eq.~17) & Result~\ref{res:roots} is not new: it is in KN25. See the two remarks below the table\\
+KN25, single observation & Only one observation of abnormal payoff per fund (R2-2c) & Confirmed; said about standard errors of fund-level alphas & Supports F1\\
+KN16, kernel & (R1) linear kernel $M=a+bR$ & The kernel is exponential-affine, $M=\exp(a-b\,r_m)$ & R1's wording is a slip; immaterial\\
+KN16, identification & SDF parameters come from public assets only; no averaging of fund noise enters (R2-1b) & Confirmed: zero weight on the PE moment, parameters from pseudo-funds in T-bills and the market & R2 is right about identification\\
+KN16, p.~1447 & The manuscript's sentence about a common payoff window is ``incorrect'' (R2-1b) & KN16 make exactly this point, about estimating the GPME: a large cross-section is not enough because all units in one window share one SDF realisation; many non-overlapping windows are needed & \textbf{R2 is wrong on this sentence.} The manuscript paraphrases KN16 correctly; only the word ``identification'' is loose\\
+GSW, Proposition~1 & Lifetime NPV moment = duration effect plus compounding error made of cross-period co-moments of per-period pricing errors; nonzero in expectation under autocorrelation (R2-3.2) & Confirmed. The per-period errors are the \emph{realised} $e_t=R_tM_t-1$. The text says the two tests may be equivalent in expectation, that the bias is a sampling error that decays slowly, and (footnote) that its expectation is nonzero only with autocorrelated errors & R2's description is accurate. E1 stands with a corrected argument; see below\\
+GSW, Table~AI & Inception NPV biased even with 2{,}500 funds and 50 vintages; worse as the vintage span shrinks (R2-3.2) & Confirmed: median bias of about $-3$ cents per dollar in that design, with SDF parameters estimated consistently; larger in smaller and unbalanced samples & R2 is right that $H=0$ is not clean \emph{in finite samples}. I had understated this\\
+GSW, Proposition~2 & Identification from compounded, random-duration cash-flow moments is dominated ``due to either noise or bias'' (R2-1d) & Confirmed, for SDF parameters estimated from pseudo-fund cash flows of \emph{public} benchmarks versus time-series GMM on their returns. The cash-flow moment is equivalent to a return moment with an instrument that is less efficient or correlated with the pricing error & Accurate. The dominance needs observable per-period returns, which PE lacks, so the transfer to the manuscript is by analogy. The mechanism is the same as Result~\ref{res:instrument}\\
+GSW, footnote~14 & Endogenous exit timing (R2-1d) & Confirmed in the February 2020 draft: managers choose the timing of cash flows, with a reference to Gredil's evidence that these choices carry information & Supports the caveat under Result~\ref{res:wedge}\\
+GvN, Section~II.C & Realised-SDF sample means diverge from expectations; ``close to zero for $h<64$ months'' (R2-3.3) & Confirmed in substance, with reference to Martin (2012). But $h$ is in \emph{quarters} (their maximum horizon is 64 quarters, 16 years), and the statement is for rich SDF models. They add that the problem also arises for simple SDFs such as the CAPM, which their Internet Appendix documents (row below) & R2 misstates the unit. The substance holds; see the row on their Internet Appendix\\
+DLP12, Theorem~1 & Consistency through within-portfolio infill (R2-3.1) & Confirmed: number of portfolios fixed, number of projects or funds per portfolio diverges. Assumption~1 makes idiosyncratic shocks independent of the market return at all leads and lags & C3 stands. Assumption~\ref{ass:dlp} is DLP's own assumption\\
+Martin (2012) & A few disaster-state kernel realisations force most realisations towards zero, so sample means of realised-kernel values are unreliable (R2-3.3) & Confirmed. The cumulative risk-adjusted return $X_t=\prod_{u\le t}M_uR_u$ is a martingale with mean one that tends to zero almost surely in the ``generic case''; its value comes from rare explosions. The generic case fails only if the asset is asymptotically growth-optimal and the SDF its reciprocal. The results are asymptotic in the horizon and concern sample paths & E2 stands and gains a sharper form; see Remark~4\\
+Merton (1980) & Means are hard to estimate; standard errors are large relative to the means (R2-2c) & Confirmed. Appendix~A: the variance of the mean estimator is $\sigma^2/h$ for a span of $h$ years and does not depend on the sampling frequency, whereas the variance estimator improves with finer sampling. The text says variances and covariances are estimated much more accurately than expected returns & F1 stands. Merton supports both halves of Result~\ref{res:info}: the bound on $\alpha$, and the contrast with betas estimated from returns\\
+Flanagan (2025) & Same realised-kernel problem for loan cash flows; remedy is a spanning assumption and benchmark prices instead of realisations (R2-1d) & The remedy is confirmed: the paper adapts Gupta and Van Nieuwerburgh to bank loans, values the replicating portfolio at market prices, and states as its main identifying assumption that the benchmarks span all priced risk (residuals are discounted at the risk-free rate; relaxed with a bank SDF in the Internet Appendix). The diagnosis is R2's inference: the main text does not discuss the realised-SDF problem and does not cite Martin & R2's row is accurate on the method. No verdict changes\\
+GvN, Internet Appendix, Section~I & The realised-SDF problem also arises in simple models (their claim in Section~II.C, relied on by R2-3.3) & Confirmed, and stronger than the main text suggests. With zero true value-added, discounting simulated fund cash flows with the realised SDF gives a mean of about $-1.0$ per dollar invested under their benchmark model and about $-0.83$ under a conditional CAPM, with 98\% of funds below zero. They place the onset at horizons of 20 to 60 quarters when prices of risk are high, and describe the static CAPM with an annual Sharpe ratio of 0.34 as still left-skewed and dispersed & My first wording (``mild'', then ``moderate'') was too favourable to realised-SDF methods. E2 is rewritten below Result~\ref{res:kernel}. The verdict on the manuscript's deflator is unchanged (Remark~4)\\
+KN16, Internet Appendix, Sections~III--IV & (Cited by KN16, p.~1447, for the role of $T$) & Monte Carlo on test size. With 25 years of data and heavily overlapping fund payoffs, their dependence-robust $J$-test rejects about 20\% of the time at a nominal 10\%; ignoring cross-correlation is much worse; with 200 years the distortion largely disappears. They conclude that size distortions remain in short samples with strong overlap & Supports the manuscript's own position that asymptotic inference is unreliable with about 25 vintages. Cite it in the answer to R2-2a\\
+KN25, Internet Appendix & (Not cited by the referees) & Additional simulations under the lognormal null. In a very large sample with \emph{one fund per vintage} and idiosyncratic volatility of 25\% a year, the estimated beta is 1.006 for a true beta of one. With 1{,}200 funds over 30 years the method works well for betas up to two. The PME is accurate only when the true beta is one & Their constrained dispersion criterion shows no visible tilt with one fund per vintage, in contrast to the unconstrained least-squares criterion (Result~\ref{res:tilt}). Supports Remark~2\\
+Flanagan, Internet Appendix & (R2-1d: same realised-kernel problem) & No discussion of the realised-SDF problem and no reference to Martin here either. One robustness section discounts the unspanned residuals with a bank SDF & Confirms that the diagnosis in R2's table is R2's inference, not Flanagan's. Immaterial\\
+\bottomrule
+\end{longtable}
+}
+
+\textbf{Remark 1: the two-root result is in KN25.} What I derived as Result~\ref{res:roots} is stated by Korteweg and Nagel when they estimate $\beta$: the condition that the deflated cash flows price to the SDF-based level has one solution at the fund's beta and one that simply reproduces the SDF. Cite them for it. This also strengthens the answer to A1: by the referee's own key reference, a deflator of this form \emph{is} the SDF at one parameter value and a benchmark portfolio at the other.
+
+\textbf{Remark 2: the manuscript's criterion is close to KN25's.} KN25 choose $\beta$ to minimise the cross-fund dispersion of benchmark-deflated NPVs, subject to their mean being equal to a level $\bar\alpha$ that comes from the SDF. The manuscript's $H=0$ criterion minimises the sum of squared deflated NPVs with no such constraint. Two consequences:
+\begin{itemize}
+\item \emph{Positioning.} The estimator can be described as the KN25 dispersion criterion without the SDF-based level constraint, which is a more accurate place in the literature than ``SDF estimation'' and answers R2-1d directly.
+\item \emph{The $H=0$ tilt.} In KN25 the constraint, a mean moment, determines $\beta$ up to the two roots, and dispersion only selects between them. That is the mean-moment estimator of C4, which has no quadratic-loss tilt. In the manuscript dispersion determines $\beta$ by itself, which is where the tilt of Result~\ref{res:tilt} comes from. Reporting the constrained version at $H=0$ would be a robustness check with a published precedent.
+\end{itemize}
+
+\textbf{Remark 3: what changes in E1.} My first version argued that under exact per-period pricing the per-period errors are zero. That was wrong as worded: GSW's errors are realised errors, which are random with conditional mean zero. The corrected argument is:
+\begin{itemize}
+\item Under exact per-period pricing with uncorrelated errors, the compounding error has expectation zero. GSW say so themselves. The wedge of Result~\ref{res:wedgeclosed} has a nonzero expectation in exactly that case. So they are different objects, and E1's verdict stands.
+\item GSW's point is about finite samples: products of realised errors along one history average out slowly, so the sample mean NPV is skewed and can be off even with many funds. This supports R2's statement that $H=0$ is not clean in feasible samples, as a finite-sample statement separate from the population tilt of C2.
+\item In the replica, which uses the benchmark deflator and DLP-type noise, the effect exists but is small: across samples of 20 vintages the mean inception NPV at $\theta_0$ has mean $-0.04$ and median $-0.44$ cents per dollar invested, against a standard deviation of 4.9 cents (check C10; with half the noise the median is $-0.08$). GSW's $-3$ cents is for a genuine SDF with estimated parameters, a different setting.
+\item The closer relative of the wedge in GSW is Proposition~2, where a cash-flow moment is rewritten as a return moment with an instrument that may be correlated with the pricing error. That is the logic of Result~\ref{res:instrument}, and the manuscript should cite it there.
+\end{itemize}
+
+\textbf{Remark 4: Martin's generic case and the deflator.} In the lognormal setting of Result~\ref{res:wedgeclosed}, an asset with market loading $\beta$ and idiosyncratic multiplier $N_h$ has cumulative risk-adjusted return
+\[
+X_h=\exp\!\Bigl(-(\lambda-\beta\sigma_m)\sqrt h\,z-\tfrac12(\lambda-\beta\sigma_m)^2h\Bigr)\cdot N_h,
+\qquad (\lambda-\beta\sigma_m)^2=(\gamma-\beta)^2\sigma_m^2 .
+\]
+So Martin's exponent is the market-path noise term of Result~\ref{res:noise}, and Result~\ref{res:kernel} is the case $\beta=0$. Three consequences:
+\begin{itemize}
+\item \emph{The systematic part vanishes if and only if $\beta=\gamma$.} That is Martin's non-generic case: the asset is growth-optimal and the kernel its reciprocal. A benchmark deflator evaluated at the payoff's own beta is in this case by construction, path by path, because $1/R^b$ times a payoff with the same loading leaves no market term. Martin's own definition therefore explains why R2-3.3 does not transfer to the deflator at the root the manuscript's criterion selects.
+\item \emph{The idiosyncratic part is generic.} $N_h$ is a nonnegative martingale with mean one, and by the same argument it tends to zero as the holding period grows, with rare explosions. This is the heavy tail seen in the simulation. The difference from the kernel is diversification: idiosyncratic paths are independent across deals and average out within a vintage, whereas the kernel path is common to every fund in a window and averages out only across non-overlapping windows, which is the point of KN16, p.~1447.
+\item \emph{Magnitudes.} With Martin's calibration (volatility 16\%, Sharpe ratio 50\%) the median of $X_h$ for the market payoff is $e^{-0.34^2h/2}$: 0.56 at ten years, 0.40 at sixteen years, and below $10^{-6}$ at his 250 years. For the pure kernel ($\beta=0$) it is 0.29 at ten years, the $\lambda=0.5$ row of the table under Result~\ref{res:kernel}.
+\end{itemize}
+
+\textbf{Remark 5: what the supplements add.} Three points beyond the table.
+\begin{itemize}
+\item Gupta and Van Nieuwerburgh list the PME among the realised-SDF approaches. By Remark~4 the exposure of a market deflator is governed by $(1-\beta)^2\sigma_m^2h$, which is small for betas near one (0.02 at ten years for a beta gap of 0.3). Korteweg and Nagel's supplement agrees from the other side: the PME is accurate when the true beta is one and poor otherwise. The manuscript estimates the beta instead of fixing it at one, which is the case the pathology does not reach.
+\item Korteweg and Nagel's large-sample simulation is the closest published analogue of R2's diagnostic in comment 3.1 (few funds per vintage, very many vintages). Their constrained criterion returns 1.006. In my replica the unconstrained least-squares criterion returns about 1.15 with one fund per vintage. The designs differ (their idiosyncratic volatility is 25\% a year on 25 cash flows per fund; mine is about 35\% a year on 15 deals), so this is indicative, but it points the same way as Result~\ref{res:tilt}.
+\item Korteweg and Nagel's 2016 size simulations give the manuscript a citation for a claim it currently makes without one: that with roughly 25 heavily overlapping vintages, dependence-robust asymptotic inference still over-rejects.
+\end{itemize}
+
+\textbf{Still not opened:} the published (RFS) pagination of Korteweg--Nagel (2025), and the two replication-code archives in the \code{papers} folder. One of them is filed under ``Gupta'' but carries the article number of Flanagan's paper (\code{jofi13465}); it is probably his replication package (about 4\,GB unpacked).
+
+\subsection{What the audit changes}
+
+\begin{itemize}
+\item \textbf{Nothing in the referees' main line falls.} A1 to A3, B1 to B4, C1 to C5 and D1 to D3 all hold, some under conditions that are worth stating in the reply.
+\item \textbf{One claim does not hold as stated: E1.} The wedge is not GSW's compounding error, and compounding alone does not bias the $H=0$ moment in population. Push back on ``same object'', accept the attribution point, and concede the finite-sample part, which GSW document.
+\item \textbf{One criticism of the manuscript's reading of the literature is unfounded: R2-1b on KN16.} The sentence R2 calls incorrect paraphrases KN16, p.~1447. The reply can say so and still add the row on identifying moments to Table~1.
+\item \textbf{KN25 offers the paper a better home than it currently claims.} The two-root property and the dispersion criterion (Section~\ref{sec:sources}, Remarks~1 and~2) let the paper describe its estimator in KN25's own terms.
+\item \textbf{Two claims are right but do not carry the weight R2 puts on them: E2 and F1.} The realised-kernel problem is real and, by Gupta and Van Nieuwerburgh's own simulations, severe for methods that discount with a realised SDF. It does not apply to a benchmark deflator evaluated at the payoff's own beta, which is Martin's non-generic case (Remark~4). The Merton bound is a lower bound; the alpha--beta collinearity of Result~\ref{res:info} is the paper's own point to make.
+\item \textbf{The reply can use the referees' mathematics against the harder requests.} Result~\ref{res:pin} shows that R2's remedy (traded-asset moments) leaves no parameter for the PE data to identify. Result~\ref{res:noise} is R2's own argument for why the deflator route is the less noisy one.
+\end{itemize}
+
+%======================================================================
+\section{Referee 1, point by point}
+\label{sec:r1}
+%======================================================================
+
+{\small
+\begin{longtable}{@{}L{0.5cm}L{4.3cm}L{1.7cm}L{7.3cm}L{1.2cm}@{}}
+\toprule
+\# & Comment & Valid? & What it means in practice & Effort\\
+\midrule
+\endhead
+1 & KN16 is an SDF approach, DLP12 a return-model approach; the paper mixes them, and Eq.~(19) uses DLP's return model as an ``SDF'' & Yes & Same as R2-1a. Reposition; see Section~\ref{sec:sdf} & M (rewrite)\\
+2 & Derive the conditions under which multiple discounting dates are consistent; guesses an i.i.d.\ linear factor model with independent idiosyncratic shocks & Yes, and the guess is correct & Result~\ref{res:consistency}; add Results~\ref{res:identity} to~\ref{res:tilt} as a short subsection & M\\
+3 & Extend the simulation to compare KN16 and DLP12, ideally with the horizon extension & Partly & A like-for-like horse race is not possible; see~\ref{sec:r1sim} & S to decline, M for a small addition\\
+4 & Comparison with existing empirical results is missing & Yes & One compact table; see~\ref{sec:r1emp} & M\\
+5 & Sometimes hard to follow & Yes & Mostly follows from the fixes above; see~\ref{sec:r1writing} & S to M\\
+\bottomrule
+\end{longtable}
+}
+
+\subsection{Comment 3: simulation comparison of the approaches}
+\label{sec:r1sim}
+
+\begin{itemize}
+\item KN16 and the present estimator estimate different objects: a pricing error under a publicly calibrated kernel versus a benchmark loading. ``Which has lower bias'' has no common target. Say this in the reply.
+\item A cheap, honest addition: in the simulated data, also report the KN16-style readout (calibrate an exponential-affine SDF on the market and T-bill, then report the PE pricing error and its dispersion across replications) next to the $H=0$ and $H=15$ estimates. One table.
+\item The existing exponential-affine draft (\file{tex/bonus/exp_affine_simulation.tex}) does not serve this purpose. Its ``exponential affine SDF'' is again a deflator with free PE loadings, in log form. Table~1's row ``SDF specification: Both (tested empirically)'' should be corrected or dropped, since the main text reports only the linear form.
+\end{itemize}
+
+\subsection{Comment 4: comparison with existing empirical results}
+\label{sec:r1emp}
+
+Appendix~D compares with DLP12 only. Add one table to the main text with published betas (and alphas where reported) for buyout and venture next to the paper's $H=0$ and $H=15$ estimates. The Korteweg (2019) survey already in the bibliography has such a table to draw from. Candidates: DLP12; Franzoni, Nowak and Phalippou (2012); Ang et al.\ (2018); Korteweg and S{\o}rensen (2010); Axelson et al.; Jegadeesh et al.; Boyer et al.\ (2023); KN16 and KN25. I have not checked the numbers in those papers, so take them from the sources.
+
+\subsection{Comment 5: writing}
+\label{sec:r1writing}
+
+Concrete items that make the paper hard to follow, all cheap to fix:
+\begin{itemize}
+\item Two sets of asymptotics (DLP infill, the paper's increasing domain) plus a third narrative (finite-sample simulation), with shifting claims about which carries the results.
+\item $\theta_0$ versus $\theta_H^\dagger$ is defined carefully in the propositions but used loosely in the prose.
+\item Duplicate theorem numbers between main text and appendix (R2 minor~4).
+\item ``SDF'' is used for three different objects.
+\end{itemize}
+
+%======================================================================
+\section{Referee 2, point by point}
+\label{sec:r2}
+%======================================================================
+
+\needspace{10\baselineskip}
+\subsection{Major comment 1: object and literature}
+
+{\small
+\begin{longtable}{@{}L{0.6cm}L{4.0cm}L{1.5cm}L{7.7cm}L{1.2cm}@{}}
+\toprule
+\# & Comment & Valid? & What it means in practice & Effort\\
+\midrule
+\endhead
+1a & The estimated object is not an SDF; $\alpha$ is a wedge on the benchmark return & Yes & Same as R1-1; reposition (Section~\ref{sec:sdf}) & M\\
+1b & The characterisation of KN16 on p.~21 is incorrect; Section~1.4 and Table~1 miss the first-order distinction, namely which moments identify the kernel & No on the sentence; yes on Table~1 & Checked against KN16, p.~1447: the quoted sentence is a faithful paraphrase of their point that estimating the GPME needs many non-overlapping windows because units in one window share one SDF realisation. It is not about how the kernel is identified, so it is not the contradiction R2 claims. But the section presents it as identification (``natural when identification comes from\ldots'') and Table~1 has no row for which moments identify the parameters. Add that row, rewrite two sentences, and say that DLP is also a deflator method & S to M\\
+1c & ``Without strong distributional assumptions'' mischaracterises the literature & Partly & R2 argues from KN25's lognormal assumption, but the sentence is about DLP12 and KN16, and KN16 is GMM without lognormality. Still reword: KN16 does not ``recover $\alpha$ and $\beta$'', and DLP relies on idiosyncratic shocks being independent of the factors (Assumption~\ref{ass:dlp}) & S\\
+1d & Broad disregard of the literature; the ``middle ground'' is not coherent; two coherent options & Mostly & The engagement is thin: GSW is cited once, KN25 only in a list, and Gupta and Van Nieuwerburgh, Martin (2012), Flanagan (2025), Gredil (2022) and Merton (1980) are not in the bibliography. Add one related-literature paragraph that says which failure each paper addresses and how; R2's table is a usable outline. ``Not coherent'' is too strong: a third coherent option is to keep the cash-flow-identified deflator, name it correctly, and present the paper as a diagnostic of that estimator class. R2 is right that the claims must then shrink & M\\
+\bottomrule
+\end{longtable}
+}
+
+\needspace{10\baselineskip}
+\subsection{Major comment 2: claims versus evidence}
+
+{\small
+\begin{longtable}{@{}L{0.6cm}L{4.0cm}L{1.5cm}L{7.7cm}L{1.2cm}@{}}
+\toprule
+\# & Comment & Valid? & What it means in practice & Effort\\
+\midrule
+\endhead
+2a & Finite-sample stabilisation is never established; Remark~2 is about the criterion, not the estimator; one Monte Carlo design; unclear why increasing domain is an advantage; the simulation cannot separate finite-sample error from a population shift & Yes & Section~\ref{sec:horizon} replaces the heuristic with exact statements and shows the last point is true. Reword ``stabilises finite-sample estimation'' to what is shown. The repository already holds many more scenarios than the paper reports (\file{config/simulation_scenarios.yaml}: lifetimes, error distributions, simulated market); a compact appendix table of bias by $H$ across those scenarios answers ``one design'' at no new cost. Demote the asymptotic framework from ``contribution'' to ``benchmark'', which the text half does already & M\\
+2b & $H$ is neither motivated nor selectable; why not $H<0$; the CV machinery is not used to choose $H$ & Yes on selection; answerable on motivation & Motivation and the $H<0$ remark follow from Result~\ref{res:identity} (two or three sentences). On selection, be explicit that $H$ is a sensitivity dimension, report the full grid as now, and soften ``focus on 12.5 to 15 years'', which is specific to the simulated DGP. Optional: use the $hv$-block folds to compare horizons, but only on a common out-of-sample loss, because the criterion's scale changes with $H$ and stored validation errors are not comparable across horizons & S; M with the optional part\\
+2c & Is ``weak identification'' of alpha just Merton (1980)? & Largely yes & See~\ref{sec:merton} & S to M\\
+\bottomrule
+\end{longtable}
+}
+
+\subsubsection{Comment 2c: the Merton bound}
+\label{sec:merton}
+
+Rough arithmetic. With residual volatility $\sigma_{\mathrm{res}}$ of a vintage portfolio relative to its benchmark and $T$ effective years of data,
+\[
+\mathrm{SE}(\hat\alpha_{\text{annual}})\approx\frac{\sigma_{\mathrm{res}}}{\sqrt{T}}
+\approx\frac{15\%\text{ to }25\%}{\sqrt{30}}\approx 3\%\text{ to }4.5\%\ \text{a year}
+\approx 0.25\%\text{ to }0.4\%\ \text{a month}.
+\]
+The reported buyout alpha estimates are $0.2\%$ to $0.8\%$ a month with fold dispersion $0.2\%$ to $0.5\%$ (venture is wider on both). So the instability is about what the bound implies.
+
+Concede this, and add the point that is specific to this setting. With traded returns, beta comes from high-frequency covariances and only means are hard to estimate. With cash flows alone, beta is also identified from mean-type NPV restrictions across vintages. That is why adding alpha destabilises beta here, and it is a statement about this estimator class, not about means in general.
+
+\needspace{10\baselineskip}
+\subsection{Major comment 3: analytical issues}
+
+{\small
+\begin{longtable}{@{}L{0.6cm}L{4.0cm}L{1.5cm}L{7.7cm}L{1.2cm}@{}}
+\toprule
+\# & Comment & Valid? & What it means in practice & Effort\\
+\midrule
+\endhead
+3.1 & The $H=0$ criterion does not target $\theta_0$ under bounded funds per vintage & Yes, confirmed & Result~\ref{res:tilt} and the numerical tables. Run R2's diagnostic with the paper's own code ($H=0$, funds per vintage fixed, many vintages with a simulated market; the \code{simulate_mkt} option exists). State all results around $\theta_H^\dagger$ for $H\ge0$ and remove the unconditional claims about $H=0$. Optional and cheap: report the one-factor beta that sets the pooled mean NPV to zero next to the least-squares beta in Table~3. That estimator has no variance tilt (confirmed in the replica); if the two agree, the tilt is small in the data. It has a second root at $\beta^\ast$ (Result~\ref{res:roots}), so take the root nearest the least-squares estimate & M\\
+3.2 & The wedge and GSW's compounding error appear to be the same object & Partly (audit E1: not the same object) & They are related but not identical: the paper's comes from moving the valuation date, GSW's from compounding per-period pricing errors within the inception NPV. Under the paper's Eq.~(1) there is no bias in the $H=0$ moment itself; the $H=0$ problem is 3.1. What must change is the attribution: ``we explicitly formalise'' overstates the distance to GSW. Read their Propositions~1 and~2 and state the relation in a few sentences & S to M\\
+3.3 & The realised-kernel pathology (Martin 2012; Gupta and Van Nieuwerburgh) applies & Partly & Checked against Gupta and Van Nieuwerburgh: accurate except that their horizon of 64 is in quarters, not months. The pathology is severe for a genuine SDF with a high price of risk. A benchmark deflator with beta near one is much less exposed, as R2's own comment 1d says. The relevant caveat here is different: squared, compounded idiosyncratic errors are heavy-tailed (visible in the replica and in the size of $\Var(N\mid\G)$ above), so the moment conditions behind the CLT (Assumption~4(3)) are demanding and sample criteria can be dominated by a few vintages. Add a short caveat and cite both papers & S\\
+3.4 & Which variance component does $\tau$-averaging reduce? & Yes & Answered by Result~\ref{res:identity}: none that is date-specific. Replace Remark~2 & S\\
+3.5 & Three exposition requests on Lemma~1 and ``mathematically immune'' & Yes & (i)~Say the step is iterated expectations through the investment-date information set. (ii)~Add one sentence on why $\E[\delta_{i,j}\mid\mathcal F_\tau]\neq0$ for $\tau>t^{\mathrm{Inv}}_{i,j}$. (iii)~Reword ``mathematically immune'' as a population statement & S\\
+\bottomrule
+\end{longtable}
+}
+
+\needspace{10\baselineskip}
+\subsection{Major comment 4: data and simulation design}
+
+{\small
+\begin{longtable}{@{}L{0.6cm}L{4.0cm}L{1.5cm}L{7.7cm}L{1.2cm}@{}}
+\toprule
+\# & Comment & Valid? & What it means in practice & Effort\\
+\midrule
+\endhead
+4.1 & The NAV channel is not articulated; ``subjective valuations co-move with public indices more than realised exits'' contradicts the smoothing evidence; is the 50\% a haircut; simulate smoothed NAVs & Yes on the explanation; the simulation request can be declined & The co-movement sentence should go. A simpler channel fits the paper's own figures: a larger terminal value raises the discount rate needed to set the NPV to zero, and in a one-parameter model all of that loads on beta. This also explains why beta falls monotonically with the haircut. The data cut-off (April 2022) is near a valuation peak, which strengthens the effect for young vintages. The discount is a flat multiplier on the final NAV (\code{empirical/prep_preqin.R}, \code{final.nav.discount}); say so. Decline the smoothed-NAV simulation: NAVs enter only as a terminal lump sum, and the 0 to 100\% haircut grid already brackets level bias. Note the interaction with Section~\ref{sec:vyp} & S\\
+4.2 & Preqin cash flows are quarterly, not monthly; clarify ``equal-weighted'' & Yes, confirmed & In the prepared data, 100\% of non-zero cash flows fall on quarter-end dates. The preparation script builds cash flows from quarterly ``Value'' rows. The sentence ``all factor returns and fund cash flows are observed at monthly frequency'' is wrong as written: cash flows are quarterly, placed at quarter end on a monthly grid. On weighting, Preqin cash flows are per 10 million of commitment, so EW is per unit of commitment and FW multiplies by fund size & S\\
+4.3 & The simulation departs from real data: deal-level structure, lifetimes, ``individual funds'' undefined, i.i.d.\ errors, the single-fund result is DLP's point & Partly & ``Effectively observes deal-level cash flows'' is not accurate: simulated funds pool 15 deals and are then pooled by vintage. But the design has no fees, no interim NAVs and one exit per deal; say so. Define ``individual fund'' (15 deals over five years). Acknowledge that the single-fund result restates DLP. The i.i.d.\ point has more force after Result~\ref{res:consistency}: the gain from pooling within a vintage relies on idiosyncratic errors averaging out, and a common vintage shock would not. One extra scenario with a vintage-level shock would be the most informative new simulation in the revision & S; M to L for the scenario\\
+4.4 & One investment per deal should be qualified & Yes & One sentence: a follow-on investment can be treated as its own deal with its share of the proceeds; the deal layer is an accounting device & S\\
+\bottomrule
+\end{longtable}
+}
+
+\needspace{10\baselineskip}
+\subsection{Minor comments}
+
+{\small
+\begin{longtable}{@{}L{0.5cm}L{4.6cm}L{2.0cm}L{8.3cm}@{}}
+\toprule
+\# & Comment & Valid? & Note\\
+\midrule
+\endhead
+1 & The one-period kernel $M_u$ is never defined & Yes & Add $M_u=1/(1+\alpha+r_{f,u}+\sum_m\beta_mF_{m,u})$ under Eq.~(19)\\
+2 & The $\mathrm{SR}_{CV}$ column is not reproducible from the table & Yes, confirmed & The code divides the cross-validation fold mean by the fold standard deviation (\code{results/analyze_result.R}, line 387), while the text defines the ratio with the full-sample estimate. BO, EW, 0-year: fold mean $1.214/0.121=10.0$, matching the table. Fix the definition or recompute\\
+3 & The 25-year and 30-year rows are identical in Table~3 & Saturation, confirmed & The longest buyout vintage portfolio spans 285 months (23.8 years), so every horizon above that gives the same estimate. For venture the longest is 354 months, which is why those rows differ. Add a table note\\
+4 & Theorem numbering collides between main text and appendix & Yes & Prefix appendix results (B.1, C.1, \ldots) and fix the duplicate ``Proof of Proposition~2'' header\\
+5 & The SHAC pointer in Appendix~C.5 goes to the wrong object & Yes & Point to Assumption~2(4) for the metric\\
+6 & Redundant sample sentences on p.~23 & Yes & Delete\\
+7 & Appendix~D quotes CV values without saying so & Yes & For example, ``0.14 for BO under FW'' is the fold mean 0.141; the full-sample value is 0.175\\
+\bottomrule
+\end{longtable}
+}
+
+%======================================================================
+\section{Issues neither referee raised}
+%======================================================================
+
+\subsection{Empirical vintage-year portfolios are not constant-composition pools}
+\label{sec:vyp}
+
+Let vintage $v$ contain $N_v$ funds and let $\mathcal R_{v,t}$ be the set of funds that report on date $t$. The two pipelines aggregate differently:
+\[
+\underbrace{CF^{\text{emp}}_{v,t}=\frac{1}{|\mathcal R_{v,t}|}\sum_{i\in\mathcal R_{v,t}}CF_{i,t}}_{\text{\code{empirical/prep_preqin.R}, line 229}}
+\qquad\text{versus}\qquad
+\underbrace{CF^{\text{sim}}_{v,t}=\sum_{i=1}^{N_v}CF_{i,t}}_{\text{\code{simulation/simulation_improved.R}, line 228}} .
+\]
+The simulation version is a true pool (the scale $N_v$ does not affect the minimiser). The empirical version is not, because $|\mathcal R_{v,t}|$ changes a lot over a vintage's life. For buyout vintage 2000 there are 42 funds, of which 8 report on the first date, 41 at the peak and 2 at the end. A fund's first contribution can therefore enter with weight $1/8$ and its later distributions with weight $1/41$, so even a correctly priced fund no longer has zero expected NPV inside the portfolio.
+
+I confirmed that the stored portfolio files equal the mean over reporting funds exactly. The effect on the cash-flow profile is large. The table shows the ratio of positive to negative net quarterly flows, including the final NAV, in the global sample:
+
+\begin{center}
+\small
+\begin{tabular}{lccc}
+\toprule
+Vintage portfolio & Funds & As stored: mean over reporting funds & True pool: sum over all funds$/N_v$\\
+\midrule
+Buyout 2000 & 42 & 2.76 & 2.55\\
+Buyout 2005 & 69 & 2.44 & 1.98\\
+Venture 2000 & 79 & 1.23 & 0.89\\
+Venture 2005 & 43 & 5.58 & 2.18\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Early and late cash flows, including the final NAVs of the last surviving funds, get more weight than in a true pool. This would push estimated betas up and bears on the NAV sensitivity results (R2-4.1). I could not rerun the estimation because the factor file is not in the repository, so I do not know how much the reported betas move. If the aggregation is intended, the paper needs to say so and justify it. If not, the empirical section needs a rerun.
+
+\subsection{Smaller items}
+
+\begin{itemize}
+\item The stability-ratio definition (R2 minor~2) also affects how the text reads the tables: where the full-sample and fold-mean estimates differ a lot (two-factor models), the reported ratio describes the fold mean.
+\item The bibliography entry for Korteweg and Nagel's RFS paper (\code{KN24}) carries a 2024 advance-access reference; R2 cites it as 2025, volume 38(9). Update.
+\end{itemize}
+
+%======================================================================
+\section{Suggested scope of the revision}
+%======================================================================
+
+\textbf{Do first}
+\begin{enumerate}
+\item Check the portfolio aggregation (Section~\ref{sec:vyp}) and rerun the empirical section if needed.
+\item Run R2's $H=0$ diagnostic with the paper's own code to confirm Section~\ref{sec:horizon}.
+\end{enumerate}
+
+\textbf{Must address, rewrite only}
+\begin{enumerate}[resume]
+\item Reposition the object as a benchmark deflator; adjust title, abstract, introduction, Section~1.4 and Table~1 (R1-1, R2-1a, 1b, 1c).
+\item Replace Appendix~B's heuristic and Remark~2 with Results~\ref{res:identity} to~\ref{res:tilt}; state results around $\theta_H^\dagger$ for all $H$; reword the trade-off (R1-2, R2-2a, 2b, 3.1, 3.4).
+\item One related-literature paragraph plus the missing citations (R2-1d, 3.2, 3.3).
+\item All wording fixes: Preqin frequency, NAV channel, haircut definition, Lemma~1 prose, minors~1 to~7 (R2-3.5, 4.1, 4.2, 4.4).
+\end{enumerate}
+
+\textbf{Small additions, about one table each}
+\begin{enumerate}[resume]
+\item Published estimates next to the paper's (R1-4).
+\item Bias by horizon across the simulation scenarios that already exist (R2-2a).
+\item Mean-moment beta as a robustness column in Table~3 (R2-3.1).
+\item Merton-type back-of-envelope in the text (R2-2c).
+\end{enumerate}
+
+\textbf{Optional, real work}
+\begin{enumerate}[resume]
+\item One simulation scenario with a vintage-level common shock (R2-4.3).
+\item KN16-style readout in the simulation (R1-3).
+\end{enumerate}
+
+\textbf{Decline, with reasons}
+\begin{enumerate}[resume]
+\item Adding traded-asset moments to the Eq.~(19) deflator: it changes the estimand (Section~\ref{sec:sdf}).
+\item A full KN16 versus DLP12 horse race: the targets differ (Section~\ref{sec:r1sim}).
+\item A smoothed-NAV simulation: NAVs enter only as terminal lump sums, and the haircut grid brackets level bias.
+\item An optimality theory for $H$: present $H$ as a sensitivity dimension.
+\end{enumerate}
+
+Rough page effect on the main text: items 3 to 6 are about neutral, since the wedge discussion in Section~1.1 and Appendix~B shrink. Items 7 to 10 add one to two pages. Items 11 and 12 can go to the online appendix.
+
+%======================================================================
+\section{What I did not verify}
+\label{sec:notverified}
+
+\begin{itemize}
+\item The published pagination of Korteweg--Nagel (2025): I read the working-paper version, where R2's pages 9, 11 and 14 correspond to pages 10, 12 and 16. The replication-code archives of Gupta--Van Nieuwerburgh and Flanagan were not opened. All papers the referees rely on, and their online supplements, have been read in the passages they cite (Section~\ref{sec:sources}).
+\item The appraisal-bias papers R2 cites in comment 4.1 (Brown, Ghysels and Gredil; Brown, Gredil and Kaplan; Jenkinson et al.) were only skimmed for their premise that reported NAVs are smoothed.
+\item Published beta and alpha numbers for the comparison table in Section~\ref{sec:r1emp}.
+\item Result~\ref{res:tilt} is exact for a single deal and backed by the replica; the $1/n$ scaling for pooled deals is a first-order argument. Neither has been worked through for the two-parameter case with alpha, where the tilt can load on alpha instead of beta. Scenario~S1 in the Appendix~D simulation table (beta 0.84, alpha 0.22\% a month at $H=0$) is consistent with that.
+\item Result~\ref{res:roots} is exact for one period and for i.i.d.\ factors over several periods. I have not computed $\beta^\ast$ on the paper's factor sample.
+\item Results~\ref{res:pin} to~\ref{res:terminal} in the audit are derived in stylised settings: one period or i.i.d.\ periods, constant risk-free rate, lognormal returns where stated. Result~\ref{res:info} is a linearisation and understates the level of the standard errors.
+\item The replicas are not the paper's code. Their large-sample values at $\sigma=0.2$ and few funds per vintage are still noisy across seeds.
+\item The effect of the aggregation issue in Section~\ref{sec:vyp} on the reported estimates.
+\end{itemize}
+
+\end{document}
