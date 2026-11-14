@@ -38,7 +38,7 @@
 \title{Review of the two referee reports\\[0.5ex]
 \large JFEC-2026-141, ``Identification and Stability of SDF Estimators for Pooled, Non-traded Cash Flows''}
 \author{}
-\date{13 November 2026}
+\date{13 November 2026; Appendices~A and~B added 14 November 2026}
 
 \begin{document}
 \maketitle
@@ -64,8 +64,8 @@ Comments are cited as R1-2, R2-3.1 and so on, using the referees' own numbering.
 
 \item \textbf{The reports overlap on three issues, and those three are the revision.}
 \begin{itemize}
-\item The estimated object is a benchmark deflator, not an SDF (R1-1, R2-1a). See Section~\ref{sec:sdf}.
-\item The horizon theory: when is the estimator consistent, and what does $H$ actually do (R1-2, R2-2a, 2b, 3.1, 3.4). See Section~\ref{sec:horizon}.
+\item The estimated object is not the economy-wide SDF (R1-1, R2-1a). See Section~\ref{sec:sdf}; Appendix~\ref{app:sdf} proves that it is an admissible SDF for private-equity payoffs and recommends the name ``PE-specific SDF''.
+\item The horizon theory: when is the estimator consistent, and what does $H$ actually do (R1-2, R2-2a, 2b, 3.1, 3.4). See Section~\ref{sec:horizon}; Appendix~\ref{app:horizon} consolidates it, lists what is wrong in the paper as written, and adds a criterion that is consistent at every horizon.
 \item Positioning against the literature (R1-1, R1-4, R2-1b to 1d, 3.2).
 \end{itemize}
 
@@ -90,6 +90,7 @@ Comments are cited as R1-2, R2-3.1 and so on, using the referees' own numbering.
 \begin{itemize}
   \item \code{check_h0_tilt.py} and \code{check_identity_and_roots.py} replicate the baseline simulation.
   \item \code{check_referee_math.py} runs the nine checks behind the audit in Section~\ref{sec:audit}.
+  \item \code{check_appendix_horizon.py} runs the five checks behind Appendix~\ref{app:horizon}.
   \end{itemize}
 \item Read the passages the referees cite in Gredil--S{\o}rensen--Waller, Korteweg--Nagel (2016, 2025), Gupta--Van Nieuwerburgh, Driessen--Lin--Phalippou, Martin, Merton and Flanagan, and the online supplements of four of them; the copies are in the \code{papers} subfolder (Section~\ref{sec:sources}). Section~\ref{sec:notverified} lists what remains unchecked.
 \end{itemize}
@@ -369,7 +370,7 @@ Consequences:
 \subsection{Recommendation}
 
 \begin{itemize}
-\item \textbf{Reposition.} Keep the SDF pricing equation as the motivation in Section~1.1; Lemma~1 and Proposition~1 are stated for a generic $\Psi$ and are fine. Name the estimated object a ``PE-implied discount factor'' or ``benchmark deflator'' (a generalised, levered PME). Say once, early, that it belongs to the same family as the log-utility and Korteweg--Nagel kernels but is identified from PE cash flows, not from public-asset moments, and that $\alpha$ is a wedge on the benchmark return. Drop ``SDF estimator'' from the title and abstract.
+\item \textbf{Reposition} (naming revised in Appendix~\ref{app:sdf}: ``PE-specific SDF'' for the estimand, ``benchmark deflator'' for the Eq.~(19) form, and the title can stay). Keep the SDF pricing equation as the motivation in Section~1.1; Lemma~1 and Proposition~1 are stated for a generic $\Psi$ and are fine. Name the estimated object a ``PE-implied discount factor'' or ``benchmark deflator'' (a generalised, levered PME). Say once, early, that it belongs to the same family as the log-utility and Korteweg--Nagel kernels but is identified from PE cash flows, not from public-asset moments, and that $\alpha$ is a wedge on the benchmark return. Drop ``SDF estimator'' from the title and abstract.
 \item \textbf{Do not add traded-asset moments} (R2's alternative). By the table above, requiring $M(\beta)$ to price both public assets pins $\beta=\beta^\ast$, which is no longer a PE exposure. The paper would then estimate a KN16-type pricing error instead.
 \item \textbf{Optional, one line.} Report $\beta^\ast$ for the paper's factor sample next to $\hat\beta$. It needs only the factor data and makes the distinction concrete.
 \item \textbf{For the reply letter.} The DLP-type estimator has many published applications (the paper lists them), so documenting where it is and is not stable is useful even though it is not an SDF estimator.
@@ -964,8 +965,8 @@ Early and late cash flows, including the final NAVs of the last surviving funds,
 
 \textbf{Must address, rewrite only}
 \begin{enumerate}[resume]
-\item Reposition the object as a benchmark deflator; adjust title, abstract, introduction, Section~1.4 and Table~1 (R1-1, R2-1a, 1b, 1c).
-\item Replace Appendix~B's heuristic and Remark~2 with Results~\ref{res:identity} to~\ref{res:tilt}; state results around $\theta_H^\dagger$ for all $H$; reword the trade-off (R1-2, R2-2a, 2b, 3.1, 3.4).
+\item Reposition the object as a PE-specific SDF with the benchmark-deflator form; adjust abstract, introduction, Sections~1.1 and~1.4 and Table~1 (R1-1, R2-1a, 1b, 1c). Edit list in Appendix~\ref{app:sdf_todo}.
+\item Replace Appendix~B's heuristic and Remark~2 with Results~\ref{res:identity} to~\ref{res:tilt}; state results around $\theta_H^\dagger$ for all $H$; reword the trade-off (R1-2, R2-2a, 2b, 3.1, 3.4). Edit list in Appendix~\ref{app:horizon_todo}.
 \item One related-literature paragraph plus the missing citations (R2-1d, 3.2, 3.3).
 \item All wording fixes: Preqin frequency, NAV channel, haircut definition, Lemma~1 prose, minors~1 to~7 (R2-3.5, 4.1, 4.2, 4.4).
 \end{enumerate}
@@ -1002,11 +1003,464 @@ Rough page effect on the main text: items 3 to 6 are about neutral, since the we
 \item The published pagination of Korteweg--Nagel (2025): I read the working-paper version, where R2's pages 9, 11 and 14 correspond to pages 10, 12 and 16. The replication-code archives of Gupta--Van Nieuwerburgh and Flanagan were not opened. All papers the referees rely on, and their online supplements, have been read in the passages they cite (Section~\ref{sec:sources}).
 \item The appraisal-bias papers R2 cites in comment 4.1 (Brown, Ghysels and Gredil; Brown, Gredil and Kaplan; Jenkinson et al.) were only skimmed for their premise that reported NAVs are smoothed.
 \item Published beta and alpha numbers for the comparison table in Section~\ref{sec:r1emp}.
-\item Result~\ref{res:tilt} is exact for a single deal and backed by the replica; the $1/n$ scaling for pooled deals is a first-order argument. Neither has been worked through for the two-parameter case with alpha, where the tilt can load on alpha instead of beta. Scenario~S1 in the Appendix~D simulation table (beta 0.84, alpha 0.22\% a month at $H=0$) is consistent with that.
+\item Result~\ref{res:tilt} is exact for a single deal and backed by the replica; the $1/n$ scaling for pooled deals is a first-order argument. Neither has been worked through for the two-parameter case with alpha, where the tilt can load on alpha instead of beta. Scenario~S1 in the Appendix~D simulation table (beta 0.84, alpha 0.22\% a month at $H=0$) is consistent with that. Both gaps are closed in Appendix~\ref{app:horizon}: Result~\ref{res:tiltH} covers pooled deals and both parameters, and check~D5 shows the tilt loading on alpha.
 \item Result~\ref{res:roots} is exact for one period and for i.i.d.\ factors over several periods. I have not computed $\beta^\ast$ on the paper's factor sample.
 \item Results~\ref{res:pin} to~\ref{res:terminal} in the audit are derived in stylised settings: one period or i.i.d.\ periods, constant risk-free rate, lognormal returns where stated. Result~\ref{res:info} is a linearisation and understates the level of the standard errors.
 \item The replicas are not the paper's code. Their large-sample values at $\sigma=0.2$ and few funds per vintage are still noisy across seeds.
 \item The effect of the aggregation issue in Section~\ref{sec:vyp} on the reported estimates.
 \end{itemize}
+
+%======================================================================
+\appendix
+\newcommand{\M}{\mathcal{M}}
+\newcommand{\X}{\mathcal{X}}
+\newenvironment{draft}{\begin{quote}\small\itshape}{\end{quote}}
+
+\section{A PE-specific SDF: what can be proved and what the paper should say}
+\label{app:sdf}
+%======================================================================
+
+Added 14 November 2026. This appendix answers one question: can the sentence in Section~\ref{sec:sdf}, ``in incomplete markets any discount factor that prices a given set of payoffs is an admissible SDF for that set'', be proved, and does that make ``PE-specific SDF'' a better name than ``benchmark deflator''? It revises the naming recommendation of Section~\ref{sec:sdf}. Derivations are mine; the first result is textbook.
+
+\subsection{Short answer}
+
+\begin{itemize}
+\item \textbf{Yes, it can be proved, in five lines.} It is the definition of an SDF relative to a payoff space plus the Hansen--Richard representation (Result~\ref{res:admissible}). ``Admissible'' is Hansen and Jagannathan's (1991) own word for it.
+\item \textbf{The proof settles the name, not the substance.} It shows that ``SDF for private-equity payoffs'' is correct usage. It also shows exactly what such an object does not do: it need not price any public asset, its parameters belong to the payoff set, and it prices private equity with zero error by construction (Results~\ref{res:pe_member} and~\ref{res:dual}).
+\item \textbf{Recommendation: use ``PE-specific SDF'', as you propose, and keep ``benchmark deflator'' for the functional form only.} The two terms answer different questions. ``PE-specific SDF'' says what the object does (it prices a payoff set). ``Benchmark deflator'' says what Eq.~(19) looks like (the reciprocal of a levered benchmark return). The paper needs the first for Section~1.1 and the title, and one mention of the second to connect to Korteweg and Nagel (2025).
+\item \textbf{The price of keeping ``SDF''} is three explicit sentences in the paper: no claim about public assets, parameters are segment-specific by design, and $\alpha$ is not a pricing error under a public-market SDF. With those, the referees' comment becomes a stated property of the estimand instead of an objection to it.
+\end{itemize}
+
+\subsection{The textbook result}
+
+Let $L^2$ be the space of square-integrable payoffs, $\X\subseteq L^2$ a closed linear space of payoffs, and $\pi:\X\to\mathbb R$ a price functional.
+
+\textbf{Definition.} A random variable $m\in L^2$ is an \emph{admissible SDF for} $(\X,\pi)$ if $\pi(x)=\E[m\,x]$ for all $x\in\X$. Write $\M(\X)$ for the set of all of them.
+
+\begin{result}[The admissible set; Hansen and Richard 1987, Hansen and Jagannathan 1991]
+\label{res:admissible}
+\begin{enumerate}[label=(\alph*)]
+\item $\M(\X)$ is non-empty if and only if $\pi$ is linear and continuous on $\X$ (the law of one price). In that case there is a unique $x^\ast\in\X\cap\M(\X)$, and
+\[
+\M(\X)=\bigl\{x^\ast+e:\ e\in L^2,\ \E[e\,x]=0\ \text{for all }x\in\X\bigr\}.
+\]
+\item $\M(\X)$ is a single point if and only if $\X=L^2$ (complete markets). Otherwise it is an infinite set.
+\item If $\X_1\subseteq\X_2$ with the same prices on $\X_1$, then $\M(\X_2)\subseteq\M(\X_1)$. The reverse inclusion fails in general.
+\end{enumerate}
+\end{result}
+
+\begin{proof}
+(a) A linear continuous functional on the Hilbert space $\X$ has a unique Riesz representer $x^\ast\in\X$ with $\pi(x)=\E[x^\ast x]$. Then $m\in\M(\X)$ if and only if $\E[(m-x^\ast)x]=0$ on $\X$. Conversely $x\mapsto\E[mx]$ is linear and continuous. (b) The orthogonal complement of a closed subspace is $\{0\}$ if and only if the subspace is everything. (c) Pricing every payoff in $\X_2$ includes pricing every payoff in $\X_1$.
+\end{proof}
+
+The sentence in Section~\ref{sec:sdf} is the definition together with part~(b). Part~(c) is the part that matters for the referees: \emph{an SDF for private-equity payoffs is a weaker object than an SDF for private-equity and public payoffs}, and nothing forces it to be an SDF for public payoffs.
+
+\textbf{Multi-period version, in the paper's notation.} Call a positive adapted process $\Psi$ \emph{admissible for private equity}, $\Psi\in\M_{PE}$, if the paper's Eq.~(1) holds for every deal, and \emph{admissible for the public benchmarks}, $\Psi\in\M_{pub}$, if its one-period ratios $M_u=\Psi_u/\Psi_{u-1}$ satisfy $\E_{u-1}[M_u(1+r_{f,u})]=1$ and $\E_{u-1}[M_uF_u]=0$. The paper's Eq.~(1) is then literally the statement $\Psi\in\M_{PE}$. Non-uniqueness carries over: if $\Psi\in\M_{PE}$ and $Z$ is a positive mean-one martingale independent of $\Psi$ and of all deal cash flows, then $\Psi Z\in\M_{PE}$.
+
+\subsection{What private-equity cash flows can identify}
+
+\begin{result}[The family contains a PE-specific SDF]
+\label{res:pe_member}
+Under Assumption~\ref{ass:dlp} (the DLP-type DGP), $\delta_{i,j}(\theta_0)=\mathrm{Inv}_{i,j}(1-N_{i,j})$ and $\E[\delta_{i,j}(\theta_0)\mid\G]=0$. If, in addition, $N_{i,j}$ is independent of $\mathcal F_{t^{\mathrm{Inv}}_{i,j}}$ given $\G$, the paper's Eq.~(1) holds, so $\Psi(\theta_0)\in\M_{PE}$.
+\end{result}
+
+This is Result~\ref{res:wedge} read as an existence statement, and it answers R1-1. Driessen, Lin and Phalippou's return-generating assumption \emph{implies} the SDF pricing equation for $\Psi(\theta_0)$. The two descriptions are not rival approaches: the return model is the stronger statement (pricing holds given the factor path), the SDF equation the weaker one (pricing holds on average at the investment date). Appendix~\ref{app:horizon} shows that this difference is exactly what decides whether horizons $H>0$ are valid.
+
+\begin{assumption}[A public SDF with unpriced idiosyncratic risk]
+\label{ass:public}
+$\Psi^\ast\in\M_{pub}$ is strictly positive; $\E[N_{i,j}\mid\G,\Psi^\ast]=1$; exit dates are bounded stopping times; and the benchmark gross returns $1+\alpha_0+r_{f,u}+\beta_0^\top F_u$ and $1+r_{f,u}+\beta_0^\top F_u$ are positive.
+\end{assumption}
+
+\begin{result}[PE-specific versus public SDF]
+\label{res:dual}
+Let Assumptions~\ref{ass:dlp} and~\ref{ass:public} hold, and write $\delta^\ast_{i,j}$ for the deal pricing error computed with $\Psi^\ast$ in place of $\Psi(\theta_0)$.
+\begin{enumerate}[label=(\alph*)]
+\item If $\alpha_0=0$, then $\E[\delta^\ast_{i,j}\mid\mathcal F_{t^{\mathrm{Inv}}_{i,j}}]=0$: the public SDF is \emph{also} admissible for private equity. So $\M_{PE}$ contains two different discount factors with the same private-equity prices, $\Psi(\theta_0)$ and $\Psi^\ast$.
+\item If $\alpha_0\neq0$, then $\E[\delta^\ast_{i,j}\mid\mathcal F_{t^{\mathrm{Inv}}_{i,j}}]$ has the sign of $\alpha_0$ (for a deal with $\mathrm{Inv}_{i,j}<0$, a positive $\alpha_0$ gives a positive NPV under the public SDF), and $\Psi^\ast\notin\M_{PE}$.
+\item $\Psi(\theta_0)\in\M_{pub}$ if and only if $\alpha_0=0$ and $\beta_0=\beta^\ast$ (Result~\ref{res:pin}).
+\end{enumerate}
+\end{result}
+
+\begin{proof}
+Write $R^0_u=1+r_{f,u}+\beta_0^\top F_u$, the gross return of a traded portfolio, so $\E_{u-1}[M^\ast_uR^0_u]=1$ and $\prod_uM^\ast_uR^0_u$ is a positive martingale. With $a$ and $b$ the investment and exit dates, Assumption~\ref{ass:dlp} gives
+$\delta^\ast/|\mathrm{Inv}|=-1+N\prod_{u=a+1}^{b}M^\ast_u(R^0_u+\alpha_0)$.
+(a) With $\alpha_0=0$, optional stopping and $\E[N\mid\G,\Psi^\ast]=1$ give conditional mean zero.
+(b) Since $M^\ast_u>0$, $\prod_uM^\ast_u(R^0_u+\alpha_0)$ is larger than $\prod_uM^\ast_uR^0_u$ on every path if $\alpha_0>0$ and smaller if $\alpha_0<0$; take conditional expectations and use (a).
+(c) is Result~\ref{res:pin}.
+\end{proof}
+
+\textbf{Reading the two results.}
+\begin{itemize}
+\item \emph{Private-equity cash flows cannot identify the public SDF, and do not need to.} By (a), even in the best case several discount factors price them equally well. An estimator that uses only private-equity pricing errors can identify at most the member of its parametric family that lies in $\M_{PE}$. Within the Eq.~(19) family that is $\theta_0$; with i.i.d.\ factors the mean moment has a second solution at $\beta^\ast$, the public log-utility SDF (Result~\ref{res:roots}, and Korteweg and Nagel 2025), and squared loss selects $\theta_0$ because pricing there holds path by path.
+\item \emph{The two literatures are duals.} Korteweg and Nagel (2016) fix a discount factor in $\M_{pub}$ and report its pricing error on private equity. Driessen, Lin and Phalippou (2012) and the manuscript fix the private-equity pricing error at zero and report where in the family the discount factor lands. By (b) the two readouts agree in sign: a positive generalised PME corresponds to $\alpha_0>0$. This is the ``mathematically clearer'' comparison R1 asks for, and it is the missing row in Table~1 (which moments identify the parameters).
+\item \emph{Where performance sits.} Under the PE-specific SDF private equity has zero NPV by construction. Performance relative to public markets is therefore in $\alpha_0$, the constant per-period amount by which the traded benchmark return must be raised for the benchmark to price the cash flows. It is not a pricing error. This is R2's ``wedge on the benchmark return'', and the paper should say it in these words.
+\item \emph{``A kernel's parameters cannot depend on the asset''} is true of a discount factor in $\M_{pub}$ and false, by design, of one in $\M_{PE}$. A buyout-specific and a venture-specific SDF are two different members of two different admissible sets. Under the law of one price on the union some common discount factor prices both, but it is not in the one-factor family.
+\end{itemize}
+
+\subsection{``PE-specific SDF'' or ``benchmark deflator''?}
+
+\begin{center}
+\small
+\begin{tabular}{L{3.2cm}L{6.0cm}L{6.0cm}}
+\toprule
+& ``PE-specific SDF'' & ``Benchmark deflator''\\
+\midrule
+Formally correct? & Yes: Result~\ref{res:admissible}, with Eq.~(1) as its definition & Yes, for Eq.~(19) only\\
+Covers Lemma~1 and Proposition~1? & Yes; both are stated for a generic $\Psi$ & No; they do not use the benchmark form\\
+Covers the horizon results? & Only with the path-by-path restriction added (Appendix~\ref{app:horizon}) & Yes; that restriction is what ``benchmark'' means\\
+Title and framing & Unchanged & ``SDF'' has to go\\
+Risk with R2 & Reads as relabelling unless the three concessions are explicit & None\\
+Says what $\alpha$ is? & No; needs Result~\ref{res:dual}(b) & Yes, immediately\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+So neither term is cleaner on every row, and they are not alternatives. My recommendation: \textbf{``PE-specific SDF'' is the name of the estimand; ``benchmark deflator'' is the name of the baseline specification.} Section~\ref{sec:sdf} recommended dropping ``SDF estimator'' from the title and abstract. With the changes below that is no longer necessary.
+
+One caveat you should weigh. R2 quotes Korteweg and Nagel (2025) that $1/R^b$ ``is not an SDF, as it depends on an asset-specific parameter''. The answer is that they mean a discount factor for all assets, and the manuscript now says, with a definition and a citation, that it means one for a payoff set. A referee who wants the word reserved for the first meaning will not be convinced by a proposition, because the disagreement is about usage. The three concessions below are what make the position safe either way.
+
+\subsection{What to do in the paper}
+\label{app:sdf_todo}
+
+Line numbers refer to \code{tex/sdf_paper.tex}. Effort labels as in the main text.
+
+{\small
+\begin{longtable}{@{}L{0.5cm}L{3.3cm}L{10.4cm}L{0.9cm}@{}}
+\toprule
+\# & Where & What to do & Effort\\
+\midrule
+\endhead
+1 & Introduction, first paragraph (l.~110--113) & State the estimand before anything else: not the economy-wide SDF, but an SDF for the cash flows of one private-equity segment. Draft below. In the same paragraph replace ``recover abnormal performance ($\alpha$) and factor exposures ($\beta$) \ldots\ without strong distributional assumptions'' (R2-1c): Korteweg and Nagel (2016) do not recover $\alpha$ and $\beta$, and the DLP route relies on idiosyncratic shocks that are independent of the factors & S\\
+2 & Section~1.1, after Eq.~(2) (l.~226) & Add the definition of $\M_{PE}$ and one proposition that merges Results~\ref{res:admissible}(b,c) and~\ref{res:dual}(c): Eq.~(1) defines admissibility for private-equity payoffs; the admissible set is not a single point; an admissible member need not price the T-bill or the market. Eight to ten lines including the proof. Cite Hansen and Richard (1987, already in the bibliography) and Hansen and Jagannathan (1991, to add) & M\\
+3 & Section~2.2, under Eq.~(19) (l.~895 onward) & (i) Write the one-period factor $M_u=1/(1+\alpha+r_{f,u}+\sum_m\beta_mF_{m,u})$ (R2 minor~1). (ii) Say that this specification is the reciprocal of a levered benchmark return, a benchmark deflator in the terminology of Korteweg and Nagel (2025), and that with $\beta=1$, $\alpha=0$ it is the PME. (iii) State Result~\ref{res:dual}(b) in one sentence as the meaning of $\alpha$. (iv) State the public pricing errors, $-\beta g(\beta)$ on the T-bill and $(1-\beta)g(\beta)$ on the market, and that they vanish jointly only at $(0,\beta^\ast)$ & M\\
+4 & Section~1.4.3 and Table~1 (l.~741--757, 771--816) & Replace the aggregation-order contrast as the \emph{first} difference by the duality above. Add two rows to Table~1: ``Moments that identify the parameters'' (PE cash flows / public benchmarks only / PE cash flows) and ``Performance readout'' ($\alpha$ in the benchmark return / pricing error on PE / $\alpha$ in the benchmark return). Correct the row ``SDF specification: Both (tested empirically)''. In l.~749 drop ``both approaches target the true parameter $\theta_0$ under correct model specification'': they target different objects & M\\
+5 & Abstract, first sentence (l.~85); title & Keep ``SDF''. Change ``identifying stochastic discount factors from pooled, non-traded cash flows'' to ``identifying asset-class-specific stochastic discount factors from \ldots''. No title change needed & S\\
+6 & Section~3, Table~3 note (optional) & Report $\beta^\ast$ for the paper's factor sample next to $\hat\beta$: the root of $\frac1T\sum_uF_u/(1+r_{f,u}+\beta F_u)=0$. It needs only the factor file and makes the distance between the PE-specific and the public member visible & S\\
+\bottomrule
+\end{longtable}
+}
+
+\textbf{Draft for item 1} (to adapt):
+\begin{draft}
+Throughout, the object of interest is not the economy-wide SDF that prices all traded assets. It is a PE-specific SDF: a discount factor that prices the cash flows of one private-equity segment at the prices its investors paid. In incomplete markets many discount factors price a given set of payoffs (Hansen and Richard 1987; Hansen and Jagannathan 1991). We estimate the member of a low-dimensional factor family that does so for private-equity cash flows, and we do not require it to price public assets. Its parameters are therefore segment-specific by construction, and its intercept $\alpha$ measures the per-period amount by which the traded benchmark return must be raised to price these cash flows; it is not a pricing error under a public-market SDF as in Korteweg and Nagel (2016).
+\end{draft}
+
+\textbf{The three concessions} that must appear somewhere in items 1 to 3, in plain words: (i) the estimated discount factor is not claimed to price the T-bill or the market, and in general it does not; (ii) its parameters differ across segments by design; (iii) $\alpha$ is a return spread over the benchmark, as in DLP, and has the sign of, but is not equal to, a generalised PME.
+
+\textbf{For the reply letter.} To R1-1: Result~\ref{res:pe_member}, the return model implies the SDF equation, and the duality. To R2-1a: we agree on the substance and state it as a property of the estimand; we keep the word with a definition and the Hansen--Jagannathan citation; we decline traded-asset moments because they leave no parameter for the cash flows to identify (Result~\ref{res:pin}).
+
+%======================================================================
+\section{The horizon theory: what holds, what is wrong in the paper, what to change}
+\label{app:horizon}
+%======================================================================
+
+Added 14 November 2026. This appendix consolidates Section~\ref{sec:horizon}, adds three results that are new (a characterisation of the wedge, a closed form for the criterion tilt at every horizon, and a criterion without the tilt), and turns them into a list of changes. Derivations are mine; the numerical checks are in \code{check_appendix_horizon.py} (blocks D1 to D5, about four minutes). Same caveat as before: a stand-alone replica with an i.i.d.\ simulated market, not the paper's pipeline.
+
+\subsection{Short answer}
+
+\begin{enumerate}
+\item \textbf{When is the estimator consistent for $\theta_0$?} Under two conditions, and neither is about $H$. (i) Deal pricing errors are mean-independent of the factor path (Assumption~\ref{ass:dlp}, which is DLP's own assumption and holds in the paper's simulation). (ii) Idiosyncratic noise is not squared into the criterion: either funds per vintage diverge, or the criterion uses cross-fund products instead of squares. Given both, \emph{every} horizon $H\ge0$ is consistent. Without (ii), \emph{no} horizon is, including $H=0$.
+\item \textbf{What does $H$ do?} It multiplies each unit's inception NPV by a positive, parameter-dependent factor. It adds no new pricing error. It chooses the date in whose dollars errors are measured, and with it the sign and size of a tilt of order one over funds per vintage.
+\item \textbf{Does the paper need correcting?} Yes, in four places it says something that is not true as written (Section~\ref{app:wrong}). The formal results (Lemma~1, Propositions~1 to~4) are all correct and stay. What changes is the story told around them.
+\item \textbf{Can the paper do better?} Yes. The cross-fund product criterion (Result~\ref{res:ucrit}) removes the tilt at every horizon with as few as two funds per vintage. In the replica it returns the true beta at every horizon where least squares runs from 1.39 down to 1.02, and in the two-parameter model it returns $(\alpha,\beta)=(0,1)$ where least squares at $H=0$ returns $(0.8\%\text{ a month},\,0.80)$. It turns R1-2's ``it is not very satisfactory that the new approach can lead to inconsistent estimates'' into a consistency result under the paper's own asymptotics.
+\end{enumerate}
+
+\subsection{Two tiers of assumptions}
+
+The paper works with one restriction. The horizon question needs two, and most of the confusion comes from not separating them.
+
+\begin{center}
+\small
+\begin{tabular}{L{2.6cm}L{6.3cm}L{6.3cm}}
+\toprule
+& Tier 1: SDF restriction & Tier 2: path-by-path restriction\\
+\midrule
+Statement & $\E[\delta_{i,j}\mid\mathcal F_{t^{\mathrm{Inv}}_{i,j}}]=0$ (the paper's Eq.~1) & $\E[\delta_{i,j}\mid\G]=0$, $\G$ = whole factor path and deal timing (Assumption~\ref{ass:dlp})\\
+Meaning & Pricing holds on average over future states & Pricing holds on every factor path; only idiosyncratic noise is left\\
+Who assumes it & Lemma~1, Proposition~1; any genuine SDF & DLP (their Assumption~1); the paper's simulation; Eq.~(19) read as a benchmark\\
+What it validates & The inception mean moment, $\E[PV_i(\theta_0)]=0$, and pre-inception dates & Every discounting date, before or after inception; consistency as funds per vintage grow\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Tier~2 is the formal content of the word ``benchmark'' in Appendix~\ref{app:sdf}. The paper should state it as a second, named assumption next to Eq.~(1).
+
+\subsection{The results}
+
+\textbf{Identity (Result~\ref{res:identity}, repeated).} For every $\theta$,
+\[
+\epsbar(\theta)=PV_i(\theta)\,A_{i,H}(\theta),\qquad A_{i,H}(\theta)=\frac{1}{|\Tset|}\sum_{\tau\in\Tset}R^b_{t_i^0,\tau}(\theta)>0 .
+\] This needs no assumption. Everything below follows from it.
+
+\begin{result}[What the wedge is]
+\label{res:wedgechar}
+Under Tier~1,
+\[
+b_{H,i}=\E\bigl[\epsbar(\theta_0)\bigr]=\Cov\bigl(PV_i(\theta_0),\,A_{i,H}(\theta_0)\bigr).
+\]
+The Compounding-Horizon Wedge is the covariance between a unit's inception NPV and the benchmark's realised growth over the horizon window. It is zero under Tier~2 for every $H$. It is nonzero when pricing errors are correlated with the later factor path: a genuine SDF kernel (Result~\ref{res:wedgeclosed}), a misspecified or omitted exposure, or exits timed on private information.
+\end{result}
+
+\begin{proof}
+By the identity, $b_{H,i}=\E[PV_iA_{i,H}]$, and $\E[PV_i(\theta_0)]=0$ under Tier~1 by the paper's Proposition~1. Under Tier~2, $A_{i,H}(\theta_0)$ is $\G$-measurable and $\E[PV_i(\theta_0)\mid\G]=0$.
+\end{proof}
+
+This agrees with the paper's Appendix Lemma on $b_{H,i}$, which is correct; the lemma only does not say that every covariance in it vanishes in the paper's own model. The wedge is therefore best described as a \emph{specification measure}: it is what a departure from Tier~2 looks like at horizon $H$.
+
+\begin{result}[Tilt of the squared-loss criterion at every horizon]
+\label{res:tiltH}
+Let unit $v$ pool $n_v$ funds whose deals $j$ have unit investments at dates $a_j$ and one exit at $b_j$. Define
+\[
+S_{s,t}=\sum_{u=s+1}^{t}\frac{x_u}{1+\alpha_0+r_{f,u}+\beta_0^\top F_u},\quad x_u=(1,F_u^\top)^\top;\qquad
+\bar S_{v,H}=\frac{\sum_{\tau\in\mathcal T_{v,H}}R^b_{t_v^0,\tau}\,S_{t_v^0,\tau}}{\sum_{\tau\in\mathcal T_{v,H}}R^b_{t_v^0,\tau}},
+\]
+$c_j=1/R^b_{t_v^0,a_j}$ and $\nu_j=\Var(N_j\mid\G)$, all evaluated at $\theta_0$. Under Assumption~\ref{ass:dlp},
+\begin{equation}
+\label{eq:tiltH}
+\nabla_\theta\,\E\bigl[(PV_vA_{v,H})^2\bigr]\Big|_{\theta_0}
+=\frac{2}{n_v^2}\;\E\Bigl[A_{v,H}^2\sum_{j}c_j^2\,\nu_j\,\bigl(\bar S_{v,H}-S_{t_v^0,b_j}\bigr)\Bigr].
+\end{equation}
+The sum has of the order of $n_v$ terms, so the gradient is $O(1/n_v)$.
+\end{result}
+
+\begin{proof}
+At $\theta_0$, $PV_v=n_v^{-1}\sum_jc_j(N_j-1)$ and $\nabla PV_v=n_v^{-1}\sum_jc_j\bigl(S_{t_v^0,a_j}-N_jS_{t_v^0,b_j}\bigr)$. Independence across deals given $\G$ gives $\E[PV_v^2\mid\G]=n_v^{-2}\sum_jc_j^2\nu_j$ and $\E[PV_v\nabla PV_v\mid\G]=-n_v^{-2}\sum_jc_j^2\nu_jS_{t_v^0,b_j}$. Then $\nabla(PV_vA)^2=2A^2PV_v\nabla PV_v+2PV_v^2A\nabla A$ and $\nabla\log A_{v,H}=\bar S_{v,H}$.
+\end{proof}
+
+Result~\ref{res:tilt} is the case $H=0$, $n_v=1$, one deal. \textbf{Reading \eqref{eq:tiltH}:}
+\begin{itemize}
+\item \emph{$S_{t^0,t}$ is elapsed time in the $\alpha$ direction and cumulated factor return in the $\beta$ direction.} Its first component is roughly the number of months from inception to $t$.
+\item \emph{$H=0$.} $\bar S=0$, so the gradient is $-\frac{2}{n_v^2}\E[\sum_jc_j^2\nu_jS_{t^0,b_j}]$. In the $\alpha$ direction this is negative on every path: the criterion always falls when $\alpha$ rises from $\alpha_0$. The ``exploding alpha'' problem is the global version of this local tilt. Squared loss measured in inception dollars rewards any parameter change that shrinks discounted payoffs, because that shrinks idiosyncratic variance.
+\item \emph{$H>0$.} $\bar S_{v,H}$ is the benchmark-weighted average of $S$ over the horizon window. The tilt vanishes in a given direction when that average equals the noise-weighted average of $S$ to the exit dates. In words: \emph{the criterion is free of tilt when errors are measured in dollars of about the date at which the noise is realised.} This is the economic intuition R2-2(b) asks for.
+\item \emph{Why the bias-minimising horizon is interior, moves with fund life, and can exceed it} (the paper's Figure~12). The window average sits near the middle of the window, while $\nu_j$ grows exponentially in the holding period, so the noise-weighted exit date is late. Matching the two needs a window that reaches well past the typical exit.
+\item \emph{Why more funds per vintage beats more vintages.} The tilt is $O(1/n_v)$ and does not depend on the number of vintages.
+\item \emph{The tilt is not the wedge.} It is nonzero under Tier~2, where the wedge is zero.
+\end{itemize}
+
+\begin{result}[A criterion without the tilt]
+\label{res:ucrit}
+Let vintage $v$ contain $n_v\ge2$ funds with fund-level errors $\bar\epsilon_{i}=PV_i(\theta)\,A_{v,H}(\theta)$, computed with the vintage's inception date and horizon window, and let
+\[
+U_{v,H}(\theta)=\frac{1}{n_v(n_v-1)}\sum_{i\neq k}\bar\epsilon_i\,\bar\epsilon_k
+=\bar\epsilon_v^{\,2}-\frac{s_v^2}{n_v},
+\]
+where $\bar\epsilon_v$ and $s_v^2$ are the within-vintage mean and sample variance of the $\bar\epsilon_i$. Under Assumption~\ref{ass:dlp}, with funds of a vintage exchangeable and independent given $\G$,
+\[
+\E\bigl[U_{v,H}(\theta)\mid\G\bigr]=A_{v,H}(\theta)^2\bigl(\E[PV_i(\theta)\mid\G]\bigr)^2\ \ge 0,
+\qquad\text{with equality at }\theta_0\text{ for every }H\ge0 .
+\]
+So $\theta_0$ minimises $\E[U_{v,H}(\theta)]$ for every $H$ and every $n_v\ge2$. If $\E[PV_i(\theta)\mid\G]=0$ only at $\theta_0$ (DLP's identification condition), the minimiser is unique and $\arg\min_\theta\sum_vU_{v,H}(\theta)$ is consistent for $\theta_0$ as the number of vintages grows with funds per vintage bounded.
+\end{result}
+
+\begin{proof}
+For $i\neq k$, $\E[\bar\epsilon_i\bar\epsilon_k\mid\G]=A^2\,\E[PV_i\mid\G]\,\E[PV_k\mid\G]$ by conditional independence, and the two conditional means are equal by exchangeability. Consistency then follows from the paper's own Proposition~2 applied to $U_{v,H}$ in place of the squared error, with the vintage as the unit.
+\end{proof}
+
+The first expression is the squared vintage error with the squared own-fund terms left out; the second shows it is the paper's criterion minus an estimate of its noise part. It needs fund-level cash flows within each vintage, which the Preqin sample has. It is the same pair-product device as the scoring rule in the resampling draft.
+
+\needspace{12\baselineskip}
+\subsection{The consistency map}
+
+This is the answer to R1-2 in one table. ``$\theta_0$'' means the estimator converges to the true parameter.
+
+\begin{center}
+\small
+\begin{tabular}{L{3.5cm}L{2.2cm}L{3.7cm}L{5.6cm}}
+\toprule
+Criterion & Assumption & Asymptotics & Limit, for which $H$\\
+\midrule
+Squared unit error (the paper) & Tier 1 only & vintages $\to\infty$, $n_v$ bounded & Not $\theta_0$ for any $H\ge0$: variance tilt, plus wedge when $H>0$\\
+Squared unit error & Tier 2 & vintages $\to\infty$, $n_v$ bounded & Not $\theta_0$ for any $H\ge0$: tilt of order $1/n_v$ (Result~\ref{res:tiltH}); no wedge\\
+Squared unit error & Tier 2 & $n_v\to\infty$ & $\theta_0$ for every $H\ge0$ (Result~\ref{res:consistency})\\
+Squared unit error & Tier 1 only & $n_v\to\infty$, vintages fixed & Not $\theta_0$ in general, even at $H=0$: the common path does not average out\\
+Cross-fund product & Tier 2 & vintages $\to\infty$, $n_v\ge2$ bounded & $\theta_0$ for every $H\ge0$ (Result~\ref{res:ucrit})\\
+Mean moment, inception or earlier dates & Tier 1 only & vintages $\to\infty$ & $\theta_0$, up to the second root (Result~\ref{res:roots}); one parameter per moment\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Rows 1 and 2 are the paper as it stands. Row 3 is R1's conjecture. Row 4 is why DLP need their Assumption~1 and Korteweg and Nagel (2016) need many non-overlapping windows. Row 5 is new.
+
+\subsection{What $H$ does}
+
+By the identity, moving from $H=0$ to $H>0$ replaces $PV_i(\theta)$ by $PV_i(\theta)A_{i,H}(\theta)$. That has three effects and no others.
+\begin{enumerate}
+\item \emph{It moves the tilt} from negative (discount rates too high) towards zero and, for long enough windows, beyond (Result~\ref{res:tiltH}).
+\item \emph{It closes the degenerate direction.} As $\alpha\to\infty$, $PV_i\to CF_{i,t_i^0}$ and the $H=0$ criterion flattens at a low level; $A_{i,H}$ grows without bound in the same direction.
+\item \emph{It reweights vintages} by realised benchmark growth, $A_{v,H}(\theta_0)$. Under Tier~2 this is a valid weight; it changes efficiency, not the target.
+\end{enumerate}
+It does \emph{not} average independent pricing errors. Given a unit's NPV and the factor path, the date-$\tau$ errors are one random variable times known constants.
+
+\textbf{A consequence for the empirical section.} With the squared-loss criterion the estimate should fall as $H$ rises, more steeply when funds per vintage are few or idiosyncratic risk is high. That is the pattern in Table~3 under equal weights: buyout beta from about 1.2 at 0 to 5 years to about 0.7 at 25 to 30 years, venture from about 2.0 at 2.5 to 5 years to about 1.1 beyond 25 years. So the slope of the horizon profile is largely a tilt signature. It is not evidence on beta, and it is not evidence of a wedge. With the product criterion the profile should be flat under Tier~2, which makes what remains of the slope a specification test.
+
+\needspace{14\baselineskip}
+\subsection{Numerical checks}
+
+True $(\alpha_0,\beta_0)=(0,1)$. In the replica the horizon window is capped by a unit's last cash flow (15 years), so $H=15$ is the saturated case.
+
+\emph{D1. Closed form \eqref{eq:tiltH} against the numerical derivative of the sample criterion} (40{,}000 vintages, one fund each, $\sigma=0.1$, two seeds; standard errors in parentheses).
+\begin{center}
+\small
+\begin{tabular}{c cc cc}
+\toprule
+& \multicolumn{2}{c}{Seed 21} & \multicolumn{2}{c}{Seed 22}\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+$H$ & Closed form & Numerical & Closed form & Numerical\\
+\midrule
+0 & $-6.73$ (0.04) & $-6.44$ (0.26) & $-6.95$ (0.04) & $-7.02$ (0.29)\\
+5 & $-9.26$ (0.06) & $-8.61$ (0.43) & $-9.59$ (0.06) & $-9.81$ (0.50)\\
+10 & $-8.49$ (0.06) & $-6.91$ (0.92) & $-8.83$ (0.06) & $-9.39$ (1.10)\\
+15 & $-1.71$ (0.07) & $+0.94$ (1.39) & $-1.68$ (0.07) & $-2.24$ (1.67)\\
+\bottomrule
+\end{tabular}
+\end{center}
+The two agree within two standard errors in every cell. The criterion's scale grows with $H$, so compare signs and the drop at $H=15$, not levels across rows.
+
+\emph{D2 and D3. Large-sample values of $\hat\beta$ by horizon} (10{,}000 vintages).
+\begin{center}
+\small
+\begin{tabular}{ccc cccc cccc}
+\toprule
+& & & \multicolumn{4}{c}{Squared loss (the paper)} & \multicolumn{4}{c}{Cross-fund product}\\
+\cmidrule(lr){4-7}\cmidrule(lr){8-11}
+$\sigma$ & $n_v$ & Seed & $H=0$ & 5 & 10 & 15 & $H=0$ & 5 & 10 & 15\\
+\midrule
+0.1 & 1 & 3 & 1.17 & 1.13 & 1.05 & 1.01 & \multicolumn{4}{c}{needs $n_v\ge2$}\\
+0.1 & 2 & 3 & 1.08 & 1.06 & 1.03 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00\\
+0.1 & 5 & 3 & 1.04 & 1.02 & 1.01 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00\\
+0.1 & 5 & 4 & 1.03 & 1.02 & 1.01 & 0.99 & 1.00 & 1.00 & 1.00 & 1.00\\
+0.2 & 5 & 3 & 1.39 & 1.37 & 1.17 & 1.02 & 0.99 & 0.98 & 0.98 & 0.98\\
+0.2 & 5 & 4 & 1.38 & 1.34 & 1.16 & 1.02 & 0.99 & 0.99 & 0.99 & 1.00\\
+0.2 & 20 & 3 & 1.13 & 1.10 & 1.04 & 0.98 & 0.99 & 0.99 & 0.99 & 0.99\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\emph{D4. Samples of 20 vintages} (500 samples; mean / standard deviation of $\hat\beta$).
+\begin{center}
+\small
+\begin{tabular}{cc cccc}
+\toprule
+& & \multicolumn{2}{c}{Squared loss} & \multicolumn{2}{c}{Cross-fund product}\\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}
+$\sigma$ & $n_v$ & $H=0$ & $H=15$ & $H=0$ & $H=15$\\
+\midrule
+0.1 & 5 & 1.03 / 0.12 & 0.99 / 0.10 & 1.00 / 0.13 & 0.99 / 0.11\\
+0.2 & 5 & 1.26 / 0.49 & 0.95 / 0.38 & 1.05 / 0.59 & 0.98 / 0.45\\
+0.2 & 20 & 1.10 / 0.29 & 0.96 / 0.20 & 1.01 / 0.32 & 0.98 / 0.22\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\emph{D5. Two parameters, monthly $\alpha$ and $\beta$} (4{,}000 vintages, $n_v=5$, grid search).
+\begin{center}
+\small
+\begin{tabular}{cc cc cc}
+\toprule
+& & \multicolumn{2}{c}{Squared loss} & \multicolumn{2}{c}{Cross-fund product}\\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}
+$\sigma$ & $H$ & $\hat\alpha$ (\% a month) & $\hat\beta$ & $\hat\alpha$ (\% a month) & $\hat\beta$\\
+\midrule
+0.1 & 0 & 0.0 & 1.05 & 0.0 & 1.00\\
+0.1 & 15 & 0.0 & 1.00 & 0.0 & 1.00\\
+0.2 & 0 & 0.8 & 0.80 & 0.0 & 1.00\\
+0.2 & 15 & 0.1 & 0.95 & 0.0 & 1.05\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+What the checks show:
+\begin{itemize}
+\item The closed form is right, and the tilt shrinks sharply once the window reaches the exit dates.
+\item Under squared loss the estimate falls monotonically in $H$ and passes the truth near saturation; the product criterion is flat in $H$ and at the truth, already with two funds per vintage.
+\item In the two-parameter model the $H=0$ tilt loads on $\alpha$ (0.8\% a month, with beta pushed \emph{down} to 0.80). This is the sign pattern of scenario~S1 in the paper's Appendix~D ($\hat\beta=0.84$, $\hat\alpha=0.22\%$ a month at $H=0$), and it closes the item left open in Section~\ref{sec:notverified}. The product criterion returns $(0,1)$.
+\item The product criterion costs precision: its standard deviation in samples of 20 vintages is 10 to 20\% higher, its median sits a little below one at $\sigma=0.2$ (0.93 to 0.96), and up to 5\% of samples at $\sigma=0.2$, $n_v=5$, $H=0$ end on the grid boundary. Its sample value can be negative. It is a robustness criterion, not a free lunch.
+\end{itemize}
+
+\subsection{What is wrong in the paper as written}
+\label{app:wrong}
+
+Four claims, each made in several places. Line numbers: \code{tex/sdf_paper.tex} (``main'') and \code{tex/sdf_paper_online_appendices.tex} (``app'').
+
+{\small
+\begin{longtable}{@{}L{0.6cm}L{4.3cm}L{4.4cm}L{6.0cm}@{}}
+\toprule
+& Claim in the paper & Where & What is true instead\\
+\midrule
+\endhead
+W1 & $H=0$ targets the structural parameter $\theta_0$ and is unbiased & main l.~435, 454, 1126, 1501; implied in l.~87, 118, 550 & With bounded funds per vintage and squared loss, $\theta_0^\dagger\neq\theta_0$ (Result~\ref{res:tiltH} at $H=0$). True only as funds per vintage diverge, or for a mean-moment or product criterion\\
+W2 & For $H>0$ the target shifts \emph{because} post-inception dates bring in the Compounding-Horizon Wedge & main l.~119, 157, 308, 369--377, 406, 436--438, 454, 550, 886--890, 1128, 1501; app l.~94--96, 108, 592--593 & In the model the paper estimates and simulates the wedge is zero at every $H$ (Result~\ref{res:wedgechar}). The target does depend on $H$, through the tilt, and $H=0$ is not exempt\\
+W3 & Averaging over dates combines imperfectly correlated pricing moments and so reduces variance & app Remark~2 (l.~558--580) and l.~589, 607--608; main l.~377, 455 & By the identity the date-specific errors of a unit are one random variable times path-dependent constants. There is nothing to average out\\
+W4 & Changing $H$ changes the population target ``even asymptotically'', unlike the transformations in DLP's working paper & main l.~719--735; Corollary~1 (app l.~993--1003) assumes its conclusion & Horizon averaging is a positive rescaling of the inception NPV, $PV_i\cdot A_{i,H}(\theta)$, exactly like DLP's ratio criterion, $NPV/PV^I(\theta)$. Under their infill asymptotics both keep the target; under bounded $n_v$ both shift it\\
+\bottomrule
+\end{longtable}
+}
+
+\textbf{What stays as it is.}
+\begin{itemize}
+\item Lemma~1 and Proposition~1: correct for a generic discount factor (audit B2, B3). They are Tier~1 statements and should be labelled as such.
+\item Propositions~2 and~3 around $\theta_H^\dagger$, and the appendix lemma on $b_{H,i}$: correct.
+\item The sentence ``horizon choice is part of the estimand'': true with bounded funds per vintage. The reason changes.
+\item All simulation and empirical numbers, and the headline empirical finding.
+\end{itemize}
+
+The time spent on the wedge was not wasted: the lemma is the right statement for a genuine SDF, and Result~\ref{res:wedgechar} gives it a sharper role than it has now. What it cannot be is the explanation of the simulation, because the simulation has no wedge.
+
+\subsection{What to do in the paper}
+\label{app:horizon_todo}
+
+{\small
+\begin{longtable}{@{}L{0.5cm}L{3.2cm}L{10.5cm}L{0.9cm}@{}}
+\toprule
+\# & Where & What to do & Effort\\
+\midrule
+\endhead
+\multicolumn{4}{@{}l}{\emph{Must do}}\\
+1 & Section~1.1, next to Eq.~(1) & Add Tier~2 as a named assumption (pricing errors mean-independent of the factor path and deal timing; idiosyncratic components independent across deals given the path). Say it is DLP's assumption and holds in the simulation. Label Lemma~1 and Proposition~1 as Tier~1 results & S\\
+2 & Section~1.2, after Eq.~(11) (l.~418) & Add the identity as a lemma, with its one-line proof. Add one sentence on pre-inception dates (R2-2b) & S\\
+3 & Section~1.2, the two bullets and the next paragraphs (l.~433--438, 454--460) & Replace by the three effects of $H$ and the corrected statement on targets. Draft below & M\\
+4 & Section~1.3 (l.~550, 566, 586) & Add one proposition: under Tier~2, (a) the wedge is zero for every $H$; (b) $\hat\theta_H\to\theta_0$ for every $H$ as funds per vintage grow; (c) with bounded funds per vintage the gradient at $\theta_0$ is \eqref{eq:tiltH}, for every $H\ge0$. Remove ``the benchmark target is structural when\ldots'' as the description of $H=0$. This is the answer to R1-2 and R2-3.1 & M\\
+5 & Section~1.1, closing paragraphs (l.~305--308, 369--377) & Keep the wedge, define it by Result~\ref{res:wedgechar}, and present it as what a departure from Tier~2 produces. Delete ``fundamentally drives the large-sample and small-sample properties'' & S\\
+6 & Online Appendix B (app l.~91--620) & Keep the setup, the lemma on $b_{H,i}$ (add: zero under Tier~2) and the gradient decomposition; note that its second term is \eqref{eq:tiltH}. Delete Remark~2 and the interpretation subsection from ``At short horizons'' onward; replace by the reading of \eqref{eq:tiltH}. The appendix gets shorter & M\\
+7 & Simulation section (l.~1126--1131, 1136--1138) & Replace ``Theoretically, $H=0$ yields unbiased estimates''. State that part of the $H=0$ bias is a population tilt of order $1/n_v$. Add R2's diagnostic ($H=0$, funds per vintage fixed, many vintages, simulated market) as one small table & M\\
+8 & Abstract sentence 3 (l.~87); introduction paragraph 2 and first contribution (l.~115--120, 133--136); conclusion (l.~1501--1504) & Reword the trade-off. Draft below & S\\
+9 & Section~1.4.2 (l.~719--735) & Rewrite: horizon averaging belongs to the same family as the working paper's transformations (W4). Restate Corollary~1 for diverging funds per vintage & S\\
+10 & Section~2.1, drawdown paragraph (l.~885--890) & Delete, including ``mathematically immune'' (R2-3.5). Under Tier~2 no deal carries a wedge; under Tier~1 the statement is about population moments only & S\\
+\addlinespace
+\multicolumn{4}{@{}l}{\emph{Should do}}\\
+11 & Empirical section, discussion of Table~3 (l.~1245--1248) & Say that a falling horizon profile is what the tilt predicts and is steeper where funds per vintage are few. Stop describing long-horizon coefficients as ``converged''; they are the saturated case & S\\
+12 & Simulation and Table~3 & Add the cross-fund product criterion as a robustness column: one-factor model, $H\in\{0,15\}$. Needs fund-level errors within vintages and a new objective function; the estimation code is otherwise unchanged. If the profile flattens in the data, that is the paper's strongest new result & M to L\\
+\addlinespace
+\multicolumn{4}{@{}l}{\emph{Optional}}\\
+13 & Section~1.2 & One paragraph on the choice of $H$ after item~12: with the tilt removed, $H$ is a regularisation choice (effect~2) with no cost in the target under Tier~2, and a non-flat profile is evidence against Tier~2 & S\\
+14 & Simulation & A scenario with a vintage-level common shock (R2-4.3): it breaks Tier~2's independence across funds and is the case in which neither infill nor the product criterion helps & M to L\\
+\bottomrule
+\end{longtable}
+}
+
+\textbf{Draft for item 3} (replaces the two bullets; to adapt):
+\begin{draft}
+By Lemma~[identity], $\bar\epsilon_i^{(H)}(\theta)=PV_i(\theta)\,A_{i,H}(\theta)$: horizon averaging rescales the inception NPV by the benchmark's average growth over the window and adds no new pricing error. The horizon therefore does three things. It sets the date in whose dollars errors are measured; it removes the degenerate direction in which a large $\alpha$ discounts all later cash flows to zero; and it reweights vintages by realised benchmark growth. With squared loss and a bounded number of funds per vintage, the population minimiser $\theta_H^\dagger$ differs from $\theta_0$ for every $H\ge0$, including the inception-only case, by a term of order $1/n_v$ whose sign depends on $H$ (Proposition~[new]). The difference vanishes for every $H$ as the number of funds per vintage grows, provided pricing errors are mean-independent of the factor path (Assumption~[Tier 2]). If they are not, post-inception dates add a covariance between the pricing error and the later factor path, the Compounding-Horizon Wedge.
+\end{draft}
+
+\textbf{Draft for item 8, abstract sentence 3:}
+\begin{draft}
+We show that averaging pricing errors over later discounting dates rescales each inception pricing error by realised benchmark growth: it adds no information, but it determines the sign and size of a criterion bias that is of order one over the number of funds per vintage and is present already in the inception-only estimator.
+\end{draft}
+
+\textbf{For the reply letter.} To R1-2: the conjecture is correct and now a proposition; i.i.d.\ factors are not needed; the inception-only estimator has the same property and the same limitation. To R2-3.1: agreed and proved, with the diagnostic run. To R2-2a and 3.4: Remark~2 is withdrawn; the identity is the exact statement. To R2-2b: the intuition is the reading of \eqref{eq:tiltH}, and the answer on $H<0$ is the identity.
+
+\subsection{Not verified}
+
+\begin{itemize}
+\item The product criterion has not been run on the Preqin sample or in the paper's simulation code. With fund-size weights the within-vintage variance term needs the weighted version. Vintages before 1994 have two to six buyout funds, enough for the criterion but noisy.
+\item Result~\ref{res:ucrit} assumes funds of a vintage are independent given the factor path. Terminal NAVs, common vintage shocks and the aggregation issue of Section~\ref{sec:vyp} all work against that; resolve the aggregation issue first.
+\item Result~\ref{res:tiltH} is derived for one exit per deal, as in the simulation. Several exits per deal add terms of the same form.
+\item The claim that the empirical horizon profile is a tilt signature is an inference from the replica and the sign of \eqref{eq:tiltH}, not a computation on the data.
+\item Whether the tilt changes sign depends on how far the window extends past the exit dates. In the replica the window is capped at a unit's last cash flow and the tilt shrinks to near zero without clearly changing sign. The paper's code caps the window at the length of the unit's cash-flow series (\code{helper/getNPVs.R}); I have not checked whether that series ends at the last cash flow or at the end of the data.
+\item Part of the decline below the truth at long horizons is a finite-sample effect and not the tilt: in samples of 20 vintages the replica's mean at $H=15$ is 0.95 to 0.96 while its large-sample value is 0.98 to 1.02. The paper reports 0.966 for vintage-year portfolios at 15 years, which matches. I have no closed form for this part.
+\item Hansen and Jagannathan (1991) is cited from memory for the term ``admissible''; check the wording before quoting it.
+\end{itemize}
+
 
 \end{document}
