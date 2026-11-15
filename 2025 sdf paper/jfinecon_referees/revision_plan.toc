@@ -1,0 +1,23 @@
+\contentsline {section}{\numberline {1}Bottom line and strategic direction}{2}{section.1}
+\contentsline {section}{\numberline {2}Evidence the plan rests on}{4}{section.2}
+\contentsline {section}{\numberline {3}Triage of referee and audit points}{6}{section.3}
+\contentsline {subsection}{\numberline {3.1}Keep in full, because they are right and strengthen the paper}{6}{subsection.3.1}
+\contentsline {subsection}{\numberline {3.2}Keep in modified form}{7}{subsection.3.2}
+\contentsline {subsection}{\numberline {3.3}Decline (with clear reasons)}{8}{subsection.3.3}
+\contentsline {section}{\numberline {4}Revised assumptions}{9}{section.4}
+\contentsline {section}{\numberline {5}Sounder mathematics: theorems and estimators}{11}{section.5}
+\contentsline {subsection}{\numberline {5.1}Core theoretical results to state in the revised paper}{11}{subsection.5.1}
+\contentsline {subsection}{\numberline {5.2}Comparison of estimation criteria in the revised paper}{12}{subsection.5.2}
+\contentsline {section}{\numberline {6}Code and data repairs (must pass before any table rerun)}{13}{section.6}
+\contentsline {section}{\numberline {7}Minimal revision vs.\ effective revision}{15}{section.7}
+\contentsline {section}{\numberline {8}The revised paper: title, abstract, and outline}{17}{section.8}
+\contentsline {subsection}{\numberline {8.1}Title options (retaining the SDF framing)}{17}{subsection.8.1}
+\contentsline {subsection}{\numberline {8.2}Proposed abstract (readable, finance-facing, with SDF framing)}{17}{subsection.8.2}
+\contentsline {subsection}{\numberline {8.3}Section-by-section outline of the revised paper}{18}{subsection.8.3}
+\contentsline {section}{\numberline {9}Simulation design}{19}{section.9}
+\contentsline {section}{\numberline {10}Empirical analysis plan}{20}{section.10}
+\contentsline {section}{\numberline {11}Decision gates and execution sequence}{21}{section.11}
+\contentsline {subsection}{\numberline {11.1}Decision gates}{21}{subsection.11.1}
+\contentsline {subsection}{\numberline {11.2}Recommended execution sequence}{22}{subsection.11.2}
+\contentsline {section}{\numberline {12}Summary of key choices for your sign-off}{22}{section.12}
+\contentsline {section}{\numberline {A}Exploratory probes on stored global Preqin fund-level data}{23}{appendix.A}

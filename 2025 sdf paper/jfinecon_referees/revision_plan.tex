@@ -23,6 +23,7 @@
 \newcommand{\E}{\mathbb{E}}
 \newcommand{\Var}{\mathrm{Var}}
 \newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\corr}{\mathrm{corr}}
 \newcommand{\code}[1]{\texttt{\detokenize{#1}}}
 \newcommand{\file}[1]{\path{#1}}
 \newcommand{\C}{\mathcal{C}}
@@ -32,156 +33,169 @@
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 \newenvironment{draft}{\begin{quote}\small\itshape}{\end{quote}}
 
-\title{Revision plan\\[0.5ex]
+\title{Revision Plan\\[0.5ex]
 \large ``Identification and Stability of SDF Estimators for Pooled, Non-traded Cash Flows''\\
 after the rejection of JFEC-2026-141}
 \author{}
-\date{15 November 2026}
+\date{15 November 2026 (Updated after mathematical and implementation audit)}
 
 \begin{document}
-\maketitle
-\vspace{-3em}
+{\let\newpage\relax\maketitle}
+\vspace{-1.5em}
 
 {\small
 \begin{tabular}{@{}ll@{}}
 Built on & \code{review_of_referee_reports.tex} (14 November 2026), cited below as ``the review''\\
+Audit incorporated & \code{revision_plan_audit.md} and \code{check_revision_plan_audit.py} (15 November 2026)\\
 Paper sources & \code{tex/sdf_paper.tex}, \code{tex/sdf_paper_online_appendices.tex}\\
 Code & \code{r_project/} (repository root)\\
-New checks & \code{check_revision_probes.py}, in this folder
-\end{tabular}
+Exploratory checks & \code{check_revision_probes.py}, in this folder
+\end{tabular}\par
 }
 
 {\small\setlength{\parskip}{0pt}\tableofcontents}
 \clearpage
 
 %======================================================================
-\section{Bottom line}
+\section{Bottom line and strategic direction}
 \label{sec:bottom}
 %======================================================================
 
-Because the paper was rejected, we owe the referees no reply. The plan therefore keeps only what makes the paper better, whether a referee raised it, the review found it, or the checks made for this plan turned it up.
+Because the paper was rejected at the \emph{Journal of Financial Economics}, we owe the referees no point-by-point concession letter. The sole objective is to build the strongest, most transparent, and mathematically bulletproof version of the working paper for a top finance or econometrics journal (\emph{RFS}, \emph{JFQA}, \emph{JF}, or \emph{JoE}). We keep every critique and newly discovered mathematical or empirical finding that genuinely improves the paper, and we set aside referee requests that would turn the paper into a different project.
 
-\textbf{The one finding that changes the paper.} The submitted paper says: the inception criterion ($H=0$, Driessen--Lin--Phalippou) targets the structural parameter; averaging over later discounting dates stabilizes estimation in finite samples but shifts the population target through a ``Compounding-Horizon Wedge''. The mathematics says something close to the opposite.
-\begin{enumerate}
-\item Horizon averaging adds no observations. It multiplies each vintage's inception NPV by a benchmark-growth factor that depends on the trial parameter: $\bar\epsilon_{v,H}(\theta)=A_{v,H}(\theta)\,PV_v(\theta)$.
-\item Under the return model that the paper itself simulates, the pricing moment holds at every horizon. There is no wedge in that model.
-\item What moves the estimate is noise. Squared loss charges the estimator for the variance of the pooled NPV, and discounting harder (a larger $\alpha$ or $\beta$) shrinks the late, noisy distributions. The criterion can therefore be lowered by moving away from the true parameter. This tilt is present at $H=0$, it does not vanish as vintages are added, and ``exploding alpha'' is the same force taken to its limit.
-\item The horizon factor $A_{v,H}(\theta)^2$ grows with $\alpha$ and $\beta$ and so pushes the other way. The 12.5--15-year ``optimum'' in the simulations is the horizon at which the two forces roughly cancel in that design. It is not a property of the estimator.
-\end{enumerate}
-
-\textbf{Recommendation.} Rebuild the paper around the question \emph{what do squared-NPV estimators of private-equity risk identify, and which criterion removes which noise?} This keeps the original idea (several discounting dates), the data, the vintage-domain asymptotics and the honest conclusion about what cash-flow panels can support. It replaces the wedge narrative, the stabilization heuristic and the claim that $H=0$ is structural. Section~\ref{sec:scopes} compares this with the smallest defensible revision; the smallest revision is the first milestone of the recommended one, so nothing is lost by starting there.
-
-\textbf{What the checks for this plan add to the review} (details in Section~\ref{sec:evidence} and Appendix~\ref{app:probes}):
+\textbf{1. Keep the SDF framing (in both the title and the text).}
+A central strategic decision is whether to abandon the Stochastic Discount Factor (SDF) language in favor of purely descriptive ``benchmark deflator'' or ``NPV-minimizing'' terminology. We should \textbf{keep the SDF framing}—both in the title (\emph{``Identification and Stability of SDF Estimators for Pooled, Non-traded Cash Flows''}) and in the main text—for three reasons:
 \begin{itemize}
-\item The review's most attractive empirical result does not survive a robustness check. The cross-fund product criterion flattens the Buyout horizon profile only when vintages with two to six funds get the same weight as vintages with eighty. With fund-count weights, or with at least five funds per vintage, the profile falls from about 1.1--1.2 to 0.9, as under squared loss.
-\item The reason is that \emph{vintage-level} pricing errors dominate fund-level noise, and they are persistent: in Buyout, nine consecutive vintages (1996--2004) are overpriced and the next five underpriced, each by several within-vintage standard errors. No within-vintage correction can remove this. It is the binding limit on what the data identify, and the paper should say so.
-\item The standard errors in the paper's tables do not implement the paper's formula: the per-unit score and Hessian are derivatives of $|\bar\epsilon_i|$, not of $\bar\epsilon_i^2$ (Section~\ref{sec:code}).
-\item Four smaller points: the simulated noise is far heavier-tailed than the data; the code's ``0 yr'' branch makes the exploding-alpha degeneracy exact; fund-size-weighted pools weight vintages by squared average fund size; the introduction's sample counts refer to the wrong sample.
+\item \emph{The literature speaks the language of SDFs.} The modern private-market asset-pricing literature (e.g., Driessen, Lin, and Phalippou 2012 [DLP12]; Korteweg and Nagel 2016 [KN16]; Gredil, S{\o}rensen, and Waller 2020 [GSW]; Gupta and Van Nieuwerburgh 2021 [GvN]; Korteweg 2019) frames risk and abnormal performance estimation around candidate SDFs applied to non-traded cash flows. Dropping ``SDF'' from the title or abstract obscures the paper's contribution and disconnects it from its natural readership.
+\item \emph{The SDF interpretation is mathematically sound once scoped properly.} As proved in Appendix~A of the review, in incomplete markets (Hansen and Richard 1987), any strictly positive discount factor process $\Psi_t$ that satisfies the conditional zero-NPV pricing restriction $\E[\sum_{t\ge t_i^0}(\Psi_t/\Psi_{t_i^0})CF_{i,t}\mid\F_{t_i^0}]=0$ \textbf{is} a valid SDF on the space of private-equity (PE) cash flows. The reciprocal-return specification of DLP12, $M_u(\theta)=(1+\alpha+r_{f,u}+\beta^\top F_u)^{-1}$, defines a parsimonious parametric candidate family.
+\item \emph{The referee objection is resolved by a clean three-way distinction.} Referees~1 and~2 objected only because the submitted text blurred three distinct objects: (i) the \emph{structural PE-specific SDF} $\Psi_t(\theta_0)$ that prices PE cash flows conditional on inception information, (ii) an \emph{economy-wide SDF} that additionally imposes public-market pricing moments $\E[M_u R_{f,u}]=1$ and $\E[M_u F_u]=0$ (as in KN16), and (iii) the \emph{pseudo-true parameter} $\theta_H^\dagger$ that minimizes a squared-loss criterion when within-vintage pooling is finite ($n_v<\infty$). Making this distinction explicit in the setup answers both referees completely while preserving the paper's identity.
 \end{itemize}
 
-\textbf{What we decline.} Adding traded-asset pricing moments, imposing the Korteweg--Nagel lognormal structure, a full KN16-versus-DLP12 horse race, a theory of the optimal horizon, and a smoothed-NAV simulation. Reasons are in Section~\ref{sec:triage}.
+\textbf{2. The core mathematical insight that reshapes the paper.}
+The submitted paper argued that the inception-only estimator ($H=0$, DLP12) targets the structural parameter $\theta_0$, whereas averaging pricing errors over a horizon of $H>0$ years after inception stabilizes finite-sample estimation by averaging imperfectly correlated errors at the cost of a ``Compounding-Horizon Wedge.'' The exact algebra and our audits show that the true mechanism is much cleaner—and much more interesting:
+\begin{enumerate}
+\item \textbf{Exact rescaling identity.} Averaging pricing errors over discounting dates $\tau\in\mathcal{T}_{v,H}$ adds no independent cash-flow observations. For any complete cash-flow stream, it multiplies the vintage's inception net present value $PV_v(\theta)$ by the average cumulative benchmark growth over the horizon window:
+\[
+\bar\epsilon_{v,H}(\theta)=A_{v,H}(\theta)\,PV_v(\theta),\qquad
+A_{v,H}(\theta)=\frac{1}{|\mathcal{T}_{v,H}|}\sum_{\tau\in\mathcal{T}_{v,H}}R^b_{t_v^0,\tau}(\theta)>0.
+\]
+\item \textbf{Why inception least squares ($H=0$) is biased with finite pools—and why ``exploding alpha'' occurs.} Under conditional mean-zero pricing given the benchmark path, the expected pricing error is zero at every horizon $H\ge 0$ (there is no mean wedge in the baseline return model). However, minimizing \emph{squared} pooled NPVs minimizes signal plus conditional residual variance:
+\[
+Q_H(\theta)=\E\bigl[A_{v,H}(\theta)^2\mu_v(\theta)^2\bigr]+\E\bigl[A_{v,H}(\theta)^2\omega_v(\theta)\bigr].
+\]
+When the number of funds per vintage $n_v$ is finite, $\omega_v(\theta)=\Var(PV_v(\theta)\mid\C_v)>0$. Because PE funds call capital early and distribute proceeds years later (the J-curve), discounting harder—raising $\alpha$ in every period, or raising $\beta$ across multi-year holding periods with a positive equity premium—shrinks late, noisy distributions and reduces $\omega_v(\theta)$. Consequently, at $H=0$, squared loss has a strictly negative local score in $\alpha$ (and typically in $\beta$ under positive average market growth) at $\theta_0$, biasing $\hat\alpha_0$ and $\hat\beta_0$ upward. Taken to the limit $\alpha\to\infty$, all cash flows after $t_v^0$ are discounted to zero, so $\lim_{\alpha\to\infty}Q_0(\alpha,\beta)=\E[CF_{v,t_v^0}^2]$, which strictly beats the truth $Q_0(\theta_0)=\E[\omega_v(\theta_0)]$ whenever lifetime payout noise exceeds the squared initial capital call (and goes all the way to zero when $CF_{v,t_v^0}=0$). This is the exact mathematical root of the ``exploding alpha'' problem in DLP12.
+\item \textbf{What horizon weighting ($H>0$) actually does.} For $H>0$, the compounding weight $A_{v,H}(\theta)^2$ grows strictly with $\alpha$, driving $\lim_{\alpha\to\infty}Q_H(\alpha,\beta)=+\infty$ as soon as the window extends past the first nonzero cash flow. Horizon averaging therefore \emph{restores global coercivity in $\alpha$}. For $\beta$, differentiating $A_{v,H}(\beta)^2PV_v(\beta)^2$ introduces a positive scale-Jacobian compounding penalty $PV_v(\beta)^2\partial_\beta\log A_{v,H}(\beta)$ whenever cumulative benchmark returns increase with $\beta$. At intermediate horizons this penalty counteracts the upward inception noise tilt (producing the apparent 12.5--15-year ``sweet spot'' in the baseline simulation), and at long horizons it pulls $\hat\beta_H$ downward once the window's cumulative market sensitivity $\bar S_{v,H}(\beta)$ exceeds the effective deal exit duration $S_{\mathrm{exit}}(\beta)$.
+\item \textbf{Eliminating fund-level noise bias without large pools: the cross-fund pair-product criterion.} Because the $O(1/n_v)$ bias of squared loss comes from squaring each fund's own idiosyncratic noise, replacing the squared pooled NPV with the within-vintage cross-fund pair-product (U-statistic) criterion
+\[
+U_{v,H}(\theta)=\frac{1}{n_v(n_v-1)}\sum_{i\neq k}\epsilon_{v,i,H}(\theta)\,\epsilon_{v,k,H}(\theta)=\bar\epsilon_{v,H}(\theta)^2-\frac{s_{v,H}^2(\theta)}{n_v}
+\]
+removes idiosyncratic fund variance in expectation for any $n_v\ge 2$. As the number of vintages $V\to\infty$ with $n_v\ge 2$ bounded, $U_{v,H}(\theta)$ recovers the exact population target of infinite-pool ($n_v\to\infty$) least squares.
+\end{enumerate}
+
+\textbf{3. What our code and empirical audits revealed (details in Section~\ref{sec:evidence} and Appendix~\ref{app:probes}).}
+\begin{itemize}
+\item \emph{Two bugs in empirical portfolio construction and four bugs in the standard-error code must be fixed first.} In \code{prep_preqin.R}, vintage-year portfolios (VYPs) were formed with \code{aggregate(CF ~ Date, df, mean)}, which divides by the number of funds reporting a nonzero flow on date $t$ rather than the vintage's fixed fund count $N_v$, heavily overweighting late exits. In addition, fund-size-weighted (FW) pools were not normalized by total vintage commitment, weighting vintages in squared loss by roughly the square of total dollar commitment (a 90-to-1 ratio across vintages). In \code{estim_model_optimized.R}, the asymptotic covariance routine differentiates $|\bar\epsilon_i|$ instead of $\bar\epsilon_i^2$, overwrites the multi-parameter vector with a scalar in \code{get.grad.per.fund} (\code{p.plus <- par[x] + delta}, which drops all other parameters and caused the erratic standard errors in Tables~4--5), perturbs all parameters at once in off-diagonal Hessian entries, and multiplies by $\widehat{V}$ instead of $\widehat{V}^{-1}$ in the Wald test.
+\item \emph{Fixing reporter-mean pooling cuts the Buyout horizon drop by more than half, and $U_{v,H}$ lowers the $H=0$ estimate, but shared vintage-level errors remain the binding empirical limit.} On the stored global Preqin fund-level sample ($V\le 2010$), switching from reporter-mean to constant-composition pooling changes the Buyout $\hat\beta_H$ profile from $1.23\to 0.62$ to $1.21\to 0.96$. Applying $U_{v,H}$ lowers the $H=0$ estimate to $1.05$--$1.08$ in Buyout and $1.51$ in Venture Capital. Under equal vintage weights, $U_{v,H}$ makes the Buyout profile nearly flat ($1.05\to 1.19$), but under fund-count weights ($q_v=n_v$) or $n_v\ge 5$, $\hat\beta_H$ still declines from $\sim 1.1$--$1.2$ to $0.90$ (and in Venture Capital it declines under all weights).
+\item \emph{Why?} Because vintage-level pooled residuals $PV_v(\hat\beta)$ exhibit pronounced multi-year cycles (positive for every Buyout vintage 1996--2005 and negative for 2006--2010; positive for Venture 1992--1998 and negative for 1999--2010). These reflect shared cohort shocks ($c_v>0$) and/or single-factor conditional mean misspecification ($\mu_v^2>0$) that do not diversify within a vintage and still multiply the scale-Jacobian penalty $\bar S_{v,H}(\beta)$. With $\sim 25$ overlapping vintages, single-factor market betas are reasonably well bounded, whereas joint $(\alpha,\beta)$ or two-factor models remain weakly identified due to both Merton-type drift uncertainty across overlapping cohorts and high collinearity between the $\alpha$ and $\beta$ NPV gradients.
+\end{itemize}
+
+\textbf{Recommendation.} Execute the \textbf{Effective Revision} (Section~\ref{sec:scopes}): retain the SDF title and LMD framework, repair the codebase and rebuild the constant-composition Preqin pools, replace the heuristic horizon section with the exact rescaling identity, signal-plus-noise decomposition, exploding-alpha coercivity theorem, and cross-fund pair-product ($U_{v,H}$) estimator, and present the empirical horizon and $(\alpha,\beta)$ results with repaired SHAC and block-resampling inference. Treat vintage-level IV/GMM moments as a concise theoretical benchmark (or a strictly gated simulation extension using exogenous path instruments, never naive leave-one-vintage-out).
 
 %======================================================================
 \section{Evidence the plan rests on}
 \label{sec:evidence}
 %======================================================================
 
-Each statement carries a label. \evidencetag{P} proved in the review's appendices. \evidencetag{C} read in the current source for this plan. \evidencetag{D} computed for this plan on the stored global fund-level Preqin file (equal fund weights, vintages $\le 2010$, one-factor model, $\alpha=0$); exploratory, not a result for the paper. \evidencetag{R} from the review's standalone replica. \evidencetag{A} my own arithmetic from stated inputs.
+Each statement carries a verification tag: \evidencetag{P} proved algebraically in the review or audit; \evidencetag{C} verified directly in the R source code; \evidencetag{D} computed in \file{check_revision_probes.py} or \file{check_revision_plan_audit.py} on the stored Preqin data files; \evidencetag{R} from the review's standalone simulation replica; \evidencetag{A} analytical/numerical calculation from stated inputs.
 
 {\small
 \begin{longtable}{@{}L{0.9cm}L{14.4cm}@{}}
 \toprule
-Label & Statement\\
+Tag & Verified statement\\
 \midrule
 \endhead
-\evidencetag{P} & Exact identity $\bar\epsilon_{v,H}=A_{v,H}PV_v$; signal-plus-noise decomposition of squared loss; score of squared loss at the true parameter in the specialized deal model; consistency under within-vintage infill at every fixed horizon; product criterion under equal conditional means.\\
-\evidencetag{P} & Three formal defects in the manuscript: the wedge conditional on realized fund structure drops a mean term; the NFV object in Lemma~1(3) is not a forward revaluation; the CLT needs a score-centering condition.\\
-\evidencetag{C} & Simulator off by one month: \code{cumprod(1 + df$deal[start:end])} with the investment booked at \code{start}; the estimator discounts with returns $a{+}1,\dots,b$. Each deal carries a pricing error of $G_a(\theta_0)-1$ before any noise.\\
-\evidencetag{C} & Simulated noise is independent of the factor path and of timing. Apart from the off-by-one month, the simulation satisfies conditional pricing given the factor path, so its horizon profile contains no wedge.\\
-\evidencetag{C} & \code{prep_preqin.R} pools with \code{aggregate(CF ~ Date, df, mean)}: the divisor is the number of funds reporting on that date, not the vintage's fund count.\\
-\evidencetag{C} & Standard errors: \code{get.grad.per.fund} and \code{get.hess.per.fund} difference \code{err.sqr.calc} on one unit at a time. Under the configured loss \code{L2_Lasso} that function returns $\sqrt{\sum\epsilon^2}/n$, which for one unit is $|\bar\epsilon_i|$. The sandwich is therefore built from $\nabla|\bar\epsilon_i|$ and $\nabla^2|\bar\epsilon_i|$. The point estimates are unaffected. The size of the error in the reported standard errors and $t$ statistics has not been measured.\\
-\evidencetag{C} & Wald test in \code{estim.CoVM} uses $d^\top\widehat{V}d$ where it needs $d^\top\widehat{V}^{-1}d$. Off-diagonal Hessian differences shift all parameters at once, which is correct only for two parameters.\\
-\evidencetag{C} & Branch \code{max.month == 0} returns \code{sum(CF/ret)}, which discounts the first cash flow by the first month's return. As $\alpha\to\infty$ this criterion goes to zero exactly. The correct inception NPV (\code{max.month == 1}) has limit $CF_{v,t_v^0}^2>0$.\\
-\evidencetag{C} & The horizon window is capped at the unit's last cash-flow date and starts at its first. Both are outcomes, so $A_{v,H}$ is not a function of the factor path alone.\\
-\evidencetag{D} & Fund-size-weighted North America Buyout pools: the sum of absolute pooled cash flows ranges from 938 (vintage 1996) to 8{,}859 (2006). Squared loss therefore weights vintages by roughly the square of average fund size, a range of about 90 to 1.\\
-\evidencetag{C} & The introduction describes ``894 Buyout and 931 Venture Capital funds (\dots vintages 1982--2010)''. By the paper's own vintage table, 894 and 931 are the counts through 2021; vintages $\le 2010$ contain 473 and 528.\\
-\evidencetag{D} & Product criterion, Buyout: 1.05 at $H=0$ and 1.19 at $H=30$ with equal vintage weights (reproduces the review); 1.08 and 0.90 with fund-count weights; 1.24 and 0.90 with $n_v\ge5$. Squared loss on constant-composition pools: 1.21 and 0.96.\\
-\evidencetag{D} & Vintage-level pooled NPVs at the $H=0$ squared-loss beta, Buyout: $+0.16$ to $+0.38$ for every vintage 1996--2004, $-0.02$ to $-0.11$ for 2006--2010, with within-vintage standard errors of 0.03--0.11. Venture: positive 1992--1998, negative for every vintage 1999--2010.\\
-\evidencetag{D} & The beta that sets the equal-weighted mean pooled NPV to zero ($\alpha=0$) is 1.86 for Buyout at $H=0$ against 1.21 under squared loss, and 1.4--1.5 for $H\ge10$. A second root near 3 appears at short horizons.\\
-\evidencetag{D} & With $\alpha$ free, squared loss and the product criterion both move to $\alpha\approx0.5$--$0.7\%$ a month with $\beta\approx0.3$--$0.55$ for Buyout, and to the $\alpha$ bound for Venture at $H=0$. Removing fund-level noise does not identify $\alpha$.\\
-\evidencetag{A} & Simulated noise: monthly additive shock with $\sigma=0.2$ gives a deal multiplier $N$ with $\E N^2\approx(1+\sigma^2)^{h}$, so $\mathrm{sd}(N)\approx3$ for a five-year hold and $\approx10$ for ten years. Implied dispersion of fund-level NPVs is several times the 0.3--0.5 seen in Buyout vintages.\\
-\evidencetag{R} & In the replica, squared loss at $H=0$ plateaus above the truth as vintages grow with funds per vintage fixed (for example 1.17 with one fund, 1.04 with five, $\sigma=0.1$), while the product criterion is near 1.00.\\
+\evidencetag{P} & Exact rescaling identity $\bar\epsilon_{v,H}(\theta)=A_{v,H}(\theta)PV_v(\theta)$; conditional signal-plus-noise decomposition of squared loss; exact score of squared loss at $\theta_0$ in the specialized deal model; consistency under within-vintage infill at every fixed horizon $H\ge 0$; unbiasedness of the cross-fund pair-product criterion $U_{v,H}$ for $\E[A_{v,H}^2(\mu_v^2+c_v)]$ under conditional independence and equal conditional means.\\
+\evidencetag{P} & Incomplete-markets SDF recovery (review, Appendix~A): a positive benchmark deflator $\Psi_t(\theta_0)$ satisfying predetermined inception pricing (P) is a valid SDF on the PE cash-flow space; public-asset pricing imposes additional restrictions ($\alpha=0$ and growth-optimal $\beta^\ast$ in the one-period model, Result~3.2).\\
+\evidencetag{P} & Three formal defects in the submitted manuscript: (1) conditioning the wedge in Appendix~B on realized fund structure drops a conditional mean term; (2) the NFV ratio $(\Psi_{t^{\mathrm{Future}}}/\Psi_\tau)\delta_{i,j}$ in Lemma~1(3) discounts backward instead of compounding forward; (3) Theorem~2 in Appendix~C omits the score-centering rate condition $n^{-1/2}\sum_i\E[s_i^{(H)}(\theta_H^\dagger)]\to 0$ and the integrated Hessian.\\
+\evidencetag{C} & Simulator timing and default truncation (\file{r_project/simulation/simulation_multifactor.R}, lines 225--230; \file{simulation_improved.R}, lines 113--116): deal payoffs compound over \code{start:end} instead of \code{(start+1):end}, creating a zero-noise pricing error of $G_a(\theta_0)-1$. In addition, Gaussian additive shocks followed by default truncation (\code{if (any(path < 0)) m <- 0}) raise the conditional mean ($\E[(G+e)_+]>G$; e.g.\ $1.396>1$ for $G=1,\sigma=2$, audit S5). Using positive mean-one multiplicative shocks (such as the shifted lognormal already coded at lines 216--220) restores exact conditional pricing at all $\sigma>0$.\\
+\evidencetag{C} & Reporter-mean VYP bug (\file{r_project/empirical/prep_preqin.R}, line 229): \code{aggregate(CF ~ Date, df, mean)} divides by the number of funds reporting on date $t$ rather than the fixed vintage fund count $N_v$, distorting cash-flow weights across a vintage's life.\\
+\evidencetag{C} & Four bugs in asymptotic standard errors and Wald tests (\file{r_project/estim_model_optimized.R}, lines 385--397, 507--518, 565--616, 620--645): (1) \code{err.sqr.calc} on a single unit returns $|\bar\epsilon_i|$ under \code{L2_Lasso}, so numerical derivatives differentiate $|\bar\epsilon_i|$ rather than $\bar\epsilon_i^2$; (2) \code{get.grad.per.fund} assigns \code{p.plus <- par[x] + delta}, overwriting the parameter vector with a scalar and dropping all other parameters in multi-parameter models (audit Spec P1); (3) \code{get.hess.per.fund} perturbs all parameters simultaneously (\code{p.pp <- par + delta}) on off-diagonals; (4) \code{estim.CoVM} computes the Wald statistic using $\widehat{\mathrm{CoVM}}$ instead of $\widehat{\mathrm{CoVM}}^{-1}$. Point estimates in one- and multi-factor tables are unaffected, but reported SE$_A$, $t_A$, and Wald $p$-values are invalid.\\
+\evidencetag{C} & Inception convention and origin cash flow (\file{estim_model_optimized.R}, lines 328--340; audit S2): \code{max.month == 0} returns \code{sum(CF/ret)} $=PV_v(\theta)/G_{t_v^0}(\theta)$, which tends to $0$ as $\alpha\to\infty$. \code{max.month == 1} returns $PV_v(\theta)$, whose $\alpha\to\infty$ limit is $CF_{v,t_v^0}$ (undiscounted flow at the origin $t_v^0$). When $t_v^0$ is the first active cash-flow date, $CF_{v,t_v^0}^2>0$; when $t_v^0$ is set to a predetermined Dec~31 of year $v-1$, all 25 Buyout and 27 Venture vintages have $CF_{v,t_v^0}=0$, so $\lim_{\alpha\to\infty}PV_v(\alpha,\beta)^2=0$ there as well.\\
+\evidencetag{C} & Monthly grid endpoints (\file{estim_model_optimized.R}, lines 185--197): \code{to.monthly} starts at \code{min(df.ss$Date)} and ends at \code{max(df.ss$Date)} in the empirical branch, but pads all vintages to \code{2020-01-01} in the simulation branch.\\
+\evidencetag{D} & Unnormalized fund-size weighting: in stored North America FW Buyout pools, the sum of absolute pooled cash flows ranges from 938 (vintage 1996) to 8{,}859 (vintage 2006), weighting vintages in squared loss by roughly the square of aggregate vintage commitment ($\sim$90-to-1). In \file{data_prepared_2026_b/}, both \file{preqin_cashflows_EW_NAV.csv} and \file{preqin_cashflows_FW_NAV.csv} are stored at the fund level, so each fund's commitment size is exactly $\mathrm{CF}_{\mathrm{FW}}/\mathrm{CF}_{\mathrm{EW}}$.\\
+\evidencetag{C} & Sample count mismatch in Introduction (\file{tex/sdf_paper.tex}, line 122 vs.\ lines 872--880): ``894 Buyout and 931 Venture Capital funds (\dots vintages 1982--2010)'' states the 1982--2021 totals; vintages $\le 2010$ contain 473 Buyout and 528 Venture Capital funds.\\
+\evidencetag{D} & Empirical decomposition on North America VYPs (review, Table~1): holding $A_{v,H}(1)$ fixed across $\beta$ (\code{Fix-A}, pure cross-vintage reweighting) leaves $\hat\beta_H$ nearly flat ($1.242\to 1.144$ in Buyout EW; $1.881\to 1.857$ in VC EW), whereas keeping the parameter dependence of $A_{v,H}(\beta)$ (\code{Jac}, the scale-Jacobian penalty $\bar S_{v,H}(\beta)$) accounts for over 85\% of the horizon decline.\\
+\evidencetag{D} & Global fund-level Preqin probes ($V\le 2010$, $\alpha=0$, Appendix~\ref{app:probes}): constant-composition pooled LS gives $\hat\beta_0=1.21$ and $\hat\beta_{30}=0.96$ for Buyout. Cross-fund pair products $U_{v,H}$ give $1.05$ ($H=0$) and $1.19$ ($H=30$) under equal vintage weights, $1.08$ and $0.90$ under fund-count weights ($q_v=n_v$), and $1.24$ and $0.90$ for $n_v\ge 5$.\\
+\evidencetag{D} & Persistent vintage-level pooled residuals (audit S6): at the $H=0$ squared-loss estimate ($\hat\beta=1.21$), Buyout pooled vintage NPVs are positive for ten consecutive vintages 1996--2005 ($+0.15$ to $+0.38$ in 1996--2004, $+0.06$ in 2005; ratio to within-vintage SE between $+1.78$ and $+7.8$ in 1996--2004) and negative for 2006--2010 ($-0.02$ to $-0.11$; ratio to within-vintage SE between $-0.44$ and $-2.01$). In Venture Capital ($\hat\beta=1.93$), pooled residuals are positive for every vintage 1992--1998 ($+0.16$ to $+0.78$) and negative for every vintage 1999--2010 ($-0.08$ to $-0.47$).\\
+\evidencetag{D} & Sample mean-moment roots and joint $(\alpha,\beta)$ grid minima: setting the equal-weighted vintage average $V^{-1}\sum_v A_{v,H}(\beta)PV_v(\beta)=0$ ($\alpha=0$) gives $\hat\beta=1.86$ at $H=0$ for Buyout (with a second root at $3.00$) and $1.37$--$1.54$ for $H\ge 10$. With $(\alpha,\beta)$ free, both squared loss and $U_{v,H}$ move along a flat valley to $(\hat\alpha\approx 0.5\text{--}0.7\%/\text{mo},\,\hat\beta\approx 0.30\text{--}0.55)$ in Buyout and hit the $+2\%/\text{mo}$ upper $\alpha$ bound at $H=0$ in Venture Capital.\\
+\evidencetag{A} & Simulated noise calibration: monthly shock $\sigma=0.20$ gives deal multiplier variance $(1+\sigma^2)^h-1$, so $\mathrm{sd}(N)\approx 3.1$ at $h=60$ months and $\approx 10.5$ at $h=120$ months—several times larger than the within-vintage fund NPV dispersion ($0.3$--$0.5$) in Preqin Buyout data.\\
+\evidencetag{R} & In the standalone replica (review, Appendix~B, Tables D2--D3), squared loss at $H=0$ plateaus above $\beta_0=1$ as $V\to\infty$ with $n_v$ fixed (e.g.\ $1.17$ for $n_v=1$, $1.04$ for $n_v=5$ at $\sigma=0.1$; $1.39$ for $n_v=5$ at $\sigma=0.2$), whereas $U_{v,H}$ recovers $0.99$--$1.00$ across all $H\in\{0,5,10,15\}$.\\
 \bottomrule
 \end{longtable}
 }
 
-Not yet established: which printed tables were produced by which code version; the North America results under corrected pooling (the stored fund-level file is global only, and the raw Preqin workbook is needed); every statement about finite-sample precision.
-
 %======================================================================
-\section{Which points to keep}
+\section{Triage of referee and audit points}
 \label{sec:triage}
 %======================================================================
 
-\subsection{Keep, because they are right and change the paper}
+\subsection{Keep in full, because they are right and strengthen the paper}
 
 {\small
-\begin{longtable}{@{}L{2.3cm}L{5.6cm}L{7.4cm}@{}}
+\begin{longtable}{@{}L{2.3cm}L{5.5cm}L{7.5cm}@{}}
 \toprule
-Source & Point & What we do with it\\
+Source & Point & Action in the revised paper\\
 \midrule
 \endhead
-R2-3.1 & $H=0$ does not target $\theta_0$ with few funds per vintage. & Becomes the paper's first main result, with the score formula and the link to exploding alpha.\\
-R1-2 & Give conditions for consistency at several discounting dates. & Becomes the second main result: every fixed horizon is consistent once the noise is removed and the benchmark path is strictly exogenous.\\
-R2-2a, 3.4 & Variance of a criterion term is not variance of the estimator; date-averaging cannot diversify a common path. & Delete Remark~2 and the second-order heuristic. The exact identity replaces them.\\
-R2-2b & Why later dates at all; why not earlier ones. & Answered by the identity: any date, earlier or later, rescales the same NPV. Later dates matter only through the parameter-dependent scale.\\
-R2-3.5 & Timing lemma is loosely worded; ``mathematically immune''. & Restated as two exogeneity conditions (Section~\ref{sec:assumptions}).\\
-R2-4.2, minors 1--7 & Quarterly data, weighting, stability ratio, numbering, cross-references. & Fix all. They are cheap and each would be noticed again.\\
-Review & Simulator timing, reporter-mean pooling, 0/1-month convention, window endpoints. & Fix before any number is reported (Section~\ref{sec:code}).\\
+R2-3.1 & $H=0$ squared loss does not target $\theta_0$ when $n_v<\infty$. & Elevate to a central theoretical result: derive the signal-plus-noise decomposition, the negative inception score tilt, and the link to exploding alpha.\\
+R1-2 & Establish conditions for consistency across multiple discounting dates. & Prove all-horizon consistency under (i) within-vintage infill ($n_v\to\infty$) and (ii) bounded pools ($n_v\ge 2$) via the cross-fund pair-product criterion $U_{v,H}$ under strict benchmark exogeneity (X).\\
+R2-2a, 3.4 & Criterion variance is not estimator variance; date averaging does not diversify a common factor path. & Delete Remark~2 and the equicorrelated-error heuristic in Appendix~B. Replace with the exact rescaling identity $\bar\epsilon_{v,H}=A_{v,H}PV_v$ and the FOC decomposition.\\
+R2-2b & Why later dates rather than pre-inception dates? & Answered directly by the rescaling identity: any date (earlier or later) rescales $PV_v(\theta)$ by cumulative benchmark growth. Pre-inception weights are $\F_{t_v^0}$-measurable under (P); post-inception weights require (X) and provide coercivity in $\alpha$.\\
+R2-3.5 & Timing lemma measurability and ``mathematically immune'' phrasing; backward ratio in Lemma~1(3). & Restate via conditions (P) and (X); fix the forward revaluation ratio $(\Psi_{t^{\mathrm{Inv}}}/\Psi_{t^{\mathrm{Future}}})\delta_{i,j}$ or remove the NFV detour; drop ``mathematically immune.''\\
+R2-4.2, Minors 1--7 & Quarterly Preqin cash flows on a monthly factor grid; EW/FW normalization; $\mathrm{SR}_{CV}$ formula mismatch; 25/30-yr saturation; numbering and SHAC cross-references. & Fix every item cleanly in the text and code.\\
+Review \& Audit & Simulator \code{(start+1):end} timing and default truncation; reporter-mean VYP pooling; FW vintage scaling; 0/1-month convention; 4 bugs in SE/Wald code; score-centering and integrated Hessian in Appendix~C. & Repair and verify with automated unit tests before regenerating any table or figure (Section~\ref{sec:code}).\\
 \bottomrule
 \end{longtable}
 }
 
 \Needspace{8\baselineskip}
-\subsection{Keep in a different form}
+\subsection{Keep in modified form}
 
 {\small
-\begin{longtable}{@{}L{2.3cm}L{5.6cm}L{7.4cm}@{}}
+\begin{longtable}{@{}L{2.3cm}L{5.5cm}L{7.5cm}@{}}
 \toprule
-Source & Point & What we do instead\\
+Source & Point & How we adapt it\\
 \midrule
 \endhead
-R1-1, R2-1a & The object is not an SDF. & Half right. State the scope instead of changing the estimator: the family is a benchmark deflator; its structural member is an SDF for the stated PE cash flows under conditional pricing; pricing public assets is a further restriction we do not impose. Retitle (Section~\ref{sec:decisions}).\\
-R2-1b, 1c, 1d & KN16 mischaracterized; ``without strong distributional assumptions''; thin literature. & Correct the two sentences. Rebuild Table~1 around which moments identify the parameters and what is assumed. One paragraph each for GSW, Martin and Gupta--Van Nieuwerburgh, KN25.\\
-R2-3.2 & The wedge is GSW's compounding error. & The wedge is demoted to a diagnostic for strict exogeneity. One paragraph distinguishes it from GSW's finite-sample compounding effect.\\
-R2-3.3 & Martin's long-horizon problem. & Accept as a moment condition and as a constraint on the simulation design. Benchmark deflation cancels the market term; compounded idiosyncratic noise remains, and the present simulation is deep inside that problem.\\
-R2-2c & Weak identification of alpha may just be Merton. & Accept openly. Add the cash-flow-specific part: the alpha and beta gradients of the NPV are nearly collinear. Report that correlation at the estimates.\\
-R2-3.1 & Use a mean-moment criterion. & Not as a drop-in replacement. With $\alpha=0$ a single mean moment makes beta absorb average performance (1.86 against 1.21 in Buyout) and has several roots. Developed as the vintage-level step of the ladder, with instruments, and adopted only if it passes the simulation gate.\\
-R2-4.1 & NAV mechanism. & Remove the co-movement sentence. Describe the haircut as a flat multiplier on terminal NAV and the channel as a level effect. Keep the haircut exercise; rerun it after pooling is fixed.\\
-R2-4.3 & Simulation too far from fund data. & Add what bears on the conclusions: common vintage shocks, noise calibrated to the data, funds per vintage and number of vintages varied separately. Not fees or fund-level accounting.\\
-R2-4.4 & One investment per deal. & State the pricing restriction for the fund's complete cash-flow stream. The deal layer survives only in the specialized score formula and the simulator.\\
-R1-4 & Compare with existing estimates. & One table, each number checked in its source, with sample, method and estimand.\\
-Review & Cross-fund product criterion. & Keep the theorem and the simulation evidence. Present it as what it is in population: the DLP large-portfolio limit without needing a large portfolio. Do not present it as the cure for the empirical horizon profile.\\
+R1-1, R2-1a & ``The object is a return benchmark, not an SDF.'' & \textbf{Keep the SDF framing and title}, and add a crisp 1-paragraph scope statement in Section~2 (backed by Appendix~A of the review): in incomplete markets, $\Psi_t(\theta_0)$ is a positive SDF on the PE cash-flow space under (P); pricing public assets imposes additional restrictions we do not impose; and $\theta_H^\dagger$ is the pseudo-true target when residual variance tilts squared loss.\\
+R2-1b, 1c, 1d & KN16 characterization; ``without strong distributional assumptions''; engagement with GSW, Martin, GvN, KN25. & Clarify KN16's two stages (public pseudo-fund SDF calibration vs.\ PE GPME evaluation on non-overlapping windows, KN16 p.~1447). Add ``Identifying moments'' to Table~1. Replace the blanket ``distributional assumptions'' phrase and include focused comparisons to GSW (2020), Martin (2012), Gupta--Van Nieuwerburgh (2021), and KN25.\\
+R2-3.2 & Is the wedge just GSW's compounding error? & Demote the wedge from the main driver of the horizon profile to a well-defined covariance diagnostic $b_{v,H}=\Cov(A_{v,H}(\theta_0),PV_v(\theta_0))$ for violations of (X), and distinguish it from GSW's finite-sample product-of-errors skewness.\\
+R2-3.3 & Martin (2012) long-horizon multiplicative skewness. & Acknowledge explicitly: benchmark deflation cancels the systematic market component when $\beta=\beta_0$, but compounded idiosyncratic deal shocks still exhibit lognormal-type right skewness, which is a binding constraint on simulation calibration.\\
+R2-2c & Weak identification of $\alpha$ is Merton (1980). & Agree openly and combine both mechanisms: (i) Merton-type drift uncertainty across $\sim 25$ overlapping vintage cohorts, and (ii) strong collinearity between the $\alpha$ and $\beta$ NPV gradients ($\corr(\partial_\alpha PV_v,\partial_\beta PV_v)$) when only net cash flows are observed.\\
+R2-3.1 & Use a mean-moment criterion ($\E[PV_v]=0$) instead of squared loss. & Do not use a single unweighted mean moment as the main estimator: with $\alpha=0$ it forces $\hat\beta$ to absorb sample-average outperformance ($1.86$ in Buyout) and has a second root near $3.0$ (Result~3.1 of the review). Discuss exogenous benchmark-path IV moments as a theoretical benchmark and gated extension (Section~\ref{sec:theory}).\\
+R2-4.1 & NAV smoothing vs.\ terminal NAV level error. & Remove the ``co-movement with public indices'' sentence. Explain the terminal NAV haircut via the level comparative static (Section~4.6 of the review) and rerun the haircut and vintage-cutoff exercises on constant-composition pools.\\
+R2-4.3, 4.4 & Simulated deal structure; one investment per deal. & State the pricing conditions (P) and (X) at the fund level so ``one investment per deal'' is only used in the specialized score calculation and simulator. Calibrate simulated noise to match empirical within-vintage and cross-vintage NPV dispersion.\\
+R1-4 & Compare empirical estimates with the literature. & Add a compact benchmark table comparing published Buyout and Venture beta/performance estimates, noting sample period, data source, method, and estimand.\\
+Review & Cross-fund pair-product criterion $U_{v,H}$. & Present $U_{v,H}$ as the natural bias-corrected companion to pooled least squares: it removes $O(1/n_v)$ idiosyncratic fund variance at all horizons, achieves infill consistency with bounded $n_v\ge 2$, and reveals how much of the empirical horizon slope comes from fund noise versus shared vintage errors.\\
 \bottomrule
 \end{longtable}
 }
 
 \Needspace{8\baselineskip}
-\subsection{Decline}
+\subsection{Decline (with clear reasons)}
 
 {\small
-\begin{longtable}{@{}L{2.3cm}L{5.6cm}L{7.4cm}@{}}
+\begin{longtable}{@{}L{2.3cm}L{5.5cm}L{7.5cm}@{}}
 \toprule
-Source & Request & Reason\\
+Source & Request & Reason for declining\\
 \midrule
 \endhead
-R2-1a & Add $\E[MR_{mkt}]=1$ and $\E[MR_f]=1$. & In this family those two moments force $\alpha=0$ and the growth-optimal loading (review, Result~3.2). That is a different estimand, not a better estimate of ours.\\
-R2-1d & Impose the KN25 lognormal i.i.d.\ structure, or identify on traded assets only. & Either choice turns the paper into a weaker version of an existing one. The paper's question is what the cash-flow-only route identifies.\\
-R1-3 & Simulation horse race KN16 against DLP12. & Different estimands; a fair comparison needs a joint economy and a public-kernel calibration. Large cost, and it does not bear on our results. At most a short appendix note mapping return alpha to a public-kernel pricing error.\\
-R2-2b & A rule for selecting $H$; cross-validation over $H$. & Under a noise-robust criterion $H$ should not matter in population, so there is nothing to tune. The profile across $H$ is reported as a diagnostic.\\
-R2-2a & Analytical finite-sample properties. & Not available for this estimator. We give exact population statements and matched simulations, and remove ``stabilizes finite-sample estimation'' from the abstract.\\
-R2-4.1(ii) & Simulate smoothed NAVs at the sample end. & The estimation sample is seasoned vintages. Report the NAV share of value by vintage to show the exposure is small; if it is not small, revisit.\\
-Review, App.~A & Hilbert-space representation, two-state example, multi-root result. & Correct but more than the paper needs. One paragraph and a short appendix carry the SDF scope statement. The multi-root result is cited only if the mean-moment step is adopted.\\
-Review, Sec.~7 & Buyout profile ``completely flattened''. & Not robust (Appendix~\ref{app:probes}). The Fix-$A$/Jacobian decomposition in the review's Table~1 stands.\\
+R2-1a & Impose public-equity and T-bill pricing moments $\E[MR_{\mathrm{mkt}}]=1$ and $\E[MR_f]=1$. & Within the reciprocal linear benchmark family, those two moments force $\alpha=0$ and pin $\beta$ to the public growth-optimal portfolio loading $\beta^\ast$ rather than the PE return loading $\beta_{PE}$ (review, Result~3.2). That changes the estimand entirely.\\
+R2-1d & Impose the KN25 i.i.d.\ lognormal structure or calibrate the SDF on traded assets only. & Either choice turns the paper into a replication of KN16 or KN25. Our distinct research question is what semiparametric cash-flow-only SDF estimators can identify without parametric return distributions.\\
+R1-3 & Full simulation horse race between KN16 and DLP12. & KN16 estimates public-kernel parameters and evaluates GPME; DLP12 estimates PE factor loadings and return $\alpha$. A fair horse race requires calibrating a joint public--private economy and does not bear on our identification results. A brief remark and Table~1 comparison suffice.\\
+R2-2b & Develop a formal theory of the ``optimal'' horizon $H^\ast$. & Even when the population target is invariant to $H$, optimal horizon weighting depends on the unknown covariance structure of vintage-level shocks and cash-flow schedules. We instead treat $H$ as a sensitivity and specification diagnostic and evaluate CV folds on a common $H=0$ validation loss.\\
+R2-2a & Analytical finite-sample distribution theory. & Not tractable for nonlinear compounded cash-flow estimators under overlapping dependence. Exact population decompositions plus repaired simulations and block resampling provide the right evidence.\\
+R2-4.1(ii) & Build a dynamic smoothed-NAV appraisal model in simulation. & Our estimation sample restricts to seasoned vintages ($V\le 2010$) where remaining NAV is a small fraction of total distributions. Reporting the terminal NAV share by vintage alongside the haircut sensitivity suffices.\\
 \bottomrule
 \end{longtable}
 }
@@ -191,311 +205,352 @@ Review, Sec.~7 & Buyout profile ``completely flattened''. & Not robust (Appendix
 \label{sec:assumptions}
 %======================================================================
 
-These are the changes of assumption that improve the paper. Each replaces something that is false, unstated or stronger than needed.
+The following eight assumptions replace every loose, over-restrictive, or unstated condition in the submitted manuscript.
 
 \begin{enumerate}[label=\textbf{A\arabic*.}]
-\item \textbf{Two exogeneity conditions in place of one pricing equation and an informal wedge.} With $PV_i(\theta)$ the fund's inception NPV and $\C_v$ the benchmark path over the vintage's life:
+\item \textbf{Two explicit pricing/exogeneity conditions and SDF scope.} For each fund $i$ in vintage $v$, let $PV_{v,i}(\theta)=\sum_{t\ge t_v^0}[\Psi_t(\theta)/\Psi_{t_v^0}(\theta)]CF_{v,i,t}$ denote its inception NPV at vintage origin $t_v^0$, where $\Psi_t(\theta)=\prod_{u=1}^t G_u(\theta)^{-1}$ and $G_u(\theta)=1+\alpha+r_{f,u}+\beta^\top F_u>0$. Let $\C_v$ denote the common benchmark factor environment over vintage $v$'s life (and predetermined window dates). Distinguish:
 \begin{align*}
-\text{(P) predetermined pricing:}\quad & \E[PV_i(\theta_0)\mid\F_{t_v^0}]=0,\\
-\text{(X) strict exogeneity of the benchmark path:}\quad & \E[PV_i(\theta_0)\mid\F_{t_v^0}\vee\C_v]=0.
+\text{(P) Predetermined inception pricing:}\quad & \E\bigl[PV_{v,i}(\theta_0)\,\big|\,\F_{t_v^0}\bigr]=0,\\
+\text{(X) Strict benchmark exogeneity:}\quad & \E\bigl[PV_{v,i}(\theta_0)\,\big|\,\F_{t_v^0}\vee\C_v\bigr]=0.
 \end{align*}
-(P) is what asset pricing delivers and validates weights known at inception. (X) is what DLP12 assume (shocks independent of factor returns at all leads and lags) and what the simulation satisfies; it validates every horizon weight. The wedge is then defined as $\E[A_{v,H}(\theta_0)PV_v(\theta_0)]$, which is zero under (X) and can be nonzero under (P) alone, for example when exits are timed to the market. This gives the wedge a precise and testable meaning and removes the conditional-on-structure error and the NFV construction.
-
-\item \textbf{Pricing restriction at the fund level.} State (P) and (X) for the fund's complete cash-flow stream. ``Exactly one investment per deal'' is no longer an assumption of the paper.
-
-\item \textbf{Two layers of noise.} For exchangeable funds within a vintage, with $\sigma_v^2(\theta)$ the conditional variance of a fund's NPV and $c_v(\theta)$ the conditional covariance between two funds of the vintage,
+Under (P), $\Psi_t(\theta_0)$ is a strictly positive PE-specific SDF on the space of priced fund cash flows, and any $\F_{t_v^0}$-measurable weight preserves the zero-mean pricing restriction. Under (X)—the fund-level counterpart of DLP12's assumption that idiosyncratic project shocks are mean-independent of factor returns at all leads and lags—every $\C_v$-measurable horizon weight $A_{v,H}(\theta_0)$ also satisfies $\E[A_{v,H}(\theta_0)PV_v(\theta_0)]=0$. The unconditional \emph{Compounding-Horizon Wedge} is defined precisely as
 \[
-\Var\bigl(PV_v(\theta)\mid\C_v\bigr)=c_v(\theta)+\frac{\sigma_v^2(\theta)-c_v(\theta)}{n_v}.
+b_{v,H}(\theta_0):=\E\bigl[A_{v,H}(\theta_0)PV_v(\theta_0)\bigr]=\Cov\bigl(A_{v,H}(\theta_0),\,PV_v(\theta_0)\bigr),
 \]
-The second term is fund-level noise and falls with the number of funds. The first is a common vintage component and does not. The submitted paper has neither; the review has the formula but organizes nothing around it. The data say the first term is the large one.
+which vanishes under (X) and can be nonzero under (P) alone when discounted cash-flow residuals covary with the realized factor path during the holding period.
 
-\item \textbf{Asymptotic regimes named and kept apart.} Infill ($n_v\to\infty$, vintages fixed), vintage-domain (vintages $\to\infty$, $n_v$ bounded), and both. Every consistency statement names its regime. Corollary~1 of Appendix~C (structural consistency at $H=0$ with bounded pooling) is false and is removed.
+\item \textbf{Fund-level primitive restriction.} Conditions (P) and (X) are stated directly for each fund's complete net cash-flow stream $CF_{v,i,t}$. The single-investment, single-exit deal structure is no longer required for the main identification or consistency propositions; it is used solely as a tractable analytical model for the closed-form score formula (T4) and in the Monte Carlo generator.
 
-\item \textbf{Predetermined origin and window.} The vintage origin is a calendar date fixed by the vintage year. The window runs a fixed number of months from it, capped by a common calendar cutoff, not by the last cash flow. Then $A_{v,H}$ is a function of the benchmark path alone, as the theory requires.
+\item \textbf{Conditional mean and two-layer variance decomposition.} Given $\C_v$, let funds in vintage $v$ have common conditional mean $\mu_v(\theta)=\E[PV_{v,i}(\theta)\mid\C_v]$, conditional variance $\sigma_v^2(\theta)=\Var(PV_{v,i}(\theta)\mid\C_v)$, and pairwise within-vintage conditional covariance $c_v(\theta)=\Cov(PV_{v,i}(\theta),PV_{v,k}(\theta)\mid\C_v)$ for $i\neq k$. For the constant-composition equal-weighted vintage pool $PV_v(\theta)=n_v^{-1}\sum_{i=1}^{n_v}PV_{v,i}(\theta)$,
+\[
+\E\bigl[PV_v(\theta)^2\,\big|\,\C_v\bigr]=\underbrace{\mu_v(\theta)^2}_{\text{conditional mean error}}+\underbrace{c_v(\theta)}_{\text{shared vintage covariance}}+\underbrace{\frac{\sigma_v^2(\theta)-c_v(\theta)}{n_v}}_{\text{idiosyncratic fund noise }O(1/n_v)}.
+\]
+The third term is fund-specific noise that vanishes as $n_v\to\infty$ or under the cross-fund pair-product criterion $U_{v,H}(\theta)$. The first two terms ($\mu_v(\theta)^2+c_v(\theta)$, reflecting unspanned macroeconomic/cohort shocks and model misspecification) do not diversify within a vintage.
 
-\item \textbf{Fixed pooling weights.} A vintage pool is $\sum_i w_iCF_{i,t}/\sum_i w_i$ with weights fixed over the fund's life: $w_i=1$ on commitment-scaled flows, or $w_i=$ fund size. A missing report is distinguished from a zero flow. Vintage weights $q_v$ in the outer sum are stated explicitly (equal, or the fund count).
-
-\item \textbf{Admissible parameter set.} Compact, with $G_u(\theta)\ge\underline g>0$ on the benchmark paths used. With the October 1987 market return this bounds the market loading near four. Second moments of the compounded residual multiplier are assumed finite and are a design constraint in simulation.
-
-\item \textbf{Asymptotic normality.} Add the score-centering condition, state the dependence and moment conditions the random-field CLT needs, and use the integrated Hessian. The existing Appendix~C carries over once the unit is the vintage and the loss is a general vintage-level contribution, which also covers the product criterion.
+\item \textbf{Three asymptotic regimes kept distinct.} Every large-sample statement specifies its regime explicitly:
+\begin{enumerate}[label=(\roman*)]
+\item \emph{Fixed-$V$ infill} ($n_v\to\infty$ for each fixed vintage $v\in\{1,\dots,V\}$): removes idiosyncratic fund noise but leaves realized vintage-level shocks unaveraged across time;
+\item \emph{Joint infill and growing vintages} ($n_v\to\infty$ and $V\to\infty$): converges to the unconditional population limit $\E[A_{v,H}(\theta)^2(\mu_v(\theta)^2+c_v(\theta))]$;
+\item \emph{Growing vintages with bounded pools} ($V\to\infty$ with $n_v\ge 2$ bounded): the realistic regime for private-equity panels where new years add new vintages but historical cohorts never gain more funds. Corollary~1 of Appendix~C (which falsely claimed $H=0$ consistency for squared loss under bounded $n_v$) is removed.
 \end{enumerate}
 
-Not changed: no parametric distribution for returns or cash flows; the benchmark-deflator family of DLP12; pooled fund cash flows as the only private data.
+\item \textbf{Valuation origin and horizon window convention.} For each vintage $v$, the valuation origin $t_v^0$ and the horizon window $\mathcal{T}_{v,H}=\{t_v^0,t_v^0+1,\dots,\min(t_v^0+12H,T_{\max})\}$ are fixed with respect to $\theta$ and identical across all funds in vintage $v$, so that $A_{v,H}(\theta)$ is $\C_v$-measurable and factors out of within-vintage sums and cross-fund products. We explicitly document the two origin conventions: (a) setting $t_v^0$ to a predetermined calendar date (e.g.\ Q1 of vintage year $v$ or Dec~31 of $v-1$) makes $A_{v,H}(\theta)$ a pure function of the public factor path, while (b) setting $t_v^0$ to the vintage's first active cash-flow date guarantees an initial nonzero flow $CF_{v,t_v^0}\neq 0$. Under either convention, once $12H$ extends past the first nonzero drawdown date, $Q_H(\alpha,\beta)$ is coercive as $\alpha\to\infty$ (Theorem~T5).
+
+\item \textbf{Constant-composition pooling and explicit vintage weights.} Within vintage $v$, the pooled cash flow at date $t$ is $CF_{v,t}=\sum_{i=1}^{n_v}w_{v,i}CF_{v,i,t}/\sum_{i=1}^{n_v}w_{v,i}$ with time-invariant fund weights $w_{v,i}$ ($w_{v,i}=1$ on commitment-normalized flows for EW; $w_{v,i}=\text{Fund Size}_{v,i}$ for FW, which scales every FW vintage pool into dollars per dollar of total vintage commitment). Dates on which a fund has no transaction have $CF_{v,i,t}=0$, so linearity gives $PV_v(\theta)=\sum_{i=1}^{n_v}\tilde w_{v,i}PV_{v,i}(\theta)$ identically for all $\theta$. Outer vintage weights $q_v$ (equal across vintages vs.\ proportional to $n_v$) are stated explicitly.
+
+\item \textbf{Compact admissible domain with uniform positivity margin.} The parameter space $\Theta$ is compact and satisfies $G_u(\theta)=1+\alpha+r_{f,u}+\beta^\top F_u\ge\underline g>0$ across all dates in the support of the factor process (for the October 1987 U.S.\ market crash of $-23\%$, this bounds $\beta_{\mathrm{MKT}}\lesssim 4.2$ at $\alpha=0$). In simulation designs with drawn factors, factor returns have bounded support above $-1$ and deal multipliers have finite fourth moments.
+
+\item \textbf{Regularity for increasing-domain CLT and SHAC inference.} In Appendix~C, the cross-sectional unit is vintage $v\in\{1,\dots,V\}$ with general vintage loss contribution $\ell_{v,H}(\theta)$ (covering both $\bar\epsilon_{v,H}(\theta)^2$ and $U_{v,H}(\theta)$). Asymptotic normality around the population target $\theta_H^\dagger$ explicitly maintains the score-centering condition $V^{-1/2}\sum_{v=1}^V\E[\nabla_\theta\ell_{v,H}(\theta_H^\dagger)]\to 0$, interiority of $\theta_H^\dagger$, nonsingularity of the limiting Hessian, and the integrated-Hessian mean-value expansion along the segment between $\hat\theta_H$ and $\theta_H^\dagger$.
+\end{enumerate}
 
 %======================================================================
-\section{The original idea with sounder mathematics}
+\section{Sounder mathematics: theorems and estimators}
 \label{sec:theory}
 %======================================================================
 
-\subsection{What several discounting dates are}
-
-Before: extra criterion terms, treated as carrying imperfectly correlated information, at the price of a population wedge.
-
-After: a scale factor $A_{v,H}(\theta)$ on the same NPV. Its effect on a squared criterion can be written down exactly. Under a criterion that is not tilted by noise, it leaves the population target unchanged under (X), and the estimates across $H$ become a diagnostic for (X) and for vintage-level misspecification.
-
-\subsection{Results the paper should state}
+\subsection{Core theoretical results to state in the revised paper}
 
 {\small
-\begin{longtable}{@{}L{0.7cm}L{9.2cm}L{5.4cm}@{}}
+\begin{longtable}{@{}L{0.7cm}L{9.4cm}L{5.2cm}@{}}
 \toprule
-& Result & Status\\
+\# & Result and precise statement & Status\\
 \midrule
 \endhead
-T1 & \textbf{Rescaling identity.} $\bar\epsilon_{v,H}(\theta)=A_{v,H}(\theta)PV_v(\theta)$ with $A_{v,H}>0$ on the admissible set. Covers dates before inception. & Proved (review, Result~B.1).\\
-T2 & \textbf{Valid weights.} Under (P), weights known at inception preserve the pricing moment. Under (X), so does every $A_{v,H}$. & Proved (review, Results~4.1, B.3).\\
-T3 & \textbf{What squared loss targets.} $Q_H(\theta)=\E[A_{v,H}^2\mu_v^2]+\E[A_{v,H}^2c_v]+\E[A_{v,H}^2(\sigma_v^2-c_v)/n_v]$: signal, vintage-level noise, fund-level noise. & Proved up to the split of the noise term, which is one line.\\
-T4 & \textbf{The tilt.} Score of $Q_H$ at $\theta_0$ in the deal model. At $H=0$ the alpha component is strictly negative. The horizon enters through $\bar S_{v,H}-S_{t_v^0,b_j}$, which changes sign as $H$ passes the exit sensitivity. & Proved for single-exit deals (review, Result~B.5). Multiple exits need covariance terms.\\
-T5 & \textbf{Exploding alpha.} $\lim_{\alpha\to\infty}Q_0=\E[CF_{v,t_v^0}^2]$, against $Q_0(\theta_0)=$ noise variance. The degenerate solution wins whenever noise exceeds the squared first call. & To prove; short. The local version is T4.\\
-T6 & \textbf{Infill.} With (X), no common vintage component and $n_v\to\infty$, every fixed horizon recovers $\theta_0$. With a common component, infill converges to the minimizer of signal plus vintage-level noise. & First part proved (review, Result~B.4). Second part is a corollary of T3.\\
-T7 & \textbf{Cross-fund products.} $\E[U_{v,H}\mid\C_v]=A_{v,H}^2(\mu_v^2+c_v)$. With bounded $n_v\ge2$ and growing vintages the product criterion has the same population target as squared loss under infill. & Proved under equal conditional means (review, Result~B.6); the covariance term is in the review's general formula.\\
-T8 & \textbf{Vintage-level moments.} For instruments $z_v$ that are functions of the benchmark path, $\E[z_vPV_v(\theta_0)]=0$ under (X), and the squared norm of the vintage average has noise of order $1/V$. & Standard GMM argument; identification, weak instruments and multiple roots must be handled. Gated (Section~\ref{sec:gates}).\\
-T9 & \textbf{Scope of the SDF reading.} The structural member of the family is an SDF for the PE cash flows under (P); the estimator recovers it when its criterion is uniquely minimized at $\theta_0$. & Proved (review, Results~A.2, A.3), with the one-period counterexample.\\
+T1 & \textbf{Exact horizon rescaling identity.} On the positive-return domain, $\bar\epsilon_{v,H}(\theta)=A_{v,H}(\theta)PV_v(\theta)$ with $A_{v,H}(\theta)=|\mathcal{T}_{v,H}|^{-1}\sum_{\tau\in\mathcal{T}_{v,H}}R^b_{t_v^0,\tau}(\theta)>0$, valid for both pre- and post-inception dates. & Proved (review, Result~B.1).\\
+T2 & \textbf{SDF representation and valid moment weights.} Under (P), $\Psi_t(\theta_0)$ is a positive SDF on the PE cash-flow space and any $\F_{t_v^0}$-measurable weight preserves zero expected error. Under (X), every $\C_v$-measurable horizon weight $A_{v,H}(\theta_0)$ satisfies $\E[A_{v,H}(\theta_0)PV_v(\theta_0)]=0$. & Proved (review, Results~A.2, 4.1, B.3).\\
+T3 & \textbf{Signal-plus-noise decomposition of squared loss.} Under A3 and A6, $Q_H(\theta)=\E[A_{v,H}(\theta)^2\mu_v(\theta)^2]+\E[A_{v,H}(\theta)^2c_v(\theta)]+\E[A_{v,H}(\theta)^2(\sigma_v^2(\theta)-c_v(\theta))/n_v]$. At $\theta_0$ under (X), the signal term and its gradient vanish, but the variance terms generally have nonzero gradients whenever $n_v<\infty$ or $c_v(\theta)>0$. & Proved (review, Result~B.2 + A3 split).\\
+T4 & \textbf{Inception score tilt and Scale-Jacobian FOC decomposition.} Differentiating $Q_{n,H}(\theta)$ yields Term~(I) Inception Discounting ($PV_v\nabla_\theta PV_v$) plus Term~(II) Scale-Jacobian Penalty ($PV_v^2\nabla_\theta\log A_{v,H}$). In the single-exit deal model under (X) and $c_v=0$, $\nabla Q_H(\theta_0)=2n_v^{-2}\E[A_{v,H}^2\sum_j c_j^2\nu_j(\bar S_{v,H}-S_{t_v^0,b_j})]$. At $H=0$, $\bar S_{v,0}=0$ and $\partial_\alpha Q_0(\theta_0)<0$ strictly; for $\beta$, the score sign is governed by $\bar S_{v,H}-S_{\mathrm{exit}}$. & Proved (review, Result~B.5 and Section~B.8; audit S4).\\
+T5 & \textbf{Large-alpha attenuation at $H=0$ vs.\ coercivity at $H>0$.} Fix $\beta$ on the positive-return domain. At $H=0$, $\lim_{\alpha\to\infty}Q_0(\alpha,\beta)=\E[CF_{v,t_v^0}^2]$, which equals $0$ if $CF_{v,t_v^0}=0$ and is strictly smaller than $Q_0(\theta_0)=\E[\omega_v(\theta_0)]$ whenever lifetime residual variance exceeds the squared initial flow (so $\theta_0$ cannot be the global minimizer, though the minimum on $\Theta$ may be interior or at the upper bound). Conversely, for any $H>0$ whose window $\mathcal{T}_{v,H}$ contains a date $\tau$ strictly after the first nonzero cash flow, $\lim_{\alpha\to\infty}Q_H(\alpha,\beta)=+\infty$. & Proved (audit S2 repair; short algebraic proof).\\
+T6 & \textbf{Infill consistency ($n_v\to\infty$).} Under (X) and A7: (a) for fixed $V$ and $n_v\to\infty$, if unspanned common vintage shocks are absent ($\tilde\mu_v(\theta_0)=0$ for $v=1,\dots,V$) and the $V$ vintages uniquely identify $\theta_0$, $\hat\theta_H\to_p\theta_0$ at every fixed $H\ge 0$ (if common shocks $\tilde\mu_v(\theta_0)\neq 0$ are present, fixed-$V$ infill converges to the random minimizer of $V^{-1}\sum_{v=1}^V A_{v,H}^2\tilde\mu_v^2$); (b) as both $n_v\to\infty$ and $V\to\infty$, the criterion converges to $\E[A_{v,H}(\theta)^2(\mu_v(\theta)^2+c_v(\theta))]$. & Proved (review, Result~B.4; audit S3 repair).\\
+T7 & \textbf{Cross-fund pair-product ($U_{v,H}$) consistency under bounded $n_v\ge 2$.} Under A5, A6, and conditional independence of funds given $(\C_v,\text{common shock}_v)$ with common conditional mean, $\E[U_{v,H}(\theta)\mid\C_v]=A_{v,H}(\theta)^2(\mu_v(\theta)^2+c_v(\theta))$. As $V\to\infty$ with bounded $n_v\ge 2$, minimizing $V^{-1}\sum_{v=1}^V q_v U_{v,H}(\theta)$ converges to the exact same population target as $n_v\to\infty$ infill least squares, and is consistent for $\theta_0$ at every $H\ge 0$ when $c_v\equiv 0$. & Proved (review, Result~B.6).\\
+T8 & \textbf{Mean-moment caveats: multiple roots and persistent vintage shocks.} In the one-period benchmark model with $\alpha=0$, $\E[(1+r_f+\beta_{PE}F)/(1+r_f+\beta F)]-1=(\beta_{PE}-\beta)g(\beta)$, which has root $\beta_{PE}$ plus a potential growth-optimal root $g(\beta^\ast)=0$ (whereas squared signal $(\beta_{PE}-\beta)^2g(\beta)^2$ is globally minimized at both roots and avoids sign cancellation across heterogeneous horizons). Under persistent vintage shocks, IV moments $\E[z_v PV_v(\theta_0)]=0$ require strictly exogenous path instruments $z_v=h(\C_v)$ (e.g.\ $A_{v,H}(\bar\theta)$) or $h$-block neighbor-excluding instruments (Semenova, Goldman, Chernozhukov, and Taddy 2023), never naive leave-one-vintage-out cash-flow instruments. & Proved (review, Result~3.1; audit S1 repair).\\
 \bottomrule
 \end{longtable}
 }
 
-\subsection{The ladder of criteria}
+\subsection{Comparison of estimation criteria in the revised paper}
+
+Rather than committing the paper's main text to an under-powered 25-vintage GMM estimator, we organize the methodology around the two unit-level LMD criteria that work directly on the vintage panel—\textbf{Squared Pooled NPV ($L_2$)} and \textbf{Cross-Fund Pair Products ($U_{v,H}$)}—and treat exogenous benchmark-path IV moments as a theoretical benchmark (and gated simulation check):
 
 {\small
-\begin{longtable}{@{}L{3.6cm}L{3.3cm}L{3.2cm}L{5.2cm}@{}}
+\begin{longtable}{@{}L{3.5cm}L{3.2cm}L{3.2cm}L{5.4cm}@{}}
 \toprule
-Criterion & Removes & Regime & Role of the horizon\\
+Criterion & Noise removed & Consistency regime & Role of horizon $H$\\
 \midrule
 \endhead
-Squared pooled NPV (DLP12; the submitted estimator at $H=0$) & nothing & any & Counter-penalty to the noise tilt; the target moves with $H$.\\
-Same, large pools & fund-level noise & infill & Tilt from the vintage component remains and moves with $H$.\\
-Cross-fund products & fund-level noise & vintage-domain, $n_v\ge2$ & As above. Flat only without a vintage component.\\
-Vintage-level moments with path instruments & both, as vintages grow & vintage-domain & Supplies instruments; the profile across $H$ tests (X).\\
+Squared pooled NPV $\bar\epsilon_{v,H}(\theta)^2$ (DLP12 at $H=0$) & Reduces fund noise by $1/n_v$ only & Consistent as $n_v\to\infty$ (if $c_v=0$); tilted by $O(1/n_v)$ noise if $n_v<\infty$ & Restores coercivity in $\alpha$ for $H>0$; scale-Jacobian term $\bar S_{v,H}$ offsets $H=0$ noise tilt at medium $H$ and pulls $\hat\beta_H$ down at long $H$.\\
+Cross-fund pair product $U_{v,H}(\theta)$ (U-statistic) & Eliminates $O(1/n_v)$ fund-level variance exactly & Consistent as $V\to\infty$ with bounded $n_v\ge 2$ (when $c_v=0$) & Population target is invariant to $H$ when $\mu_v(\theta_0)=0$ and $c_v=0$; slope across $H$ diagnoses shared vintage errors ($\mu_v^2+c_v>0$) or violations of (X).\\
+Benchmark-path IV-GMM $V^{-1}\sum_v z_v PV_v(\theta)=0$ (theoretical benchmark / gated extension) & Averages out both $c_v$ and fund noise as $V\to\infty$ & Requires $V\to\infty$ with many non-overlapping macro cycles & Fixed-reference weights $z_v=A_{v,H}(\bar\theta)$ supply strictly exogenous path instruments, but in small panels ($V\approx 25$) mean moments conflate $\beta$ with sample-average outperformance and admit multiple roots.\\
 \bottomrule
 \end{longtable}
 }
 
-Two remarks keep this honest. First, the product criterion is not a small-sample device: a vintage with two or three funds gives a very noisy product, so vintage weights matter (Appendix~\ref{app:probes}). Second, the vintage-level step leans on about 25 overlapping vintages with persistent errors. It may turn out that no estimator on this ladder pins down beta tightly. That would be a result, and it is the result the paper's title already promises.
-
-\subsection{Instruments for the vintage-level step}
-
-Two candidates, both functions of the benchmark path only. (i) Horizon weights at a fixed reference parameter, $A_{v,H}(\bar\theta)$: the moment asks whether a vintage's pricing error is correlated with how the benchmark grew over its first $H$ years. This is the original idea used as an orthogonality condition. (ii) The NPV gradient of a typical fund, computed from the average cash-flow schedule of the \emph{other} vintages and evaluated on vintage $v$'s benchmark path. Squared loss uses the vintage's own gradient as its instrument, which is correlated with the vintage's own noise; that correlation is the tilt. Replacing it with a leave-one-vintage-out prediction removes the correlation. A constant is always included, since alone it identifies only a composite of $\alpha$ and $\beta$.
-
-The closest econometric precedents I know are the noise term in GMM objectives with many moments and the jackknife GMM that removes own-observation products (Han and Phillips 2006; Newey and Windmeijer 2009). I have not reread these for this plan; check them before citing, and check whether anyone has already shown the DLP estimator inconsistent without infill.
+\textbf{Why this framing is bulletproof:}
+\begin{enumerate}
+\item It gives a clean, positive methodological contribution ($U_{v,H}$ as a bias-corrected LMD criterion that achieves DLP12's large-portfolio limit with as few as $n_v=2$ funds per vintage, plus the exact theory of why $H>0$ regularizes $\alpha$ and tilts $\beta$).
+\item It avoids the trap identified in Audit~S1: we do \emph{not} claim that leave-one-vintage-out cash-flow gradients are valid instruments under persistent vintage shocks, nor do we stake the paper on an IV-GMM estimator that has fewer than four effective independent macro cycles in a 25-vintage panel.
+\item It explains the empirical Buyout and Venture Capital patterns transparently: comparing constant-composition pooled least squares with $U_{v,H}$ (under both equal and fund-count vintage weights) separates the $O(1/n_v)$ fund-noise bias at $H=0$ from the shared vintage-error effect ($\mu_v^2+c_v>0$) at long horizons.
+\end{enumerate}
 
 %======================================================================
-\section{Code and data repairs}
+\section{Code and data repairs (must pass before any table rerun)}
 \label{sec:code}
 %======================================================================
 
-Nothing is rerun for the paper until each row has passed its test.
+No simulation or empirical table is regenerated for the manuscript until items B1--B9 below are implemented and verified by an automated test script (\file{r_project/helper/test_code_repairs.R}).
 
 {\small
-\begin{longtable}{@{}L{0.7cm}L{4.4cm}L{5.3cm}L{4.9cm}@{}}
+\begin{longtable}{@{}L{0.7cm}L{4.2cm}L{5.5cm}L{4.9cm}@{}}
 \toprule
-& Where & Change & Test that must pass\\
+\# & File / location & Required repair & Automated verification test\\
 \midrule
 \endhead
-B1 & \file{simulation_multifactor.R}, \file{simulation_improved.R}: deal payoff & Compound over \code{(start+1):end}, guarded for \code{end > start}. & With zero noise, every fund's NPV at $\theta_0$ is zero to machine precision.\\
-B2 & \code{estim_model_optimized.R}: \code{f1}, \code{getNPVs} & One convention: the first cash flow is undiscounted. Remove the \code{max.month == 0} branch or define it as the same number. A window of $H$ years holds a stated number of dates. & $H=0$ equals \code{sum(CF/ret)*ret[1]}; criterion at very large $\alpha$ tends to the squared first cash flow, not zero.\\
-B3 & \code{estim.CoVM}, gradient and Hessian functions & Differentiate the per-unit squared error. Fix the Wald quadratic form. Write the mixed second difference per parameter pair. & On a linear toy model the sandwich equals the textbook least-squares sandwich; the average score is zero at the estimate.\\
-B4 & \code{prep_preqin.R}: \code{agg.vin.year.pf} & Pool with fixed weights (A6). Separate missing reports from zero flows. Save fund-level files for every region. & Pooled NPV equals the weighted mean of fund NPVs at any parameter.\\
-B5 & \code{to.monthly}; window & Predetermined origin and common calendar cutoff (A5), identical in simulation and data. & $A_{v,H}$ computed from factors alone reproduces the code's factor.\\
-B6 & Fund-size weighting & Divide by total vintage size, so every vintage is in dollars per dollar committed. & Sum of absolute pooled flows is of the same order across vintages.\\
-B7 & \code{analyze_result.R}: stability ratio & One definition, full-sample estimate over fold dispersion, used in code and text. & Table values reproduce from the displayed columns.\\
-B8 & Cross-validation loss & Score every horizon on the same held-out loss (inception NPV of held-out vintages). & Validation errors are comparable across $H$.\\
-B9 & Provenance & Record code version and configuration with every result file. & Each printed table can be regenerated from a tagged commit.\\
+B1 & \file{simulation_multifactor.R} (lines 216--235), \file{simulation_improved.R} (lines 113--116) & (a) Compound deal returns over \code{(start+1):end} (guarded for \code{end > start}) to match the estimator's discounting ratio $R^b_{a,b}=\prod_{u=a+1}^b G_u$. (b) Replace the mean-distorting Gaussian default truncation (\code{any(path < 0) -> m = 0}) in the baseline DGP with conditionally mean-one positive deal multipliers (e.g.\ shifted lognormal $1+\varepsilon_{j,u}=\exp(\mathcal N(-\sigma^2/2,\sigma^2))>0$, keeping raw truncation only as a separate stress case). & (i) At $\sigma=0$, every simulated fund has $PV_i(\theta_0)=0$ to $<10^{-14}$. (ii) At $\sigma>0$, the Monte Carlo mean of $PV_i(\theta_0)$ conditional on the factor path is within $2/\sqrt{M}$ SEs of zero.\\
+B2 & \file{estim_model_optimized.R} (\code{f1}, lines 327--381), \file{helper/getNPVs.R} & Unify the $H=0$ convention so the origin date $t_v^0$ is never discounted by $G_{t_v^0}$: remove the \code{max.month == 0} branch (or alias it to \code{max.month == 1}, which computes $\sum_t CF_t (R^b_{0,t_v^0}/R^b_{0,t})=PV_v(\theta)$). Document explicitly that a horizon of $H$ years averages over $\min(1+12H,T_v)$ monthly dates starting at $t_v^0$. & At $H=0$, \code{f1} equals $CF_{v,t_v^0}+\sum_{t>t_v^0}CF_{v,t}/R^b_{t_v^0,t}(\theta)$ exactly, and $\lim_{\alpha\to\infty}\code{f1}=CF_{v,t_v^0}$.\\
+B3 & \file{estim_model_optimized.R} (\code{get.grad.per.fund}, \code{get.hess.per.fund}, \code{estim.CoVM}, lines 507--645) & Fix all four inference bugs: (1) differentiate unit squared error $\bar\epsilon_i(\theta)^2$ (or compute $\nabla\bar\epsilon_i$ and $\nabla^2\bar\epsilon_i$ from \code{f1} and form $2\bar\epsilon_i\nabla\bar\epsilon_i$ and $2(\nabla\bar\epsilon_i\nabla\bar\epsilon_i^\top+\bar\epsilon_i\nabla^2\bar\epsilon_i)$) rather than differentiating $|\bar\epsilon_i|$ via \code{err.sqr.calc}; (2) in \code{get.grad.per.fund}, fix \code{p.plus <- par[x] + delta} to \code{p.plus[x] <- par[x] + delta} (and likewise for \code{p.minus[x]}) so other parameters are not dropped; (3) in \code{get.hess.per.fund}, perturb only indices $(i,j)$ on off-diagonals; (4) in \code{estim.CoVM}, use \code{solve(CoVM)} in the Wald quadratic form. & On a 3-parameter toy nonlinear least-squares model, numerical gradient, full $3\times 3$ Hessian (including off-diagonals), sandwich covariance, and Wald statistic match analytical formulas to $<10^{-7}$.\\
+B4 & \file{empirical/prep_preqin.R} (\code{agg.vin.year.pf}, lines 225--245) & Replace \code{aggregate(CF ~ Date, df, mean)} with constant-composition pooling: sum flows across all funds in vintage $v$ on each date and divide by the time-invariant vintage fund count $N_v$ (for EW) or total vintage commitment $\sum_{i\in v}S_{v,i}$ (for FW). Save regional fund-level CSVs (\code{North America}, \code{Europe}, \code{ALL}) so $U_{v,H}$ and within-vintage SEs can be computed directly for North America. & For every vintage and every trial $\theta$, the pooled NPV equals the exact weighted average of individual fund NPVs $\sum_{i\in v}\tilde w_{v,i}PV_{v,i}(\theta)$ to $<10^{-14}$.\\
+B5 & \file{estim_model_optimized.R} (\code{to.monthly}, lines 185--197) & Align origin and window endpoint rules across simulation and empirical branches (A5), and add the cross-fund pair-product objective $U_{v,H}(\theta)$ alongside squared loss $L_2$. & $A_{v,H}(\theta)$ computed from the factor file alone matches $\bar\epsilon_{v,H}(\theta)/PV_v(\theta)$ for every vintage.\\
+B6 & \file{empirical/prep_preqin.R} (lines 202--216, FW scaling) & Normalize FW vintage pools by total vintage commitment $\sum_{i\in v}S_{v,i}$ (rather than dividing by a fixed $\$10\text{M}$ constant), so both EW and FW vintage pools are expressed per unit of committed capital. Note explicit outer vintage weights $q_v\in\{1,n_v\}$. & Sum of absolute pooled cash flows across vintages is of order $O(1)$ in both EW and FW.\\
+B7 & \file{results/analyze_result.R} (line 387) & Compute $\mathrm{SR}_{CV}=\hat\theta_{\mathrm{full}}/\mathrm{SD}_{CV}$ (full-sample estimate divided by fold SD) to match the text definition, and report fold means separately in Appendix~E. & Displayed $\mathrm{SR}_{CV}$ column equals $\hat\theta/\mathrm{SD}_{CV}$ to printed precision.\\
+B8 & \file{estim_model_optimized.R} (line 896, CV validation loss) & Evaluate held-out validation folds on a common horizon-invariant benchmark loss (the $H=0$ inception loss of held-out vintages, plus $U_{v,0}$) in addition to the horizon-specific loss. & Out-of-sample validation losses across different $H$ are measured on the same scale.\\
+B9 & Pipeline provenance & Record git commit hash, scenario YAML, and timestamp in every output CSV and table header; use Brent's method (\code{optimize}) instead of Nelder--Mead for 1-parameter models. & Every table in the paper regenerates deterministically from a single script.\\
 \bottomrule
 \end{longtable}
 }
 
-Add a small test file that runs B1--B6 on a toy panel. One-parameter models currently use Nelder--Mead; use a bracketing line search there.
-
 %======================================================================
-\section{Minimal revision and effective revision}
+\section{Minimal revision vs.\ effective revision}
 \label{sec:scopes}
 %======================================================================
 
-Effort: S is up to two days, M about a week, L several weeks. These are rough.
+Rough effort scale: \textbf{S} $= 1$--$2$ days, \textbf{M} $\approx 1$ week, \textbf{L} $= 2$--$3$ weeks. Unlike the earlier draft plan (which left essential asymptotic proof repairs outside the minimal scope; see Audit Spec P2), \textbf{every mathematical and code repair required for correctness is included in the Minimal Revision (W1--W4)}.
 
 {\small
-\begin{longtable}{@{}L{0.8cm}L{5.4cm}L{1.3cm}L{1.0cm}L{6.6cm}@{}}
+\begin{longtable}{@{}L{0.8cm}L{5.5cm}L{1.4cm}L{1.0cm}L{6.4cm}@{}}
 \toprule
-& Work package & Minimal & Effort & What it buys\\
+\# & Work package & Minimal? & Effort & Value added to the paper\\
 \midrule
 \endhead
-W1 & Code and data repairs, rerun of existing tables and figures (Section~\ref{sec:code}) & yes & M--L & Numbers that can be defended. Needs the raw Preqin workbook for North America.\\
-W2 & Remove what is false or unsupported: $H=0$ structural with bounded pooling, Corollary~1, Remark~2 and the second-order heuristic, Lemma~1(3), the conditional wedge, ``stabilizes'' in the abstract & yes & S--M & A paper with no incorrect statement.\\
-W3 & Wording: SDF scope, KN16 sentence, ``distributional assumptions'', quarterly data, NAV channel, sample counts, all minors & yes & S & Removes the easy objections.\\
-W4 & Identity and decomposition (T1, T3) in place of the deleted material; $H$ described as a sensitivity parameter & yes & S & The correct explanation of the horizon, in brief.\\
-W5 & Theory section built on T1--T7 and the consistency map; assumptions A1--A8; repaired asymptotics & no & M & A positive contribution: what the standard estimator targets, why alpha explodes, when horizons agree.\\
-W6 & Simulation redesign (Section~\ref{sec:sim}) & partly & L & Evidence that separates population tilt from sampling error. Minimal version: rerun, plus one design with funds per vintage fixed and vintages growing.\\
-W7 & Product criterion as an estimator: theorem, simulation, empirical companion with stated vintage weights & no & M & Consistency without infill; shows how much of the empirical profile is fund-level noise (little).\\
-W8 & Vintage-level moment estimator (T8) & no, gated & L & The only step that addresses the dominant noise. Uncertain payoff with 25 vintages.\\
-W9 & Empirical rework (Section~\ref{sec:emp}): vintage-error figure, estimates by criterion and horizon, $(\alpha,\beta)$ valley, Merton and collinearity, repaired inference & partly & M--L & The paper's empirical message, stated with its real uncertainty.\\
-W10 & Literature: identifying-moments table, comparison of published estimates & partly & S--M & Positioning that a specialist referee accepts.\\
+W1 & Code and data repairs B1--B9, unit test suite, and regeneration of constant-composition Preqin pools and baseline tables (Section~\ref{sec:code}) & \textbf{Yes} & M--L & Defensible, reproducible numbers and valid standard errors. (Uses raw Preqin export in \file{empirical/data_in/} for North America.)\\
+W2 & Remove false/unsupported claims and repair formal proofs: delete bounded-$n_v$ Corollary~1 at $H=0$, delete Remark~2 and the equicorrelation heuristic, fix Lemma~1(3) forward ratio, fix Appendix~B conditioning, and add the score-centering condition and integrated Hessian to Theorem~2 (A8) & \textbf{Yes} & S--M & A mathematically sound manuscript with zero false theorems or broken proofs.\\
+W3 & Framing and exposition repairs: explicit PE-specific SDF scope (T2, Appendix~A of review), two-stage KN16 description, Table~1 identifying moments, quarterly cash-flow description, terminal NAV level channel, corrected sample counts (473 BO / 528 VC for $V\le 2010$), all minor referee items & \textbf{Yes} & S & Eliminates every justified referee objection on framing, literature, and data description.\\
+W4 & Replace Section~2.4 and Appendix~B with the Exact Rescaling Identity (T1), Signal-Plus-Noise Decomposition (T3), and Scale-Jacobian FOC explanation of $\hat\beta_H$ & \textbf{Yes} & S--M & Replaces the flawed ``Compounding-Horizon Wedge'' narrative with the true algebraic mechanism.\\
+W5 & Full positive theory section: closed-form score tilt (T4), exploding-alpha vs.\ $H>0$ coercivity theorem (T5), separated infill vs.\ growing-$V$ regimes (T6), and multi-root mean-moment proposition (T8) & Effective & M & Turns the paper into a constructive econometric reference explaining \emph{why} DLP12 explodes at $H=0$, how $H>0$ regularizes $\alpha$, and when horizons agree.\\
+W6 & Cross-fund pair-product ($U_{v,H}$) estimator: theorem (T7), simulation validation, and empirical companion estimates (with equal and fund-count vintage weights) & Effective & M & Provides a constructive bias-corrected estimator achieving infill consistency with $n_v\ge 2$ and quantifies fund-level vs.\ vintage-level noise in Preqin data.\\
+W7 & Redesigned Monte Carlo study (Section~\ref{sec:sim}): calibrated noise, separate $n_v\times V$ grid, common vintage shocks, and an explicit verified wedge DGP & Effective (light in Min.) & M--L & Directly demonstrates the $H=0$ finite-pool bias plateau, the $U_{v,H}$ correction, and what the horizon profile diagnoses.\\
+W8 & Empirical deep dive and literature benchmark table (Section~\ref{sec:emp}): vintage-residual cycle plot, Fix-$A$ vs.\ Jacobian decomposition table, $(\alpha,\beta)$ contour valley with gradient collinearity $\rho$, vintage-block bootstrap alongside repaired SHAC SEs, and published-estimates comparison table & Effective (partly in Min.) & M & Makes the empirical section transparent, visually compelling, and honest about what 25 overlapping vintages identify.\\
+W9 & Benchmark-path IV-GMM extension ($V^{-1}\sum_v A_{v,H}(\bar\theta)PV_v(\theta)=0$) & Optional (Gated) & M & Tested in simulation only; included in the paper \emph{only} if it passes Gate~G3 at $V=25$. Otherwise kept as a 1-paragraph theoretical remark (T8).\\
 \bottomrule
 \end{longtable}
 }
 
-\textbf{Minimal revision} (W1--W4, light W6, W9, W10). The result is correct. Its message is mostly negative: horizon averaging is a reweighting, its apparent gain in our simulation came from offsetting a tilt, and $H$ is a sensitivity parameter. The title's ``stability'' would rest on nothing new. I would not expect this version to do better at a comparable journal.
-
-\textbf{Effective revision} (all packages, W8 subject to its gate). The paper acquires three results a reader can use: the widely used squared-NPV estimator is tilted without large pools, and by how much; exploding alpha and the horizon profile are two sides of that tilt; and a ladder of criteria shows which noise each removes. The empirical section then demonstrates the limit set by vintage-level errors.
-
-\textbf{Recommendation: the effective revision, in the order of Section~\ref{sec:sequence}.} The most effective single changes, in order: W5 (it is the paper), W1 (without it nothing can be reported), W6 (it converts assertions into evidence), W9. W7 is cheap once W5 exists. W8 is the only package with real research risk.
+\textbf{Comparison and recommendation.}
+\begin{itemize}
+\item \textbf{Minimal Revision (W1--W4, plus light W7--W8 reruns):} Fixes all code bugs and mathematical errors and explains that horizon averaging is a parameter-dependent reweighting whose apparent benefit in simulation came from offsetting an $H=0$ noise bias. However, without W5 and W6, the paper's message is largely corrective (``our previous heuristic was wrong; $H$ is just a sensitivity parameter''), which is too thin for a top finance journal.
+\item \textbf{Effective Revision (W1--W8, with W9 strictly gated):} Delivers a complete, constructive story with three lasting contributions: (1) an exact characterization of finite-pool noise bias and the ``exploding alpha'' problem in cash-flow-based SDF estimation, showing how horizon weighting $H>0$ restores coercivity in $\alpha$ while introducing a scale-Jacobian tilt in $\beta$; (2) the cross-fund pair-product ($U_{v,H}$) criterion, which eliminates $O(1/n_v)$ fund-level variance at all horizons with as few as two funds per vintage; and (3) cleaned empirical evidence showing that after fixing VYP pooling and removing fund-level noise, persistent vintage-level shocks govern the remaining horizon slope and set the boundary of what 25 private-equity cohorts can identify.
+\item \textbf{Recommended path:} Execute the \textbf{Effective Revision} in the staged sequence of Section~\ref{sec:sequence}, where the Minimal Revision (W1--W4) serves as Milestone~1.
+\end{itemize}
 
 %======================================================================
-\Needspace{19\baselineskip}
-\section{The revised paper}
+\Needspace{18\baselineskip}
+\section{The revised paper: title, abstract, and outline}
 \label{sec:outline}
 %======================================================================
 
-\subsection{Target abstract}
+\subsection{Title options (retaining the SDF framing)}
 
-Contingent on the reruns; no numbers yet.
+\begin{itemize}
+\item \textbf{Option 1 (Recommended — keep current title):} \emph{Identification and Stability of SDF Estimators for Pooled, Non-traded Cash Flows}
+\item \textbf{Option 2 (Slightly more specific to PE):} \emph{Identification and Stability of Cash-Flow-Based SDF Estimators for Private Equity}
+\end{itemize}
+Keeping \textbf{Option~1} maintains continuity with existing citations and working-paper versions while matching the paper's exact scope once the PE-specific SDF recovery condition is stated in the abstract and Section~2.
 
+\subsection{Proposed abstract (readable, finance-facing, with SDF framing)}
+
+Below are two versions of the revised abstract—a standard working-paper/journal version ($\sim$165 words) and a tight 140-word version for journals with strict 150-word limits—written for a general finance readership without insider jargon.
+
+\textbf{Standard version (recommended):}
 \begin{draft}
-Cash-flow-based estimators of private-equity risk choose discount-rate parameters that make pooled net present values small. We show what such estimators identify. Averaging pricing errors over later discounting dates is exactly a parameter-dependent rescaling of the inception NPV by benchmark growth and adds no observations. Least squares on pooled NPVs is tilted by pricing-error noise at every horizon, including inception, because discounting harder shrinks the noise; the same force produces the ``exploding alpha'' problem, and the horizon rescaling works against it. We separate fund-level from vintage-level noise and give criteria that remove each. Cross-fund products reproduce the large-portfolio limit of Driessen, Lin and Phalippou (2012) with few funds per vintage. In Preqin buyout and venture data, vintage-level pricing errors are large and persistent, so market betas are identified only within a wide band and abnormal performance is not identified.
+Semiparametric stochastic discount factor (SDF) estimators recover systematic risk ($\beta$) and abnormal performance ($\alpha$) from non-traded private-equity cash flows by minimizing pricing errors across vintage-year portfolios. We study what these estimators identify in realistic panels with a finite number of funds per vintage and overlapping cash-flow streams. First, we show that standard least-squares estimation on inception net present values (Driessen, Lin, and Phalippou 2012) is biased toward higher discount rates whenever within-vintage portfolios are finite, because steeper discounting shrinks late, noisy distributions—the same force that causes the well-known ``exploding alpha'' degeneracy. Second, we show that averaging pricing errors over a horizon of $H$ years after inception rescales each vintage's inception NPV by cumulative benchmark growth: horizon averaging restores global convexity in $\alpha$, but introduces a compounding penalty that pulls estimated market betas downward at long horizons. Third, we introduce a cross-fund pair-product criterion that eliminates idiosyncratic fund-level variance and recovers the structural SDF parameters with as few as two funds per vintage. In Preqin North American Buyout and Venture Capital data, correcting portfolio aggregation and removing fund-level noise yields stable single-factor market betas, but persistent vintage-level shocks and collinear cash-flow sensitivities leave abnormal performance and multi-factor exposures weakly identified.
 \end{draft}
 
-\subsection{Outline and the fate of the current text}
+\textbf{Short 140-word version (for strict journal limits):}
+\begin{draft}
+Semiparametric stochastic discount factor (SDF) estimators measure risk and abnormal performance from non-traded cash flows by minimizing pooled portfolio pricing errors. We show that when vintage portfolios contain a finite number of funds, minimizing squared inception net present values (Driessen, Lin, and Phalippou 2012) biases discount rates upward because steeper discounting shrinks late, noisy distributions—the mechanism behind the ``exploding alpha'' problem. Evaluating pricing errors over $H$ years after inception reweights each vintage's inception NPV by cumulative benchmark growth, which eliminates the exploding-alpha degeneracy but pulls estimated market betas downward at long horizons. We propose a cross-fund pair-product criterion that removes idiosyncratic fund variance and achieves consistency with as few as two funds per vintage. Applied to Preqin Buyout and Venture Capital panels under increasing-domain asymptotics, our framework delivers stable single-factor market betas but shows why persistent vintage-level shocks weakly identify abnormal performance and multi-factor models.
+\end{draft}
+
+\subsection{Section-by-section outline of the revised paper}
 
 {\small
-\begin{longtable}{@{}L{4.2cm}L{11.1cm}@{}}
+\begin{longtable}{@{}L{4.0cm}L{11.3cm}@{}}
 \toprule
-New section & Content and source\\
+Section & Content and mapping from current manuscript\\
 \midrule
 \endhead
-1. Introduction & Rewritten around the question and three results. Related-literature paragraph shortened; detail moves to Section~5.\\
-2. Setup & Benchmark-deflator family with $M_u$ defined; fund-level pricing; conditions (P) and (X); scope of the SDF reading (T9) in one paragraph. From current 1.1: Lemma~1 parts 1--2 and Proposition~1 survive as T2; part 3 and the NFV discussion go.\\
-3. What squared pooled NPVs identify & T1, T3, T4, T5, T6 and the consistency map. Replaces current 1.2's horizon discussion, Figure~2's interpretation and online Appendix~B.\\
-4. Criteria that remove noise & T7, T8 if adopted, the horizon profile as a diagnostic, vintage-domain asymptotics and inference. Current 1.3 and Appendix~C, recentered and repaired.\\
-5. Relation to existing estimators & DLP12 nesting result (kept). DLP09 transformations, with the correction that a parameter-dependent transformation also moves a squared-loss target when noise is bounded. KN16 in two stages. Table by identifying moments. GSW, Martin and Gupta--Van Nieuwerburgh, KN25 in a paragraph each.\\
-6. Simulation & Section~\ref{sec:sim}. Current 2.4 rewritten; the paragraph crediting horizon averaging with bias reduction is replaced by the tilt-and-counter-penalty account.\\
-7. Data and estimates & Section~\ref{sec:emp}. Current 2.1--2.3, 2.5 and 3, with the data description corrected.\\
-8. Conclusion & What the data identify, and what would change that (more vintages, deal-level data).\\
-Online appendix & Proofs; SDF scope with the counterexample; asymptotic conditions; comparison with DLP12's simulation; code conventions and tests.\\
+\textbf{1. Introduction} & Motivate cash-flow-based SDF estimation in private markets and state the three contributions: (i) exact characterization of finite-pool variance bias, exploding $\alpha$, and horizon rescaling in LMD estimation; (ii) the cross-fund pair-product ($U_{v,H}$) criterion and repaired vintage-domain asymptotic framework; (iii) simulation and empirical evidence on Preqin BO and VC panels showing what $\sim 25$ overlapping vintages identify.\\
+\textbf{2. Asset Pricing and Horizon Rescaling} & Define the benchmark-deflator family $M_u(\theta)=G_u(\theta)^{-1}$ and multi-period deflator $\Psi_t(\theta)$. State fund-level pricing conditions (P) and (X) and the incomplete-markets PE-specific SDF recovery scope (T2, one crisp paragraph referencing Online Appendix~A). Derive the generalized LMD criterion $\bar\epsilon_{v,H}(\theta)$ and prove the \textbf{Exact Rescaling Identity} $\bar\epsilon_{v,H}(\theta)=A_{v,H}(\theta)PV_v(\theta)$ (T1). Define the unconditional wedge $b_{v,H}=\Cov(A_{v,H}(\theta_0),PV_v(\theta_0))$ and show it vanishes under (X). (Replaces current Sections~2.1--2.2; deletes Lemma~1(3)'s backward NFV ratio and ``mathematically immune.'')\\
+\textbf{3. Identification, Noise Tilt, and Bias-Corrected Criteria} & Derive the \textbf{Signal-Plus-Noise Decomposition} (T3), the \textbf{Inception Score Tilt and Scale-Jacobian FOC} (T4), and the \textbf{Exploding-Alpha vs.\ $H>0$ Coercivity Theorem} (T5, updating Figure~2's caption). State the \textbf{Infill Consistency Theorem} (T6) and introduce the \textbf{Cross-Fund Pair-Product Criterion} $U_{v,H}(\theta)$ (T7). Summarize the consistency map across asymptotic regimes and add a concise remark on mean moments and multiple roots (T8). State the repaired increasing-domain consistency and SHAC asymptotic normality propositions around $\theta_H^\dagger$ (current Section~2.3, with A8 repairs).\\
+\textbf{4. Relation to Existing Frameworks} & Nesting of DLP12 at $H=0$; comparison to Driessen, Lin, and Phalippou (2009 WP) ratio/log transformations; two-stage comparison to KN16 and Korteweg and Nagel (2025); engagement with GSW (2020), Martin (2012), and Gupta and Van Nieuwerburgh (2021). Updated Table~1 including identifying moments and performance readouts.\\
+\textbf{5. Data, Portfolio Construction, and Simulation Study} & Describe Preqin North America BO (473 funds, $V\le 2010$; 894 through 2021) and VC (528 funds, $V\le 2010$; 931 through 2021) quarterly cash flows on the monthly $q^5$ factor grid, constant-composition EW and normalized FW pooling (A6), and the terminal NAV level channel (vintage-cutoff and NAV haircut figures rerun on corrected pools). Present the redesigned Monte Carlo study (Section~\ref{sec:sim}).\\
+\textbf{6. Empirical Results for Buyout and Venture Capital} & Present: (1) lead figure of vintage-level pooled NPVs with within-vintage SE bars showing persistent cohort cycles; (2) single-factor $\hat\beta_{\mathrm{MKT}}(H)$ tables for constant-composition LS and $U_{v,H}$ (EW, FW, and fund-count weights) plus the Fix-$A$ vs.\ Scale-Jacobian decomposition; (3) two-parameter $(\alpha,\beta_{\mathrm{MKT}})$ objective surface/valley analysis, Merton drift scale, and gradient collinearity $\corr(\partial_\alpha PV_v,\partial_\beta PV_v)$; (4) two-factor $q^5$ results; and (5) literature comparison table (R1-4). Report repaired SHAC SEs, vintage-block bootstrap intervals, and $hv$-block CV diagnostics.\\
+\textbf{7. Conclusion} & Summarize methodological and empirical takeaways and what additional data or structure (longer vintage spans, deal-level panels, or public-moment restrictions) are needed to pin down multi-factor SDFs.\\
+\textbf{Online Appendix} & \textbf{App.~A:} Incomplete-markets SDF representation, positivity, public-moment restriction (Result~3.2), and 1-period counterexample. \textbf{App.~B:} Proofs of T1--T8 and conditional vs.\ unconditional wedge repair. \textbf{App.~C:} Repaired increasing-domain random-field ULLN, score-centered CLT, and SHAC proofs for general vintage losses (covering both $L_2$ and $U_{v,H}$). \textbf{App.~D--E:} Additional simulation and empirical tables.\\
 \bottomrule
 \end{longtable}
 }
 
-Deleted outright: Remark~2; the heuristic part of Appendix~B; both structural corollaries in Appendix~C; ``mathematically immune''; the sentence that reported NAVs co-move with public indices; the claim that $H=0$ is unbiased under exact pricing; the 12.5--15-year recommendation.
-
 %======================================================================
-\section{Simulation}
+\section{Simulation design}
 \label{sec:sim}
 %======================================================================
 
+Once code repairs B1--B5 pass their unit tests, the simulation study in Section~5 is organized around three transparent data-generating processes (DGPs) with positively supported, conditionally mean-one deal multipliers $N_{v,i,j}>0$:
+
+\begin{enumerate}[label=(\alph*)]
+\item \textbf{DGP (a): Idiosyncratic fund noise only (satisfies (P) and (X), $c_v=0$).} Each fund executes 15 deals over a 5-year investment window with 1--10 year holding periods. Deal payoffs are $D_{v,i,j}=I_{v,i,j}R^b_{a,b}(\theta_0)N_{v,i,j}$, where $N_{v,i,j}=\prod_{u=a+1}^b(1+\varepsilon_{v,i,j,u})$ uses shifted-lognormal shocks $\varepsilon_{v,i,j,u}$ independent across deals and of the factor path with $\E[1+\varepsilon_{v,i,j,u}\mid\C_v]=1$.
 \begin{itemize}
-\item \textbf{Three data-generating processes.} (a) fund-level noise only, satisfying (X); (b) adding a common vintage shock, with persistence across neighbouring vintages; (c) exits more likely after strong benchmark returns, violating (X) while keeping (P). Design (c) is where the wedge exists; it shows what the horizon profile detects.
-\item \textbf{Noise calibrated to data.} Choose the noise so that simulated fund-level NPV dispersion (about 0.3--0.5 in Buyout vintages) and vintage-level dispersion (about 0.2) match the data. The current $\sigma=0.2$ a month does not \evidencetag{A}. Keep a high-noise design as a stress case and report its tail behaviour.
-\item \textbf{Two dimensions varied separately.} Funds per vintage 5, 20, 80; vintages 25, 100, 400. The plateau of squared loss as vintages grow with funds fixed is the direct demonstration of T4.
-\item \textbf{Benchmark paths.} Historical paths give a Monte Carlo conditional on one path; say so. Add drawn paths with bounded support for the unconditional statements.
-\item \textbf{Estimators.} Squared loss, cross-fund products, and the vintage-level moment estimator if it reaches this stage. Horizons 0, 5, 10, 15, 20.
-\item \textbf{Reported.} Bias, standard deviation and RMSE separately; share of estimates at a bound; share of negative product criteria; coverage of the repaired standard errors.
+\item \emph{Purpose:} Demonstrates Theorem~T4 (upward bias of squared loss at $H=0$ and the countervailing scale-Jacobian slope at $H>0$), Theorem~T5 (exploding $\alpha$ at $H=0$ vs.\ coercivity at $H>0$), and Theorem~T7 ($U_{v,H}$ is virtually unbiased at every $H\ge 0$ for $n_v\ge 2$).
+\end{itemize}
+
+\item \textbf{DGP (b): Shared persistent vintage shocks ($c_v>0$, satisfies (P) and (X) unconditionally across time).} Multiplies all deals in vintage $v$ by a common cohort factor $W_v>0$ with $\E[W_v\mid\C_v]=1$ and AR(1) persistence across adjacent vintages ($\rho_W\in\{0,0.6\}$), calibrated so that within-vintage fund NPV dispersion ($\sim 0.35$) and cross-vintage pooled NPV dispersion ($\sim 0.20$) match the Preqin Buyout sample.
+\begin{itemize}
+\item \emph{Purpose:} Shows that while $U_{v,H}$ eliminates the $O(1/n_v)$ fund-noise component, shared vintage variance $c_v(\theta)$ remains in both squared loss and $U_{v,H}$ and interacts with $\bar S_{v,H}(\beta)$ to produce a downward horizon slope when $V=25$.
+\end{itemize}
+
+\item \textbf{DGP (c): Genuine Compounding-Horizon Wedge ((P) holds, (X) fails; Audit S7 repair).} As shown in Audit~S7, merely making exit dates depend on benchmark returns does \emph{not} violate (X) if $\E[N_{v,i,j}\mid\F_a\vee\C_v]=1$. To generate a true wedge with $\E[PV_{v,i}(\theta_0)\mid\F_{t_v^0}]=0$ but $b_{v,H}(\theta_0)=\Cov(A_{v,H}(\theta_0),PV_v(\theta_0))\neq 0$, we specify a state-dependent exit multiplier:
+\[
+N_{v,i,j}=\Bigl(1+\kappa\bigl[R^b_{a,b}(\theta_0)-\E\bigl(R^b_{a,b}(\theta_0)\mid\F_a\bigr)\bigr]\Bigr)\tilde N_{v,i,j},\qquad \E[\tilde N_{v,i,j}\mid\F_a\vee\C_v]=1,
+\]
+with $|\kappa|$ bounded so $N_{v,i,j}>0$ (for simulated shifted-lognormal factors, $\E[R^b_{a,b}(\theta_0)\mid\F_a]=(1+\alpha_0+r_f+\beta_0\mu_F)^{b-a}$ is known in closed form). By construction, $\E[N_{v,i,j}\mid\F_a]=1$ so inception pricing (P) holds exactly, but $\Cov(A_{v,H}(\theta_0),PV_v(\theta_0))>0$ for $\kappa>0$, violating (X) and shifting the population zero of $U_{v,H}$ across horizons $H>0$.
+\end{enumerate}
+
+\textbf{Design grid and reported metrics:}
+\begin{itemize}
+\item \emph{Two sample dimensions varied separately:} funds per vintage $n_v\in\{1,5,20,80\}$ and number of vintages $V\in\{25,100,400\}$. Plotting $\hat\beta_0$ as $V$ grows from $25$ to $400$ with $n_v=5$ fixed provides the direct visual demonstration that $H=0$ squared loss converges to a noise-tilted limit $\beta_0^\dagger>\beta_0$, whereas $U_{v,0}$ converges to $\beta_0$.
+\item \emph{Noise levels:} data-calibrated baseline ($\sigma_{\mathrm{deal}}$ matching empirical fund NPV dispersion of $0.35$) plus the submitted paper's high-noise stress test ($\sigma=0.20$/month).
+\item \emph{Factor paths:} both historical $q^5$ paths (conditional Monte Carlo) and drawn bounded-support shifted-lognormal factor paths (unconditional Monte Carlo).
+\item \emph{Reported metrics:} mean bias, median bias, standard deviation, RMSE, boundary-hit rate for $\alpha$, share of negative $U_{v,H}$ objective values, and empirical coverage of the repaired SHAC standard errors.
 \end{itemize}
 
 %======================================================================
-\section{Data and estimates}
+\section{Empirical analysis plan}
 \label{sec:emp}
 %======================================================================
 
+\begin{enumerate}
+\item \textbf{Rebuilt constant-composition Preqin pools.} Run the repaired \file{prep_preqin.R} (B4, B6) on the raw Preqin export (\file{Preqin_Cashflow_export-14_Apr_...xlsx} in \file{r_project/empirical/data_in/}) to generate constant-composition EW and commitment-normalized FW vintage pools and regional fund-level CSVs for North America ($V\le 2010$: 473 Buyout funds across 25 vintages, 528 Venture Capital funds across 27 vintages). State explicitly that quarterly Preqin cash flows are placed on a monthly factor grid.
+\item \textbf{New Figure: Vintage-level pooled NPVs with within-vintage SE bars.} Plot $PV_v(\hat\beta_0)$ with $\pm 1.96\,\mathrm{SE}_{\text{within},v}$ bars for each vintage year $v\in[1985,2010]$ in Buyout and Venture Capital. This single figure shows immediately that (i) within-vintage fund dispersion is substantial when $n_v$ is small, and (ii) multi-year runs of positive and negative cohort residuals (e.g.\ 1996--2005 vs.\ 2006--2010 in Buyout; 1992--1998 vs.\ 1999--2010 in VC) are far larger than within-vintage sampling error in well-populated vintages.
+\item \textbf{Main Single-Factor Tables (Buyout and Venture Capital).} For horizons $H\in\{0,2.5,5,10,12.5,15,20,25,30\}$, report:
 \begin{itemize}
-\item \textbf{Pools rebuilt} from the raw Preqin workbook under A5 and A6. Describe the data as quarterly flows on a monthly factor grid. Correct the sample counts.
-\item \textbf{Lead figure: pooled NPV by vintage} at the estimate, with within-vintage standard-error bars. It shows at a glance that vintage-level errors are large relative to fund-level noise and run in cycles.
-\item \textbf{Main table: beta by criterion and horizon}, with the vintage weights stated and varied. Keep the review's decomposition into fixed-weight reweighting and the parameter-dependent scale term; it is verified and explains the falling profile.
-\item \textbf{Alpha.} Show the criterion valley in $(\alpha,\beta)$ instead of point estimates, report the correlation of the two NPV gradients, and give the Merton-type scale as an illustration. State plainly that part of the weak identification is the old difficulty of estimating a mean.
-\item \textbf{Inference.} Repaired sandwich as the large-sample reference, with a warning that 25 persistent vintages and a 12-year bandwidth leave few effective observations. Add a vintage-block resampling interval. Keep $hv$-block cross-validation as a stability diagnostic with one common held-out loss.
-\item \textbf{NAV.} Haircut exercise rerun on corrected pools; NAV share of value by vintage; vintage-cutoff figure kept.
-\item \textbf{Comparison table} of published buyout and venture estimates, each checked in its source.
+\item Constant-composition Pooled Least Squares (EW and normalized FW, with both equal vintage weights $q_v=1$ and fund-count weights $q_v=n_v$);
+\item Cross-fund Pair-Product Criterion $U_{v,H}$ (under $q_v=1$, $q_v=n_v$, and $n_v\ge 5$);
+\item The empirical decomposition into fixed-weight cross-vintage reweighting (\code{Fix-A}) versus the parameter-dependent Scale-Jacobian term (\code{Jac}, $\bar S_{v,H}(\beta)$ vs.\ $S_{\mathrm{exit}}$), as already verified in Table~1 of the review.
 \end{itemize}
-
-%======================================================================
-\section{Decision gates}
-\label{sec:gates}
-%======================================================================
-
-\begin{enumerate}[label=\textbf{G\arabic*.}]
-\item \textbf{After B1--B9.} Regenerate the submitted tables. If they move materially, the old numbers are retired without further analysis of which code produced them.
-\item \textbf{Product criterion in the paper's empirical tables.} Include with fund-count weights and a minimum fund count as the default. Equal vintage weights are shown as a sensitivity, with the explanation.
-\item \textbf{Vintage-level moment estimator.} Adopt as an estimator only if, in design (b) at the empirical dimensions, its RMSE for beta is no worse than squared loss and its bias is clearly smaller. If it fails, T8 stays as a remark that explains what would be needed, and vintage-level noise is reported as the limit.
-\item \textbf{Headline estimate.} Chosen after the simulation, by RMSE in the calibrated design, and fixed before the empirical rerun.
-\item \textbf{North America sample.} If the raw workbook cannot be used, the global sample becomes the headline sample and the paper says why.
+\item \textbf{Two-Parameter $(\alpha,\beta_{\mathrm{MKT}})$ and Multi-Factor Identification.} Alongside the repaired Tables~4--5, display the 2D objective contour valley in $(\alpha,\beta_{\mathrm{MKT}})$ for $H=0$ and $H=15$ under both squared loss and $U_{v,H}$, report the sample correlation between the cash-flow sensitivities $\partial_\alpha PV_v$ and $\partial_\beta PV_v$, and pair it with the Merton (1980) drift-uncertainty benchmark.
+\item \textbf{Repaired Inference and Stability Diagnostics.} Report (i) repaired SHAC standard errors ($\mathrm{SE}_A$, $b_V=12$ years), (ii) a vintage-block bootstrap confidence interval (resampling 4-year overlapping vintage blocks), and (iii) $hv$-block cross-validation fold dispersion $\mathrm{SD}_{CV}$, repaired stability ratio $\mathrm{SR}_{CV}=\hat\theta/\mathrm{SD}_{CV}$, and common $H=0$ held-out validation error.
+\item \textbf{NAV Sensitivity and Literature Benchmark Table.} Rerun the vintage-cutoff ($2010\to 2021$) and terminal-NAV haircut ($0\%,25\%,50\%,75\%,100\%$) exercises on the constant-composition pools, report the terminal NAV share of total value by vintage, and add a compact comparison table of published Buyout and Venture Capital $\beta$ and $\alpha/\text{PME}$ estimates.
 \end{enumerate}
 
 %======================================================================
-\section{Sequence}
+\section{Decision gates and execution sequence}
+\label{sec:gates}
 \label{sec:sequence}
 %======================================================================
 
+\subsection{Decision gates}
+
+\begin{enumerate}[label=\textbf{G\arabic*.}]
+\item \textbf{Gate G1 (After code and pool repairs B1--B9):} Regenerate the North America Preqin tables under constant-composition pooling and repaired standard errors. Retire the reporter-mean numbers and buggy SE columns cleanly.
+\item \textbf{Gate G2 (Weighting specification for $U_{v,H}$ in main tables):} Report both fund-count weights ($q_v=n_v$, or $n_v\ge 5$) and equal vintage weights ($q_v=1$) for $U_{v,H}$, explaining clearly why noisy two-to-four-fund early vintages affect equal-weighted averages.
+\item \textbf{Gate G3 (Whether to include the benchmark-path IV-GMM estimator W9):} Test the strictly exogenous path-instrument estimator ($z_v=(1,A_{v,H}(\bar\theta))^\top$) in DGP~(b) at $(V=25,n_v=20)$. Include it as an empirical estimator \emph{only} if its RMSE for $\beta$ is no worse than $U_{v,H}$ and its bias under common vintage shocks is materially smaller without multiple-root instability. If (as expected with $V=25$) its variance or root instability is large, keep T8 as a concise theoretical remark explaining why sample mean moments struggle in short overlapping panels.
+\item \textbf{Gate G4 (Raw Preqin export availability):} If the raw Preqin export workbook (\file{Preqin_Cashflow_export-14_Apr_...xlsx}) is available locally in \file{r_project/empirical/data_in/}, rerun \file{prep_preqin.R} immediately to produce the North America constant-composition pools and fund-level CSVs. If not, use the stored global fund-level files (\file{preqin_cashflows_EW_NAV.csv} and \file{preqin_cashflows_FW_NAV.csv} in \file{data_prepared_2026_b/}) as the primary fund-level sample and the stored North America VYP files for the decomposition sensitivity.
+\end{enumerate}
+
+\subsection{Recommended execution sequence}
+
 \begin{enumerate}
-\item Code repairs and tests (B1--B9). Regenerate existing output. \emph{Milestone: reproducible numbers.}
-\item W2--W4 in the current manuscript. \emph{Milestone: the minimal revision, a correct paper.}
-\item Theory section and assumptions (W5), with T5 and the noise split written out. Literature check for T3--T8.
-\item Simulation redesign and runs (W6), including the product criterion (W7). Gate G3 on the vintage-level estimator.
-\item Empirical rework on rebuilt pools (W9). Gates G2, G4, G5.
-\item Literature section and tables (W10); introduction, abstract, conclusion last.
+\item \textbf{Step 1: Code repairs and unit tests (B1--B9).} Implement the fixes in \file{r_project/}, run the automated verification tests on a toy panel, and rebuild the constant-composition Preqin datasets. \emph{(Milestone 0: Verified, bug-free codebase and data.)}
+\item \textbf{Step 2: Core manuscript repairs (W2--W4).} Update \file{tex/sdf_paper.tex} and \file{tex/sdf_paper_online_appendices.tex} with the PE-specific SDF scope, the exact rescaling identity (T1), the signal-plus-noise decomposition (T3), the repaired Lemma~1(3) and Appendix~B/C proofs (A8), and all minor referee fixes. \emph{(Milestone 1: Minimal Revision — a 100\% mathematically correct paper.)}
+\item \textbf{Step 3: Full theory and $U_{v,H}$ methodology (W5--W6).} Write out Theorems~T4--T8 (score tilt, exploding-alpha vs.\ $H>0$ coercivity, separated infill vs.\ growing-$V$ regimes, and the cross-fund pair-product estimator $U_{v,H}$) and the literature positioning in Section~4.
+\item \textbf{Step 4: Redesigned Monte Carlo runs (W7).} Run DGPs~(a), (b), and (c) across the $n_v\times V$ grid and evaluate Gate~G3.
+\item \textbf{Step 5: Empirical tables, figures, and final polish (W8).} Generate the vintage-residual figure, the repaired BO/VC tables (comparing constant-composition LS and $U_{v,H}$ plus the Fix-$A$/Jacobian decomposition), the $(\alpha,\beta)$ contour plot, and the literature comparison table; finalize the Introduction, Abstract, and Conclusion. \emph{(Milestone 2: Completed Effective Revision ready for submission.)}
 \end{enumerate}
 
 %======================================================================
-\Needspace{22\baselineskip}
-\section{Decisions for you}
+\section{Summary of key choices for your sign-off}
 \label{sec:decisions}
 %======================================================================
 
 \begin{enumerate}
-\item \textbf{Scope.} Effective revision as recommended, or stop at the minimal milestone.
-\item \textbf{Title.} I recommend dropping ``SDF Estimators'' from the title and stating the SDF scope in the text, for example \emph{What Do Cash-Flow-Based Estimators of Private-Equity Risk Identify?} Keeping the current title is defensible only with the scope statement in the abstract.
-\item \textbf{Raw Preqin workbook.} Is \code{2022_01_Preqin_PE_Cashflow.xlsx} available to rebuild the North America pools? Gate G5 depends on it.
-\item \textbf{Overlap with the transportability paper.} That project already uses fund-pair products for out-of-sample scoring. Here they would be an estimation criterion with a consistency theorem. I suggest this paper owns the identification results and the other cites it; say if you see the split differently.
-\item \textbf{Vintage-level estimator.} Whether to spend the time on W8 at all, given that its most likely outcome with 25 vintages is a wide interval. My view: one bounded attempt in simulation, then decide by gate G3.
+\item \textbf{SDF framing and title:} We keep the SDF framing in both the title (\emph{``Identification and Stability of SDF Estimators for Pooled, Non-traded Cash Flows''}) and the text, backed by the explicit PE-specific SDF recovery statement in Section~2 and Online Appendix~A.
+\item \textbf{Abstract:} Replace Fable's technical draft abstract with the clear, finance-facing abstract in Section~\ref{sec:outline} (either the 165-word standard version or the 140-word short version).
+\item \textbf{Main estimators:} Feature Constant-Composition Pooled Least Squares and the Cross-Fund Pair-Product Criterion ($U_{v,H}$) as the two headline estimators, while keeping exogenous benchmark-path IV-GMM moments as a theoretical remark (unless W9 passes Gate~G3 in simulation).
+\item \textbf{Raw Preqin workbook check:} Confirm that the raw Preqin workbook (\file{Preqin_Cashflow_export-14_Apr_...xlsx} in \file{r_project/empirical/data_in/}) is accessible on your machine so Step~1 can regenerate the North America fund-level and constant-composition VYP files.
 \end{enumerate}
 
 %======================================================================
 \clearpage
 \appendix
 \begingroup\small
-\section{Exploratory probes}
+\section{Exploratory probes on stored global Preqin fund-level data}
 \label{app:probes}
 %======================================================================
 
-Script: \file{check_revision_probes.py}. Data: stored global fund-level Preqin file, equal fund weights, commitment-scaled flows, vintages $\le2010$ (25 Buyout vintages, 27 Venture), one-factor market model with $\alpha=0$, grid step 0.01 in beta. Pools are constant-composition. These numbers are for design decisions. They are not North America results and they use the uncorrected origin and window unless stated.
+Scripts: \file{check_revision_probes.py} and \file{check_revision_plan_audit.py}. Data: stored global fund-level Preqin file (\file{preqin_cashflows_EW_NAV.csv} in \file{r_project/empirical/data_prepared_2026_b/}), commitment-scaled cash flows, equal fund weights within each vintage, vintages $v\le 2010$ (25 Buyout vintages; 27 Venture Capital vintages in total, of which 24 have $n_v\ge 2$ and 3 early vintages—1982, 1988, 1989—have $n_v=1$), one-factor market model with $\alpha=0$, grid step $0.01$ in $\beta\in[-0.5,3.5]$. All pools are constant-composition.
 
-\subsection*{Beta by criterion, vintage weight and origin}
+\subsection*{1. Beta estimates by criterion, vintage weighting, sample rule, and origin}
+
+In the table below, ``sample origin'' sets each vintage's grid from its earliest to latest cash-flow date (matching the current R pipeline); ``predet.\ origin'' sets the grid from Dec~31 of year $v-1$ to the end of the factor file. For Venture Capital under squared loss, we report both all 27 vintages ($n_v\ge 1$, the default of \file{check_revision_probes.py}) and the 24-vintage subsample with $n_v\ge 2$ (matching the sample on which $U_{v,H}$ is defined; see Audit reproducibility note).
 
 \begin{center}
-\small
-\begin{tabular}{@{}r cccc cc c@{}}
+\footnotesize
+\begin{tabular}{@{}r cccc ccccc@{}}
 \toprule
-& \multicolumn{4}{c}{Cross-fund products} & \multicolumn{3}{c}{Squared loss}\\
-\cmidrule(lr){2-5}\cmidrule(lr){6-8}
-$H$ (yr) & equal $q_v$ & $q_v=n_v$ & $n_v\ge5$ & predet.\ origin & pooled & predet.\ origin & $n_v\ge5$\\
+& \multicolumn{4}{c}{Cross-fund pair products $U_{v,H}$ ($n_v\ge 2$)} & \multicolumn{5}{c}{Constant-composition squared loss}\\
+\cmidrule(lr){2-5}\cmidrule(lr){6-10}
+$H$ (yr) & equal $q_v$ & $q_v=n_v$ & $n_v\ge 5$ & predet.\ & all $v$ & $n_v\ge 2$ & predet.\ (all) & predet.\ ($n_v\ge 2$) & $n_v\ge 5$\\
 \midrule
-\multicolumn{8}{@{}l}{\emph{Buyout}}\\
-0   & 1.05 & 1.08 & 1.24 & 1.06 & 1.21 & 1.22 & 1.28\\
-5   & 1.06 & 1.11 & 1.19 & 1.06 & 1.17 & 1.17 & 1.22\\
-10  & 1.10 & 1.08 & 1.11 & 1.09 & 1.09 & 1.09 & 1.11\\
-15  & 1.21 & 1.04 & 1.08 & 1.14 & 1.03 & 1.03 & 1.04\\
-20  & 1.19 & 0.95 & 0.94 & 1.16 & 0.97 & 0.96 & 0.90\\
-30  & 1.19 & 0.90 & 0.90 & 1.24 & 0.96 & 0.86 & 0.85\\
+\multicolumn{10}{@{}l}{\emph{Buyout (25 vintages; all 25 have $n_v\ge 2$)}}\\
+0   & 1.05 & 1.08 & 1.24 & 1.06 & 1.21 & 1.21 & 1.22 & 1.22 & 1.28\\
+5   & 1.06 & 1.11 & 1.19 & 1.06 & 1.17 & 1.17 & 1.17 & 1.17 & 1.22\\
+10  & 1.10 & 1.08 & 1.11 & 1.09 & 1.09 & 1.09 & 1.09 & 1.09 & 1.11\\
+15  & 1.21 & 1.04 & 1.08 & 1.14 & 1.03 & 1.03 & 1.03 & 1.03 & 1.04\\
+20  & 1.19 & 0.95 & 0.94 & 1.16 & 0.97 & 0.97 & 0.96 & 0.96 & 0.90\\
+30  & 1.19 & 0.90 & 0.90 & 1.24 & 0.96 & 0.96 & 0.86 & 0.86 & 0.85\\
 \midrule
-\multicolumn{8}{@{}l}{\emph{Venture Capital}}\\
-0   & 1.51 & 1.11 & 1.69 & 1.52 & 1.93 & 1.97 & 2.10\\
-5   & 1.89 & 1.38 & 2.10 & 1.77 & 2.20 & 2.16 & 2.32\\
-10  & 1.59 & 1.27 & 1.90 & 1.62 & 1.78 & 1.80 & 2.09\\
-15  & 1.17 & 1.08 & 1.65 & 1.19 & 1.32 & 1.34 & 1.83\\
-20  & 1.11 & 1.00 & 1.62 & 1.09 & 1.24 & 1.23 & 1.85\\
-30  & 0.95 & 0.95 & 2.00 & 0.01 & 0.90 & $-0.48$ & 2.06\\
+\multicolumn{10}{@{}l}{\emph{Venture Capital (27 vintages total; 24 vintages with $n_v\ge 2$)}}\\
+0   & 1.51 & 1.11 & 1.69 & 1.52 & 1.94 & 1.93 & 1.98 & 1.97 & 2.10\\
+5   & 1.89 & 1.38 & 2.10 & 1.77 & 2.11 & 2.20 & 2.13 & 2.16 & 2.32\\
+10  & 1.59 & 1.27 & 1.90 & 1.62 & 1.74 & 1.78 & 1.78 & 1.80 & 2.09\\
+15  & 1.17 & 1.08 & 1.65 & 1.19 & 1.23 & 1.32 & 1.28 & 1.34 & 1.83\\
+20  & 1.11 & 1.00 & 1.62 & 1.09 & 1.17 & 1.24 & 0.90 & 1.23 & 1.85\\
+30  & 0.95 & 0.95 & 2.00 & 0.01 & 0.83 & 0.90 & $-0.50^\dagger$ & $-0.48^\dagger$ & 2.06\\
 \bottomrule
 \end{tabular}
 \end{center}
+{\footnotesize $^\dagger$At or near the $-0.50$ lower search bound when extending 30-year windows from a predetermined origin across all early VC vintages.}
 
-Reading. In Buyout the product criterion is flat only under equal vintage weights. With fund-count weights or a minimum of five funds it tracks squared loss, as it must when pools are large. In Venture every column depends strongly on the horizon, and the vintage weights alone move the $H=0$ estimate between 1.1 and 1.7. The 30-year row with a predetermined origin extends windows to the end of the factor file and is unstable in Venture; long horizons should be capped at the common cutoff with a stated minimum window.
+\textbf{Takeaways from the table:}
+\begin{enumerate}
+\item At $H=0$, replacing squared loss with $U_{v,0}$ lowers $\hat\beta_0$ from $1.21$ to $1.05$--$1.08$ in Buyout and from $1.93$ to $1.51$ in Venture Capital, consistent with the theoretical upward $O(1/n_v)$ noise tilt of squared loss at inception.
+\item In Buyout, $U_{v,H}$ is flat across $H$ under equal vintage weights ($1.05\to 1.19$), where early vintages with $2$--$6$ funds receive the same weight as late vintages with $40$--$80$ funds. When weighted by fund count ($q_v=n_v$) or restricted to $n_v\ge 5$, $U_{v,H}$ declines from $1.08$--$1.24$ at $H=0$ to $0.90$ at $H=30$, closely tracking constant-composition squared loss ($1.21\to 0.96$).
+\item In Venture Capital, $\hat\beta_H$ varies substantially with both $H$ and the vintage weighting rule because large dot-com era cohort shocks dominate within-vintage sampling noise.
+\end{enumerate}
 
-\subsection*{Vintage-level pooled NPVs}
+\subsection*{2. Vintage-level pooled NPVs and within-vintage standard errors}
 
-At the $H=0$ squared-loss beta. Buyout (1.21): $+0.16$, $+0.22$, $+0.21$, $+0.23$, $+0.36$, $+0.38$, $+0.25$, $+0.29$, $+0.16$ for vintages 1996--2004; $+0.06$ for 2005; $-0.02$, $-0.11$, $-0.10$, $-0.03$, $-0.02$ for 2006--2010. Within-vintage standard errors for these vintages are between 0.03 and 0.11. Venture (1.9): positive for 1992--1998 ($+0.16$ to $+0.78$), negative for every vintage 1999--2010 ($-0.08$ to $-0.47$).
+Evaluated at the $H=0$ constant-composition squared-loss estimate ($\hat\beta_0=1.21$ for Buyout; $\hat\beta_0=1.94$ for Venture Capital):
+\begin{itemize}
+\item \textbf{Buyout:} Pooled vintage NPVs are positive for ten consecutive vintages from 1996 to 2005 ($+0.154$, $+0.220$, $+0.212$, $+0.233$, $+0.363$, $+0.382$, $+0.251$, $+0.289$, $+0.163$ for 1996--2004, and $+0.060$ for 2005, with within-vintage standard errors $\mathrm{sd}/\sqrt{n_v}$ between $0.035$ and $0.086$; the ratio $PV_v/\mathrm{SE}_{\text{within},v}$ is $+1.78$ in 1996 and exceeds $+2.5$ in every vintage 1997--2004) and negative for 2006--2010 ($-0.025$, $-0.109$, $-0.097$, $-0.036$, $-0.020$, with ratios to within-vintage SE of $-0.71$, $-1.78$, $-2.01$, $-1.42$, $-0.44$).
+\item \textbf{Venture Capital:} Pooled vintage NPVs are positive for every vintage 1992--1998 ($+0.16$ to $+0.78$) and negative for every vintage 1999--2010 ($-0.08$ to $-0.47$).
+\end{itemize}
 
-\subsection*{Mean-moment roots and joint minimizers}
+\subsection*{3. Sample mean-moment roots and joint $(\alpha,\beta)$ minimizers}
 
-Root in beta of the equal-weighted mean of $A_{v,H}PV_v$ with $\alpha=0$. Buyout: 1.86 at $H=0$ (second root 3.0), 1.69 at 5 years, 1.40, 1.37, 1.47 and 1.54 at 10, 15, 20 and 30 years. Venture: 1.54, 2.05, 1.71, 1.45, 1.45, 1.49 at 0, 5, 10, 15, 20, 30 years.
-
-Joint grid minimizers in ($\alpha$ per month, $\beta$). Buyout, $H=0$: squared loss $(0.7\%,0.35)$, products $(0.6\%,0.30)$; $H=15$: $(0.5\%,0.40)$ and $(0.5\%,0.55)$. Venture, $H=0$: both at the upper alpha bound of 2\%; $H=15$: $(-0.8\%,2.30)$ and $(-0.6\%,1.95)$.
+\begin{itemize}
+\item \textbf{Roots of the equal-weighted sample mean $V^{-1}\sum_v A_{v,H}(\beta)PV_v(\beta)=0$ ($\alpha=0$):} In Buyout, $\hat\beta=1.86$ at $H=0$ (with a second root at $3.00$), $1.69$ at $H=5$, and $1.40,1.37,1.47,1.54$ at $H=10,15,20,30$. In Venture Capital, the roots are $1.54,2.05,1.71,1.45,1.45,1.49$ at $H=0,5,10,15,20,30$.
+\item \textbf{Joint $(\alpha\text{ per month},\,\beta)$ grid minimizers:} In Buyout, squared loss gives $(+0.7\%,0.35)$ at $H=0$ and $(+0.5\%,0.40)$ at $H=15$; $U_{v,H}$ gives $(+0.6\%,0.30)$ at $H=0$ and $(+0.5\%,0.55)$ at $H=15$. In Venture Capital, both criteria hit the $+2.0\%/\text{month}$ upper bound at $H=0$, and move to $(-0.8\%,2.30)$ (squared loss) and $(-0.6\%,1.95)$ ($U_{v,H}$) at $H=15$.
+\end{itemize}
 
 \endgroup
 \end{document}
