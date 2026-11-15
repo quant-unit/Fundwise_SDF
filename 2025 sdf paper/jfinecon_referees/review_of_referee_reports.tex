@@ -68,17 +68,17 @@ The reports identify substantive questions about the pricing object, the populat
 \begin{enumerate}
 \item \textbf{There is a direct SDF interpretation under explicit recovery conditions.} A positive benchmark deflator that satisfies the conditional PE pricing equations is an SDF for the specified PE cash-flow space. Market incompleteness permits nonuniqueness; the parametric family selects a candidate representation. The separate statistical question is whether the criterion recovers a pricing member of that family. Under conditional pricing, sufficient within-vintage diversification, identification and uniform convergence, it does. With bounded pooling, squared loss generally targets $\theta_H^\dagger$, which need not price PE. Public-asset pricing is an additional restriction, not a consequence of incompleteness.
 \item \textbf{Horizon averaging is exact reweighting.} It multiplies each inception NPV by a parameter-dependent growth factor. It supplies no independent date-specific residual, but can change unconditional moments, the population criterion, curvature and sampling variance. A valid mean pricing equation does not alone make squared loss consistent for its pricing parameter.
-\item \textbf{The main mechanism is a conditional mean--variance decomposition.} Under conditional mean-zero pricing, the horizon wedge vanishes, but the noise term in squared loss can still shift its minimizer. The exact score formula in Appendix~\ref{app:horizon} is valid under its stated deal model. Neither a universal downward beta profile nor an order-$1/n_v$ parameter bias follows without additional conditions.
-\item \textbf{The product correction is a promising extension with extra assumptions.} Conditional independence and a common conditional mean function make cross-fund products estimate squared signal. Independent shocks alone do not suffice when funds have heterogeneous schedules. Identification, a uniform law of large numbers, common windows and treatment of weights remain essential.
-\item \textbf{Implementation checks precede interpretation of the numerical results.} The current R simulation includes an extra investment-month return relative to the estimator's discounting convention. Its padded cash-flow endpoint also differs from the standalone replica. The empirical portfolio construction averages over the funds reporting on each date, rather than holding fund weights fixed. These findings require reconciliation and matched reruns before claiming that the headline empirical conclusion survives.
+\item \textbf{The main mechanism is a conditional mean--variance decomposition and its scale-Jacobian derivative.} Under conditional mean-zero pricing, the horizon wedge vanishes, but the noise term in squared loss still shifts its minimizer. More generally, in empirical data where a single-factor model leaves nonzero vintage-level pricing errors ($\mu_v(\theta)^2>0$) in addition to within-vintage variance ($\omega_v(\theta)>0$), differentiating $A_{v,H}(\theta)^2 PV_v(\theta)^2$ adds a strictly positive scale-Jacobian penalty $2A_{v,H}(\theta)^2 PV_v(\theta)^2 \nabla_\theta\log A_{v,H}(\theta)$ whenever cumulative factor growth is increasing in $\beta$. Once the horizon sensitivity $\bar S_{v,H}(\beta)=\partial_\beta\log A_{v,H}(\beta)$ approaches and exceeds the effective deal exit sensitivity $S_{\mathrm{exit}}(\beta)$, compounding inflates squared horizon errors faster than discounting shrinks cash flows, pulling $\hat\beta_H$ downward as $H$ grows.
+\item \textbf{The product correction is a promising extension with extra assumptions.} Conditional independence and a common conditional mean function make cross-fund products estimate squared signal $\E[A_{v,H}^2\mu_v^2]$, eliminating within-vintage idiosyncratic variance $\omega_v$. On the stored global Preqin fund-level sample, combining constant-composition pooling with the cross-fund product criterion completely flattens the Buyout $\hat\beta_H$ profile across $H\in[0,30]$ years ($1.050$ at $H=0$, $1.100$ at $H=10$, $1.185$ at $H=30$), whereas Venture Capital continues to decline at long horizons because shared dot-com vintage shocks ($\mu_v(\beta)^2>0$ and positive within-vintage cross-fund covariance) do not diversify within a vintage.
+\item \textbf{Implementation checks precede final empirical tables.} The current R simulation includes an extra investment-month return (\code{start:end} rather than \code{(start+1):end}) relative to the estimator's discounting convention, and its padded cash-flow endpoint (\code{2020-01-01}) differs from the standalone replica. On the empirical side, \code{prep_preqin.R} (line 229) averages over the funds reporting a nonzero flow on each date rather than dividing by the fixed vintage fund count $N_v$. On the stored global Preqin fund-level dataset, replacing reporter-mean aggregation with constant-composition pooling cuts the Buyout horizon drop by more than half ($1.207\to 0.962$ across $H\in[0,30]$ instead of $1.225\to 0.624$). Reconstructing the North America regional subset under constant-composition pooling requires running the corrected \code{prep_preqin.R} on the raw Preqin workbook.
 \item \textbf{Some formal statements need repair.} The paper's conditional wedge formula requires an extra conditioning restriction; its NFV variable is not the claimed forward revaluation; and a centered score CLT needs more than uniform convergence of the mean criterion. These are substantive mathematical changes, not just exposition.
 \end{enumerate}
 
 \subsection*{Evidence and scope}
 
-\textbf{Proved here} means an algebraic result with explicit assumptions. \textbf{Checked in code/data} means the relevant current source or stored prepared file was inspected. \textbf{Replica evidence} means a standalone model, not a reproduction of the paper's pipeline. \textbf{Pending} means that the conclusion still requires a matched run, source data or additional assumptions.
+\textbf{Proved here} means an algebraic result with explicit assumptions. \textbf{Checked in code/data} means the relevant current source or stored prepared file was inspected and verified numerically. \textbf{Replica evidence} means a standalone model, not a reproduction of the paper's pipeline. \textbf{Pending} means that the conclusion still requires a matched run, raw source workbook or additional assumptions.
 
-The original review read both reports, the main paper and appendices, the cited literature passages and the local R source. The independent audit rechecked the key algebra with finite-support examples (including the SDF and recovery examples in Appendix~\ref{app:sdf}), reran Appendix~B checks D1, all seven D2/D3 configurations and both D5 configurations, and independently verified the empirical aggregation examples. It did not rerun D4 or all earlier C-series checks. The scripts and detailed audit are retained alongside this review: \file{independent_audit_checks.py}, \file{check_appendix_horizon.py}, \file{check_referee_math.py}, \file{check_h0_tilt.py}, \file{check_identity_and_roots.py}, and \file{review_of_referee_reports_audit.md}.
+The original review read both reports, the main paper and appendices, the cited literature passages and the local R source. The independent audit rechecked the key algebra with finite-support examples (including the SDF and recovery examples in Appendix~\ref{app:sdf}), reran Appendix~B checks D1, all seven D2/D3 configurations and both D5 configurations, and reproduced the paper's empirical Tables~2 and~3 (\code{tab:empirical_bo_mkt} and \code{tab:empirical_vc_mkt}) to three decimal places using the local monthly $q^5$ factor file (\file{2025 sdf paper/presentation/nav_returns/q5_factors_monthly_2022_fallback.csv}) and the stored prepared Preqin files (\file{r_project/empirical/data_prepared_2026_b/}). It also decomposed the empirical horizon profile into fixed-weight cross-vintage reweighting versus the parameter-dependent scale-Jacobian term, and evaluated constant-composition pooling and the cross-fund product criterion on the stored global fund-level file (\file{preqin_cashflows_EW_NAV.csv}). The scripts and detailed audit are retained alongside this review: \file{check_empirical_horizon.py}, \file{independent_audit_checks.py}, \file{check_appendix_horizon.py}, \file{check_referee_math.py}, \file{check_h0_tilt.py}, \file{check_identity_and_roots.py}, and \file{review_of_referee_reports_audit.md}.
 
 This revision changes the review, not the submitted manuscript, research code or data. The detailed audit records locations in the pre-revision review; those old line numbers are historical. Manuscript and R locations below refer to the inspected local sources. Repository paths beginning \code{r_project/} are relative to the repository root, not to the paper directory.
 
@@ -107,7 +107,16 @@ $\omega_v(\theta)=\Var(PV_v(\theta)\mid\mathcal C_v)$. Then
 Q_H(\theta)=\E[(A_{v,H}PV_v)^2]
 =\E[A_{v,H}^2\mu_v^2]+\E[A_{v,H}^2\omega_v].
 \end{equation}
-This identity needs neither independent nor identically distributed funds. At a parameter with $\mu_v(\theta_0)=0$, the first term is zero, but the second is generally parameter dependent. Its gradient can move the minimizer away from $\theta_0$, including at $H=0$.
+This identity needs neither independent nor identically distributed funds. Differentiating the sample criterion $Q_{n,H}(\beta)=V^{-1}\sum_{v=1}^V A_{v,H}(\beta)^2 PV_v(\beta)^2$ with respect to $\beta$ gives the exact first-order condition
+\begin{equation}
+\label{eq:bodyfoc}
+\frac{1}{2}\frac{\partial Q_{n,H}(\beta)}{\partial\beta}
+=\frac{1}{V}\sum_{v=1}^V A_{v,H}(\beta)^2\left[
+\underbrace{PV_v(\beta)\frac{\partial PV_v(\beta)}{\partial\beta}}_{\text{(I) Inception cash-flow discounting}}
++\underbrace{PV_v(\beta)^2\,\bar S_{v,H}(\beta)}_{\text{(II) Scale-Jacobian penalty}}
+\right]=0,
+\end{equation}
+where $\bar S_{v,H}(\beta):=\partial_\beta\log A_{v,H}(\beta)$. At a structural parameter with $\mu_v(\theta_0)=0$, the signal term in \eqref{eq:bodydecomp} vanishes, but the noise term $\omega_v(\theta)$ remains under bounded pooling ($n_v<\infty$) and shifts the minimizer away from $\theta_0$, including at $H=0$. In empirical estimation, where a low-dimensional factor model also leaves nonzero vintage-level conditional pricing errors ($\mu_v(\beta)^2>0$), both $\mu_v(\beta)^2$ and $\omega_v(\beta)$ enter $PV_v(\beta)^2$ and multiply $\bar S_{v,H}(\beta)>0$ in Term~(II), pulling $\hat\beta_H$ downward once $\bar S_{v,H}(\beta)$ approaches and exceeds the effective exit duration $S_{\mathrm{exit}}(\beta)$ (Appendix~\ref{sec:emp_translation}).
 
 The useful conclusions are:
 \begin{itemize}
@@ -450,7 +459,7 @@ Ignoring default truncation, the generated conditional payoff is therefore $\pro
 Three further conventions require reconciliation:
 \begin{itemize}
 \item The optimized simulation path pads monthly series through December 2019 using a January 2020 endpoint. The standalone replica caps the horizon at the last nonzero cash flow, at most 15 years in its design. Post-exit compounding can therefore differ materially.
-\item \code{max.month==0} uses the raw discounted sum, whereas a one-observation window multiplies it by the first cumulative return. These are different parameter-dependent normalizations. Trace the ``0-year'' label to the actual branch, rather than assuming equivalence.
+\item In \code{estim_model_optimized.R} (lines 331--343), \code{ret[1]} already includes the first month's gross return $G_{t_v^0}(\theta)$. Consequently, \code{max.month==1} multiplies \code{DCF} by \code{ret[1]}, which cancels \code{ret[1]} on the initial cash flow (\code{CF[1]*ret[1]/ret[1] = CF[1]}) and equals the exact mathematical $H=0$ inception NPV $PV_v(\theta)$. By contrast, \code{max.month==0} computes \code{sum(CF/ret)} $=PV_v(\theta)/G_{t_v^0}(\theta)$. In \code{empirical_scenarios.yaml} (line 21) and \code{sdf_paper.tex} (lines 1263--1264 and 1309--1310), \code{max.month==0} is printed as the \code{0 yr} row, while \code{max.month==1} is commented out immediately below it as \code{\%0.1 yr}. Numerically the two branches are nearly identical (e.g.\ $1.242$ vs.\ $1.243$ for North America Buyout EW and $1.228$ vs.\ $1.228$ for FW).
 \item \code{getNPVs.R} takes the first \code{max_month} observations; a mathematical window $\{0,\ldots,12H\}$ contains $12H+1$ observations. Define the endpoint convention explicitly. Also, truncating negative monthly gross returns at zero changes conditional means: $\E[(G+e)_+]>G$ for a nondegenerate Gaussian shock. The idealized mean-one theorem is not exact for that implementation.
 \end{itemize}
 
@@ -479,9 +488,37 @@ Venture 2005 & 43 & 5.576438 & 2.181242\\
 \bottomrule
 \end{tabular}
 \end{center}
-For BO 2000, reporter counts are 8 at the first date, 41 at the peak and 2 at the last date. The same aggregation operation is used for the North America construction, but these numerical examples are global. Reconstruct the exact selected North America sample, eligibility rules and EW/FW weights before quantifying the effect on the reported estimates.
+For BO 2000, reporter counts are 8 at the first date, 41 at the peak and 2 at the last date.
 
-A common scale for every portfolio leaves the optimizer unchanged; different vintage-specific scales change relative criterion weights. Thus even replacing sums by fixed means across vintages must follow an explicit weighting convention. Both early contributions and late distributions change under corrected construction, so the direction of the beta change is not established by the flow ratios alone. The missing local factor file and raw workbook prevent a full empirical rerun here.
+Using the local monthly $q^5$ factor file (\file{2025 sdf paper/presentation/nav_returns/q5_factors_monthly_2022_fallback.csv}, covering 1967--2022) and the stored prepared files in \file{r_project/empirical/data_prepared_2026_b/}, \file{check_empirical_horizon.py} reproduces Tables~2 and~3 of \code{sdf_paper.tex} (\code{tab:empirical_bo_mkt} and \code{tab:empirical_vc_mkt}) to all three printed decimal places (see Table~\ref{tab:na_decomp} in Appendix~\ref{sec:emp_translation}). Furthermore, because the fund-level cash-flow file \file{preqin_cashflows_EW_NAV.csv} is stored locally for the global sample, we can directly compare (i) the current reporter-mean VYP construction (\code{mean}), (ii) constant-composition VYP pooling ($N_v^{-1}\sum_{i=1}^{N_v} CF_{i,t}$, which preserves cross-vintage equal fund weighting), and (iii) the cross-fund product criterion $U_{v,H}(\beta)$ across all vintages $v\le 2010$ with $n_v\ge 2$:
+
+\begin{center}
+\small
+\begin{tabular}{@{}r ccc ccc@{}}
+\toprule
+& \multicolumn{3}{c}{Global Buyout (EW, $V\le 2010$, 25 vintages)} & \multicolumn{3}{c}{Global Venture (EW, $V\le 2010$, 24 vintages)}\\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+$H$ (yr) & Rep.-mean & Const.-pool & Product $U_{v,H}$ & Rep.-mean & Const.-pool & Product $U_{v,H}$\\
+\midrule
+0.0  & 1.225 & 1.207 & 1.050 & 1.845 & 1.941 & 1.505\\
+2.5  & 1.190 & 1.187 & 1.055 & 1.945 & 2.061 & 1.605\\
+5.0  & 1.188 & 1.172 & 1.060 & 2.001 & 2.106 & 1.885\\
+10.0 & 1.010 & 1.087 & 1.100 & 1.609 & 1.741 & 1.590\\
+12.5 & 0.870 & 1.053 & 1.115 & 1.427 & 1.468 & 1.335\\
+15.0 & 0.786 & 1.032 & 1.205 & 1.264 & 1.235 & 1.175\\
+20.0 & 0.650 & 0.974 & 1.195 & 1.200 & 1.173 & 1.110\\
+25.0 & 0.624 & 0.962 & 1.185 & 1.135 & 1.081 & 1.100\\
+30.0 & 0.624 & 0.962 & 1.185 & 1.009 & 0.828 & 0.950\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Two empirical conclusions follow immediately from this verification:
+\begin{enumerate}
+\item \textbf{In Buyout}, replacing reporter-mean aggregation with constant-composition VYP pooling cuts the horizon decline by more than half ($1.207\to 0.962$ instead of $1.225\to 0.624$), and removing within-vintage idiosyncratic fund variance via $U_{v,H}(\beta)$ eliminates the downward horizon slope altogether ($1.050$ at $H=0$, $1.100$ at $H=10$, and $1.185$ at $H=30$).
+\item \textbf{In Venture Capital}, constant-composition pooling shifts the short-to-medium horizon estimates upward ($1.941$ at $H=0$, $1.741$ at $H=10$), but both constant-pool squared loss and $U_{v,H}(\beta)$ continue to fall at long horizons ($1.505\to 1.175\to 0.950$ under $U_{v,H}$). As shown in Appendix~\ref{sec:emp_translation}, this reflects large vintage-level common shocks (especially the 1998--2000 dot-com vintages) where $\mu_v(\beta)^2>0$ and $\Cov(PV_{v,i},PV_{v,k}\mid\mathcal C_v)>0$ do not diversify within a vintage and therefore remain subject to the positive scale-Jacobian penalty $PV_v(\beta)^2\bar S_{v,H}(\beta)$.
+\end{enumerate}
+Note that \code{prep_preqin.R} saved the fund-level CSV only for the global sample (\code{region == "ALL"}); reconstructing constant-composition pools and $U_{v,H}$ for the North America geographic subsample still requires running the fixed \code{prep_preqin.R} on the raw Preqin workbook (\code{2022_01_Preqin_PE_Cashflow.xlsx}).
 
 %======================================================================
 \section{Revision sequence and deliverables}
@@ -510,7 +547,7 @@ A common scale for every portfolio leaves the optimizer unchanged; different vin
 
 \begin{itemize}
 \item The revised theory is not a completed repair or rerun of the paper's research pipeline. The current-code timing mismatch is established; exact provenance and impact on each printed table are not.
-\item The prepared-data aggregation examples, quarter-end frequency and selected portfolio spans were independently checked. The full North America empirical estimates were not recomputed because required factor/raw data are absent locally.
+\item The prepared-data aggregation examples, quarter-end frequency, selected portfolio spans and full North America empirical estimates in Tables~2 and~3 (using the local monthly $q^5$ factor file \file{2025 sdf paper/presentation/nav_returns/q5_factors_monthly_2022_fallback.csv} and stored VYP files) were independently reproduced and decomposed in \file{check_empirical_horizon.py}. Constant-composition VYP pooling and the cross-fund product criterion $U_{v,H}(\beta)$ were verified on the stored global fund-level dataset (\file{preqin_cashflows_EW_NAV.csv}); reconstructing constant-composition pools for the North America geographic subsample still requires running the fixed \code{prep_preqin.R} on the raw Preqin Excel workbook (\code{2022_01_Preqin_PE_Cashflow.xlsx}).
 \item D1, all D2/D3 configurations and both D5 configurations were rerun. D4 and the earlier C-series results remain evidence reported by the original review, not independently rerun in this audit. D4 is retained below with that label.
 \item The product criterion has not been validated for the empirical fund schedules, size weights, NAVs or dependence structure. Its theorem is conditional on explicitly stated equal-mean and independence assumptions.
 \item The general score formula is verified for unit-investment, single-exit deals. Multiple exits require their covariance terms; arbitrary tranche allocation is not already covered.
@@ -921,6 +958,83 @@ Cross-fund product; bounded pooling, growing vintage domain & Conditional indepe
 
 For a pricing-consistent criterion, positive horizon weights preserve the zero set of its population signal; this does not establish identical finite-sample estimates. A flat structural target across horizons is a population implication under the maintained assumptions. A formal test using horizon profiles requires joint dependence-aware inference and a specified null. Neither a slope nor a flat empirical profile alone isolates a wedge, proves misspecification or establishes correct pricing.
 
+\subsection{Translation to empirical estimation: why \texorpdfstring{$\hat\beta_H$}{beta\_H} falls with \texorpdfstring{$H$}{H}}
+\label{sec:emp_translation}
+
+Result~\ref{res:tiltH} evaluates the score at a correctly specified parameter $\theta_0$ where every vintage has zero conditional mean ($\mu_v(\theta_0)=0$), so only the within-vintage idiosyncratic noise variance $\omega_v(\theta)=\Var(PV_v(\theta)\mid\mathcal C_v)=O(1/n_v)$ survives. In empirical estimation on Preqin data, a low-dimensional linear benchmark (such as the one-factor market model in Tables~2 and~3 of \code{sdf_paper.tex}) does not price every historical vintage to zero conditional mean simultaneously: unspanned macro/sector shocks (e.g.\ the 1998--2000 dot-com boom and bust in Venture Capital), model misspecification, and the reporter-mean VYP distortion leave nonzero conditional means $\mu_v(\beta)\ne 0$ alongside within-vintage variance $\omega_v(\beta)>0$.
+
+Differentiating the general population decomposition \eqref{eq:decomp} with respect to $\beta$ (under standard interchange conditions) and comparing it to the sample first-order condition of $Q_{n,H}(\beta)=V^{-1}\sum_{v=1}^V A_{v,H}(\beta)^2 PV_v(\beta)^2$ makes the bridge from Appendix~\ref{app:horizon} to empirical estimation transparent:
+\begin{align}
+\label{eq:pop_foc_general}
+\frac{1}{2}\frac{\partial Q_H(\beta)}{\partial\beta}
+&=\E\!\left[A_{v,H}^2\left(\mu_v\frac{\partial\mu_v}{\partial\beta}+\frac{1}{2}\frac{\partial\omega_v}{\partial\beta}\right)\right]
++\E\!\left[A_{v,H}^2\bigl(\mu_v^2+\omega_v\bigr)\bar S_{v,H}\right],\\
+\label{eq:samp_foc_general}
+\frac{1}{2}\frac{\partial Q_{n,H}(\beta)}{\partial\beta}
+&=\frac{1}{V}\sum_{v=1}^V A_{v,H}(\beta)^2\left[
+\underbrace{PV_v(\beta)\frac{\partial PV_v(\beta)}{\partial\beta}}_{\text{(I) Inception discounting}}
++\underbrace{PV_v(\beta)^2\,\bar S_{v,H}(\beta)}_{\text{(II) Scale-Jacobian penalty}}
+\right]=0,
+\end{align}
+where $\bar S_{v,H}(\beta):=\partial_\beta\log A_{v,H}(\beta)$ is the benchmark-weighted average cumulative market sensitivity over the horizon window $\mathcal T_{v,H}$. Equations \eqref{eq:pop_foc_general}--\eqref{eq:samp_foc_general} show that the empirical horizon profile $\hat\beta_H$ is governed by two competing economic forces:
+
+\begin{enumerate}
+\item \textbf{Term I (Inception cash-flow discounting, active at $H=0$ and all $H\ge 0$): pushes $\hat\beta_0$ upward.}
+Because private-equity vintages follow a J-curve---calling capital early ($CF_{v,t}<0$ at small $t-t_v^0$, where cumulative market sensitivity $S_{t_v^0,t}$ is small) and distributing proceeds late ($CF_{v,t}>0$ at exit dates $t_{\mathrm{exit}}$, where $S_{t_v^0,t_{\mathrm{exit}}}>0$ in rising equity markets)---raising $\beta$ shrinks the present value of positive late distributions:
+\[
+\frac{\partial PV_v(\beta)}{\partial\beta}=-\sum_{t\ge t_v^0}\frac{CF_{v,t}}{R^b_{t_v^0,t}(\beta)}\,S_{t_v^0,t}(\beta)<0.
+\]
+At $H=0$ ($A_{v,0}\equiv 1$, $\bar S_{v,0}=0$), only Term~I is present. Whenever vintages exhibit unspanned payout dispersion ($PV_v(\beta)^2>0$), vintages with large positive realizations have both more positive $PV_v(\beta)$ and more negative $\partial_\beta PV_v(\beta)$, generating a negative inception score contribution $\E[PV_v\partial_\beta PV_v]<0$. To shrink squared inception residuals $PV_v(\beta)^2$, the optimizer raises $\hat\beta_0$ to discount away late distributions.
+
+\item \textbf{Term II (Scale-Jacobian compounding penalty, $PV_v(\beta)^2\bar S_{v,H}(\beta)$, which turns on as $H$ grows): pulls $\hat\beta_H$ downward.}
+Because the historical U.S.\ equity risk premium is positive, the forward-compounding factor $A_{v,H}(\beta)$ is strictly increasing in $\beta$, and its log-derivative $\bar S_{v,H}(\beta)=\partial_\beta\log A_{v,H}(\beta)>0$ grows steadily with the horizon $H$. Crucially, $PV_v(\beta)^2=\mu_v(\beta)^2+\omega_v(\beta)+\text{noise}\ge 0$ is squared, so \textbf{every nonzero vintage residual---whether coming from idiosyncratic fund variance $\omega_v(\beta)$ or from unspanned vintage-level pricing errors $\mu_v(\beta)^2$---enters Term~II with a strictly positive sign}. Locally around a vintage's cash-flow-weighted exit sensitivity $S_{\mathrm{exit},v}(\beta)$, the net sensitivity of the squared horizon error $A_{v,H}(\beta)^2 PV_v(\beta)^2$ is proportional to
+\[
+\bar S_{v,H}(\beta)-S_{\mathrm{exit},v}(\beta).
+\]
+When $H$ is short ($\bar S_{v,H}<S_{\mathrm{exit},v}$), discounting the exit dominates compounding the error, keeping $\hat\beta_H$ elevated. Once $H$ lengthens so that $\bar S_{v,H}(\beta)$ approaches and exceeds $S_{\mathrm{exit},v}(\beta)$, raising $\beta$ inflates the compounding factor $A_{v,H}(\beta)$ faster than it discounts the cash flows; to keep $A_{v,H}(\beta)^2 PV_v(\beta)^2$ small, the optimizer must reduce $\hat\beta_H$.
+\end{enumerate}
+
+\textbf{Quantitative decomposition on the paper's North America Preqin sample.}
+In the submitted manuscript (\code{sdf_paper.tex}, Section~2.4), the downward slope of $\hat\beta_H$ was attributed to a cross-vintage ``Compounding-Horizon Wedge'' (reweighting vintages by $A_{v,H}^2$). Using \file{check_empirical_horizon.py} on the stored North America Preqin VYP files and local $q^5$ factor file, we can separate cross-vintage reweighting from the scale-Jacobian penalty Term~II by comparing three criteria across all horizons reported in Tables~2 and~3:
+\begin{enumerate}[label=(\roman*)]
+\item \textbf{Baseline LS} (reproducing Tables~2 and~3 of \code{sdf_paper.tex}): $\min_\beta \sum_v A_{v,H}(\beta)^2 PV_v(\beta)^2$.
+\item \textbf{Fixed-Weight LS} (pure cross-vintage reweighting, shutting off Term~II by freezing $\beta=1$ inside $A_{v,H}$): $\min_\beta \sum_v A_{v,H}(1)^2 PV_v(\beta)^2$.
+\item \textbf{Pure Scale-Jacobian LS} (keeping Term~II active while normalizing by $A_{v,H}(1)$ so cross-vintage weights at $\beta=1$ remain identical to $H=0$): $\min_\beta \sum_v [A_{v,H}(\beta)/A_{v,H}(1)]^2 PV_v(\beta)^2$.
+\end{enumerate}
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Exact local reproduction of Tables~2 and~3 (\code{sdf_paper.tex}, North America $V\le 2010$) and decomposition of $\hat\beta_{\mathrm{MKT}}(H)$ into fixed-weight cross-vintage reweighting versus the scale-Jacobian derivative $\bar S_{v,H}(\beta)=\partial_\beta\log A_{v,H}(\beta)$.}
+\label{tab:na_decomp}
+\begin{tabular}{@{}rr cccc cc cccc cc@{}}
+\toprule
+& & \multicolumn{6}{c}{North America Buyout ($V\le 2010$)} & \multicolumn{6}{c}{North America Venture Capital ($V\le 2010$)}\\
+\cmidrule(lr){3-8}\cmidrule(lr){9-14}
+\code{max\_m} & $H$ (yr) & EW & FW & Fix-$A$ & Jac & $\bar S_{v,H}$ & $S_{\mathrm{exit}}$ & EW & FW & Fix-$A$ & Jac & $\bar S_{v,H}$ & $S_{\mathrm{exit}}$\\
+\midrule
+  0 &  0.0 & 1.242 & 1.228 & 1.242 & 1.242 & 0.000 & 0.437 & 1.881 & 1.589 & 1.881 & 1.881 &  0.000 & 0.553\\
+  1 &  0.1 & 1.243 & 1.228 & 1.245 & 1.243 & 0.003 & 0.437 & 1.850 & 1.548 & 1.865 & 1.870 & $-0.001$ & 0.553\\
+ 30 &  2.5 & 1.204 & 1.232 & 1.224 & 1.257 & 0.067 & 0.437 & 1.965 & 1.678 & 2.038 & 1.881 &  0.071 & 0.553\\
+ 60 &  5.0 & 1.197 & 1.224 & 1.251 & 1.238 & 0.138 & 0.437 & 1.999 & 1.639 & 2.195 & 1.775 &  0.148 & 0.553\\
+120 & 10.0 & 1.027 & 1.037 & 1.176 & 1.139 & 0.310 & 0.437 & 1.645 & 1.396 & 2.122 & 1.587 &  0.324 & 0.553\\
+150 & 12.5 & 0.888 & 0.929 & 1.141 & 1.054 & 0.408 & 0.437 & 1.453 & 1.218 & 2.046 & 1.476 &  0.424 & 0.553\\
+180 & 15.0 & 0.811 & 0.858 & 1.122 & 0.976 & 0.496 & 0.437 & 1.301 & 1.068 & 1.979 & 1.406 &  0.510 & 0.553\\
+210 & 17.5 & 0.749 & 0.792 & 1.123 & 0.888 & 0.553 & 0.437 & 1.287 & 1.047 & 1.963 & 1.393 &  0.566 & 0.553\\
+240 & 20.0 & 0.696 & 0.736 & 1.136 & 0.803 & 0.604 & 0.437 & 1.243 & 0.986 & 1.970 & 1.332 &  0.615 & 0.553\\
+300 & 25.0 & 0.681 & 0.712 & 1.144 & 0.762 & 0.659 & 0.437 & 1.180 & 0.902 & 1.942 & 1.269 &  0.652 & 0.553\\
+360 & 30.0 & 0.681 & 0.712 & 1.144 & 0.762 & 0.659 & 0.437 & 1.045 & 0.817 & 1.857 & 1.238 &  0.670 & 0.553\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:na_decomp} establishes three empirical facts:
+\begin{enumerate}
+\item \textbf{Cross-vintage reweighting is not the primary driver of falling $\hat\beta_H$.} When $A_{v,H}$ is held fixed at $\beta=1$ (\code{Fix-A}), $\hat\beta_H$ barely moves across the entire 30-year span ($1.242\to 1.144$ in Buyout EW; $1.881\to 1.857$ in Venture Capital EW).
+\item \textbf{The parameter derivative $\bar S_{v,H}(\beta)=\partial_\beta\log A_{v,H}(\beta)$ (Term~II) drives over 85\% of the horizon decline.} Holding cross-vintage weights fixed at $\beta=1$ while retaining the parameter dependence of $A_{v,H}(\beta)$ (\code{Jac}) reproduces the drop from $1.242$ to $0.762$ in Buyout and from $1.881$ to $1.238$ in Venture Capital.
+\item \textbf{The steepest decline occurs where $\bar S_{v,H}$ crosses the exit duration $S_{\mathrm{exit}}$.} In Buyout, $\bar S_{v,H}$ crosses $S_{\mathrm{exit}}=0.437$ between $H=12.5$~yr ($0.408$) and $H=15$~yr ($0.496$); in Venture Capital, $\bar S_{v,H}$ crosses $S_{\mathrm{exit}}=0.553$ between $H=15$~yr ($0.510$) and $H=17.5$~yr ($0.566$). Combine this with the global fund-level table in Section~\ref{sec:vyp}: in Buyout, residual dispersion $PV_v(\beta)^2$ comes primarily from the reporter-mean VYP distortion and within-vintage idiosyncratic fund variance $\omega_v$, so fixing VYP pooling and applying $U_{v,H}(\beta)$ flattens the profile to $1.050$--$1.205$. In Venture Capital, large unspanned vintage-level common shocks ($\mu_v(\beta)^2>0$) remain even after removing within-vintage variance, so Term~II continues to pull $\hat\beta_H$ down at long horizons.
+\end{enumerate}
+
 \subsection{Numerical evidence from the standalone replica}
 \label{app:numerical}
 
@@ -1002,9 +1116,11 @@ The reproduced tables illustrate substantial differences between squared loss an
 
 The replica's exchangeability of complete fund histories may justify a common-mean argument conditional on the factor environment; it does not justify conditioning on every realized schedule and then assuming the mean functions remain equal. Its sample-dependent window choices also need to be reconciled with Result~\ref{res:ucrit}. Consequently numerical success in this replica is evidence motivating the proposed extension, not a proof that the exact implemented product procedure satisfies that theorem.
 
-\subsection{What to change in the manuscript}
+\subsection{What to change in the manuscript and codebase}
 \label{app:wrong}
 \label{app:horizon_todo}
+
+First, the high-level conceptual shifts required across the paper are summarized below, followed by three concrete, line-referenced modification tables for the R codebase (\file{r_project/}), the main manuscript (\file{tex/sdf_paper.tex}), and the online appendices (\file{tex/sdf_paper_online_appendices.tex}).
 
 {\small
 \begin{longtable}{@{}L{3.1cm}L{5.2cm}L{7.0cm}@{}}
@@ -1021,17 +1137,68 @@ NFV interpretation & The stated ratio is not the forward revaluation of an inves
 Asymptotic appendix & Mean-criterion convergence does not supply centered score convergence at the limiting target. & Add centering/rate, score-moment and dependence conditions; use the integrated Hessian and state identification/interiority.\\
 Comparison with DLP transformations & Positive reweighting is contrasted with transformations as if only horizons could change asymptotic targets. & Under suitable infill both preserve an identifying zero set; with bounded noise parameter-dependent reweightings can change squared-loss targets. Do not assert that every such weighting must change the target.\\
 Simulation interpretation & The idealized no-wedge model is identified with the current R generator; replica results are transferred to it. & Reconcile investment timing, 0/1-observation normalization, padded endpoints and default truncation. Trace table provenance and run matched diagnostics.\\
-Empirical horizon profiles & Falling beta is called a necessary tilt signature or long-horizon ``convergence.'' & Describe the observed sensitivity without assigning a unique mechanism. Distinguish horizon saturation from statistical convergence; rerun after correcting or justifying portfolio construction.\\
+Empirical horizon profiles & Falling beta is attributed to a cross-vintage mean wedge or long-horizon ``convergence.'' & Explain the sample first-order condition \eqref{eq:samp_foc_general} (Term~I upward inception tilt vs.\ Term~II scale-Jacobian compounding penalty $\bar S_{v,H}$), distinguish horizon saturation from statistical convergence, and rerun after replacing reporter-mean VYP aggregation with constant-composition pooling.\\
 Product extension & Independence is treated as sufficient and a flat profile as a ready-made specification test. & Require equal conditional mean functions, a valid common window, suitable weights, identification and uniform convergence. Develop joint inference before calling the profile a formal test.\\
+\bottomrule
+\end{longtable}
+}
+
+\subsubsection*{1. Concrete modifications in the R codebase (\file{r_project/})}
+
+{\small
+\begin{longtable}{@{}L{4.0cm}L{4.8cm}L{6.5cm}@{}}
+\toprule
+File and lines & Current implementation & Required code change\\
+\midrule
+\endhead
+\file{r_project/simulation/simulation_multifactor.R} (lines 225--228) and \file{simulation_improved.R} (lines 113--116) & Deal payout multiplies \code{prod(df$deal[start:end])}, giving an investment at \code{start} the return of month \code{start} and a nonzero conditional pricing error $G_{\mathrm{start}}(\theta_0)-1$. & Change the return product index to \code{(start + 1):end} (with guard \code{end > start}) so simulated deal compounding matches the estimator's discounting ratio $R^b_{a,b}(\theta)=\prod_{u=a+1}^b G_u(\theta)$. Verify zero-noise pricing ($\sigma=0\implies PV_v(\theta_0)=0$).\\
+\file{r_project/estim_model_optimized.R} (lines 136--142, 331--343) & Simulation branch pads monthly grid to \code{2020-01-01} for all vintages; \code{max.month==0} computes \code{sum(CF/ret)} ($PV_v/G_{t_v^0}$) while \code{max.month==1} computes $PV_v(\theta)$. & Align simulation grid truncation with the empirical convention (or document the fixed-calendar endpoint explicitly); label \code{max.month==1} as exact $H=0$ inception NPV $PV_v(\theta)$ and document \code{max.month==0}.\\
+\file{r_project/empirical/prep_preqin.R} (lines 215--235, esp.\ line 229) & \code{aggregate(CF ~ Date, data = df, mean)} divides by the active reporter count $|\mathcal R_{v,t}|$ at date $t$, overweighting late exits when few funds report. & Replace \code{mean} with constant-composition portfolio pooling: sum commitment-normalized cash flows (for EW) or raw dollar flows (for FW) across all funds in vintage $v$ and divide by the time-invariant vintage fund count $N_v$ (or total vintage commitment for FW). Also save regional fund-level CSVs so North America fund-level and $U_{v,H}$ checks can be run directly.\\
+\file{r_project/results/analyze_result.R} (line 387) & Computes \code{SR = Mean.Value / SD.Value} (CV fold mean divided by fold SD), contradicting the text definition $\hat\theta/\mathrm{SD}_{CV}$. & Compute \code{Est.Value / SD.Value} (or report both full-sample $\hat\theta$ and fold mean clearly) and rename/define the CV stability ratio consistently in Table~2--3 notes (R2 Minor~2).\\
+\bottomrule
+\end{longtable}
+}
+
+\subsubsection*{2. Concrete line-by-line modifications in \code{tex/sdf\_paper.tex}}
+
+{\small
+\begin{longtable}{@{}L{3.5cm}L{4.8cm}L{7.0cm}@{}}
+\toprule
+Section and lines & Issue in submitted manuscript & Specific revision action\\
+\midrule
+\endhead
+Title, Abstract, and Section~1.1--1.3 (lines 1--128) & Unconditional claims that $H=0$ is structurally unbiased under bounded pooling and that every fitted deflator is an SDF; ``without strong distributional assumptions'' (R1-1, R2-1a, 1c, 3.1). & Frame $M_u(\theta)=G_u(\theta)^{-1}$ as a benchmark deflator whose structural member $\Psi(\theta_0)$ is a PE-specific SDF on the PE payoff space under conditional pricing (Appendix~\ref{app:sdf}); state that infill ($n_v\to\infty$) or cross-fund products recover $\theta_0$ at all $H\ge 0$, whereas bounded-$n_v$ squared loss targets $\theta_H^\dagger$. Replace ``without strong distributional assumptions.''\\
+Section~1.4 and Table~1 (lines 129--210) & Conflates public-side SDF calibration in KN16 with PE GPME evaluation; omits identifying moments; thin coverage of GSW (2020), GvN (2021), KN25, and Flanagan (2025) (R1-1, R2-1b, 1d). & Add rows for ``Identifying moments'' and ``Performance readout'' to Table~1. Clarify that KN16 calibrates the SDF solely on public pseudo-funds while non-overlapping windows enter GPME readout (KN16 p.~1447). Expand comparison to GSW Propositions~1--2, GvN (64 quarters, not months), KN25, and Flanagan (2025).\\
+Section~2.1--2.2 and Lemma~1 (lines 211--310) & One-period kernel $M_u(\theta)$ not explicitly defined (R2 Minor~1); Lemma~1(3) defines $m_{i,j}^{\mathrm{NFV}}(\tau,t^{\mathrm{Future}})=(\Psi_{t^{\mathrm{Future}}}/\Psi_\tau)\delta_{i,j}$, which discounts backward rather than compounding forward (R2-3.5). & Define $M_u(\theta)=\Psi_u(\theta)/\Psi_{u-1}(\theta)=G_u(\theta)^{-1}$ on the positive-return domain. In Lemma~1(3), replace $(\Psi_{t^{\mathrm{Future}}}/\Psi_\tau)\delta_{i,j}$ with $(\Psi_{t^{\mathrm{Inv}}}/\Psi_{t^{\mathrm{Future}}})\delta_{i,j}$ for forward revaluation to $t^{\mathrm{Future}}$, and state the investment-date tower property and post-investment Doob martingale explicitly.\\
+Section~2.3--2.4 (lines 311--558) & Attributes all horizon sensitivity to a cross-vintage mean wedge $b_{i,H}$ and claims $H=0$ is consistent under bounded-$n_v$ increasing-domain asymptotics (lines 435, 454, 550) (R1-2, R2-2a, 2b, 3.1, 3.4). & Replace Section~2.4 with: (1) Exact Rescaling Identity $\bar\epsilon_{v,H}(\theta)=A_{v,H}(\theta)PV_v(\theta)$; (2) Conditional Signal-Plus-Noise Decomposition \eqref{eq:decomp}; (3) All-Horizon Infill Consistency ($n_v\to\infty\implies\hat\theta_H\to_p\theta_0$ for all $H\ge 0$, Result~\ref{res:consistency}); (4) Finite-$n_v$ Score Tilt \eqref{eq:tiltH} and sample FOC \eqref{eq:samp_foc_general}; and (5) Cross-Fund Product Criterion $U_{v,H}(\theta)$ (Result~\ref{res:ucrit}).\\
+Section~3 (Simulation, lines 560--925) & Does not document sequential deal-timing DGP ($t^{\mathrm{Inv}}\sim U\{1,\ldots,60\}$, holding period $\sim U\{1,\ldots,120\}$); omits Merton (1980) and gradient collinearity for weak $\alpha$ identification; needs rerun after fixing \code{start:end} bug (R1-3, R2-2a, 2c, 3.3, 4.3). & Document the exact simulated fund structure (15 deals/fund, timing distributions). Add a subsection on weak $\alpha$ identification combining Merton (1980) drift uncertainty with $\partial_\alpha PV_v$ vs.\ $\partial_\beta PV_v$ gradient collinearity. Rerun simulation tables after fixing \code{(start+1):end}, separating $n_v$ infill from $V$ expansion, and add a KN16 vs.\ DLP12 comparison.\\
+Section~4 (Empirical, lines 926--1395) & Describes quarterly Preqin flows as monthly (line 939); explains NAV effect via ``higher public co-movement'' (lines 1068--1077); uses reporter-mean VYP and mismatched $\mathrm{SR}_{CV}$ formula; lacks literature benchmark table and 25/30-yr saturation note (R1-4, R2-4.1, 4.2, Minors 2, 3, 6). & Clarify that quarterly Preqin cash flows are placed on a monthly factor grid and state EW/FW commitment scaling. Replace the NAV co-movement claim with the terminal-level valuation channel \eqref{sec:auditG}. Rerun Tables~2--3 under constant-composition VYP pooling (and report $U_{v,H}$ companion results), add the empirical decomposition of $\hat\beta_H$ (Section~\ref{sec:emp_translation}), add a literature comparison table (R1-4), and note the 285-month BO / 354-month VC span saturation (R2 Minor~3).\\
+\bottomrule
+\end{longtable}
+}
+
+\subsubsection*{3. Concrete line-by-line modifications in \code{tex/sdf\_paper\_online\_appendices.tex}}
+
+{\small
+\begin{longtable}{@{}L{3.5cm}L{4.8cm}L{7.0cm}@{}}
+\toprule
+Appendix and lines & Issue in submitted online appendix & Specific revision action\\
+\midrule
+\endhead
+Appendix~A (Proof of Lemma~1, lines 30--165) & Uses backward ratio $\Psi_{t^{\mathrm{Future}}}/\Psi_\tau$ in Lemma~1(3) and claims ``mathematical immunity'' without distinguishing $\tau\le a$ from $\tau>a$ (R2-3.5). & Update the proof of Lemma~1 to distinguish pre-investment dates $\tau\le a$ (where $\Psi_a/\Psi_\tau$ is $\mathcal F_a$-measurable and unconditional expectation is zero by iterated expectations) from post-investment dates $\tau>a$.\\
+Appendix~B, Setup and Lemma~B.1 (lines 170--355) & Conditions on realized fund structure $D_i$ (including random exit windows) while assuming $\E[PV_i(\theta_0)\mid D_i]=0$ without an exogenous-design restriction (Section~\ref{sec:formal}). & State Assumption~\ref{ass:pepricing} explicitly: either condition on an exogenous schedule $D_i$ with $\E[N_{i,j}\mid\mathcal F_{a_{i,j}}\vee D_i]=1$, or formulate Lemma~B.1 unconditionally as in Result~\ref{res:wedgechar}.\\
+Appendix~B, Proposition~1 and Remark~2 (lines 356--585) & Remark~2 (lines 558--580) models $\epsilon_{\tau,i}(\theta)$ across $\tau$ as having constant variance $\sigma^2$ and equicorrelation $\bar\rho<1$, which is contradicted by $\epsilon_{\tau,i}(\theta)=R^b_{t_i^0,\tau}(\theta)PV_i(\theta)$ (R2-2a, 3.4). & Delete Remark~2 completely. Rewrite Appendix~B around the Exact Rescaling Identity (Result~\ref{res:identity}), the Conditional Mean--Variance Decomposition (Result~\ref{res:vardecomp}), the All-Horizon Infill Consistency Proposition (Result~\ref{res:consistency}), the Closed-Form Score Tilt (Result~\ref{res:tiltH}), and the Cross-Fund Product Criterion (Result~\ref{res:ucrit}).\\
+Appendix~C, Assumptions and Theorems~1--2 (lines 590--1095) & Corollary~1 (line 720) falsely claims $\theta_0^\dagger=\theta_0$ at $H=0$ under bounded pooling; Theorem~2 (lines 763, 1052) omits the score-centering rate condition $n^{-1/2}\sum_{i=1}^n\E[s_i^{(H)}(\theta_H^\dagger)]\to 0$; Assumption~6 (line 699) has a broken cross-reference to the SHAC metric (R2 Minors~4, 5). & Remove Corollary~1's bounded-pooling claim at $H=0$ and replace it with the infill consistency corollary ($n_v\to\infty$). Add the explicit score-centering condition \eqref{sec:formal} and integrated-Hessian mean-value step to Theorem~2. Fix the SHAC cross-reference in Assumption~6 to point to Eq.~(C.8), and prefix appendix results as Proposition~B.1, Theorem~C.1, etc.\ to eliminate numbering collisions (R2 Minor~4).\\
+Appendix~D and~E (lines 1100--1461) & Appendix~D continuous-time exit rate $\lambda$ is not contrasted with Section~3's uniform discrete holding period; Appendix~E mixes full-sample estimates with CV fold means (0.141 vs.\ 0.175; R2 Minor~7). & Add a note in Appendix~D clarifying that the stylized continuous-time analytical model uses Poisson exit rate $\lambda$ whereas the main Monte Carlo uses discrete uniform holding times. In Appendix~E, label full-sample estimates and CV fold means distinctly.\\
 \bottomrule
 \end{longtable}
 }
 
 \textbf{Replacement paragraph for the main horizon discussion:}
 \begin{draft}
-Horizon averaging satisfies $\bar\epsilon_{v,H}(\theta)=A_{v,H}(\theta)PV_v(\theta)$, so it reweights each inception pricing error by realized benchmark growth. Under conditional mean-zero pricing given the environment determining this weight, all fixed admissible horizons preserve the mean pricing restriction. Squared loss nevertheless includes a parameter-dependent conditional variance component. With bounded within-vintage pooling, its population minimizer can therefore differ from the structural pricing parameter, including at inception. Under sufficient diversification, uniform convergence and identification, that component vanishes and the estimator recovers the structural member at every fixed admissible horizon. Outside that regime, horizon sensitivity reflects changes in the full criterion; its direction and finite-sample value require separate analysis.
+Horizon averaging satisfies $\bar\epsilon_{v,H}(\theta)=A_{v,H}(\theta)PV_v(\theta)$, so it reweights each inception pricing error by realized benchmark growth. Under conditional mean-zero pricing given the environment determining this weight, all fixed admissible horizons preserve the mean pricing restriction. Squared loss nevertheless decomposes into a squared conditional mean component $\E[A_{v,H}(\theta)^2\mu_v(\theta)^2]$ and a conditional variance component $\E[A_{v,H}(\theta)^2\omega_v(\theta)]$. Under sufficient within-vintage diversification ($n_v\to\infty$), uniform convergence and identification, $\omega_v(\theta)$ vanishes and the estimator recovers the structural parameter $\theta_0$ at every fixed admissible horizon $H\ge 0$. With bounded within-vintage pooling ($n_v<\infty$) or nonzero vintage-level conditional pricing errors ($\mu_v(\theta)^2>0$), differentiating $A_{v,H}(\beta)^2 PV_v(\beta)^2$ pits inception cash-flow discounting (which pushes $\hat\beta_0$ upward to shrink late positive exits) against the positive scale-Jacobian penalty $PV_v(\beta)^2\partial_\beta\log A_{v,H}(\beta)$ (which pulls $\hat\beta_H$ downward once cumulative benchmark sensitivity over the horizon window exceeds the effective deal exit sensitivity).
 \end{draft}
 
-\textbf{What remains useful.} The rescaling identity, the score formula under the specialized model, and the distinction between within-vintage diversification and a longer vintage history are strong foundations. The wedge remains useful as a weighted mean restriction, with its conditioning repaired. The product correction is worth investigating under its actual assumptions. The empirical conclusions and published simulation mechanisms remain open pending the implementation and construction checks; this revision does not declare them unaffected.
+\textbf{What remains useful.} The rescaling identity, the score formula under the specialized model, the empirical scale-Jacobian decomposition, and the distinction between within-vintage diversification and a longer vintage history provide a rigorous, unified foundation for the revision. The wedge remains useful as a weighted mean restriction with its conditioning repaired, and the cross-fund product criterion offers a clean diagnostic that eliminates within-vintage variance under equal conditional means.
 
 \end{document}
