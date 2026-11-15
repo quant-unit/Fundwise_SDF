@@ -15,9 +15,10 @@
 
 \setlist{itemsep=2pt,topsep=4pt}
 \setlength{\parindent}{0pt}
-\setlength{\parskip}{6pt}
+\setlength{\parskip}{4pt}
 \setlength{\tabcolsep}{4pt}
-\renewcommand{\arraystretch}{1.15}
+\renewcommand{\arraystretch}{1.10}
+\setcounter{tocdepth}{1}
 
 \newcommand{\E}{\mathbb{E}}
 \newcommand{\Var}{\mathrm{Var}}
@@ -26,7 +27,7 @@
 \newcommand{\file}[1]{\path{#1}}
 \newcommand{\C}{\mathcal{C}}
 \newcommand{\F}{\mathcal{F}}
-\newcommand{\tag}[1]{\textsf{\small[#1]}}
+\newcommand{\evidencetag}[1]{\textsf{\small[#1]}}
 
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 \newenvironment{draft}{\begin{quote}\small\itshape}{\end{quote}}
@@ -41,14 +42,16 @@ after the rejection of JFEC-2026-141}
 \maketitle
 \vspace{-3em}
 
+{\small
 \begin{tabular}{@{}ll@{}}
 Built on & \code{review_of_referee_reports.tex} (14 November 2026), cited below as ``the review''\\
 Paper sources & \code{tex/sdf_paper.tex}, \code{tex/sdf_paper_online_appendices.tex}\\
 Code & \code{r_project/} (repository root)\\
 New checks & \code{check_revision_probes.py}, in this folder
 \end{tabular}
+}
 
-\tableofcontents
+{\small\setlength{\parskip}{0pt}\tableofcontents}
 \clearpage
 
 %======================================================================
@@ -83,7 +86,7 @@ Because the paper was rejected, we owe the referees no reply. The plan therefore
 \label{sec:evidence}
 %======================================================================
 
-Each statement carries a label. \tag{P} proved in the review's appendices. \tag{C} read in the current source for this plan. \tag{D} computed for this plan on the stored global fund-level Preqin file (equal fund weights, vintages $\le 2010$, one-factor model, $\alpha=0$); exploratory, not a result for the paper. \tag{R} from the review's standalone replica. \tag{A} my own arithmetic from stated inputs.
+Each statement carries a label. \evidencetag{P} proved in the review's appendices. \evidencetag{C} read in the current source for this plan. \evidencetag{D} computed for this plan on the stored global fund-level Preqin file (equal fund weights, vintages $\le 2010$, one-factor model, $\alpha=0$); exploratory, not a result for the paper. \evidencetag{R} from the review's standalone replica. \evidencetag{A} my own arithmetic from stated inputs.
 
 {\small
 \begin{longtable}{@{}L{0.9cm}L{14.4cm}@{}}
@@ -91,23 +94,23 @@ Each statement carries a label. \tag{P} proved in the review's appendices. \tag{
 Label & Statement\\
 \midrule
 \endhead
-\tag{P} & Exact identity $\bar\epsilon_{v,H}=A_{v,H}PV_v$; signal-plus-noise decomposition of squared loss; score of squared loss at the true parameter in the specialized deal model; consistency under within-vintage infill at every fixed horizon; product criterion under equal conditional means.\\
-\tag{P} & Three formal defects in the manuscript: the wedge conditional on realized fund structure drops a mean term; the NFV object in Lemma~1(3) is not a forward revaluation; the CLT needs a score-centering condition.\\
-\tag{C} & Simulator off by one month: \code{cumprod(1 + df$deal[start:end])} with the investment booked at \code{start}; the estimator discounts with returns $a{+}1,\dots,b$. Each deal carries a pricing error of $G_a(\theta_0)-1$ before any noise.\\
-\tag{C} & Simulated noise is independent of the factor path and of timing. Apart from the off-by-one month, the simulation satisfies conditional pricing given the factor path, so its horizon profile contains no wedge.\\
-\tag{C} & \code{prep_preqin.R} pools with \code{aggregate(CF ~ Date, df, mean)}: the divisor is the number of funds reporting on that date, not the vintage's fund count.\\
-\tag{C} & Standard errors: \code{get.grad.per.fund} and \code{get.hess.per.fund} difference \code{err.sqr.calc} on one unit at a time. Under the configured loss \code{L2_Lasso} that function returns $\sqrt{\sum\epsilon^2}/n$, which for one unit is $|\bar\epsilon_i|$. The sandwich is therefore built from $\nabla|\bar\epsilon_i|$ and $\nabla^2|\bar\epsilon_i|$. The point estimates are unaffected. The size of the error in the reported standard errors and $t$ statistics has not been measured.\\
-\tag{C} & Wald test in \code{estim.CoVM} uses $d^\top\widehat{V}d$ where it needs $d^\top\widehat{V}^{-1}d$. Off-diagonal Hessian differences shift all parameters at once, which is correct only for two parameters.\\
-\tag{C} & Branch \code{max.month == 0} returns \code{sum(CF/ret)}, which discounts the first cash flow by the first month's return. As $\alpha\to\infty$ this criterion goes to zero exactly. The correct inception NPV (\code{max.month == 1}) has limit $CF_{v,t_v^0}^2>0$.\\
-\tag{C} & The horizon window is capped at the unit's last cash-flow date and starts at its first. Both are outcomes, so $A_{v,H}$ is not a function of the factor path alone.\\
-\tag{D} & Fund-size-weighted North America Buyout pools: the sum of absolute pooled cash flows ranges from 938 (vintage 1996) to 8{,}859 (2006). Squared loss therefore weights vintages by roughly the square of average fund size, a range of about 90 to 1.\\
-\tag{C} & The introduction describes ``894 Buyout and 931 Venture Capital funds (\dots vintages 1982--2010)''. By the paper's own vintage table, 894 and 931 are the counts through 2021; vintages $\le 2010$ contain 473 and 528.\\
-\tag{D} & Product criterion, Buyout: 1.05 at $H=0$ and 1.19 at $H=30$ with equal vintage weights (reproduces the review); 1.08 and 0.90 with fund-count weights; 1.24 and 0.90 with $n_v\ge5$. Squared loss on constant-composition pools: 1.21 and 0.96.\\
-\tag{D} & Vintage-level pooled NPVs at the $H=0$ squared-loss beta, Buyout: $+0.16$ to $+0.38$ for every vintage 1996--2004, $-0.02$ to $-0.11$ for 2006--2010, with within-vintage standard errors of 0.03--0.11. Venture: positive 1992--1998, negative for every vintage 1999--2010.\\
-\tag{D} & The beta that sets the equal-weighted mean pooled NPV to zero ($\alpha=0$) is 1.86 for Buyout at $H=0$ against 1.21 under squared loss, and 1.4--1.5 for $H\ge10$. A second root near 3 appears at short horizons.\\
-\tag{D} & With $\alpha$ free, squared loss and the product criterion both move to $\alpha\approx0.5$--$0.7\%$ a month with $\beta\approx0.3$--$0.55$ for Buyout, and to the $\alpha$ bound for Venture at $H=0$. Removing fund-level noise does not identify $\alpha$.\\
-\tag{A} & Simulated noise: monthly additive shock with $\sigma=0.2$ gives a deal multiplier $N$ with $\E N^2\approx(1+\sigma^2)^{h}$, so $\mathrm{sd}(N)\approx3$ for a five-year hold and $\approx10$ for ten years. Implied dispersion of fund-level NPVs is several times the 0.3--0.5 seen in Buyout vintages.\\
-\tag{R} & In the replica, squared loss at $H=0$ plateaus above the truth as vintages grow with funds per vintage fixed (for example 1.17 with one fund, 1.04 with five, $\sigma=0.1$), while the product criterion is near 1.00.\\
+\evidencetag{P} & Exact identity $\bar\epsilon_{v,H}=A_{v,H}PV_v$; signal-plus-noise decomposition of squared loss; score of squared loss at the true parameter in the specialized deal model; consistency under within-vintage infill at every fixed horizon; product criterion under equal conditional means.\\
+\evidencetag{P} & Three formal defects in the manuscript: the wedge conditional on realized fund structure drops a mean term; the NFV object in Lemma~1(3) is not a forward revaluation; the CLT needs a score-centering condition.\\
+\evidencetag{C} & Simulator off by one month: \code{cumprod(1 + df$deal[start:end])} with the investment booked at \code{start}; the estimator discounts with returns $a{+}1,\dots,b$. Each deal carries a pricing error of $G_a(\theta_0)-1$ before any noise.\\
+\evidencetag{C} & Simulated noise is independent of the factor path and of timing. Apart from the off-by-one month, the simulation satisfies conditional pricing given the factor path, so its horizon profile contains no wedge.\\
+\evidencetag{C} & \code{prep_preqin.R} pools with \code{aggregate(CF ~ Date, df, mean)}: the divisor is the number of funds reporting on that date, not the vintage's fund count.\\
+\evidencetag{C} & Standard errors: \code{get.grad.per.fund} and \code{get.hess.per.fund} difference \code{err.sqr.calc} on one unit at a time. Under the configured loss \code{L2_Lasso} that function returns $\sqrt{\sum\epsilon^2}/n$, which for one unit is $|\bar\epsilon_i|$. The sandwich is therefore built from $\nabla|\bar\epsilon_i|$ and $\nabla^2|\bar\epsilon_i|$. The point estimates are unaffected. The size of the error in the reported standard errors and $t$ statistics has not been measured.\\
+\evidencetag{C} & Wald test in \code{estim.CoVM} uses $d^\top\widehat{V}d$ where it needs $d^\top\widehat{V}^{-1}d$. Off-diagonal Hessian differences shift all parameters at once, which is correct only for two parameters.\\
+\evidencetag{C} & Branch \code{max.month == 0} returns \code{sum(CF/ret)}, which discounts the first cash flow by the first month's return. As $\alpha\to\infty$ this criterion goes to zero exactly. The correct inception NPV (\code{max.month == 1}) has limit $CF_{v,t_v^0}^2>0$.\\
+\evidencetag{C} & The horizon window is capped at the unit's last cash-flow date and starts at its first. Both are outcomes, so $A_{v,H}$ is not a function of the factor path alone.\\
+\evidencetag{D} & Fund-size-weighted North America Buyout pools: the sum of absolute pooled cash flows ranges from 938 (vintage 1996) to 8{,}859 (2006). Squared loss therefore weights vintages by roughly the square of average fund size, a range of about 90 to 1.\\
+\evidencetag{C} & The introduction describes ``894 Buyout and 931 Venture Capital funds (\dots vintages 1982--2010)''. By the paper's own vintage table, 894 and 931 are the counts through 2021; vintages $\le 2010$ contain 473 and 528.\\
+\evidencetag{D} & Product criterion, Buyout: 1.05 at $H=0$ and 1.19 at $H=30$ with equal vintage weights (reproduces the review); 1.08 and 0.90 with fund-count weights; 1.24 and 0.90 with $n_v\ge5$. Squared loss on constant-composition pools: 1.21 and 0.96.\\
+\evidencetag{D} & Vintage-level pooled NPVs at the $H=0$ squared-loss beta, Buyout: $+0.16$ to $+0.38$ for every vintage 1996--2004, $-0.02$ to $-0.11$ for 2006--2010, with within-vintage standard errors of 0.03--0.11. Venture: positive 1992--1998, negative for every vintage 1999--2010.\\
+\evidencetag{D} & The beta that sets the equal-weighted mean pooled NPV to zero ($\alpha=0$) is 1.86 for Buyout at $H=0$ against 1.21 under squared loss, and 1.4--1.5 for $H\ge10$. A second root near 3 appears at short horizons.\\
+\evidencetag{D} & With $\alpha$ free, squared loss and the product criterion both move to $\alpha\approx0.5$--$0.7\%$ a month with $\beta\approx0.3$--$0.55$ for Buyout, and to the $\alpha$ bound for Venture at $H=0$. Removing fund-level noise does not identify $\alpha$.\\
+\evidencetag{A} & Simulated noise: monthly additive shock with $\sigma=0.2$ gives a deal multiplier $N$ with $\E N^2\approx(1+\sigma^2)^{h}$, so $\mathrm{sd}(N)\approx3$ for a five-year hold and $\approx10$ for ten years. Implied dispersion of fund-level NPVs is several times the 0.3--0.5 seen in Buyout vintages.\\
+\evidencetag{R} & In the replica, squared loss at $H=0$ plateaus above the truth as vintages grow with funds per vintage fixed (for example 1.17 with one fund, 1.04 with five, $\sigma=0.1$), while the product criterion is near 1.00.\\
 \bottomrule
 \end{longtable}
 }
@@ -138,6 +141,7 @@ Review & Simulator timing, reporter-mean pooling, 0/1-month convention, window e
 \end{longtable}
 }
 
+\Needspace{8\baselineskip}
 \subsection{Keep in a different form}
 
 {\small
@@ -161,6 +165,7 @@ Review & Cross-fund product criterion. & Keep the theorem and the simulation evi
 \end{longtable}
 }
 
+\Needspace{8\baselineskip}
 \subsection{Decline}
 
 {\small
@@ -286,7 +291,7 @@ Nothing is rerun for the paper until each row has passed its test.
 & Where & Change & Test that must pass\\
 \midrule
 \endhead
-B1 & \code{simulation_multifactor.R}, \code{simulation_improved.R}: deal payoff & Compound over \code{(start+1):end}, guarded for \code{end > start}. & With zero noise, every fund's NPV at $\theta_0$ is zero to machine precision.\\
+B1 & \file{simulation_multifactor.R}, \file{simulation_improved.R}: deal payoff & Compound over \code{(start+1):end}, guarded for \code{end > start}. & With zero noise, every fund's NPV at $\theta_0$ is zero to machine precision.\\
 B2 & \code{estim_model_optimized.R}: \code{f1}, \code{getNPVs} & One convention: the first cash flow is undiscounted. Remove the \code{max.month == 0} branch or define it as the same number. A window of $H$ years holds a stated number of dates. & $H=0$ equals \code{sum(CF/ret)*ret[1]}; criterion at very large $\alpha$ tends to the squared first cash flow, not zero.\\
 B3 & \code{estim.CoVM}, gradient and Hessian functions & Differentiate the per-unit squared error. Fix the Wald quadratic form. Write the mixed second difference per parameter pair. & On a linear toy model the sandwich equals the textbook least-squares sandwich; the average score is zero at the estimate.\\
 B4 & \code{prep_preqin.R}: \code{agg.vin.year.pf} & Pool with fixed weights (A6). Separate missing reports from zero flows. Save fund-level files for every region. & Pooled NPV equals the weighted mean of fund NPVs at any parameter.\\
@@ -335,6 +340,7 @@ W10 & Literature: identifying-moments table, comparison of published estimates &
 \textbf{Recommendation: the effective revision, in the order of Section~\ref{sec:sequence}.} The most effective single changes, in order: W5 (it is the paper), W1 (without it nothing can be reported), W6 (it converts assertions into evidence), W9. W7 is cheap once W5 exists. W8 is the only package with real research risk.
 
 %======================================================================
+\Needspace{19\baselineskip}
 \section{The revised paper}
 \label{sec:outline}
 %======================================================================
@@ -377,7 +383,7 @@ Deleted outright: Remark~2; the heuristic part of Appendix~B; both structural co
 
 \begin{itemize}
 \item \textbf{Three data-generating processes.} (a) fund-level noise only, satisfying (X); (b) adding a common vintage shock, with persistence across neighbouring vintages; (c) exits more likely after strong benchmark returns, violating (X) while keeping (P). Design (c) is where the wedge exists; it shows what the horizon profile detects.
-\item \textbf{Noise calibrated to data.} Choose the noise so that simulated fund-level NPV dispersion (about 0.3--0.5 in Buyout vintages) and vintage-level dispersion (about 0.2) match the data. The current $\sigma=0.2$ a month does not \tag{A}. Keep a high-noise design as a stress case and report its tail behaviour.
+\item \textbf{Noise calibrated to data.} Choose the noise so that simulated fund-level NPV dispersion (about 0.3--0.5 in Buyout vintages) and vintage-level dispersion (about 0.2) match the data. The current $\sigma=0.2$ a month does not \evidencetag{A}. Keep a high-noise design as a stress case and report its tail behaviour.
 \item \textbf{Two dimensions varied separately.} Funds per vintage 5, 20, 80; vintages 25, 100, 400. The plateau of squared loss as vintages grow with funds fixed is the direct demonstration of T4.
 \item \textbf{Benchmark paths.} Historical paths give a Monte Carlo conditional on one path; say so. Add drawn paths with bounded support for the unconditional statements.
 \item \textbf{Estimators.} Squared loss, cross-fund products, and the vintage-level moment estimator if it reaches this stage. Horizons 0, 5, 10, 15, 20.
@@ -427,6 +433,7 @@ Deleted outright: Remark~2; the heuristic part of Appendix~B; both structural co
 \end{enumerate}
 
 %======================================================================
+\Needspace{22\baselineskip}
 \section{Decisions for you}
 \label{sec:decisions}
 %======================================================================
@@ -442,6 +449,7 @@ Deleted outright: Remark~2; the heuristic part of Appendix~B; both structural co
 %======================================================================
 \clearpage
 \appendix
+\begingroup\small
 \section{Exploratory probes}
 \label{app:probes}
 %======================================================================
@@ -489,4 +497,5 @@ Root in beta of the equal-weighted mean of $A_{v,H}PV_v$ with $\alpha=0$. Buyout
 
 Joint grid minimizers in ($\alpha$ per month, $\beta$). Buyout, $H=0$: squared loss $(0.7\%,0.35)$, products $(0.6\%,0.30)$; $H=15$: $(0.5\%,0.40)$ and $(0.5\%,0.55)$. Venture, $H=0$: both at the upper alpha bound of 2\%; $H=15$: $(-0.8\%,2.30)$ and $(-0.6\%,1.95)$.
 
+\endgroup
 \end{document}

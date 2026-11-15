@@ -1,0 +1,20 @@
+T5: Q(truth)=9, Q(finite gross=10)=0.9, Q(infinity)=1.
+Fixed-V infill: realized minimizer=0.7, expected-loss minimizer=1.
+AR(1) leave-one-out training/residual covariance=0.310427.
+One-period negative factor: dA/dbeta=-0.05.
+Gaussian default truncation: E[max(1+shock,0)]=1.395593>1.
+VC squared loss: H | script all-vintage | n>=2 | plan | pre all | pre n>=2 | plan
+ 0 | 1.94 | 1.93 | 1.93 | 1.98 | 1.97 | 1.97
+ 5 | 2.11 | 2.20 | 2.20 | 2.13 | 2.16 | 2.16
+10 | 1.74 | 1.78 | 1.78 | 1.78 | 1.80 | 1.80
+15 | 1.23 | 1.32 | 1.32 | 1.28 | 1.34 | 1.34
+20 | 1.17 | 1.24 | 1.24 | 0.90 | 1.23 | 1.23
+30 | 0.83 | 0.90 | 0.90 | -0.50 | -0.48 | -0.48
+Buyout residual/within-vintage SE at beta=1.21:
+1996: PV=+0.154222, SE=0.086459, ratio=+1.783746
+2006: PV=-0.024681, SE=0.034560, ratio=-0.714138
+2009: PV=-0.035895, SE=0.025221, ratio=-1.423243
+2010: PV=-0.019982, SE=0.045251, ratio=-0.441593
+BO: zero initial flow at predetermined origin in 25/25 vintages.
+VC: zero initial flow at predetermined origin in 27/27 vintages.
+All deterministic assertions passed.
