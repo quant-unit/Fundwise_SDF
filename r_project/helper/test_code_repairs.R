@@ -333,6 +333,10 @@ check("Wald statistic uses V^{-1} and matches analytic", abs(sw$Wald.stat - W.an
 sw.i <- sandwich.covariance(toy.units, th, loss.toy, vins, indep = TRUE)
 psi.i <- t(G) %*% G / nu
 check("independent-units sandwich matches analytic", rel(sw.i$CoVM, solve(H.an) %*% psi.i %*% solve(H.an) / nu) < 1e-7)
+# parameter not identified (loss does not depend on it): NA SEs, no error
+sw.sing <- sandwich.covariance(toy.units, c(MKT = 0.3, z = 1), function(p, u) (u$y - p[1] - 0 * p[2])^2, vins)
+check("singular Hessian gives NA SEs and Wald test with se.singular = TRUE (no error)",
+      isTRUE(sw.sing$se.singular) && all(is.na(sw.sing$SE)) && is.na(sw.sing$Wald.p.value.MKT_1))
 # SE must be evaluated at the estimated horizon, not a fixed one
 pv.u <- lapply(1:25, function(i) { set.seed(100 + i); list(cf = c(-1, rep(0, 59), exp(rnorm(1, 0.6, 0.4)), rep(0, 299)), mkt = rnorm(360, 0.007, 0.045), v = 1985 + i) })
 l.h <- function(m) function(p, u) horizon.error(u$cf, cumprod(1 + 0.003 + p[1] * u$mkt), m)^2

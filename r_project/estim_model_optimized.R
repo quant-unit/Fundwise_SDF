@@ -842,6 +842,7 @@ iter.run <- function(input.list) {
           # print(cov)
           for (v in names(cov$SE)) res[, v] <- cov$SE[v]
           res$Wald.p.value.MKT_1 <- cov$Wald.p.value.MKT_1
+          res$se.singular <- isTRUE(cov$se.singular) # Hessian not invertible: SEs NA
 
           # independet with other funds
           cov.indep <- estim.CoVM(dfx, par = par, indep = TRUE, max.month = max.month)

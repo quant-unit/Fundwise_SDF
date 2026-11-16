@@ -77,14 +77,23 @@ sandwich.covariance <- function(units, par, unit.loss, vintages, bw = 12, indep 
   W <- if (indep) diag(n) else outer(vintages, vintages, bartlett.weight, bw = bw)
   psi <- t(G) %*% W %*% G / n
   hessian <- Reduce("+", lapply(units, function(u) num.hess(function(p) unit.loss(p, u), par, delta))) / n
-  h.inv <- solve(hessian)
+  # A singular Hessian (parameters not identified in this sample, e.g. a CV
+  # fold with few vintages and several factors) gives NA SEs and Wald test
+  # instead of stopping the whole run
+  h.inv <- tryCatch(solve(hessian), error = function(e) NULL)
+  if (is.null(h.inv)) {
+    se <- setNames(rep(NA_real_, length(par)), paste0("SE.", names(par)))
+    na.m <- matrix(NA_real_, length(par), length(par), dimnames = list(names(par), names(par)))
+    return(list(Psi = psi, Hessian = hessian, CoVM = na.m, par = par, SE = se,
+                Wald.stat = NA_real_, Wald.p.value.MKT_1 = NA_real_, se.singular = TRUE))
+  }
   covm <- h.inv %*% psi %*% t(h.inv) / n
   dimnames(covm) <- list(names(par), names(par))
   std.err <- sqrt(diag(covm))
   names(std.err) <- paste0("SE.", names(par))
   if (is.null(theta.null)) theta.null <- c(1, rep(0, length(par) - 1)) # H0: beta_MKT = 1, others 0
   d <- par - theta.null
-  wald.stat <- as.numeric(t(d) %*% solve(covm) %*% d)
+  wald.stat <- tryCatch(as.numeric(t(d) %*% solve(covm) %*% d), error = function(e) NA_real_) # singular V: no Wald test
   list(
     Psi = psi,
     Hessian = hessian,
@@ -92,6 +101,7 @@ sandwich.covariance <- function(units, par, unit.loss, vintages, bw = 12, indep 
     par = par,
     SE = std.err,
     Wald.stat = wald.stat,
-    Wald.p.value.MKT_1 = 1 - pchisq(wald.stat, df = length(par))
+    Wald.p.value.MKT_1 = 1 - pchisq(wald.stat, df = length(par)),
+    se.singular = FALSE
   )
 }
