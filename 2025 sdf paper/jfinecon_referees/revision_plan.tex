@@ -268,6 +268,23 @@ T8 & \textbf{Mean-moment caveats: multiple roots and persistent vintage shocks.}
 \end{longtable}
 }
 
+\subsection{Motivating 5-line closed-form proof (to open Section~3 of the paper)}
+
+To make the mechanism behind Theorems~T3--T5 immediately transparent to the reader before stating the general multi-deal formulas, Section~3 will open with a one-deal benchmark in which each of $n$ funds in a vintage invests $\$1$ at $t=0$ ($CF_{i,0}=-1$) and exits at date $T>0$ with payoff $CF_{i,T}=R^b_{0,T}(\theta_0)(1+\varepsilon_i)$, where $\E[\varepsilon_i\mid\C]=0$ and $\Var(\varepsilon_i\mid\C)=\sigma^2>0$. For the pooled vintage portfolio ($\bar\varepsilon=n^{-1}\sum_{i=1}^n\varepsilon_i$, $\Var(\bar\varepsilon\mid\C)=\sigma^2/n$), the inception NPV at candidate parameter $\theta$ is $PV(\theta)=-1+[R^b_{0,T}(\theta_0)/R^b_{0,T}(\theta)](1+\bar\varepsilon)$, so expected squared error at $H=0$ is Signal plus Discounted Payout Variance:
+\[
+Q_0(\theta\mid\C)=\E\bigl[PV(\theta)^2\,\big|\,\C\bigr]=\underbrace{\left(\frac{R^b_{0,T}(\theta_0)}{R^b_{0,T}(\theta)}-1\right)^2}_{\text{Squared Mean Signal}}+\underbrace{\left(\frac{R^b_{0,T}(\theta_0)}{R^b_{0,T}(\theta)}\right)^2\frac{\sigma^2}{n}}_{\text{Discounted Payout Variance}}.
+\]
+Minimizing with respect to the discount-factor ratio $x(\theta)=R^b_{0,T}(\theta_0)/R^b_{0,T}(\theta)$ yields $2(x-1)+2x(\sigma^2/n)=0$, or in closed form:
+\[
+R^b_{0,T}(\theta_0^\dagger)=\left(1+\frac{\sigma^2}{n}\right)R^b_{0,T}(\theta_0)>R^b_{0,T}(\theta_0),\qquad
+\frac{\partial Q_0(\theta\mid\C)}{\partial\theta}\Bigg|_{\theta=\theta_0}=-2\,\frac{\sigma^2}{n}\,\frac{\partial\log R^b_{0,T}(\theta_0)}{\partial\theta}<0.
+\]
+Thus, any finite pool ($n<\infty$, $\sigma^2>0$) strictly biases the cumulative discount factor upward at $H=0$ because dividing late, noisy payouts by a larger discount factor shrinks their variance. Multiplying $PV(\theta)$ by the horizon-compounding weight $A_H(\theta)$ gives $Q_H(\theta\mid\C)=A_H(\theta)^2 Q_0(\theta\mid\C)$, whose slope at $\theta_0$ is
+\[
+\frac{\partial Q_H(\theta\mid\C)}{\partial\theta}\Bigg|_{\theta=\theta_0}=2\,A_H(\theta_0)^2\,\frac{\sigma^2}{n}\,\Bigl(\underbrace{\frac{\partial\log A_H(\theta_0)}{\partial\theta}}_{\bar S_H(\theta_0)\text{ (Horizon compounding)}}-\underbrace{\frac{\partial\log R^b_{0,T}(\theta_0)}{\partial\theta}}_{S_{0,T}(\theta_0)\text{ (Deal discounting)}}\Bigr),
+\]
+showing in one line why the bias is upward at $H=0$ ($\bar S_0=0$), cancels near $H\approx T$ ($\bar S_H\approx S_{0,T}$), and turns downward at long horizons $H>T$ ($\bar S_H>S_{0,T}$).
+
 \subsection{Comparison of estimation criteria in the revised paper}
 
 Rather than committing the paper's main text to an under-powered 25-vintage GMM estimator, we organize the methodology around the two unit-level LMD criteria that work directly on the vintage panel—\textbf{Squared Pooled NPV ($L_2$)} and \textbf{Cross-Fund Pair Products ($U_{v,H}$)}—and treat exogenous benchmark-path IV moments as a theoretical and simulation comparator:
