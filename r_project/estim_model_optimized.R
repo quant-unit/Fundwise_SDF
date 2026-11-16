@@ -500,155 +500,35 @@ if (FALSE) {
 
 # Test Data
 dfx <- unit.split(df.in)
-df.ss <- dfx[[1]]
 delta <- 0.0001
 
-
-# GRADIENT
-get.grad.per.fund <- function(df.ss, par) {
-  # by central difference
-  f2 <- function(x) {
-    p.plus <- p.minus <- par
-    p.plus <- par[x] + delta
-    p.minus <- par[x] - delta
-    return(
-      (err.sqr.calc(p.plus, max.month, lambda, df.ss) - err.sqr.calc(p.minus, max.month, lambda, df.ss)) / (2 * delta)
-    )
+# Inference (B3, helper/inference.R). Unit loss l_i(theta) entering
+# Q_n = mean_i l_i: squared horizon error (L2), absolute error (L1), or the
+# vintage's U_{v,H} (U_pair). The horizon max.month is passed explicitly:
+# the former SE functions read max.month as a free variable and therefore
+# used the global test value 180 for every estimated horizon.
+source("helper/inference.R")
+unit.loss.at <- function(max.month) {
+  function(par, df.unit) {
+    if (error.function == "U_pair") return(err.sqr.calc(par, max.month, 0, df.unit))
+    e <- f1(df.unit, max.month, c("RF" = 1, par))
+    if (error.function == "L1_Ridge") return(abs(e))
+    e^2
   }
-  return(sapply(names(par), f2))
-}
-get.grad.per.fund(df.ss, par)
-
-Avg.Grad <- colMeans(
-  Reduce(rbind, lapply(dfx, get.grad.per.fund, par = par))
-)
-Avg.Grad
-
-weighter <- function(x, y, bw = kernel.bandwidth) {
-  abs.dis <- abs((x - y) / bw)
-  ifelse(abs.dis <= 1, 1 - abs.dis, 0) # Bartlett kernel
-}
-weighter(2010, 2015)
-
-get.psi.matrix.dep <- function(dfx, par) {
-  n <- length(dfx)
-  A <- as.matrix(data.frame(do.call(rbind, lapply(dfx, get.grad.per.fund, par = par))))
-  dim.GG <- length(A[1, ])
-  M <- matrix(0, dim.GG, dim.GG)
-
-  for (i in 1:n) {
-    for (j in 1:n) {
-      w <- weighter(dfx[[i]]$Vintage[1], dfx[[j]]$Vintage[1])
-      if (w == 0) next
-      GG <- A[i, ] %*% t(A[j, ])
-      M <- M + w * GG
-    }
-  }
-  return(M / n)
 }
 
-get.psi.matrix.indep <- function(dfx, par) {
-  n <- length(dfx)
-  A <- as.matrix(data.frame(do.call(rbind, lapply(dfx, get.grad.per.fund, par = par))))
-  dim.GG <- length(A[1, ])
-  M <- matrix(0, dim.GG, dim.GG)
-
-  for (i in 1:n) {
-    GG <- A[i, ] %*% t(A[i, ])
-    M <- M + GG
-  }
-  return(M / n)
-}
-
-# system.time(psi <- get.psi.matrix2(dfx, par))
-
-# HESSIAN
-get.hess.per.fund <- function(df.ss, par) {
-  n <- length(par)
-  H <- matrix(0, n, n, dimnames = list(names(par), names(par)))
-  for (i in names(par)) {
-    for (j in names(par)) {
-      if (i == j) {
-        # https://en.wikipedia.org/wiki/Finite_difference
-        p.p <- p.m <- par
-        p.p[i] <- p.p[i] + delta
-        p.m[j] <- p.m[j] - delta
-
-        # out <- f1(df.ss, max.month, p.p) + f1(df.ss, max.month, p.m) - 2 * f1(df.ss, max.month, par)
-        out <- err.sqr.calc(p.p, max.month, lambda, df.ss) + err.sqr.calc(p.m, max.month, lambda, df.ss) - 2 * err.sqr.calc(par, max.month, lambda, df.ss)
-        out <- out / (delta * delta)
-      }
-
-      if (FALSE) {
-        # https://v8doc.sas.com/sashtml/ormp/chap5/sect28.htm
-        p.pp <- p.mm <- p.p <- p.m <- par
-        p.pp[i] <- p.pp[i] + 2 * delta
-        p.mm[i] <- p.mm[i] - 2 * delta
-        p.p[i] <- p.p[i] + delta
-        p.m[j] <- p.m[j] - delta
-
-        out <- -f1(df.ss, max.month, p.pp)
-        out <- out + 16 * err.sqr.calc(p.p, max.month, lambda, df.ss)
-        out <- out - 30 * err.sqr.calc(par, max.month, lambda, df.ss)
-        out <- out + 16 * err.sqr.calc(p.m, max.month, lambda, df.ss)
-        out <- out - err.sqr.calc(p.mm, max.month, lambda, df.ss)
-
-        out <- out / (12 * delta * delta)
-      }
-
-      if (i != j) {
-        # https://en.wikipedia.org/wiki/Finite_difference
-        p.pp <- par + delta
-        p.mm <- par - delta
-        p.pm <- p.mp <- par
-        p.pm[i] <- p.pm[i] + delta
-        p.pm[j] <- p.pm[j] - delta
-        p.mp[i] <- p.mp[i] - delta
-        p.mp[j] <- p.mp[j] + delta
-
-        out <- err.sqr.calc(p.pp, max.month, lambda, df.ss) - err.sqr.calc(p.pm, max.month, lambda, df.ss) - err.sqr.calc(p.mp, max.month, lambda, df.ss) + err.sqr.calc(p.mm, max.month, lambda, df.ss)
-        out <- out / (4 * delta * delta)
-      }
-
-      H[i, j] <- out
-    }
-  }
-  return(H)
-}
-get.hess.per.fund(df.ss, par)
-
-
-estim.CoVM <- function(dfx, par, indep = FALSE) {
-  if (indep) {
-    psi <- get.psi.matrix.indep(dfx, par)
-  } else {
-    psi <- get.psi.matrix.dep(dfx, par)
-  }
-  hessian <- Reduce("+", lapply(dfx, get.hess.per.fund, par = par)) / length(dfx)
-
-  CoVM <- solve(hessian) %*% psi %*% t(solve(hessian)) / length(dfx)
-  std.err <- sqrt(diag(CoVM))
-  names(std.err) <- paste0("SE.", names(std.err))
-
-  par.test <- par - c(1, rep(0, length(par) - 1))
-  wald <- 1 - pchisq(t(par.test) %*% CoVM %*% par.test, df = length(par.test))
-  wald <- as.numeric(wald)
-
-  out <- list(
-    Psi = psi,
-    Hessian = hessian,
-    CoVM = CoVM,
-    par = par,
-    SE = std.err,
-    Wald.p.value.MKT_1 = wald
+estim.CoVM <- function(dfx, par, indep = FALSE, max.month) {
+  sandwich.covariance(
+    units = dfx, par = par, unit.loss = unit.loss.at(max.month),
+    vintages = vapply(dfx, function(d) as.numeric(d$Vintage[1]), 0),
+    bw = kernel.bandwidth, indep = indep, delta = delta
   )
-  return(out)
 }
 system.time(
-  out <- estim.CoVM(dfx, par, indep = FALSE)
+  out <- estim.CoVM(dfx, par, indep = FALSE, max.month = max.month)
 )
 system.time(
-  out <- estim.CoVM(dfx, par, indep = TRUE)
+  out <- estim.CoVM(dfx, par, indep = TRUE, max.month = max.month)
 )
 out
 
@@ -872,13 +752,13 @@ iter.run <- function(input.list) {
           dfx <- unit.split(df.optim.in)
 
           # dependent - kernel bandwidht
-          cov <- estim.CoVM(dfx, par = par, indep = FALSE)
+          cov <- estim.CoVM(dfx, par = par, indep = FALSE, max.month = max.month)
           # print(cov)
           for (v in names(cov$SE)) res[, v] <- cov$SE[v]
           res$Wald.p.value.MKT_1 <- cov$Wald.p.value.MKT_1
 
           # independet with other funds
-          cov.indep <- estim.CoVM(dfx, par = par, indep = TRUE)
+          cov.indep <- estim.CoVM(dfx, par = par, indep = TRUE, max.month = max.month)
           for (v in names(cov.indep$SE)) res[, paste0(v, ".indep")] <- cov.indep$SE[v]
 
           # print(res)

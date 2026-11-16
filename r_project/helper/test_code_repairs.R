@@ -4,6 +4,7 @@
 ######################
 # Implemented so far:
 #   B2  H = 0 convention: origin date not discounted (helper/objective.R)
+#   B3  gradient, Hessian, sandwich SEs and Wald test (helper/inference.R)
 #   B4  constant-composition VYP pooling  (helper/pool_vintage.R, empirical/prep_preqin.R)
 #   B5  common vintage grid (origin t0, data end T.max) and U_{v,H} criterion
 #   B6  FW pools normalized by total vintage commitment
@@ -15,6 +16,7 @@ suppressPackageStartupMessages(library(here))
 source(here("helper/pool_vintage.R"))
 invisible(capture.output(suppressMessages(source(here("helper/getNPVs.R")))))
 source(here("helper/objective.R"))
+source(here("helper/inference.R"))
 
 n.fail <- 0
 check <- function(name, ok, detail = "") {
@@ -242,6 +244,51 @@ check("H = 0 error equals CF_t0 + sum_{t > t0} CF_t / R_{t0,t}",
 lim <- horizon.error(cf, ret.of(1.2, alpha = 1e3), 1)
 check("H = 0 error -> CF_t0 as alpha -> infinity (no extra discounting of t0)",
       abs(lim - cf[1]) < 1e-9, sprintf("value at alpha = 1000/month: %.6f", lim))
+
+# ---------------------------------------------------------------------------
+# B3: gradient, Hessian, sandwich covariance and Wald test on a toy NLS model
+# ---------------------------------------------------------------------------
+cat("\n== B3: inference on a 3-parameter toy model ==\n")
+set.seed(3)
+nu <- 40
+toy.units <- lapply(seq_len(nu), function(i) list(x = rnorm(1), z = runif(1, 0.2, 1.5), y = rnorm(1, 1, 0.5), v = 1980 + i))
+eps.toy <- function(p, u) u$y - p[1] - p[2] * u$x - exp(p[3] * u$z)
+loss.toy <- function(p, u) eps.toy(p, u)^2
+th <- c(MKT = 0.3, b = 0.8, c = 0.4)
+grad.an <- function(p, u) { de <- -c(1, u$x, u$z * exp(p[3] * u$z)); 2 * eps.toy(p, u) * de }
+hess.an <- function(p, u) {
+  de <- -c(1, u$x, u$z * exp(p[3] * u$z))
+  d2 <- matrix(0, 3, 3); d2[3, 3] <- -u$z^2 * exp(p[3] * u$z)
+  2 * (outer(de, de) + eps.toy(p, u) * d2)
+}
+# relative error: central differences with delta = 1e-4 have O(delta^2) truncation error
+g.err <- max(sapply(toy.units, function(u) { a <- grad.an(th, u); max(abs(num.grad(function(p) loss.toy(p, u), th) - a)) / max(abs(a)) }))
+h.err <- max(sapply(toy.units, function(u) { a <- hess.an(th, u); max(abs(num.hess(function(p) loss.toy(p, u), th) - a)) / max(abs(a)) }))
+check("numerical gradient of the unit loss matches analytic (all 3 parameters)", g.err < 1e-7, sprintf("max rel err %.1e", g.err))
+check("numerical Hessian incl. off-diagonals matches analytic", h.err < 1e-7, sprintf("max rel err %.1e", h.err))
+vins <- sapply(toy.units, `[[`, "v")
+sw <- sandwich.covariance(toy.units, th, loss.toy, vins, bw = 12, indep = FALSE)
+G <- t(sapply(toy.units, grad.an, p = th))
+W <- outer(vins, vins, function(a, b) pmax(1 - abs(a - b) / 12, 0))
+psi.an <- t(G) %*% W %*% G / nu
+H.an <- Reduce("+", lapply(toy.units, hess.an, p = th)) / nu
+V.an <- solve(H.an) %*% psi.an %*% solve(H.an) / nu
+d <- th - c(1, 0, 0)
+W.an <- as.numeric(t(d) %*% solve(V.an) %*% d)
+rel <- function(a, b) max(abs(a - b)) / max(abs(b))
+check("sandwich covariance (Bartlett, bw = 12) matches analytic", rel(sw$CoVM, V.an) < 1e-7, sprintf("rel err %.1e", rel(sw$CoVM, V.an)))
+check("Wald statistic uses V^{-1} and matches analytic", abs(sw$Wald.stat - W.an) / W.an < 1e-7,
+      sprintf("W = %.4f vs %.4f; old formula d'Vd = %.2e", sw$Wald.stat, W.an, as.numeric(t(d) %*% V.an %*% d)))
+sw.i <- sandwich.covariance(toy.units, th, loss.toy, vins, indep = TRUE)
+psi.i <- t(G) %*% G / nu
+check("independent-units sandwich matches analytic", rel(sw.i$CoVM, solve(H.an) %*% psi.i %*% solve(H.an) / nu) < 1e-7)
+# SE must be evaluated at the estimated horizon, not a fixed one
+pv.u <- lapply(1:25, function(i) { set.seed(100 + i); list(cf = c(-1, rep(0, 59), exp(rnorm(1, 0.6, 0.4)), rep(0, 299)), mkt = rnorm(360, 0.007, 0.045), v = 1985 + i) })
+l.h <- function(m) function(p, u) horizon.error(u$cf, cumprod(1 + 0.003 + p[1] * u$mkt), m)^2
+se.1 <- sandwich.covariance(pv.u, c(MKT = 1.1), l.h(1), sapply(pv.u, `[[`, "v"))$SE
+se.180 <- sandwich.covariance(pv.u, c(MKT = 1.1), l.h(180), sapply(pv.u, `[[`, "v"))$SE
+check("SE depends on the horizon at which it is evaluated (H = 0 vs 15y)", abs(se.1 / se.180 - 1) > 0.05,
+      sprintf("SE(H=0) = %.3f, SE(H=15y) = %.3f", se.1, se.180))
 
 # ---------------------------------------------------------------------------
 # B5: rescaling identity eps_H = A_H * PV, A_H from the factor path alone
