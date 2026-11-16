@@ -146,7 +146,9 @@ source("empirical/prep_preqin.R")   # needs the raw export in empirical/data_in/
 
 North America, vintages <= 2010: 383 Buyout and 432 Venture Capital complete-history funds (495 and 538 before the sample rule). Fund-level files carry `Size` (USD mn), `Last.Date`, `Age.Last` and `Complete`.
 
-**Tests.** `Rscript helper/test_code_repairs.R` checks the pooling identity, the FW normalization, the sample rule and the funnel counts on synthetic data and on all prepared files. It fails if a prepared file is missing.
+**Tests.** `LANG=en_US.UTF-8 Rscript helper/test_code_repairs.R` checks the pooling identity, the FW normalization, the sample rule, the funnel counts, the horizon convention and the U criterion on synthetic data and on all prepared files, and that every Preqin scenario resolves to a file. It fails if a prepared file is missing.
+
+**Horizon convention and U criterion** (`helper/objective.R`). Every unit of a vintage is placed on one monthly grid from the vintage origin t0 to the common data end. `max.month = m` averages the pricing error over the m dates t0, ..., t0 + m - 1; `m = 1` (and its alias `m = 0`) is the inception NPV at t0, with t0 not discounted. `origin_convention` sets t0: `"first.cf"` (first cash-flow date of the vintage, default) or `"predetermined"` (Dec 31 of the year before the vintage). `error_function: "U_pair"` minimizes the cross-fund pair-product criterion on fund-level files (`use_vintage_year_pfs: false`), with vintage weights `vintage_weights: "equal"` or `"n.funds"`; see the `u_*_north_america` scenarios.
 
 **Estimation.** `config/empirical_scenarios.yaml` reads `data_prepared_2026_c` and writes to `results/data_out_2026-emp-c` (results on the old `_b` pools stay in `results/data_out_2026-emp`). For the all-funds robustness sample, set `data_prepared_folder: "data_prepared_2026_c_allfunds"` (and a separate `data_out_folder`) in a scenario. Under a non-UTF-8 locale, run `Rscript` with `LANG=en_US.UTF-8` so the YAML file parses.
 

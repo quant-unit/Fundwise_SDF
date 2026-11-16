@@ -304,8 +304,12 @@ scenarios <- c(
   "fw_no_cv_north_america_l1", "fw_cv_north_america_l1", "ew_no_cv_north_america_l1", "ew_cv_north_america_l1"
 )
 # scenarios <- c("fw_no_cv_north_america_l1", "fw_cv_north_america_l1", "ew_no_cv_north_america_l1", "ew_cv_north_america_l1")
+# Output folder comes from config/empirical_scenarios.yaml (data_out_folder).
+# Override only for a deliberate separate experiment, never with a folder that
+# holds results from other input data (cached results in a folder are merged).
 # data.out.folder <- "results/data_out_2026_02_27_pitchbook"
-data.out.folder <- "results/data_out_2026_03_27"
+# data.out.folder <- "results/data_out_2026_03_27"
+data.out.folder <- NULL
 
 results <- run_empirical_study(
     scenario_ids = scenarios,

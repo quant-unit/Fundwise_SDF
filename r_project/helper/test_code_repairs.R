@@ -1,9 +1,11 @@
 ######################
 ### Automated verification tests for the revision code repairs (revision plan, Section "Code and data repairs")
-### Run from r_project/:  Rscript helper/test_code_repairs.R
+### Run from r_project/:  LANG=en_US.UTF-8 Rscript helper/test_code_repairs.R
 ######################
 # Implemented so far:
+#   B2  H = 0 convention: origin date not discounted (helper/objective.R)
 #   B4  constant-composition VYP pooling  (helper/pool_vintage.R, empirical/prep_preqin.R)
+#   B5  common vintage grid (origin t0, data end T.max) and U_{v,H} criterion
 #   B6  FW pools normalized by total vintage commitment
 #   Sample rule: main sample = complete-history funds; all funds = robustness
 #
@@ -11,6 +13,8 @@
 
 suppressPackageStartupMessages(library(here))
 source(here("helper/pool_vintage.R"))
+invisible(capture.output(suppressMessages(source(here("helper/getNPVs.R")))))
+source(here("helper/objective.R"))
 
 n.fail <- 0
 check <- function(name, ok, detail = "") {
@@ -218,6 +222,144 @@ for (region in regions) {
           sprintf("range %.2f to %.2f", min(ratio), max(ratio)))
   }
 }
+}
+
+# ---------------------------------------------------------------------------
+# B2: horizon convention (synthetic)
+# ---------------------------------------------------------------------------
+cat("\n== B2: H = 0 convention ==\n")
+set.seed(1)
+nm <- 120
+rf <- rep(0.003, nm)
+mkt <- rnorm(nm, 0.006, 0.045)
+cf <- c(-0.4, rep(0, 5), -0.3, rep(0, 29), 0.5, rep(0, 23), 0.9, rep(0, nm - 61))
+ret.of <- function(beta, alpha = 0) cumprod(1 + rf + beta * mkt + alpha)
+r <- ret.of(1.2)
+pv.direct <- cf[1] + sum(cf[-1] * r[1] / r[-1])
+check("max.month 0 is an alias of max.month 1", horizon.error(cf, r, 0) == horizon.error(cf, r, 1))
+check("H = 0 error equals CF_t0 + sum_{t > t0} CF_t / R_{t0,t}",
+      abs(horizon.error(cf, r, 1) - pv.direct) < 1e-12, sprintf("diff %.1e", abs(horizon.error(cf, r, 1) - pv.direct)))
+lim <- horizon.error(cf, ret.of(1.2, alpha = 1e3), 1)
+check("H = 0 error -> CF_t0 as alpha -> infinity (no extra discounting of t0)",
+      abs(lim - cf[1]) < 1e-9, sprintf("value at alpha = 1000/month: %.6f", lim))
+
+# ---------------------------------------------------------------------------
+# B5: rescaling identity eps_H = A_H * PV, A_H from the factor path alone
+# ---------------------------------------------------------------------------
+cat("\n== B5: horizon rescaling identity (synthetic) ==\n")
+err <- max(sapply(c(1, 2, 30, 60, 120, 180), function(m) {
+  for (b in c(0.5, 1, 1.8)) {
+    rr <- ret.of(b, 0.001)
+    a <- mean(rr[1:min(m, nm)] / rr[1])
+    e <- abs(horizon.error(cf, rr, m) - a * horizon.error(cf, rr, 1))
+    if (e > 1e-12) return(e)
+  }
+  0
+}))
+check("eps_H = A_H * PV_0 with A_H = mean_{tau < t0 + m} R_tau / R_t0 (window truncated at T.max)", err < 1e-12,
+      sprintf("max abs err %.1e", err))
+
+# ---------------------------------------------------------------------------
+# B5: U_{v,H} criterion (synthetic)
+# ---------------------------------------------------------------------------
+cat("\n== B5: cross-fund pair-product criterion ==\n")
+e <- c(0.31, -0.12, 0.05, 0.22)
+pairs.ew <- mean(outer(e, e)[upper.tri(diag(4)) | lower.tri(diag(4))])
+check("EW U equals mean of cross-fund pair products", abs(u.pair(e) - pairs.ew) < 1e-15)
+check("EW U equals ebar^2 - s^2/n", abs(u.pair(e) - (mean(e)^2 - var(e) / length(e))) < 1e-15)
+sz <- c(100, 300, 50, 250)
+eu <- e # per-unit errors; FW fund-level errors are size * per-unit
+off <- upper.tri(diag(4)) | lower.tri(diag(4))
+pairs.fw <- sum((outer(sz, sz) * outer(eu, eu))[off]) / sum(outer(sz, sz)[off])
+check("FW U equals size-weighted mean of cross-fund pair products", abs(u.pair(sz * eu, sz) - pairs.fw) < 1e-15)
+check("vintages with one fund are dropped; n.funds weights q_v = n_v",
+      abs(u.criterion(c(e, 0.7, 0.1, 0.2), c(rep("a", 4), "b", "c", "c"), vintage.weights = "n.funds") -
+            (4 * u.pair(e) + 2 * u.pair(c(0.1, 0.2))) / 6) < 1e-15)
+set.seed(2)
+mu <- 0.05; sig <- 0.3; nv <- 3; V <- 40000
+sim <- matrix(rnorm(V * nv, mu, sig), V, nv)
+u.mc <- apply(sim, 1, u.pair)
+l2.mc <- rowMeans(sim)^2
+z <- (mean(u.mc) - mu^2) / (sd(u.mc) / sqrt(V))
+check("U is unbiased for mu^2 with n_v = 3 (squared pooled error is not)",
+      abs(z) < 4 && mean(l2.mc) - mu^2 > 0.9 * sig^2 / nv,
+      sprintf("E[U] = %.4f vs mu^2 = %.4f (z = %.1f); E[ebar^2] = %.4f", mean(u.mc), mu^2, z, mean(l2.mc)))
+
+# ---------------------------------------------------------------------------
+# B5 on Preqin data: common grid and pooled = mean of fund horizon errors
+# ---------------------------------------------------------------------------
+cat("\n== B5: common vintage grid on Preqin North America BO (V <= 2010) ==\n")
+f.fund <- file.path(main.dir, "preqin_cashflows_EW_North America_NAV.csv")
+f.vyp <- file.path(main.dir, "preqin_cashflows_EW_VYP_North America_NAV.csv")
+q.file <- here("empirical/data_prepared_2026/q_factors.csv")
+if (!file.exists(f.fund) || !file.exists(f.vyp) || !file.exists(q.file)) {
+  check("B5 data files exist", FALSE)
+} else {
+  q <- read.csv(q.file)
+  q$Date <- as.Date(format(as.Date(q$Date) + 1, "%Y-%m-01")) - 1
+  fund <- read.csv(f.fund); vyp <- read.csv(f.vyp)
+  fund <- fund[fund$type == "BO" & fund$Vintage <= 2010, c("Fund.ID", "Date", "CF", "type", "Vintage", "Size")]
+  vyp <- vyp[vyp$type == "BO" & vyp$Vintage <= 2010, c("Fund.ID", "Date", "CF", "type", "Vintage")]
+  fund$Date <- as.Date(fund$Date); vyp$Date <- as.Date(vyp$Date)
+  t.max <- max(fund$Date)
+  for (oc in c("first.cf", "predetermined")) {
+    pf <- pad.all.units(fund, oc, t.max)
+    pv <- pad.all.units(vyp, oc, t.max)
+    rng <- aggregate(Date ~ Fund.ID + Vintage, pf, range)
+    same.start <- all(tapply(rng$Date[, 1], rng$Vintage, function(x) length(unique(x)) == 1))
+    same.end <- all(rng$Date[, 2] == as.numeric(t.max))
+    start.ok <- if (oc == "predetermined") {
+      all(as.Date(tapply(rng$Date[, 1], rng$Vintage, min), origin = "1970-01-01") <= as.Date(paste0(sort(unique(rng$Vintage)) - 1, "-12-31")))
+    } else TRUE
+    check(paste0("[", oc, "] all funds of a vintage share t0; all units end at T.max = ", t.max),
+          same.start && same.end && start.ok)
+    # pooled (VYP) horizon error = mean of fund horizon errors, every H and beta
+    max.err <- 0
+    for (vin in unique(pv$Vintage)) {
+      pv.v <- pv[pv$Vintage == vin, ]
+      g <- 1 + q$RF[match(pv.v$Date, q$Date)] + 1.2 * q$MKT[match(pv.v$Date, q$Date)]
+      rr <- cumprod(g)
+      fv <- split(pf[pf$Vintage == vin, ], pf$Fund.ID[pf$Vintage == vin], drop = TRUE)
+      for (m in c(0, 1, 60, 180, 360)) {
+        e.f <- sapply(fv, function(d) horizon.error(d$CF, rr, m))
+        e.p <- horizon.error(pv.v$CF, rr, m)
+        max.err <- max(max.err, abs(e.p - mean(e.f)) / max(1, abs(e.p)))
+      }
+    }
+    check(paste0("[", oc, "] pooled horizon error = mean of fund horizon errors (H = 0..30y, all vintages)"),
+          max.err < 1e-12, sprintf("max rel err %.1e", max.err))
+    n.early <- sum(tapply(as.numeric(fund$Date), fund$Vintage, min) <
+                     as.numeric(as.Date(paste0(sort(unique(fund$Vintage)) - 1, "-12-31"))))
+    if (oc == "predetermined") cat(sprintf("       note: %d BO vintages have cash flows before Dec 31 of vintage - 1; their t0 is the first cash-flow date\n", n.early))
+  }
+}
+
+# ---------------------------------------------------------------------------
+# Every Preqin scenario in the empirical config resolves to an existing file,
+# in the main sample and in the all-funds robustness sample
+# ---------------------------------------------------------------------------
+cat("\n== Config: Preqin scenarios resolve to prepared files ==\n")
+suppressMessages(source(here("helper/config_loader.R")))
+cfg <- tryCatch(load_empirical_config(here("config/empirical_scenarios.yaml")), error = function(e) e)
+if (inherits(cfg, "error")) {
+  check("empirical config parses (run with LANG=en_US.UTF-8)", FALSE, conditionMessage(cfg))
+} else {
+  for (folder in c(cfg$defaults$data_prepared_folder, paste0(cfg$defaults$data_prepared_folder, "_allfunds"))) {
+    missing <- c()
+    n.sc <- 0
+    for (id in names(cfg$scenarios)) {
+      sc <- merge_with_defaults(cfg$scenarios[[id]], cfg$defaults)
+      if (sc$private_source != "preqin") next
+      if (sc$data_prepared_folder == cfg$defaults$data_prepared_folder) sc$data_prepared_folder <- folder
+      p <- empirical_scenario_to_params(sc)
+      nc <- if (!is.null(sc$final_nav_discount) && sc$final_nav_discount != 100) paste0("_NC", sc$final_nav_discount) else ""
+      f <- here("empirical", p$data_prepared_folder, paste0("preqin_cashflows_", p$weighting, nc, "_NAV.csv"))
+      n.sc <- n.sc + 1
+      if (!file.exists(f)) missing <- c(missing, id)
+    }
+    check(paste("all Preqin scenarios resolve in", folder), length(missing) == 0,
+          if (length(missing) == 0) sprintf("%d scenarios", n.sc) else paste("missing:", paste(missing, collapse = ", ")))
+  }
 }
 
 cat(sprintf("\n%d test(s) failed\n", n.fail))

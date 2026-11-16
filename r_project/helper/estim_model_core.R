@@ -176,7 +176,11 @@ run_estimation <- function(
     alpha_lower = -Inf,
     alpha_upper = Inf,
     # NAV discount
-    final_nav_discount = 100) {
+    final_nav_discount = 100,
+    # Horizon origin t0 per vintage: "first.cf" or "predetermined" (B5)
+    origin_convention = "first.cf",
+    # Vintage weights q_v for error_function = "U_pair": "equal" or "n.funds"
+    vintage_weights = "equal") {
     # -------------------------------------------------------------------------
     # Store current working directory to restore later
     # -------------------------------------------------------------------------
@@ -249,7 +253,9 @@ run_estimation <- function(
             if (length(factors_to_use) > 0 && any(factors_to_use != "")) factor_tag <- paste0(factor_tag, paste(factors_to_use, collapse = "_"), "_")
             nc_tag <- if (final_nav_discount != 100) paste0("_NC", final_nav_discount) else ""
             ef_tag <- if (error_function != "L2_Lasso") paste0("_", error_function) else ""
-            cache_folder_tag <- paste0(private_source, "_", factor_tag, weighting, nc_tag, ef_tag)
+            if (error_function == "U_pair" && vintage_weights != "equal") ef_tag <- paste0(ef_tag, "_q", vintage_weights)
+            origin_tag <- if (origin_convention != "first.cf") paste0("_origin_", origin_convention) else ""
+            cache_folder_tag <- paste0(private_source, "_", factor_tag, weighting, nc_tag, ef_tag, origin_tag)
         }
     }
 
@@ -335,6 +341,11 @@ run_estimation <- function(
 
     # NAV discount
     assign("final.nav.discount", final_nav_discount, envir = .GlobalEnv)
+
+    # Horizon origin and U-criterion vintage weights (always assigned, so a
+    # setting never leaks from one scenario into the next)
+    assign("origin.convention", origin_convention, envir = .GlobalEnv)
+    assign("vintage.weights", vintage_weights, envir = .GlobalEnv)
 
     # Alpha bounds
     assign("alpha.lower", alpha_lower, envir = .GlobalEnv)

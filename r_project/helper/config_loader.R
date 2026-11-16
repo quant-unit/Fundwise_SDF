@@ -320,7 +320,9 @@ empirical_scenario_to_params <- function(scenario) {
         max_vintages = scenario$max_vintages,
         final_nav_discount = if (!is.null(scenario$final_nav_discount)) scenario$final_nav_discount else 100,
         alpha_lower = if (!is.null(scenario$alpha_lower)) scenario$alpha_lower else -Inf,
-        alpha_upper = if (!is.null(scenario$alpha_upper)) scenario$alpha_upper else Inf
+        alpha_upper = if (!is.null(scenario$alpha_upper)) scenario$alpha_upper else Inf,
+        origin_convention = if (!is.null(scenario$origin_convention)) scenario$origin_convention else "first.cf",
+        vintage_weights = if (!is.null(scenario$vintage_weights)) scenario$vintage_weights else "equal"
     )
 
     return(params)

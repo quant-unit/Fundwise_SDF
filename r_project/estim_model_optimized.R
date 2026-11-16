@@ -91,6 +91,13 @@ if (source.internally) {
   # data.prepared.folder <- "data_prepared_2026"
 }
 
+# Horizon origin and U-criterion settings (B2/B5, see helper/objective.R).
+# run_estimation() always assigns them; these defaults apply when the script
+# is sourced directly.
+if (!exists("origin.convention")) origin.convention <- "first.cf" # or "predetermined"
+if (!exists("vintage.weights")) vintage.weights <- "equal" # or "n.funds" (U_pair only)
+source("helper/objective.R")
+
 # 1.2) load data -----
 
 # load public data
@@ -182,36 +189,15 @@ df.private.cfs$Date <- as.Date(df.private.cfs$Date)
 df.private.cfs$Fund.ID <- as.factor(paste(df.private.cfs$Fund.ID, df.private.cfs$type, sep = "_"))
 
 
-to.monthly <- function(df.ss) {
-  # fill zero cash flows (necessary for estimation)
-  if (use.simulation) {
-    max.date <- as.Date("2020-01-01")
-  } else {
-    max.date <- max(df.ss$Date) + 1
-  }
-  df.m <- data.frame(Date = seq(min(df.ss$Date) + 1, max.date, by = "month") - 1)
-  df.ss <- merge(df.ss, df.m, by = "Date", all = TRUE)
-  df.ss$CF[is.na(df.ss$CF)] <- 0
-  for (col in c("type", "Vintage", "Fund.ID")) df.ss[, col] <- df.ss[1, col]
-  return(df.ss)
-}
-
-if (FALSE) {
-  list.private <- list()
-  i <- 1
-  for (fuid in levels(df.private.cfs$Fund.ID)) {
-    print(i)
-    i <- i + 1
-    df.ss <- df.private.cfs[df.private.cfs$Fund.ID == fuid, ]
-    list.private[[as.character(fuid)]] <- to.monthly(df.ss)
-  }
-}
-
-
-# split.private <- split(df.private.cfs, df.private.cfs$Fund.ID)
-# system.time(list.private <- lapply(split.private, to.monthly))
-# system.time(df.private.cfs <- as.data.frame(data.table::rbindlist(list.private)))
-system.time(df.private.cfs <- as.data.frame(data.table::rbindlist(lapply(split(df.private.cfs, df.private.cfs$Fund.ID), to.monthly))))
+# Monthly grid with zero cash flows (B5, assumption A5): every unit of a
+# vintage starts at the common vintage origin t0 (origin.convention) and every
+# unit ends at the common data end T.max, in the empirical and the simulation
+# branch alike. Formerly each unit ran from its own first to its own last date
+# (empirical) or to 2019-12-31 (simulation), so the horizon window depended on
+# each vintage's realized liquidation date.
+grid.t.max <- max(df.private.cfs$Date)
+cat("Monthly grid: origin =", origin.convention, "| common end T.max =", format(grid.t.max), "\n")
+system.time(df.private.cfs <- pad.all.units(df.private.cfs, origin.convention, grid.t.max))
 
 stopifnot(sum(df.private.cfs$CF) > 0)
 
@@ -323,17 +309,11 @@ source("helper/getNPVs.R")
 
 # 2.2) err.sqr.calc function ----
 
+# B2: max.month = 0 is an alias of max.month = 1 (inception NPV at the origin
+# t0, origin date not discounted); see helper/objective.R for the convention.
 if (sdf.model == "linear") {
   f1 <- function(df.ss, max.month, par0) {
-    if (max.month == 0) {
-      return(
-        sum(
-          df.ss$CF / exp(cumsum(log(1 + (as.matrix(df.ss[, names(par0)]) %*% par0))))
-        )
-      )
-    }
-    # else
-    return(getNPVs(
+    return(horizon.error(
       df.ss$CF,
       exp(cumsum(log(1 + (as.matrix(df.ss[, names(par0)]) %*% par0)))),
       max.month
@@ -365,15 +345,7 @@ if (sdf.model == "exp.aff") {
   f1 <- function(df.ss, max.month, par0) {
     df.ss$Alpha <- exp(1) - 1
 
-    if (max.month == 0) {
-      return(
-        sum(
-          df.ss$CF / exp(cumsum(as.matrix(log(1 + df.ss[, names(par0)])) %*% par0))
-        )
-      )
-    }
-    # else
-    return(getNPVs(
+    return(horizon.error(
       df.ss$CF,
       exp(cumsum(as.matrix(log(1 + df.ss[, names(par0)])) %*% par0)),
       max.month
@@ -410,6 +382,35 @@ if (error.function == "L1_Ridge") {
       sum(abs(npvs)) / length(npvs) + lambda / length(p) * sum(p^2)
     )
   }
+}
+
+# Cross-fund pair-product criterion U_{v,H} (B5, theorem T7): needs fund-level
+# data. Funds of a vintage share the grid (pad.all.units), so their horizon
+# errors share A_{v,H}(theta). Vintage weights q_v: vintage.weights.
+if (error.function == "U_pair") {
+  if (use.vintage.year.pfs) stop("error.function = 'U_pair' needs fund-level data (use_vintage_year_pfs: false)")
+  use.size <- grepl("FW", weighting) && "Size" %in% colnames(df0)
+  err.sqr.calc <- function(par, max.month, lambda, df) {
+    dfx <- split(df, df$Fund.ID)
+    npvs <- sapply(dfx, f1, max.month = max.month, par0 = c("RF" = 1, par))
+    if (any(!is.finite(npvs))) {
+      return(1e10)
+    }
+    key <- vapply(dfx, function(d) paste(d$type[1], d$Vintage[1]), "")
+    s <- if (use.size) vapply(dfx, function(d) d$Size[1], 0) else rep(1, length(dfx))
+    u <- u.criterion(npvs, key, s, vintage.weights)
+    if (!is.finite(u)) {
+      return(1e10)
+    }
+    p <- ifelse(length(par) == 1, par, par[-1])
+    return(u + lambda / length(p) * sum(abs(p)))
+  }
+}
+
+# Cross-sectional unit for standard errors (score / Hessian contributions):
+# the fund or vintage pool for L2/L1 losses, the vintage for U_pair.
+unit.split <- function(df) {
+  if (error.function == "U_pair") split(df, paste(df$type, df$Vintage)) else split(df, df$Fund.ID)
 }
 
 max.month <- 180
@@ -498,7 +499,7 @@ if (FALSE) {
 }
 
 # Test Data
-dfx <- split(df.in, df.in$Fund.ID)
+dfx <- unit.split(df.in)
 df.ss <- dfx[[1]]
 delta <- 0.0001
 
@@ -868,7 +869,7 @@ iter.run <- function(input.list) {
 
           # Standard Error calc
           for (v in names(par)) par[v] <- res[1, v]
-          dfx <- split(df.optim.in, df.optim.in$Fund.ID)
+          dfx <- unit.split(df.optim.in)
 
           # dependent - kernel bandwidht
           cov <- estim.CoVM(dfx, par = par, indep = FALSE)
@@ -889,6 +890,8 @@ iter.run <- function(input.list) {
           res$CV.key <- input.list$cv.year
           res$weighting <- weighting
           res$error.fun <- error.function
+          res$origin.convention <- origin.convention
+          res$vintage.weights <- if (error.function == "U_pair") vintage.weights else NA
           res$sdf.model <- sdf.model
           res$datetime <- Sys.time() + 2 * 60 * 60
 

@@ -322,8 +322,8 @@ acs <- list(
 # Builds the fund-level panel once and writes, from that single panel,
 #   - the main sample (complete-history funds): fund-level file (if
 #     write.fund.level) and constant-composition VYP file in data.prepared.folder;
-#   - if write.fund.level: the all-funds robustness sample (fund-level and VYP)
-#     in data.allfunds.folder and, for EW, the sample funnel table.
+#   - the all-funds robustness sample in data.allfunds.folder: VYP file always,
+#     fund-level file and (for EW) the sample funnel table if write.fund.level.
 # Fund-level and VYP files of a sample are always mutually consistent (B4 test).
 make.preqin.csv <- function(fund.size.weighting, region.filter, final.nav.discount = 1,
                             write.fund.level = TRUE) {
@@ -368,10 +368,12 @@ make.preqin.csv <- function(fund.size.weighting, region.filter, final.nav.discou
     if (write.fund.level) write.csv(df.main, make.file(data.prepared.folder, FALSE), row.names = FALSE)
     write.csv(pool(df.main), make.file(data.prepared.folder, TRUE), row.names = FALSE)
 
+    # robustness sample: all funds (truncated histories flagged Complete = FALSE).
+    # VYP files are written for every configuration (incl. NAV haircuts), so
+    # every scenario also runs on the all-funds folder.
+    write.csv(pool(df.all), make.file(data.allfunds.folder, TRUE), row.names = FALSE)
     if (write.fund.level) {
-        # robustness sample: all funds (truncated histories flagged Complete = FALSE)
         write.csv(df.all, make.file(data.allfunds.folder, FALSE), row.names = FALSE)
-        write.csv(pool(df.all), make.file(data.allfunds.folder, TRUE), row.names = FALSE)
         if (!fund.size.weighting) {
             st <- do.call(rbind, l.status)
             st$status <- factor(st$status, levels = c("complete", "truncated", "late.start", "missing.nav"))
