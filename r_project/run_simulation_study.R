@@ -131,6 +131,7 @@ run_simulation_study <- function(
                         # B1: mean-one multiplicative deal shocks by default;
                         # "additive" (with default truncation) is a stress case
                         shock.model = if (is.null(dgp$shock_model)) "multiplicative" else dgp$shock_model,
+                        write.fund.level = if (is.null(dgp$write_fund_level)) TRUE else isTRUE(dgp$write_fund_level),
                         scenario_id = id
                     )
 

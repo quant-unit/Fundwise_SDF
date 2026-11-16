@@ -59,3 +59,5 @@ r_project/*/figures/*
 !r_project/data_out/cache_simulation_1000
 !r_project/simulation/data_results_sim/data_out_2020
 .Rproj.user
+r_project/simulation/data_out_2026_g1/*
+!r_project/simulation/data_out_2026_g1/bias_analysis

@@ -161,7 +161,9 @@ create.simulation.multifactor <- function(
     deterministic.inv.timing = FALSE,
     scenario_id = NULL,
     output_folder = "simulation/data_prepared_sim",
-    shock.model = "multiplicative") {
+    shock.model = "multiplicative",
+    n.cores = max(1, parallel::detectCores() - 2),
+    write.fund.level = TRUE) {
     stopifnot(shock.model %in% c("multiplicative", "additive"))
     set.seed(100) # For reproducibility
     months <- 12
@@ -287,11 +289,12 @@ create.simulation.multifactor <- function(
 
     output <- list()
     output_factors <- list() # Collect simulated factors per sample
-    for (x in 1:no.samples) {
-        if (x %% pb_interval == 0) {
-            cat("  Progress:", x, "/", no.samples, "\n")
-        }
+    # One Monte Carlo sample. Each sample reseeds itself (set.seed(x)), so
+    # generating the samples in parallel (forked workers, speed) gives exactly
+    # the same data as the serial loop.
+    one.sample <- function(x) {
         set.seed(x)
+        factors_x <- NULL
 
         df_current <- df.q5
         if (simulate.mkt) {
@@ -312,7 +315,7 @@ create.simulation.multifactor <- function(
             df_current$MKT <- r_mkt_sim - RF_const
 
             # Store the simulated factors for the estimator
-            output_factors[[x]] <- data.frame(
+            factors_x <- data.frame(
                 Date = df_current$Date,
                 sample_id = x,
                 MKT = df_current$MKT,
@@ -331,8 +334,20 @@ create.simulation.multifactor <- function(
         df.out <- as.data.frame(data.table::rbindlist(l))
         df.out$type <- paste0(df.out$type, " #f:", no.funds, " #y:", max.vin - min.vin, " .", x)
         df.out$Fund.ID <- paste0(df.out$type, "+", df.out$Fund.ID)
-        output[[paste0("i", x)]] <- df.out
+        list(cashflows = df.out, factors = factors_x)
     }
+    samples <- if (n.cores > 1 && no.samples > 1) {
+        parallel::mclapply(seq_len(no.samples), one.sample, mc.cores = n.cores)
+    } else {
+        lapply(seq_len(no.samples), one.sample)
+    }
+    failed <- vapply(samples, function(z) inherits(z, "try-error") || is.null(z$cashflows), TRUE)
+    if (any(failed)) stop("Simulation failed for sample(s): ", paste(which(failed), collapse = ", "))
+    output <- lapply(samples, `[[`, "cashflows")
+    output_factors <- lapply(samples, `[[`, "factors")
+    output_factors <- output_factors[!vapply(output_factors, is.null, TRUE)]
+    rm(samples)
+    cat("  Generated", no.samples, "samples\n")
 
     df.out <- data.table::rbindlist(output)
     rm(output)
@@ -389,7 +404,14 @@ create.simulation.multifactor <- function(
 
     cat("Saving files to:", DATA_PREPARED_SIM_PATH, "\n")
     write.csv(df.vyp, filename.vyp, row.names = FALSE)
-    write.csv(df.out, filename.fund, row.names = FALSE)
+    # fund-level file is large (~3 GB for 1,000 samples x 50 funds x 20
+    # vintages) and only needed for fund-level estimation (EW, U_pair)
+    if (write.fund.level) {
+        write.csv(df.out, filename.fund, row.names = FALSE)
+    } else {
+        filename.fund <- NULL
+        cat("  Fund-level file not written (write.fund.level = FALSE)\n")
+    }
     write.csv(df.meta, filename.meta, row.names = FALSE)
 
     # Save simulated factors if market was simulated

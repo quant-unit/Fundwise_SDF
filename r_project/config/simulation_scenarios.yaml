@@ -85,6 +85,7 @@ scenarios:
   base_case_zero_alpha:
     description: "Base case: β_MKT=1, α=0, Vintage-Year Portfolios"
     dgp:
+      write_fund_level: false # Appendix D: VYP estimation only (disk)
       alpha: 0
       beta_MKT: 1
     estimation:
@@ -447,6 +448,7 @@ scenarios:
   big_n_v_50funds_alpha:
     description: "Larger sample: 50 funds, vintages 1986-2005 plus Alpha"
     dgp:
+      write_fund_level: false # Appendix D: VYP estimation only (disk)
       no_funds: 50
     estimation:
       factors_to_use: "Alpha"
@@ -457,6 +459,7 @@ scenarios:
   big_n_v_50funds_alpha_stdv30:
     description: "Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized stdv 108%"
     dgp:
+      write_fund_level: false # Appendix D: VYP estimation only (disk)
       no_funds: 50
       stdvs: 0.3
       use_shifted_lognormal: false
@@ -469,6 +472,7 @@ scenarios:
   big_n_v_50funds_alpha_stdv30_shifted:
     description: "Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized stdv 108%, shifted lognormal"
     dgp:
+      write_fund_level: false # Appendix D: VYP estimation only (disk)
       no_funds: 50
       stdvs: 0.3
       use_shifted_lognormal: true
@@ -481,6 +485,7 @@ scenarios:
   big_n_v_50funds_alpha_stdv30_shifted_mkt:
     description: "Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized stdv 108%, shifted lognormal"
     dgp:
+      write_fund_level: false # Appendix D: VYP estimation only (disk)
       no_funds: 50
       stdvs: 0.3
       use_shifted_lognormal: true
@@ -494,6 +499,7 @@ scenarios:
   big_n_v_50funds_alpha_stdv30_shifted_mkt2:
     description: "Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized stdv 108%, shifted lognormal, lower alpha bound"
     dgp:
+      write_fund_level: false # Appendix D: VYP estimation only (disk)
       no_funds: 50
       stdvs: 0.3
       use_shifted_lognormal: true
@@ -522,6 +528,7 @@ scenarios:
   big_n_v_50funds_alpha_stdv30_shifted_mkt4:
     description: "Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized stdv 108%, shifted lognormal"
     dgp:
+      write_fund_level: false # Appendix D: VYP estimation only (disk)
       no_funds: 50
       stdvs: 0.3
       use_shifted_lognormal: true
@@ -536,6 +543,7 @@ scenarios:
   big_n_v_50funds_alpha_stdv30_shifted_mkt6:
     description: "Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized stdv 108%, shifted lognormal"
     dgp:
+      write_fund_level: false # Appendix D: VYP estimation only (disk)
       no_funds: 50
       stdvs: 0.3
       use_shifted_lognormal: true
@@ -550,6 +558,7 @@ scenarios:
   big_n_v_50funds_alpha_stdv30_shifted_mkt7:
     description: "Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized stdv 108%, shifted lognormal"
     dgp:
+      write_fund_level: false # Appendix D: VYP estimation only (disk)
       no_funds: 50
       stdvs: 0.3
       use_shifted_lognormal: true
@@ -565,6 +574,7 @@ scenarios:
   big_n_v_50funds_alpha_stdv30_shifted_mkt8:
     description: "Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized stdv 108%, shifted lognormal, Alpha Upper 1%"
     dgp:
+      write_fund_level: false # Appendix D: VYP estimation only (disk)
       no_funds: 50
       stdvs: 0.3
       use_shifted_lognormal: true
@@ -778,3 +788,181 @@ scenarios:
       max_months: [0, 1, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360]
     active: false
     data_folder: null
+
+# ============================================================================
+# APPENDIX D (DLP12 replication): stress-case twins of S1-S10 with the former
+# additive deal shocks and default truncation (shock_model: "additive"),
+# deal timing fixed (B1). The baseline S1-S10 above use mean-one multiplicative
+# shocks, under which "Normal" and "Shifted LN" scenarios coincide.
+# ============================================================================
+  base_case_zero_alpha_additive:
+    description: 'Base case: β_MKT=1, α=0, Vintage-Year Portfolios [additive shocks
+      with default truncation, B1 stress case]'
+    dgp:
+      write_fund_level: false # Appendix D: VYP estimation only (disk)
+      alpha: 0
+      beta_MKT: 1
+      shock_model: additive
+    estimation:
+      factors_to_use: Alpha
+      max_months:
+        - 0
+        - 1
+        - 30
+        - 60
+        - 90
+        - 120
+        - 150
+        - 180
+        - 210
+        - 240
+        - 300
+        - 360
+    active: yes
+    data_folder: auto
+  big_n_v_50funds_alpha_additive:
+    description: 'Larger sample: 50 funds, vintages 1986-2005 plus Alpha [additive shocks
+      with default truncation, B1 stress case]'
+    dgp:
+      write_fund_level: false # Appendix D: VYP estimation only (disk)
+      no_funds: 50
+      shock_model: additive
+    estimation:
+      factors_to_use: Alpha
+      max_months: 0
+    active: yes
+    data_folder: auto
+  big_n_v_50funds_alpha_stdv30_additive:
+    description: 'Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized
+      stdv 108% [additive shocks with default truncation, B1 stress case]'
+    dgp:
+      write_fund_level: false # Appendix D: VYP estimation only (disk)
+      no_funds: 50
+      stdvs: 0.3
+      use_shifted_lognormal: no
+      shock_model: additive
+    estimation:
+      factors_to_use: Alpha
+      max_months: 0
+    active: yes
+    data_folder: auto
+  big_n_v_50funds_alpha_stdv30_shifted_additive:
+    description: 'Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized
+      stdv 108%, shifted lognormal [additive shocks with default truncation, B1 stress
+      case]'
+    dgp:
+      write_fund_level: false # Appendix D: VYP estimation only (disk)
+      no_funds: 50
+      stdvs: 0.3
+      use_shifted_lognormal: yes
+      shock_model: additive
+    estimation:
+      factors_to_use: Alpha
+      max_months: 0
+    active: yes
+    data_folder: auto
+  big_n_v_50funds_alpha_stdv30_shifted_mkt_additive:
+    description: 'Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized
+      stdv 108%, shifted lognormal [additive shocks with default truncation, B1 stress
+      case]'
+    dgp:
+      write_fund_level: false # Appendix D: VYP estimation only (disk)
+      no_funds: 50
+      stdvs: 0.3
+      use_shifted_lognormal: yes
+      simulate_mkt: yes
+      shock_model: additive
+    estimation:
+      factors_to_use: Alpha
+      max_months: 0
+    active: yes
+    data_folder: auto
+  big_n_v_50funds_alpha_stdv30_shifted_mkt2_additive:
+    description: 'Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized
+      stdv 108%, shifted lognormal, lower alpha bound [additive shocks with default
+      truncation, B1 stress case]'
+    dgp:
+      write_fund_level: false # Appendix D: VYP estimation only (disk)
+      no_funds: 50
+      stdvs: 0.3
+      use_shifted_lognormal: yes
+      simulate_mkt: yes
+      shock_model: additive
+    estimation:
+      factors_to_use: Alpha
+      alpha_lower: -Inf
+      alpha_upper: 0.01
+      max_months: 0
+    active: yes
+    data_folder: auto
+  big_n_v_50funds_alpha_stdv30_shifted_mkt4_additive:
+    description: 'Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized
+      stdv 108%, shifted lognormal [additive shocks with default truncation, B1 stress
+      case]'
+    dgp:
+      write_fund_level: false # Appendix D: VYP estimation only (disk)
+      no_funds: 50
+      stdvs: 0.3
+      use_shifted_lognormal: yes
+      simulate_mkt: yes
+      deterministic_inv_timing: yes
+      shock_model: additive
+    estimation:
+      factors_to_use: Alpha
+      max_months: 0
+    active: yes
+    data_folder: auto
+  big_n_v_50funds_alpha_stdv30_shifted_mkt6_additive:
+    description: 'Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized
+      stdv 108%, shifted lognormal [additive shocks with default truncation, B1 stress
+      case]'
+    dgp:
+      write_fund_level: false # Appendix D: VYP estimation only (disk)
+      no_funds: 50
+      stdvs: 0.3
+      use_shifted_lognormal: yes
+      simulate_mkt: yes
+      max_holding_period: 5
+      shock_model: additive
+    estimation:
+      factors_to_use: Alpha
+      max_months: 0
+    active: yes
+    data_folder: auto
+  big_n_v_50funds_alpha_stdv30_shifted_mkt7_additive:
+    description: 'Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized
+      stdv 108%, shifted lognormal [additive shocks with default truncation, B1 stress
+      case]'
+    dgp:
+      write_fund_level: false # Appendix D: VYP estimation only (disk)
+      no_funds: 50
+      stdvs: 0.3
+      use_shifted_lognormal: yes
+      simulate_mkt: yes
+      max_holding_period: 5
+      deterministic_inv_timing: yes
+      shock_model: additive
+    estimation:
+      factors_to_use: Alpha
+      max_months: 0
+    active: yes
+    data_folder: auto
+  big_n_v_50funds_alpha_stdv30_shifted_mkt8_additive:
+    description: 'Larger sample: 50 funds, vintages 1986-2005 plus Alpha, annualized
+      stdv 108%, shifted lognormal, Alpha Upper 1% [additive shocks with default truncation,
+      B1 stress case]'
+    dgp:
+      write_fund_level: false # Appendix D: VYP estimation only (disk)
+      no_funds: 50
+      stdvs: 0.3
+      use_shifted_lognormal: yes
+      simulate_mkt: yes
+      max_holding_period: 5
+      deterministic_inv_timing: yes
+      shock_model: additive
+    estimation:
+      factors_to_use: Alpha
+      alpha_upper: 0.01
+      max_months: 0
+    active: yes
+    data_folder: auto

@@ -274,6 +274,17 @@ pv.sim <- sapply(split(sim.f, sim.f$Fund.ID), function(d) {
 })
 check("simulated funds at stdv = 0 have PV(theta_0) = 0 (linear SDF)", max(abs(pv.sim)) < 1e-13,
       sprintf("%d funds, max |PV| %.1e", length(pv.sim), max(abs(pv.sim))))
+gen.files <- function(nc) {
+  d <- file.path(tempdir(), paste0("b1_par_", nc))
+  invisible(capture.output(g <- create.simulation.multifactor(
+    no.deals = 15, investment.period = 5, max.holding.period = 10, alpha = 0.001, beta_MKT = 1.2,
+    no.samples = 6, no.funds = 3, min.vin = 1990, max.vin = 1993, stdvs = 0.3, simulate.mkt = TRUE,
+    scenario_id = "par", output_folder = d, n.cores = nc
+  )))
+  unname(tools::md5sum(c(g$fund_path, g$vyp_path, g$factors_path)))
+}
+check("parallel sample generation gives byte-identical files to serial generation",
+      identical(gen.files(1), gen.files(4)))
 set.seed(4)
 M <- 20000
 R.true <- prod(G.path[11:70])
