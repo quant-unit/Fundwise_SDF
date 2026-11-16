@@ -123,6 +123,33 @@ install.packages(c(
 ))
 ```
 
+### Preqin Data Preparation (2026 revision)
+
+Run from `r_project/` (an empty `.here` file makes `here()` resolve to this folder):
+
+```r
+source("empirical/prep_preqin.R")   # needs the raw export in empirical/data_in/
+```
+
+**Input.** `empirical/data_in/Preqin_Cashflow_export-14_Apr_22272f54e5-...xlsx` (licensed, gitignored; data end 2022-03-31). Cash flows per USD 10mn of commitment are taken from the quarterly `Value` rows (cumulative net cash flow differenced; the final NAV is booked as a liquidating distribution on the last date). The export's dated Capital Call/Distribution rows reconcile exactly to these cumulatives; the quarterly booking dates lie about 50 days after the true flow dates on average.
+
+**Vintage-year portfolios (constant composition).** `helper/pool_vintage.R` sums each date's flows over *all* funds of a vintage and divides by a time-invariant denominator: the fund count N_v (EW) or the total vintage commitment (FW). Funds without a transaction on a date contribute zero, so the pooled NPV equals the weighted average of fund NPVs for every discount curve. Both EW and FW pools are per unit of committed capital. Pools carry `N.funds` and `Commitment` columns (for vintage weights q_v = n_v). This replaces the earlier reporter-mean pooling (`aggregate(CF ~ Date, df, mean)`) used for `data_prepared_2026_b/`.
+
+**Sample rule.** A fund has a *complete history* if its last record lies more than `min.history.years` (5) after its vintage year starts, or if it is still reporting at the data end (last record within `live.window.months` (12) of the export's last NAV date). The April 2022 export truncates many histories that the February 2020 export still has (vendor artifact); booking an early NAV as a liquidation is not defensible, so these funds are excluded from the main sample.
+
+| Folder | Content |
+|---|---|
+| `empirical/data_prepared_2026_c/` | Main sample: complete-history funds. VYP files (tracked) and fund-level files (gitignored, regenerated) |
+| `empirical/data_prepared_2026_c_allfunds/` | Robustness sample: all funds, truncated ones flagged `Complete = FALSE` |
+| `empirical/data_prepared_2026_c/preqin_sample_funnel_<region>.csv` | Fund counts per strategy and vintage: raw, late start, missing NAV, truncated, complete |
+| `empirical/data_prepared_2026_b/` | Previous reporter-mean pools (kept for before/after comparison) |
+
+North America, vintages <= 2010: 383 Buyout and 432 Venture Capital complete-history funds (495 and 538 before the sample rule). Fund-level files carry `Size` (USD mn), `Last.Date`, `Age.Last` and `Complete`.
+
+**Tests.** `Rscript helper/test_code_repairs.R` checks the pooling identity, the FW normalization, the sample rule and the funnel counts on synthetic data and on all prepared files. It fails if a prepared file is missing.
+
+> The estimation configs (`config/empirical_scenarios.yaml`) still read `data_prepared_2026_b`; switch `data_prepared_folder` to `data_prepared_2026_c` to estimate on the repaired pools.
+
 ### Running Empirical Analysis
 
 1. **Prepare Data**: Ensure cash flow data is in `empirical/data_prepared/`

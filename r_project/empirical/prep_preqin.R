@@ -6,7 +6,31 @@ if (sys.nframe() == 0L) rm(list = ls())
 library(readxl)
 library(here)
 
-data.prepared.folder <- here("empirical/data_prepared_2026_b")
+source(here("helper/pool_vintage.R"))
+
+# 2026_c: constant-composition VYPs and commitment-normalized FW pools
+# (revision plan B4/B6). 2026_b holds the earlier reporter-mean pools.
+data.prepared.folder <- here("empirical/data_prepared_2026_c")
+
+# Sample rule (main sample): a fund has a COMPLETE HISTORY if its last Preqin
+# record lies more than min.history.years after January 1 of its vintage year,
+# OR if it is still reporting at the data end (last record within
+# live.window.months of the export's last NAV date). A young fund that is still
+# reporting is censored by the data end, not truncated; its terminal NAV is
+# treated like that of every live fund (NAV haircut exercise).
+# In the April 2022 export, 218 of 1,033 North America BO/VC funds (V <= 2010)
+# have histories that stop within 5 years, mostly a vendor artifact (the Feb
+# 2020 export has later records for these funds). Booking their last NAV as a
+# liquidating distribution is not defensible, so the main sample excludes
+# them. For V <= 2010 the live clause adds no fund (all live funds are older
+# than 5 years); it keeps recent vintages usable for the vintage-cutoff check.
+# Files in data.prepared.folder hold the main sample; files with all funds
+# (flagged by the Complete column) go to data.allfunds.folder and serve as a
+# robustness sample. A funnel table records every exclusion.
+min.history.years <- 5
+live.window.months <- 12 # Preqin NAVs lag 1-3 quarters; most live funds' latest NAV is 2021-06 or 2021-09 vs. data end 2022-03
+data.allfunds.folder <- paste0(data.prepared.folder, "_allfunds")
+if (!dir.exists(data.allfunds.folder)) dir.create(data.allfunds.folder)
 
 
 # setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
@@ -28,6 +52,12 @@ colnames(df.xl)
 # Exclude too recent vintages
 preqin.cutoff.vintage <- 2021
 df.xl <- df.xl[df.xl$VINTAGE...INCEPTION.YEAR <= preqin.cutoff.vintage, ]
+
+# Data end = last NAV (Value) date in the export; funds with a last record on
+# or after live.cutoff count as still reporting (sample rule above).
+data.end <- as.Date(max(df.xl$TRANSACTION.DATE[df.xl$TRANSACTION.TYPE %in% "Value"], na.rm = TRUE))
+live.cutoff <- seq(data.end + 1, by = paste0("-", live.window.months, " months"), length.out = 2)[2] - 1
+print(paste("Data end:", data.end, "| live if last record >=", live.cutoff))
 
 # df <- df.xl
 table(df.xl$ASSET.CLASS[!duplicated(df.xl$FUND.ID)])
@@ -172,15 +202,19 @@ make.preqin.df <- function(
     for (col in c("FUND.ID")) {
         df[, col] <- as.factor(df[, col])
     }
+    # impute missing fund sizes with the mean over funds (not over rows, which
+    # would overweight funds with long reporting histories)
+    fund.sizes <- df$FUND.SIZE..USD.MN.[!duplicated(df$FUND.ID)]
     df$FUND.SIZE..USD.MN. <- ifelse(is.na(df$FUND.SIZE..USD.MN.),
-        mean(df$FUND.SIZE..USD.MN., na.rm = TRUE),
+        mean(fund.sizes, na.rm = TRUE),
         df$FUND.SIZE..USD.MN.
     )
     df <- df[order(df$FUND.ID, df$TRANSACTION.DATE), ]
 
     list.df <- list()
-    for (fund.id in levels(df$FUND.ID)) {
-        df.ss <- df[df$FUND.ID == fund.id, ]
+    list.status <- list()
+    for (df.ss in split(df, df$FUND.ID, drop = TRUE)) {
+        fund.id <- as.character(df.ss$FUND.ID[1])
         df.ss <- df.ss[order(df.ss$TRANSACTION.DATE), ]
         df.ss$CF <- c(df.ss$NET.CASHFLOW[1], diff(df.ss$NET.CASHFLOW))
         df.ss$CUMULATIVE.CONTRIBUTION <- c(df.ss$CUMULATIVE.CONTRIBUTION[1], diff(df.ss$CUMULATIVE.CONTRIBUTION))
@@ -193,20 +227,43 @@ make.preqin.df <- function(
 
         if (is.na(final.nav)) print(paste("Missing Final NAV:", fund.id))
 
-        if ((abs(year.diff) < 2) & (!is.na(final.nav))) {
-            list.df[[fund.id]] <- df.ss
-        }
+        vintage <- as.numeric(df.ss$VINTAGE...INCEPTION.YEAR[1])
+        last.date <- as.Date(max(df.ss$TRANSACTION.DATE))
+        age.last <- as.numeric(last.date - as.Date(paste0(vintage, "-01-01"))) / 365.25
+        df.ss$Last.Date <- last.date
+        df.ss$Age.Last <- age.last
+        complete <- (age.last > min.history.years) || (last.date >= live.cutoff)
+        df.ss$Complete <- complete
+
+        keep <- (abs(year.diff) < 2) & (!is.na(final.nav))
+        if (keep) list.df[[fund.id]] <- df.ss
+        list.status[[fund.id]] <- data.frame(
+            Fund.ID = fund.id, Vintage = vintage,
+            status = if (is.na(final.nav)) {
+                "missing.nav"
+            } else if (abs(year.diff) >= 2) {
+                "late.start"
+            } else if (complete) {
+                "complete"
+            } else {
+                "truncated"
+            },
+            stringsAsFactors = FALSE
+        )
     }
     df <- data.frame(do.call(rbind, list.df))
+    df.status <- data.frame(do.call(rbind, list.status))
 
+    # Preqin reports cash flows per USD 10mn of commitment, so dividing by
+    # 10mn expresses EW flows per unit of commitment. FW fund-level flows are
+    # additionally multiplied by fund size (USD mn), i.e. they are in USD mn;
+    # the FW vintage pools are normalized by total vintage commitment in
+    # pool.vintage() (B6), so both EW and FW pools are per unit of commitment.
     if (fund.size.weighting) {
         df$CF <- df$CF * df$FUND.SIZE..USD.MN.
         df$TRANSACTION.AMOUNT <- df$TRANSACTION.AMOUNT * df$FUND.SIZE..USD.MN. # aka NAV
         df$CUMULATIVE.CONTRIBUTION <- df$CUMULATIVE.CONTRIBUTION * df$FUND.SIZE..USD.MN.
         df$CUMULATIVE.DISTRIBUTION <- df$CUMULATIVE.DISTRIBUTION * df$FUND.SIZE..USD.MN.
-    } else {
-        # df$CF <- df$CF * mean(df$FUND.SIZE..USD.MN.) # why?
-        df$CF <- df$CF
     }
 
     ten.mio <- 10 * 1000 * 1000
@@ -217,33 +274,26 @@ make.preqin.df <- function(
     df <- df[, c(
         "FUND.ID", "TRANSACTION.DATE", "CF",
         "TRANSACTION.AMOUNT", "CUMULATIVE.CONTRIBUTION", "CUMULATIVE.DISTRIBUTION",
-        "VINTAGE...INCEPTION.YEAR"
+        "VINTAGE...INCEPTION.YEAR", "FUND.SIZE..USD.MN.",
+        "Last.Date", "Age.Last", "Complete"
     )]
-    colnames(df) <- c("Fund.ID", "Date", "CF", "NAV", "CON", "DIS", "Vintage")
+    colnames(df) <- c(
+        "Fund.ID", "Date", "CF", "NAV", "CON", "DIS", "Vintage", "Size",
+        "Last.Date", "Age.Last", "Complete"
+    )
+    df$Fund.ID <- as.character(df$Fund.ID)
+    df$Date <- as.Date(df$Date)
     df$type <- out.name
+    df <- df[, c(
+        "Fund.ID", "Date", "CF", "NAV", "CON", "DIS", "Vintage", "type", "Size",
+        "Last.Date", "Age.Last", "Complete"
+    )]
 
-    # Vintage Year Porftolio Formation
-    agg.vin.year.pf <- function(df) {
-        Vintage <- df$Vintage[1]
-        type <- df$type[1]
-        df.out <- aggregate(CF ~ Date, data = df, mean)
-        df.nav <- aggregate(NAV ~ Date, data = df, mean)
-        df.out <- merge(df.out, df.nav, by = "Date")
-        df.con <- aggregate(CON ~ Date, data = df, mean)
-        df.out <- merge(df.out, df.con, by = "Date")
-        df.dis <- aggregate(DIS ~ Date, data = df, mean)
-        df.out <- merge(df.out, df.dis, by = "Date")
-        df.out$type <- type
-        df.out$Vintage <- Vintage
-        df.out$Fund.ID <- paste0(Vintage, "_", type)
-        df.out <- df.out[order(df.out$Date), ]
-        return(df.out)
-    }
-    if (vin.year.pfs) {
-        dfx <- split(df, df$Vintage)
-        df <- data.frame(do.call(rbind, lapply(dfx, agg.vin.year.pf)))
-    }
+    # Vintage year portfolio formation: constant composition (B4, B6)
+    if (vin.year.pfs) df <- pool.all.vintages(df, fund.size.weighting)
 
+    df.status$type <- out.name
+    attr(df, "status") <- df.status
     return(df)
 }
 df <- make.preqin.df(acs.filter = "Private Equity", region.filter = "North America")
@@ -269,50 +319,90 @@ acs <- list(
 )
 
 
-make.preqin.csv <- function(fund.size.weighting, vin.year.pfs, region.filter, final.nav.discount = 1) {
+# Builds the fund-level panel once and writes, from that single panel,
+#   - the main sample (complete-history funds): fund-level file (if
+#     write.fund.level) and constant-composition VYP file in data.prepared.folder;
+#   - if write.fund.level: the all-funds robustness sample (fund-level and VYP)
+#     in data.allfunds.folder and, for EW, the sample funnel table.
+# Fund-level and VYP files of a sample are always mutually consistent (B4 test).
+make.preqin.csv <- function(fund.size.weighting, region.filter, final.nav.discount = 1,
+                            write.fund.level = TRUE) {
     l <- list()
+    l.status <- list()
     for (i in names(acs)) {
         print(acs[[i]])
-        df0 <- make.preqin.df(
+        l[[i]] <- make.preqin.df(
             fund.size.weighting = fund.size.weighting,
             acs.filter = acs[[i]],
             region.filter = region.filter,
-            vin.year.pfs = vin.year.pfs,
+            vin.year.pfs = FALSE,
             out.name = i,
             final.nav.discount = final.nav.discount
         )
-        l[[i]] <- df0
+        l.status[[i]] <- attr(l[[i]], "status")
     }
-    df.out <- data.frame(do.call(rbind, l))
+    df.all <- data.frame(do.call(rbind, l))
+    rownames(df.all) <- NULL
 
-    tag <- ifelse(fund.size.weighting, "FW", "EW")
-    tag <- ifelse(vin.year.pfs, paste0(tag, "_VYP"), tag)
-    tag <- ifelse(is.na(region.filter), tag, paste0(tag, "_", region.filter))
-    tag <- ifelse(final.nav.discount != 1, paste0(tag, "_NC", final.nav.discount * 100), tag)
-    file <- paste0(data.prepared.folder, "/preqin_cashflows_2022_", tag, "_NAV.csv")
-    file <- paste0(data.prepared.folder, "/preqin_cashflows_", tag, "_NAV.csv")
-    write.csv(df.out, file, row.names = FALSE)
-    invisible(df.out)
+    pool <- function(df.fund) {
+        df.vyp <- do.call(rbind, lapply(
+            split(df.fund, df.fund$type, drop = TRUE),
+            pool.all.vintages,
+            fund.size.weighting = fund.size.weighting
+        ))
+        df.vyp <- df.vyp[order(match(df.vyp$type, names(acs)), df.vyp$Vintage, df.vyp$Date), ]
+        rownames(df.vyp) <- NULL
+        df.vyp
+    }
+    region.tag <- ifelse(is.na(region.filter), "", paste0("_", region.filter))
+    make.file <- function(folder, vin.year.pfs) {
+        tag <- ifelse(fund.size.weighting, "FW", "EW")
+        tag <- ifelse(vin.year.pfs, paste0(tag, "_VYP"), tag)
+        tag <- paste0(tag, region.tag)
+        tag <- ifelse(final.nav.discount != 1, paste0(tag, "_NC", final.nav.discount * 100), tag)
+        paste0(folder, "/preqin_cashflows_", tag, "_NAV.csv")
+    }
+
+    # main sample: complete-history funds
+    df.main <- df.all[df.all$Complete, ]
+    if (write.fund.level) write.csv(df.main, make.file(data.prepared.folder, FALSE), row.names = FALSE)
+    write.csv(pool(df.main), make.file(data.prepared.folder, TRUE), row.names = FALSE)
+
+    if (write.fund.level) {
+        # robustness sample: all funds (truncated histories flagged Complete = FALSE)
+        write.csv(df.all, make.file(data.allfunds.folder, FALSE), row.names = FALSE)
+        write.csv(pool(df.all), make.file(data.allfunds.folder, TRUE), row.names = FALSE)
+        if (!fund.size.weighting) {
+            st <- do.call(rbind, l.status)
+            st$status <- factor(st$status, levels = c("complete", "truncated", "late.start", "missing.nav"))
+            tab <- as.data.frame.matrix(table(paste(st$type, st$Vintage), st$status))
+            funnel <- data.frame(
+                type = sub(" .*", "", rownames(tab)), Vintage = as.integer(sub(".* ", "", rownames(tab))),
+                N.raw = rowSums(tab), N.late.start = tab$late.start, N.missing.nav = tab$missing.nav,
+                N.truncated = tab$truncated, N.complete = tab$complete
+            )
+            funnel <- funnel[order(match(funnel$type, names(acs)), funnel$Vintage), ]
+            write.csv(funnel, paste0(data.prepared.folder, "/preqin_sample_funnel", region.tag, ".csv"), row.names = FALSE)
+        }
+    }
+    invisible(NULL)
 }
-# Execute for various configurations
-df.out <- make.preqin.csv(TRUE, TRUE, "North America")
-df.out <- make.preqin.csv(FALSE, TRUE, "North America")
-df.out <- make.preqin.csv(TRUE, TRUE, "North America", 0.5) # 50% final NAV discount
-df.out <- make.preqin.csv(FALSE, TRUE, "North America", 0.5) # 50% final NAV discount
 
-df.out <- make.preqin.csv(TRUE, TRUE, NA)
-df.out <- make.preqin.csv(FALSE, TRUE, NA)
-df.out.fw <- make.preqin.csv(TRUE, FALSE, NA)
-df.out.ew <- make.preqin.csv(FALSE, FALSE, NA)
-df.out <- make.preqin.csv(TRUE, TRUE, NA, 0.5) # 50% final NAV discount
-df.out <- make.preqin.csv(FALSE, TRUE, NA, 0.5) # 50% final NAV discount
+# Execute for various configurations (fund-level files only without NAV haircut)
+for (fsw in c(TRUE, FALSE)) {
+    for (nc in c(1, 0, 0.25, 0.5, 0.75)) {
+        make.preqin.csv(fsw, "North America", nc, write.fund.level = (nc == 1))
+    }
+    for (nc in c(1, 0.5)) {
+        make.preqin.csv(fsw, NA, nc, write.fund.level = (nc == 1))
+    }
+    make.preqin.csv(fsw, "Europe")
+}
+# all funds (for the cumulative cash-flow plots below)
+df.out.fw <- read.csv(paste0(data.allfunds.folder, "/preqin_cashflows_FW_NAV.csv"))
+df.out.ew <- read.csv(paste0(data.allfunds.folder, "/preqin_cashflows_EW_NAV.csv"))
 
-df.out <- make.preqin.csv(TRUE, TRUE, "Europe")
-df.out <- make.preqin.csv(FALSE, TRUE, "Europe")
-
-
-
-summary(df.out)
+summary(df.out.ew)
 
 
 ## ----plot_cum_cf, fig.width=10, fig.height=5, warning=FALSE, message=FALSE----
