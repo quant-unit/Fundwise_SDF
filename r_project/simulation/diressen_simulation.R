@@ -1,6 +1,6 @@
 # Comparison to Driessen et al. 2012
 
-setwd(dirname(dirname(rstudioapi::getActiveDocumentContext()$path)))
+try(setwd(dirname(dirname(rstudioapi::getActiveDocumentContext()$path))), silent = TRUE)
 getwd()
 
 scenarios <- c(
@@ -11,6 +11,12 @@ scenarios <- c(
     "big_n_v_50funds_alpha_stdv30_shifted_mkt6", "big_n_v_50funds_alpha_stdv30_shifted_mkt7",
     "big_n_v_50funds_alpha_stdv30_shifted_mkt8"
 )
+# G1 (2026-11-16): Panel A uses the B1 baseline DGP (mean-one multiplicative
+# deal shocks), Panel B the "_additive" twins (former additive shocks with
+# default truncation, deal timing fixed). Under mean-one multiplicative
+# shocks the "Normal" and "Shifted LN" variants coincide, so S4 is omitted
+# from Panel A.
+scenarios_additive <- paste0(scenarios, "_additive")
 
 #' Generate a professional LaTeX table comparing our small-sample properties
 #' to Driessen et al. 2012 Table 1.
@@ -27,14 +33,18 @@ generate_driessen_latex_table <- function(data_path, output_tex = NULL) {
 
     # Load alpha bounds from YAML config per scenario
     config <- yaml::read_yaml("config/simulation_scenarios.yaml")
-    alpha_bounds <- sapply(scenarios, function(s) {
+    all_scen <- c(scenarios, scenarios_additive)
+    # scenario value, else the config default (was a hard-coded 0.01 fallback,
+    # wrong for scenarios inheriting the default bound of 0.02)
+    alpha_bounds <- sapply(all_scen, function(s) {
         bound <- config$scenarios[[s]]$estimation$alpha_upper
-        if (is.null(bound) || is.infinite(bound)) 0.01 else bound # default 0.01
+        if (is.null(bound)) bound <- config$defaults$estimation$alpha_upper
+        if (is.null(bound) || is.infinite(bound)) NA_real_ else bound
     })
 
     # Filter for Horizon 0 (max_month == 0) and predefined scenarios
     df_sub <- df %>%
-        filter(max_month == 0 & scenario_id %in% scenarios)
+        filter(max_month == 0 & scenario_id %in% all_scen)
 
     # Add per-scenario alpha bound for accurate bound-hit calculation
     df_sub$alpha_upper <- alpha_bounds[as.character(df_sub$scenario_id)]
@@ -90,19 +100,27 @@ generate_driessen_latex_table <- function(data_path, output_tex = NULL) {
     tex <- c(tex, "Scenario & True & Mean & SD & 25\\% & 75\\% & True & Mean & SD & 25\\% & 75\\% & \\% Bound \\\\")
     tex <- c(tex, "\\midrule")
 
-    # Output all scenarios in a single panel
-    for (scen in scenarios) {
+    panel_row <- function(scen, label) {
         row_data <- filter(stats, scenario_id == scen)
         if (nrow(row_data) == 1) {
-            tex <- c(tex, sprintf(
+            return(sprintf(
                 "%s & %s & %s & %s & %s & %s & %s & %s & %s & %s & %s & %s \\\\",
-                scenario_labels[[scen]],
+                label,
                 fmt(row_data$true_beta), fmt(row_data$mean_beta), fmt(row_data$sd_beta), fmt(row_data$p25_beta), fmt(row_data$p75_beta),
                 fmt(row_data$true_alpha), fmt(row_data$mean_alpha), fmt(row_data$sd_alpha), fmt(row_data$p25_alpha), fmt(row_data$p75_alpha),
                 sprintf("%.0f\\%%", row_data$pct_at_bound)
             ))
         }
+        character(0)
     }
+    # Panel A: B1 baseline (mean-one multiplicative shocks); shock labels dropped
+    tex <- c(tex, "\\multicolumn{12}{l}{\\textit{Panel A: mean-one multiplicative deal shocks (repaired simulator)}} \\\\")
+    for (scen in setdiff(scenarios, "big_n_v_50funds_alpha_stdv30_shifted")) {
+        tex <- c(tex, panel_row(scen, gsub(", (Normal|Shifted LN)", "", scenario_labels[[scen]])))
+    }
+    # Panel B: former additive shocks with default truncation, timing fixed
+    tex <- c(tex, "\\addlinespace", "\\multicolumn{12}{l}{\\textit{Panel B: additive deal shocks with default truncation (former shock model, timing fixed)}} \\\\")
+    for (scen in scenarios) tex <- c(tex, panel_row(paste0(scen, "_additive"), scenario_labels[[scen]]))
 
     tex <- c(tex, "\\addlinespace")
     tex <- c(tex, "\\multicolumn{12}{l}{\\textit{Driessen et al. 2012, Table 1}} \\\\")
@@ -121,6 +139,8 @@ generate_driessen_latex_table <- function(data_path, output_tex = NULL) {
         "mimicking the structure of Table~1 in \\cite{DLP12}. ",
         "We simulate 1,000 Monte Carlo draws. ",
         "All scenarios use 20 vintage years (1986--2005) with 15 deals per fund; unless stated otherwise, $n=20$ funds per vintage, $\\sigma=0.2$ monthly idiosyncratic volatility, and a normal error distribution. ",
+        "Panel~A uses the repaired simulator: deal payoffs compound over the months after the investment month and monthly deal shocks are mean-one lognormal, $G_u(1+\\varepsilon_u)$ with $\\mathrm{E}[1+\\varepsilon_u]=1$, so the data-generating process prices exactly at the true parameters; under these shocks the \\textit{Normal} and \\textit{Shifted LN} variants coincide and (S4) equals (S3). ",
+        "Panel~B keeps the former additive shocks $G_u+\\varepsilon_u$ with default truncation (a deal path below zero pays nothing), which raises the expected payoff above the benchmark, with the same corrected deal timing. ",
         "The simulation dimensions vary as follows: ",
         "$n$ = number of funds per vintage-year portfolio; ",
         "$\\sigma$ = monthly idiosyncratic standard deviation; ",
@@ -152,5 +172,9 @@ generate_driessen_latex_table <- function(data_path, output_tex = NULL) {
 }
 
 # Example usage (uncomment to test directly):
-data_file <- "simulation/data_out_2026_new/bias_analysis/2026-03-10_193501_bias_full.csv"
-cat(generate_driessen_latex_table(data_file, output_tex = "simulation/driessen_simulation.tex"))
+if (sys.nframe() == 0L || interactive()) {
+    bias_files <- sort(list.files("simulation/data_out_2026_g1/bias_analysis", "_bias_full\\.csv$", full.names = TRUE))
+    if (length(bias_files) > 0) {
+        cat(generate_driessen_latex_table(tail(bias_files, 1), output_tex = "simulation/driessen_simulation.tex"))
+    }
+}
