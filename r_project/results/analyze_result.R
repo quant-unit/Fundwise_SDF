@@ -16,18 +16,17 @@ if (source.internally) {
   data.out.folder <- "results/data_out_2026_02_18"
 }
 
-list.cache <- list()
 dir.cache <- here(paste0(data.out.folder, "/cache_", prefix, suffix))
 dir.cache
 
-for (file in list.files(dir.cache)) {
-  if (substr(file, 1, 1) == 0) next
-  if (!grepl("\\.csv$", file)) next
-  df.f <- read.csv(paste0(dir.cache, "/", file))
-  df.f$CV.key <- as.character(df.f$CV.key)
-  list.cache[[file]] <- df.f
-}
-df.f <- data.frame(do.call(rbind, list.cache))
+# Read cached results through the shared filter (helper/result_cache.R): only
+# rows of the current pipeline version, from a single input file; stale or
+# pre-repair rows in the folder are ignored (review fix 2026-11-16)
+source(here("helper/result_cache.R"))
+source(here("helper/result_reporting.R"))
+df.f <- read.result.cache(dir.cache)
+if (nrow(df.f) == 0) stop("No current cached results; rerun estimation before analysis: ", dir.cache)
+if (nrow(df.f) > 0) df.f$CV.key <- as.character(df.f$CV.key)
 rownames(df.f) <- NULL
 df.f$X <- NULL
 if (nrow(df.f) > 0) {
@@ -79,14 +78,15 @@ for (Factor in q.factors) {
   # Only select columns that actually exist in df.f (e.g. no validation.error if no CV runs)
   select_cols <- intersect(select_cols, colnames(df.f))
 
-  df <- df.f[
-    (df.f$CV.key != "ALL") & (df.f$Factor == Factor),
-    select_cols,
-    drop = FALSE
-  ]
+  fold.rows <- df.f[(df.f$CV.key != "ALL") & (df.f$Factor == Factor), , drop = FALSE]
+  # Repeated executions of a fold are not additional independent folds.
+  fold.rows <- fold.rows[order(fold.rows$datetime, decreasing = TRUE), , drop = FALSE]
+  fold.rows <- fold.rows[!duplicated(paste(fold.rows$Type, fold.rows$max.month, fold.rows$CV.key, fold.rows$lambda)), , drop = FALSE]
+  df <- fold.rows[, select_cols, drop = FALSE]
   if (nrow(df) == 0) next
   ddf <- df[, !is.na(df[1, ])]
   df$id <- paste0(df$Type, "_", df$max.month)
+  provenance <- aggregate.result.provenance(fold.rows, df$id)
   df$Type <- NULL
   df$max.month <- NULL
 
@@ -115,6 +115,7 @@ for (Factor in q.factors) {
   }
 
   df <- merge(m, s, by = "id")
+  df <- merge(df, provenance, by = "id")
   df$Factor <- Factor
   cv.res[[Factor]] <- df
 }
@@ -136,6 +137,7 @@ if (length(cv.res) > 0) {
       cv_select_cols <- c(cv_select_cols, f, paste0("SE.", f))
     }
   }
+  cv_select_cols <- c(cv_select_cols, RESULT.PROVENANCE.COLUMNS, "at.bound", "boundary.folds")
   cv_select_cols <- intersect(cv_select_cols, colnames(df.cv))
   
   for (col in cv_select_cols) {
@@ -199,6 +201,11 @@ if (any(df.all$Factor == "ALL")) {
   }
 }
 
+# keep the boundary flag (SEs not valid on a bound) and the provenance columns
+# for the table headers (review fix: these were dropped here)
+all_select_cols <- c(
+  all_select_cols, "at.bound", RESULT.PROVENANCE.COLUMNS
+)
 all_select_cols <- intersect(all_select_cols, colnames(df.all))
 if (nrow(df.all) > 0) {
   df.all <- df.all[, all_select_cols]
@@ -238,6 +245,15 @@ prepare_and_print_tables <- function(df, types, table_type, suffix, spec) {
 
     # Rename columns based on table type
     if (table_type == "AI") {
+      on.bound <- boundary.mask(df.sub)
+      for (col in intersect(c("MKT", "Coef"), names(df.sub))) {
+        value <- df.sub[[col]]
+        df.sub[[col]] <- ifelse(is.na(value), NA_character_, paste0(formatC(value, format = "f", digits = 3),
+          ifelse(on.bound, "BOUNDARYMARKER", "")))
+      }
+      for (col in intersect(c("SE.MKT", "SE.MKT.indep", "SE.Coef", "SE.Coef.indep"), names(df.sub))) {
+        df.sub[[col]][on.bound] <- NA_real_
+      }
       # Asymptotic Inference: select available columns
       has_indep <- "SE.MKT.indep" %in% colnames(df.sub)
       if (has_indep) {
@@ -254,7 +270,8 @@ prepare_and_print_tables <- function(df, types, table_type, suffix, spec) {
         "Asymptotic results for ", type, " Funds. ",
         "This table reports asymptotic parameter estimates for linear two-factor models using ", weighting_text, ". ",
         "Standard errors are estimated by a SHAC estimator (Equation \\ref{eq:asy_se}) with a Bartlett kernel bandwidth of $D=12$ vintage years to correct for dependence between overlapping funds. ",
-        "MCM (Maximum Compounding Month) denotes the maximum cash flow compounding horizon."
+        "MCM (Maximum Compounding Month) denotes the maximum cash flow compounding horizon. ",
+        "$^{\\dagger}$ denotes an estimate on a parameter bound; its asymptotic standard errors are not valid and are not reported."
       )
       lab <- paste0("tab:ai_", suffix, "_", type)
 
@@ -320,6 +337,8 @@ prepare_and_print_tables <- function(df, types, table_type, suffix, spec) {
       # tabular.environment = "longtable", # we want to use normal tables!
       add.to.row = add.to.row,
       hline.after = c(nrow(df.sub)), # Only hline at bottom, top handled by header
+      NA.string = "--",
+      sanitize.text.function = function(x) gsub("BOUNDARYMARKER", "$^{\\dagger}$", xtable::sanitize(x), fixed = TRUE),
       file = outfile,
       append = TRUE
     )
@@ -330,7 +349,7 @@ outfile <- paste0(dir.cache, "/empirical_tables.tex")
 # Create cache directory if it doesn't exist (e.g., FF3 runs analyzed before estimation)
 if (!dir.exists(dir.cache)) dir.create(dir.cache, recursive = TRUE)
 # Clear file if it exists
-cat("", file = outfile)
+writeLines(result.table.provenance(df.f), outfile)
 
 prepare_and_print_tables(df.all, types2print, "AI", suffix, spec)
 # cat("\\clearpage\n", file = outfile, append = TRUE)
@@ -355,7 +374,7 @@ sum.abs <- function(df, inference = "") {
     return(df.out)
   }
 
-  df.out <- data.frame(apply(df, 2, function(x) {
+  df.out <- data.frame(apply(df[, intersect(cols, names(df)), drop = FALSE], 2, function(x) {
     sum(abs(as.numeric(x))) / nrow(df)
   }))
   colnames(df.out) <- "sum.abs"

@@ -276,7 +276,10 @@ scenario_to_estimation_params <- function(scenario, base_path = "simulation") {
         max_vintage = est$max_vintage,
         cache_folder_tag = cache_folder_tag, # Pass the correctly constructed cache folder tag
         alpha_lower = if (!is.null(est$alpha_lower)) est$alpha_lower else -Inf,
-        alpha_upper = if (!is.null(est$alpha_upper)) est$alpha_upper else Inf
+        alpha_upper = if (!is.null(est$alpha_upper)) est$alpha_upper else Inf,
+        # review fix: pass the B5 estimator options in simulations too
+        origin_convention = if (!is.null(est$origin_convention)) est$origin_convention else "first.cf",
+        vintage_weights = if (!is.null(est$vintage_weights)) est$vintage_weights else "equal"
     )
 
     return(params)

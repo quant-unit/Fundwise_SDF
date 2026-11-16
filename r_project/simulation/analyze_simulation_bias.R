@@ -18,6 +18,7 @@ if (!requireNamespace("data.table", quietly = TRUE)) {
     install.packages("data.table")
 }
 library(data.table)
+source("helper/result_cache.R")
 
 # ============================================================================
 # analyze_simulation_bias() - Main Function
@@ -62,43 +63,19 @@ analyze_simulation_bias <- function(results, scenarios, verbose = TRUE) {
 
         # Get estimation results
         if (is.null(result$df_res)) {
-            # Build cache path with optional public_filename prefix
-            cache_prefix_base <- if (!is.null(result$public_filename)) {
-                paste0("cache_", result$public_filename, "_", result$cache_folder_tag)
-            } else {
-                paste0("cache_", result$cache_folder_tag)
+            tags <- result$cache_folder_tags
+            if (is.null(tags)) {
+                n.parts <- if (is.null(result$no_partitions)) 1L else result$no_partitions
+                tags <- if (n.parts > 1) paste0(result$cache_folder_tag, "_part", seq_len(n.parts)) else result$cache_folder_tag
             }
-
-            # Determine number of partitions
-            n_parts <- if (!is.null(result$no_partitions) && result$no_partitions > 1) {
-                result$no_partitions
-            } else {
-                1
-            }
-
-            # Load from all partition folders (or single folder)
-            all_res <- list()
-            if (n_parts > 1) {
-                for (p in seq_len(n_parts)) {
-                    cache_dir <- file.path(
-                        result$data_out_folder,
-                        paste0(cache_prefix_base, "_part", p)
-                    )
-                    if (dir.exists(cache_dir)) {
-                        part_res <- load_results_from_cache(cache_dir)
-                        if (nrow(part_res) > 0) all_res[[p]] <- part_res
-                    }
-                }
-            } else {
-                cache_dir <- file.path(result$data_out_folder, cache_prefix_base)
-                if (dir.exists(cache_dir)) {
-                    all_res[[1]] <- load_results_from_cache(cache_dir)
-                }
-            }
-
+            public.prefix <- if (!is.null(result$public_filename)) paste0(result$public_filename, "_") else ""
+            dirs <- file.path(result$data_out_folder, paste0("cache_", public.prefix, tags))
+            all_res <- lapply(dirs[dir.exists(dirs)], load_results_from_cache)
             if (length(all_res) > 0) {
-                result$df_res <- do.call(rbind, all_res)
+                result$df_res <- as.data.frame(data.table::rbindlist(all_res, use.names = TRUE, fill = TRUE))
             }
+        } else {
+            result$df_res <- current.result.rows(result$df_res, label = id)
         }
 
         if (is.null(result$df_res) || nrow(result$df_res) == 0) {
@@ -293,33 +270,11 @@ analyze_simulation_bias <- function(results, scenarios, verbose = TRUE) {
 #' @param cache_dir Path to cache directory
 #' @return Data frame with results
 load_results_from_cache <- function(cache_dir) {
-    files <- list.files(cache_dir, pattern = "\\.csv$", full.names = TRUE)
-
-    # Filter to result files (not summary files starting with 0)
-    files <- files[!grepl("^0", basename(files))]
-
-    if (length(files) == 0) {
-        return(data.frame())
-    }
-
-    all_results <- list()
-    for (f in files) {
-        tryCatch(
-            {
-                df <- read.csv(f, stringsAsFactors = FALSE)
-                all_results[[f]] <- df
-            },
-            error = function(e) {
-                # Skip files that can't be read
-            }
-        )
-    }
-
-    if (length(all_results) == 0) {
-        return(data.frame())
-    }
-
-    return(do.call(rbind, all_results))
+    # Shared filter (helper/result_cache.R): only rows of the current pipeline
+    # version from a single input file; pre-repair or stale rows are ignored
+    # (review fix 2026-11-16)
+    if (!exists("read.result.cache")) source("helper/result_cache.R")
+    read.result.cache(cache_dir)
 }
 
 # ============================================================================

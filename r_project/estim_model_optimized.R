@@ -84,6 +84,11 @@ if (source.internally) {
   if (!dir.exists(data.out.folder)) dir.create(data.out.folder)
 
   factors.to.use <- ""
+  # set by run_estimation(); cleared for direct sourcing
+  input.md5 <- NULL
+  result.identity.used <- NULL
+  config.path <- NULL
+  scenario.id <- NULL
 
   data.prepared.folder <- "data_prepared"
 
@@ -104,15 +109,23 @@ if (!exists("brent.interval")) brent.interval <- c(-1, 4)
 provenance <- list(
   git.commit = tryCatch(system("git rev-parse --short HEAD", intern = TRUE, ignore.stderr = TRUE)[1], error = function(e) NA),
   git.dirty = tryCatch(length(system("git status --porcelain --untracked-files=no", intern = TRUE, ignore.stderr = TRUE)) > 0, error = function(e) NA),
-  config.md5 = unname(tools::md5sum(if (exists("use.simulation") && use.simulation) "config/simulation_scenarios.yaml" else "config/empirical_scenarios.yaml")),
+  # hash of the config file actually used (run_estimation(config_path = ...));
+  # the default file only when none was given
+  config.md5 = unname(tools::md5sum(
+    if (exists("config.path") && !is.null(config.path)) {
+      config.path
+    } else if (exists("use.simulation") && use.simulation) "config/simulation_scenarios.yaml" else "config/empirical_scenarios.yaml"
+  )),
+  config.path = if (exists("config.path") && !is.null(config.path)) config.path else NA,
   scenario.id = if (exists("scenario.id") && !is.null(scenario.id)) scenario.id else NA
 )
+source("helper/result_cache.R")
 
 # 1.2) load data -----
 
 # load public data
 if (public.filename %in% c("q_factors", "ff3_factors")) {
-  df.public <- read.csv(paste0("empirical/", "data_prepared_2026", "/", public.filename, ".csv"))
+  df.public <- read.csv(public.file.path(public.filename, data.prepared.folder))
 } else {
   df.public <- read.csv2(paste0("empirical/", data.prepared.folder, "/", public.filename, ".csv"))
 }
@@ -153,29 +166,17 @@ if (export.data) {
   write.csv2(df.public, paste0("empirical/data_private_public/public_", public.filename, ".csv"))
 }
 
-# Load private data
-if (!use.simulation) {
-  if (private.source == "preqin") {
-    year.tag <- ""
-    nc.tag <- if (exists("final.nav.discount") && final.nav.discount != 100) paste0("_NC", final.nav.discount) else ""
-    private.file <- paste0("empirical/", data.prepared.folder, "/preqin_cashflows_", weighting, nc.tag, year.tag, "_NAV.csv")
-    cat("Loading private data:", private.file, "\n")
-    df.private.cfs <- read.csv(private.file)
-    colnames(df.private.cfs)
-  }
-
-  if (private.source == "pitchbook") {
-    year.tag <- "_2026"
-    nc.tag <- if (exists("final.nav.discount") && final.nav.discount != 100) paste0("_NC", final.nav.discount) else ""
-    pitchbook.filename <- paste0("empirical/", data.prepared.folder, cutoff, "/pitchbook_cashflows_", weighting, nc.tag, year.tag, ".csv")
-    print(pitchbook.filename)
-    df.private.cfs <- read.csv(pitchbook.filename)
-    colnames(df.private.cfs)
-    print(max(df.private.cfs$Date))
-  }
-} else {
-  # df.private.cfs <- read.csv(paste0("simulation/", data.prepared.folder, "/simulated_cashflows_", weighting, ".csv"))
-  df.private.cfs <- read.csv(paste0("simulation/data_prepared_sim/", simulation.filename))
+# Load private data (path and hash: helper/result_cache.R, shared with the
+# resume check in run_estimation())
+private.file <- input.file.path(
+  use.simulation, if (use.simulation) simulation.filename else NULL, private.source,
+  data.prepared.folder, cutoff, weighting, if (exists("final.nav.discount")) final.nav.discount else 100
+)
+cat("Loading private data:", private.file, "\n")
+df.private.cfs <- read.csv(private.file)
+input.md5.used <- file.md5(private.file)
+if (exists("input.md5") && !is.null(input.md5) && !identical(input.md5, input.md5.used)) {
+  stop("Input file changed between the resume check and loading: ", private.file)
 }
 
 # split too large data.frames into partitions
@@ -266,6 +267,15 @@ if (use.simulation) {
     cat("  -> MKT column overridden with simulated values per sample\n")
   }
 }
+
+# Recheck all loaded dependencies and resolved settings, not only cash flows.
+loaded.identity <- make.estimation.identity(private.file, public.filename, data.prepared.folder,
+  mget(RESULT.SETTINGS, envir = .GlobalEnv), config.path, use.simulation)
+if (exists("result.identity.used") && !is.null(result.identity.used) &&
+    !identical(loaded.identity$cache.identity, result.identity.used$cache.identity)) {
+  stop("Inputs or estimator settings changed between the resume check and loading")
+}
+result.identity.used <- loaded.identity
 
 table(df0$Date)
 
@@ -518,9 +528,16 @@ delta <- 0.0001
 # the former SE functions read max.month as a free variable and therefore
 # used the global test value 180 for every estimated horizon.
 source("helper/inference.R")
-unit.loss.at <- function(max.month) {
+# For U_pair the unit contribution is l_v = w_v U_v with the normalized
+# vintage weights w_v of the estimation criterion (u.unit.weights, shared with
+# u.criterion), and vintages with fewer than two funds are not units; before
+# this fix the sandwich used unweighted U_v, wrong for vintage_weights = "n.funds".
+unit.loss.at <- function(max.month, unit.weights = NULL) {
   function(par, df.unit) {
-    if (error.function == "U_pair") return(err.sqr.calc(par, max.month, 0, df.unit))
+    if (error.function == "U_pair") {
+      w <- unit.weights[[paste(df.unit$type[1], df.unit$Vintage[1])]]
+      return(w * err.sqr.calc(par, max.month, 0, df.unit))
+    }
     e <- f1(df.unit, max.month, c("RF" = 1, par))
     if (error.function == "L1_Ridge") return(abs(e))
     e^2
@@ -528,8 +545,16 @@ unit.loss.at <- function(max.month) {
 }
 
 estim.CoVM <- function(dfx, par, indep = FALSE, max.month) {
+  unit.weights <- NULL
+  if (error.function == "U_pair") {
+    n.funds <- vapply(dfx, function(d) length(unique(d$Fund.ID)), 0)
+    names(n.funds) <- vapply(dfx, function(d) paste(d$type[1], d$Vintage[1]), "")
+    unit.weights <- u.unit.weights(n.funds, vintage.weights)
+    dfx <- dfx[!is.na(unit.weights)]
+    unit.weights <- unit.weights[!is.na(unit.weights)]
+  }
   sandwich.covariance(
-    units = dfx, par = par, unit.loss = unit.loss.at(max.month),
+    units = dfx, par = par, unit.loss = unit.loss.at(max.month, unit.weights),
     vintages = vapply(dfx, function(d) as.numeric(d$Vintage[1]), 0),
     bw = kernel.bandwidth, indep = indep, delta = delta
   )
@@ -813,8 +838,8 @@ iter.run <- function(input.list) {
           # B9 provenance
           res$git.commit <- provenance$git.commit
           res$git.dirty <- provenance$git.dirty
-          res$config.md5 <- provenance$config.md5
           res$scenario.id <- provenance$scenario.id
+          for (field in names(result.identity.used)) res[[field]] <- result.identity.used[[field]]
           res$data.prepared.folder <- if (use.simulation) NA else data.prepared.folder
 
           # validation error on the held-out vintages: at the estimation

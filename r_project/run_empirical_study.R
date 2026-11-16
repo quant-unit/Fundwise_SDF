@@ -108,6 +108,7 @@ run_empirical_study <- function(
         # Convert scenario to estimation parameters
         params <- empirical_scenario_to_params(scenario)
         params$simulation_file <- NULL # Empirical mode
+        params$config_path <- config_path # hashed into provenance
 
         # Override data_out_folder if provided
         if (!is.null(data_out_folder)) {

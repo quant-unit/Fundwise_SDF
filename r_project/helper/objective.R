@@ -77,14 +77,29 @@ u.pair <- function(e, s = rep(1, length(e))) {
   (sum(e)^2 - sum(e^2)) / (sum(s)^2 - sum(s^2))
 }
 
-# Aggregate unit errors into the U criterion: vintage-weighted mean of U_v
+# Normalized vintage weights w_v = V q_v / sum(q) for the vintages used by the
+# U criterion (n_v >= 2), with q_v = 1 ("equal") or q_v = n_v ("n.funds").
+# This is the single definition of the unit contributions shared by
+# estimation and inference: Q(theta) = V^{-1} sum_v w_v U_v(theta), so the
+# sandwich in helper/inference.R uses l_v = w_v U_v (review fix, 2026-11-16).
+u.unit.weights <- function(n.funds, vintage.weights = "equal") {
+  stopifnot(vintage.weights %in% c("equal", "n.funds"))
+  ok <- n.funds >= 2
+  q <- if (vintage.weights == "n.funds") n.funds else rep(1, length(n.funds))
+  w <- rep(NA_real_, length(n.funds))
+  w[ok] <- sum(ok) * q[ok] / sum(q[ok])
+  names(w) <- names(n.funds)
+  w
+}
+
+# Aggregate unit errors into the U criterion: weighted mean of U_v
 #   vintage.weights = "equal" (q_v = 1) or "n.funds" (q_v = n_v);
 #   vintages with fewer than two funds are dropped.
 u.criterion <- function(e, vintage.key, s = rep(1, length(e)), vintage.weights = "equal") {
   u <- tapply(seq_along(e), vintage.key, function(i) u.pair(e[i], s[i]))
   n <- tapply(e, vintage.key, length)
-  ok <- !is.na(u)
+  w <- u.unit.weights(n, vintage.weights)
+  ok <- !is.na(w)
   if (!any(ok)) return(NA_real_)
-  q <- if (vintage.weights == "n.funds") n[ok] else rep(1, sum(ok))
-  sum(q * u[ok]) / sum(q)
+  mean(w[ok] * u[ok])
 }

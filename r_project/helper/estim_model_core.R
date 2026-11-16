@@ -24,41 +24,31 @@
 #'
 #' @param cache_folder_path Full path to the cache folder
 #' @return data.frame with columns max.month and lambda (empty if none found)
-get_completed_horizons <- function(cache_folder_path, do_cross_validation = FALSE) {
+source(file.path(if (file.exists("helper/result_cache.R")) "." else "..", "helper/result_cache.R"))
+
+get_completed_horizons <- function(cache_folder_path, do_cross_validation = FALSE, input_md5 = NULL,
+                                   cache_identity = NULL) {
+    empty <- data.frame(max.month = integer(0), lambda = numeric(0))
     if (!dir.exists(cache_folder_path)) {
-        return(data.frame(max.month = integer(0), lambda = numeric(0)))
+        return(empty)
     }
 
-    csv_files <- list.files(cache_folder_path, pattern = "*_cached_res\\.csv$", full.names = TRUE)
-
-    if (length(csv_files) == 0) {
-        return(data.frame(max.month = integer(0), lambda = numeric(0)))
+    # Only rows of the current pipeline version computed from the current
+    # input file count as completed (review fix: stale or pre-repair caches
+    # and results from regenerated data are never reused)
+    df <- read.result.cache(cache_folder_path, expected.input.md5 = input_md5,
+                           expected.identity = cache_identity, verbose = TRUE)
+    if (nrow(df) == 0 || !all(c("max.month", "lambda") %in% colnames(df))) {
+        return(empty)
     }
-
-    # Read all CSV files and extract unique (max.month, lambda) pairs
-    completed <- do.call(rbind, lapply(csv_files, function(f) {
-        tryCatch(
-            {
-                df <- read.csv(f, stringsAsFactors = FALSE)
-                if ("max.month" %in% colnames(df) && "lambda" %in% colnames(df)) {
-                    # When CV is requested, only count horizons that have CV fold results
-                    if (do_cross_validation && "CV.key" %in% colnames(df)) {
-                        df <- df[df$CV.key != "ALL", , drop = FALSE]
-                    }
-                    if (nrow(df) > 0) unique(df[, c("max.month", "lambda")]) else NULL
-                } else {
-                    NULL
-                }
-            },
-            error = function(e) NULL
-        )
-    }))
-
-    if (is.null(completed) || nrow(completed) == 0) {
-        return(data.frame(max.month = integer(0), lambda = numeric(0)))
+    # When CV is requested, only count horizons that have CV fold results
+    if (do_cross_validation && "CV.key" %in% colnames(df)) {
+        df <- df[df$CV.key != "ALL", , drop = FALSE]
     }
-
-    return(unique(completed))
+    if (nrow(df) == 0) {
+        return(empty)
+    }
+    unique(df[, c("max.month", "lambda")])
 }
 
 #' Filter out completed horizon/lambda combinations
@@ -180,7 +170,9 @@ run_estimation <- function(
     # Horizon origin t0 per vintage: "first.cf" or "predetermined" (B5)
     origin_convention = "first.cf",
     # Vintage weights q_v for error_function = "U_pair": "equal" or "n.funds"
-    vintage_weights = "equal") {
+    vintage_weights = "equal",
+    # Scenario config file used (hashed into provenance); NULL = default file
+    config_path = NULL) {
     # -------------------------------------------------------------------------
     # Store current working directory to restore later
     # -------------------------------------------------------------------------
@@ -252,19 +244,42 @@ run_estimation <- function(
             if (include_alpha_term) factor_tag <- paste0(factor_tag, "alpha_")
             if (length(factors_to_use) > 0 && any(factors_to_use != "")) factor_tag <- paste0(factor_tag, paste(factors_to_use, collapse = "_"), "_")
             nc_tag <- if (final_nav_discount != 100) paste0("_NC", final_nav_discount) else ""
-            ef_tag <- if (error_function != "L2_Lasso") paste0("_", error_function) else ""
-            if (error_function == "U_pair" && vintage_weights != "equal") ef_tag <- paste0(ef_tag, "_q", vintage_weights)
-            origin_tag <- if (origin_convention != "first.cf") paste0("_origin_", origin_convention) else ""
-            cache_folder_tag <- paste0(private_source, "_", factor_tag, weighting, nc_tag, ef_tag, origin_tag)
+            cache_folder_tag <- paste0(private_source, "_", factor_tag, weighting, nc_tag)
         }
     }
+    # Estimator options are part of the folder identity for every run,
+    # including caller-supplied tags (simulations, vintage sweeps): otherwise a
+    # U_pair or predetermined-origin run would share the folder (and the
+    # resume check) of the default run on the same input data.
+    cache_folder_tag <- result.cache.tag(cache_folder_tag, error_function, origin_convention, vintage_weights,
+        partition = if (no_partitions > 1) part_to_keep else NULL)
 
     # -------------------------------------------------------------------------
     # Smart Resume: Check for already-completed horizons
     # -------------------------------------------------------------------------
     cache_folder_path <- file.path(data_out_folder, paste0("cache_", public_filename, "_", cache_folder_tag))
 
-    completed <- get_completed_horizons(cache_folder_path, do_cross_validation)
+    # Input file: must exist (also before the resume check), and its hash is
+    # part of the result identity
+    input_path <- input.file.path(
+        use_simulation, simulation_file, private_source,
+        data_prepared_folder, cutoff, weighting, final_nav_discount
+    )
+    if (!file.exists(input_path)) {
+        stop("Input file not found: ", input_path)
+    }
+    brent_interval <- if (exists("brent.interval", envir = .GlobalEnv)) get("brent.interval", .GlobalEnv) else c(-1, 4)
+    settings <- list(sdf.model = sdf_model, factors.to.use = as.character(unlist(factors_to_use)),
+        error.function = error_function, include.alpha.term = include_alpha_term,
+        weighting = weighting, max.vintage = max_vintage, kernel.bandwidth = kernel_bandwidth,
+        alpha.lower = alpha_lower, alpha.upper = alpha_upper, origin.convention = origin_convention,
+        vintage.weights = vintage_weights, part.to.keep = part_to_keep, no.partitions = no_partitions,
+        brent.interval = brent_interval)
+    identity <- make.estimation.identity(input_path, public_filename, data_prepared_folder,
+        settings, config_path, use_simulation)
+    input_md5 <- identity$input.md5
+
+    completed <- get_completed_horizons(cache_folder_path, do_cross_validation, input_md5, identity$cache.identity)
     filtered <- filter_remaining_horizons(max_months, lambdas, completed)
 
     if (verbose && nrow(completed) > 0) {
@@ -292,6 +307,7 @@ run_estimation <- function(
             factors_to_use = factors_to_use,
             weighting = weighting,
             cache_folder_tag = cache_folder_tag,
+            cache_folder_tags = cache_folder_tag,
             public_filename = public_filename,
             data_out_folder = data_out_folder,
             elapsed_time = 0,
@@ -348,6 +364,11 @@ run_estimation <- function(
     assign("vintage.weights", vintage_weights, envir = .GlobalEnv)
     # B9 provenance: scenario id recorded in every result row
     assign("scenario.id", scenario_id, envir = .GlobalEnv)
+    # Result identity (helper/result_cache.R) and the config file actually used
+    assign("input.md5", input_md5, envir = .GlobalEnv)
+    assign("config.path", identity$config.path, envir = .GlobalEnv)
+    assign("result.identity.used", identity, envir = .GlobalEnv)
+    assign("brent.interval", brent_interval, envir = .GlobalEnv)
 
     # Alpha bounds
     assign("alpha.lower", alpha_lower, envir = .GlobalEnv)
@@ -397,6 +418,8 @@ run_estimation <- function(
                 factors_to_use = factors_to_use,
                 weighting = weighting,
                 cache_folder_tag = cache_folder_tag,
+                cache_folder_tags = cache_folder_tag,
+                public_filename = public_filename,
                 data_out_folder = data_out_folder,
                 elapsed_time = elapsed,
                 success = TRUE

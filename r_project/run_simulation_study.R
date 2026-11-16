@@ -173,6 +173,7 @@ run_simulation_study <- function(
 
             # Convert scenario to estimation parameters
             params <- scenario_to_estimation_params(scenario)
+            params$config_path <- config_path # hashed into provenance
 
             # Override data_out_folder if provided
             if (!is.null(data_out_folder)) {
@@ -197,6 +198,7 @@ run_simulation_study <- function(
             total_elapsed <- 0
 
             if (n_partitions > 1) {
+                partition_tags <- character()
                 for (p in seq_len(n_partitions)) {
                     # Override partition-specific params
                     params$part_to_keep <- p
@@ -211,6 +213,7 @@ run_simulation_study <- function(
                         if (verbose) cat("  -> Partition", p, "FAILED:", result$error, "\n")
                         break
                     } else {
+                        partition_tags <- c(partition_tags, result$cache_folder_tag)
                         total_elapsed <- total_elapsed + as.numeric(result$elapsed_time)
                         if (verbose) {
                             cat(
@@ -222,7 +225,12 @@ run_simulation_study <- function(
                 }
 
                 # Store combined result info for bias analysis
-                result$cache_folder_tag <- base_cache_tag
+                result$cache_folder_tag <- result.cache.tag(base_cache_tag, params$error_function,
+                    params$origin_convention, params$vintage_weights)
+                result$cache_folder_tags <- partition_tags
+                # Read every partition through the same current-input filter;
+                # the last partition's in-memory df_res is not the full sample.
+                result$df_res <- NULL
                 result$no_partitions <- n_partitions
                 result$elapsed_time <- total_elapsed
                 result$success <- all_partitions_ok
@@ -253,6 +261,7 @@ run_simulation_study <- function(
             # Convert to params to get cache tag and paths
             # (suppress warnings about missing files since we just want paths)
             params <- scenario_to_estimation_params(scenario)
+            params$config_path <- config_path # hashed into provenance
 
             # Override data_out_folder if provided
             if (!is.null(data_out_folder)) {
@@ -273,7 +282,9 @@ run_simulation_study <- function(
             results[[id]] <- list(
                 scenario_id = id,
                 dgp = scenario$dgp,
-                cache_folder_tag = params$cache_folder_tag,
+                cache_folder_tag = result.cache.tag(params$cache_folder_tag, params$error_function,
+                    params$origin_convention, params$vintage_weights),
+                cache_folder_tags = simulation.cache.tags(params, n_partitions),
                 data_out_folder = params$data_out_folder,
                 public_filename = "q_factors", # Assumed default since we don't have the original call
                 no_partitions = n_partitions,
