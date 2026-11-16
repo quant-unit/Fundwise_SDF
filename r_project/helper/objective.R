@@ -53,11 +53,79 @@ to.monthly.grid <- function(df.ss, t0, t.max, keep.cols = c("type", "Vintage", "
   df.ss[order(df.ss$Date), ]
 }
 
-pad.all.units <- function(df, origin.convention = "first.cf", t.max = max(df$Date)) {
+# Same result as to.monthly.grid() without merge(): rows are placed on the
+# grid by index (speed). Falls back to merge() if a unit has duplicate dates
+# or dates off the month-end grid. Equivalence: helper/test_code_repairs.R.
+to.monthly.grid.fast <- function(df.ss, t0, t.max, keep.cols = c("type", "Vintage", "Fund.ID", "Size")) {
+  grid <- month.end.grid(t0, t.max)
+  idx <- match(as.numeric(df.ss$Date), as.numeric(grid)) # numeric match: Date match() goes via strings
+  if (anyNA(idx) || anyDuplicated(df.ss$Date)) return(to.monthly.grid(df.ss, t0, t.max, keep.cols))
+  out <- df.ss[match(seq_along(grid), idx), , drop = FALSE]
+  out$Date <- grid
+  out$CF[is.na(out$CF)] <- 0
+  for (col in intersect(keep.cols, colnames(out))) out[[col]] <- df.ss[[col]][1]
+  rownames(out) <- NULL
+  out
+}
+
+pad.all.units <- function(df, origin.convention = "first.cf", t.max = max(df$Date), fast = TRUE) {
   t0 <- vintage.origins(df, origin.convention)
   units <- split(df, df$Fund.ID, drop = TRUE)
-  out <- lapply(units, function(d) to.monthly.grid(d, t0[[paste(d$type[1], d$Vintage[1])]], t.max))
+  pad <- if (fast) to.monthly.grid.fast else to.monthly.grid
+  out <- lapply(units, function(d) pad(d, t0[[paste(d$type[1], d$Vintage[1])]], t.max))
   as.data.frame(data.table::rbindlist(out, use.names = TRUE, fill = TRUE))
+}
+
+# ---------------------------------------------------------------------------
+# Prepared units (speed): the objective is evaluated hundreds of times per
+# estimate, so each unit's cash flows and factor columns are extracted once
+# instead of re-splitting the data frame on every evaluation. Results are
+# identical to the data-frame path (equivalence: helper/test_code_repairs.R).
+# ---------------------------------------------------------------------------
+prepare.units <- function(df, factor.cols, split.key = df$Fund.ID) {
+  if (inherits(df, "prepared.units")) return(df)
+  factor.cols <- intersect(factor.cols, colnames(df))
+  # split row indices, not the data frame (split.data.frame is slow)
+  X.all <- as.matrix(df[, factor.cols, drop = FALSE])
+  cf.all <- df$CF
+  date.all <- as.numeric(df$Date)
+  has.size <- "Size" %in% colnames(df)
+  rows <- split(seq_len(nrow(df)), split.key, drop = TRUE)
+  units <- lapply(rows, function(i) {
+    i <- i[order(date.all[i])]
+    list(
+      cf = cf.all[i],
+      X = X.all[i, , drop = FALSE],
+      fund.id = as.character(df$Fund.ID[i[1]]),
+      key = paste(df$type[i[1]], df$Vintage[i[1]]),
+      vintage = as.numeric(df$Vintage[i[1]]),
+      size = if (has.size) df$Size[i[1]] else 1
+    )
+  })
+  structure(list(units = units), class = "prepared.units")
+}
+
+# Horizon error of one prepared unit; same arithmetic as f1() in
+# estim_model_optimized.R on the data-frame rows of that unit
+unit.horizon.error <- function(u, max.month, par0, sdf.model = "linear") {
+  X <- u$X[, names(par0), drop = FALSE]
+  if (sdf.model == "exp.aff") {
+    if ("Alpha" %in% colnames(X)) X[, "Alpha"] <- exp(1) - 1
+    ret <- exp(cumsum(log(1 + X) %*% par0))
+  } else {
+    ret <- exp(cumsum(log(1 + (X %*% par0))))
+  }
+  switch(sdf.model,
+    linear = , exp.aff = horizon.error(u$cf, ret, max.month),
+    linear.duration = getNPVsDuration(u$cf, ret, max.month),
+    linear.single.date = getNPVsSingleDate(u$cf, ret, max.month),
+    stop("unknown sdf.model: ", sdf.model)
+  )
+}
+
+# Funds of a prepared vintage (U_pair SE units): one prepared object per vintage
+prepare.vintage.units <- function(df, factor.cols) {
+  lapply(split(df, paste(df$type, df$Vintage), drop = TRUE), function(d) prepare.units(d, factor.cols))
 }
 
 # Horizon pricing error of one unit (B2): alias max.month 0 -> 1

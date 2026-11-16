@@ -373,10 +373,22 @@ if (sdf.model == "exp.aff") {
   }
 }
 
+# Speed: the objective works on prepared units (helper/objective.R): cash
+# flows and factor columns of every unit are extracted once per data set
+# instead of re-splitting the data frame at every evaluation. f1.prep() is the
+# same computation as f1() above on the prepared matrices (identical results,
+# tested in helper/test_code_repairs.R); f1() is kept as the reference.
+factor.cols.all <- unique(c("RF", setdiff(colnames(df.public), "Date")))
+as.prepared <- function(df) prepare.units(df, factor.cols.all)
+f1.prep <- function(u, max.month, par0) unit.horizon.error(u, max.month, par0, sdf.model)
+unit.errors <- function(par, df, max.month) {
+  prep <- as.prepared(df)
+  vapply(prep$units, f1.prep, 0, max.month = max.month, par0 = c("RF" = 1, par))
+}
+
 if (error.function == "L2_Lasso") {
   err.sqr.calc <- function(par, max.month, lambda, df) {
-    dfx <- split(df, df$Fund.ID)
-    npvs <- sapply(dfx, f1, max.month = max.month, par0 = c("RF" = 1, par))
+    npvs <- unit.errors(par, df, max.month)
     # Guard against NA/NaN/Inf in NPV computation
     # NA arises from missing factor data after merge; NaN from log(1+x) when x < -1
     if (any(!is.finite(npvs))) {
@@ -391,8 +403,7 @@ if (error.function == "L2_Lasso") {
 
 if (error.function == "L1_Ridge") {
   err.sqr.calc <- function(par, max.month, lambda, df) {
-    dfx <- split(df, df$Fund.ID)
-    npvs <- sapply(dfx, f1, max.month = max.month, par0 = c("RF" = 1, par))
+    npvs <- unit.errors(par, df, max.month)
     # Guard against NA/NaN/Inf in NPV computation
     if (any(!is.finite(npvs))) {
       return(1e10) # Large but finite penalty so optimizer can continue
@@ -411,13 +422,13 @@ if (error.function == "U_pair") {
   if (use.vintage.year.pfs) stop("error.function = 'U_pair' needs fund-level data (use_vintage_year_pfs: false)")
   use.size <- grepl("FW", weighting) && "Size" %in% colnames(df0)
   err.sqr.calc <- function(par, max.month, lambda, df) {
-    dfx <- split(df, df$Fund.ID)
-    npvs <- sapply(dfx, f1, max.month = max.month, par0 = c("RF" = 1, par))
+    prep <- as.prepared(df)
+    npvs <- unit.errors(par, prep, max.month)
     if (any(!is.finite(npvs))) {
       return(1e10)
     }
-    key <- vapply(dfx, function(d) paste(d$type[1], d$Vintage[1]), "")
-    s <- if (use.size) vapply(dfx, function(d) d$Size[1], 0) else rep(1, length(dfx))
+    key <- vapply(prep$units, `[[`, "", "key")
+    s <- if (use.size) vapply(prep$units, `[[`, 0, "size") else rep(1, length(npvs))
     u <- u.criterion(npvs, key, s, vintage.weights)
     if (!is.finite(u)) {
       return(1e10)
@@ -532,13 +543,15 @@ source("helper/inference.R")
 # vintage weights w_v of the estimation criterion (u.unit.weights, shared with
 # u.criterion), and vintages with fewer than two funds are not units; before
 # this fix the sandwich used unweighted U_v, wrong for vintage_weights = "n.funds".
+# Units arrive prepared (as.prepared, speed): one prepared object per unit,
+# holding one pool/fund (L2, L1) or the funds of one vintage (U_pair).
 unit.loss.at <- function(max.month, unit.weights = NULL) {
-  function(par, df.unit) {
+  function(par, unit) {
     if (error.function == "U_pair") {
-      w <- unit.weights[[paste(df.unit$type[1], df.unit$Vintage[1])]]
-      return(w * err.sqr.calc(par, max.month, 0, df.unit))
+      w <- unit.weights[[unit$units[[1]]$key]]
+      return(w * err.sqr.calc(par, max.month, 0, unit))
     }
-    e <- f1(df.unit, max.month, c("RF" = 1, par))
+    e <- f1.prep(unit$units[[1]], max.month, c("RF" = 1, par))
     if (error.function == "L1_Ridge") return(abs(e))
     e^2
   }
@@ -554,18 +567,21 @@ estim.CoVM <- function(dfx, par, indep = FALSE, max.month) {
     unit.weights <- unit.weights[!is.na(unit.weights)]
   }
   sandwich.covariance(
-    units = dfx, par = par, unit.loss = unit.loss.at(max.month, unit.weights),
+    units = lapply(dfx, as.prepared), par = par, unit.loss = unit.loss.at(max.month, unit.weights),
     vintages = vapply(dfx, function(d) as.numeric(d$Vintage[1]), 0),
     bw = kernel.bandwidth, indep = indep, delta = delta
   )
 }
-system.time(
-  out <- estim.CoVM(dfx, par, indep = FALSE, max.month = max.month)
-)
-system.time(
-  out <- estim.CoVM(dfx, par, indep = TRUE, max.month = max.month)
-)
-out
+# interactive check only (speed: skipped in runner calls, result unused)
+if (source.internally) {
+  system.time(
+    out <- estim.CoVM(dfx, par, indep = FALSE, max.month = max.month)
+  )
+  system.time(
+    out <- estim.CoVM(dfx, par, indep = TRUE, max.month = max.month)
+  )
+  out
+}
 
 
 
@@ -664,16 +680,25 @@ iter.run <- function(input.list) {
     for (max.month in max.months) {
       print(paste("Max.M", max.month, "Lambda", lambda, " - ", Sys.time()))
 
+      # Speed: types (asset classes; simulation samples) are estimated in
+      # parallel on forked workers. The cluster used to be created but the
+      # loop ran with %do%, i.e. serially. Results are identical (the
+      # estimation is deterministic; .combine keeps the order of types).
       if (do.parallel) {
-        cl <- parallel::makeForkCluster(3)
+        n.workers <- max(1, min(length(types), parallel::detectCores() - 2, 10))
+        cl <- parallel::makeForkCluster(n.workers)
         doParallel::registerDoParallel(cl)
       }
+      `%op%` <- if (do.parallel) foreach::`%dopar%` else foreach::`%do%`
 
-      output <- foreach(type = types, .combine = "rbind", .verbose = FALSE) %do% {
+      output <- foreach(type = types, .combine = "rbind", .verbose = FALSE) %op% {
         df.optim.in <- df.estimate[df.estimate$type == type, ]
         df.optim.in$Fund.ID <- (as.character(df.optim.in$Fund.ID))
         df.val <- df.validate[df.validate$type == type, ]
         df.val$Fund.ID <- (as.character(df.val$Fund.ID))
+        # prepared once per type and fold, reused by every objective call
+        if (nrow(df.optim.in) > 0) df.optim.prep <- as.prepared(df.optim.in)
+        if (nrow(df.val) > 0) df.val.prep <- as.prepared(df.val)
 
         factor.list <- list()
         for (factor in factors) {
@@ -717,7 +742,7 @@ iter.run <- function(input.list) {
             par.name <- names(par)
             ans <- stats::optim(par, function(p, ...) err.sqr.calc(setNames(p, par.name), ...),
               method = "Brent", lower = br[1], upper = br[2],
-              lambda = lambda, max.month = max.month, df = df.optim.in
+              lambda = lambda, max.month = max.month, df = df.optim.prep
             )
             res <- as.data.frame(as.list(setNames(ans$par, names(par))))
             res$value <- ans$value
@@ -748,7 +773,7 @@ iter.run <- function(input.list) {
                 res_tmp <- optimx::optimx(par, err.sqr.calc,
                   lambda = lambda,
                   max.month = max.month,
-                  df = df.optim.in,
+                  df = df.optim.prep,
                   lower = lower_bounds,
                   upper = upper_bounds,
                   method = optim_method
@@ -760,7 +785,7 @@ iter.run <- function(input.list) {
                   res_tmp2 <- optimx::optimx(par, err.sqr.calc,
                     lambda = lambda,
                     max.month = max.month,
-                    df = df.optim.in,
+                    df = df.optim.prep,
                     itnmax = 1000,
                     lower = lower_bounds,
                     upper = upper_bounds,
@@ -775,7 +800,7 @@ iter.run <- function(input.list) {
                 if (use.bounded) {
                   ans <- stats::nlminb(par, err.sqr.calc,
                     lower = lower_bounds, upper = upper_bounds,
-                    lambda = lambda, max.month = max.month, df = df.optim.in
+                    lambda = lambda, max.month = max.month, df = df.optim.prep
                   )
                   res_df <- as.data.frame(as.list(ans$par))
                   res_df$value <- ans$objective
@@ -785,7 +810,7 @@ iter.run <- function(input.list) {
                 } else {
                   ans <- stats::optim(par, err.sqr.calc,
                     method = "Nelder-Mead",
-                    lambda = lambda, max.month = max.month, df = df.optim.in
+                    lambda = lambda, max.month = max.month, df = df.optim.prep
                   )
                   res_df <- as.data.frame(as.list(ans$par))
                   res_df$value <- ans$value
@@ -849,9 +874,9 @@ iter.run <- function(input.list) {
           res$validation.error <- err.sqr.calc(par,
             max.month = max.month,
             lambda = 0, # set to zero
-            df = df.val
+            df = df.val.prep
           )
-          res$validation.error.H0 <- err.sqr.calc(par, max.month = 1, lambda = 0, df = df.val)
+          res$validation.error.H0 <- err.sqr.calc(par, max.month = 1, lambda = 0, df = df.val.prep)
 
           factor.list[[factor]] <- res
         }

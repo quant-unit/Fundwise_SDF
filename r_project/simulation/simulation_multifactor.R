@@ -227,6 +227,19 @@ create.simulation.multifactor <- function(
         df$type <- paste0("sdf:", sdf_str, factor_str, " stdv:", stdv, " #d:", no.deals)
         df$Fund.ID <- paste(vintage, no, sep = "_")
 
+        # Gross benchmark return G_u of the linear SDF: depends on the factor
+        # path only, so it is computed once per fund (speed; it used to be
+        # recomputed for every deal and draws no random numbers, so simulated
+        # data are unchanged)
+        if (!exp.aff) {
+            G <- 1 + alpha + df$RF +
+                beta_MKT * df$MKT +
+                beta_ME * df$ME +
+                beta_IA * df$IA +
+                beta_ROE * df$ROE +
+                beta_EG * df$EG
+        }
+
         # Simulate N deals
         for (i in 1:no.deals) {
             if (deterministic.inv.timing) {
@@ -252,12 +265,6 @@ create.simulation.multifactor <- function(
                 m <- if (end > start) exp(sum(df$deal[(start + 1):end])) else 1
             } else {
                 # Simple linear SDF: gross benchmark return G_u (B1, deal.multiplier)
-                G <- 1 + alpha + df$RF +
-                    beta_MKT * df$MKT +
-                    beta_ME * df$ME +
-                    beta_IA * df$IA +
-                    beta_ROE * df$ROE +
-                    beta_EG * df$EG
                 m <- deal.multiplier(G, start, end, stdv, shock.model, use.shifted)
             }
 

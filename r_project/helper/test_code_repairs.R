@@ -422,6 +422,45 @@ if (!file.exists(f.fund) || !file.exists(f.vyp) || !file.exists(q.file)) {
 }
 
 # ---------------------------------------------------------------------------
+# Speed changes: fast grid padding and prepared units give identical results
+# ---------------------------------------------------------------------------
+cat("\n== Speed: equivalence with the reference code ==\n")
+if (exists("fund") && exists("vyp") && exists("q")) {
+  same.pad <- TRUE
+  for (dd in list(fund, vyp)) for (oc in c("first.cf", "predetermined")) {
+    a <- pad.all.units(dd, oc, t.max, fast = FALSE)
+    b <- pad.all.units(dd, oc, t.max, fast = TRUE)
+    a <- a[order(a$Fund.ID, a$Date), ]; b <- b[order(b$Fund.ID, b$Date), ]
+    cols <- intersect(c("Date", "CF", "type", "Vintage", "Fund.ID", "Size"), colnames(a))
+    same.pad <- same.pad && nrow(a) == nrow(b) && all(vapply(cols, function(cc) identical(a[[cc]], b[[cc]]), TRUE))
+  }
+  check("fast grid padding equals merge() padding (fund-level and VYP, both origins)", same.pad)
+
+  pv <- pad.all.units(vyp, "first.cf", t.max)
+  qq <- q; qq$Alpha <- 1
+  dfm <- merge(pv, qq, by = "Date", all.x = TRUE)
+  prep <- prepare.units(dfm, c("RF", "MKT", "ME", "IA", "ROE", "EG", "Alpha"))
+  f1.ref <- function(df.ss, m, par0, model) { # reference: data-frame f1() of estim_model_optimized.R
+    if (model == "exp.aff") {
+      df.ss$Alpha <- exp(1) - 1
+      return(horizon.error(df.ss$CF, exp(cumsum(as.matrix(log(1 + df.ss[, names(par0)])) %*% par0)), m))
+    }
+    horizon.error(df.ss$CF, exp(cumsum(log(1 + (as.matrix(df.ss[, names(par0)]) %*% par0)))), m)
+  }
+  same.obj <- TRUE
+  for (model in c("linear", "exp.aff")) for (par0 in list(c(RF = 1, MKT = 1.2), c(RF = 1, MKT = 0.9, Alpha = 0.002), c(RF = 1, MKT = 1.1, ME = 0.3))) {
+    for (m in c(0, 1, 120, 360)) {
+      ref <- sapply(split(dfm, dfm$Fund.ID), f1.ref, m = m, par0 = par0, model = model)
+      new <- vapply(prep$units, unit.horizon.error, 0, max.month = m, par0 = par0, sdf.model = model)
+      same.obj <- same.obj && identical(unname(ref[names(new)]), unname(new))
+    }
+  }
+  check("prepared-unit horizon errors are identical to the data-frame f1() (linear and exp.aff, 3 models, 4 horizons)", same.obj)
+} else {
+  check("speed equivalence data available", FALSE)
+}
+
+# ---------------------------------------------------------------------------
 # B7/B9: table export (SR_CV definition, provenance header)
 # ---------------------------------------------------------------------------
 cat("\n== B7/B9: LaTeX table export ==\n")
