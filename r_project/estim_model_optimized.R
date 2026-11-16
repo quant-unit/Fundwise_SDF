@@ -98,6 +98,16 @@ if (!exists("origin.convention")) origin.convention <- "first.cf" # or "predeter
 if (!exists("vintage.weights")) vintage.weights <- "equal" # or "n.funds" (U_pair only)
 source("helper/objective.R")
 
+# B9: Brent bracket for one-parameter (MKT) models, and provenance recorded in
+# every result row (git commit, uncommitted changes, config file hash, scenario)
+if (!exists("brent.interval")) brent.interval <- c(-1, 4)
+provenance <- list(
+  git.commit = tryCatch(system("git rev-parse --short HEAD", intern = TRUE, ignore.stderr = TRUE)[1], error = function(e) NA),
+  git.dirty = tryCatch(length(system("git status --porcelain --untracked-files=no", intern = TRUE, ignore.stderr = TRUE)) > 0, error = function(e) NA),
+  config.md5 = unname(tools::md5sum(if (exists("use.simulation") && use.simulation) "config/simulation_scenarios.yaml" else "config/empirical_scenarios.yaml")),
+  scenario.id = if (exists("scenario.id") && !is.null(scenario.id)) scenario.id else NA
+)
+
 # 1.2) load data -----
 
 # load public data
@@ -672,7 +682,29 @@ iter.run <- function(input.list) {
           # print(type)
           # print(par)
 
-          if (TRUE) {
+          if (length(par) == 1) {
+            # B9: one-parameter models use Brent's method on a fixed bracket
+            # (positivity margin of G_u, assumption A7; brent.interval)
+            br <- if (names(par) == "Alpha") c(alpha.lower, alpha.upper) else brent.interval
+            lower_bounds <- br[1]
+            upper_bounds <- br[2]
+            # optim(method = "Brent") passes an unnamed scalar: restore the name
+            par.name <- names(par)
+            ans <- stats::optim(par, function(p, ...) err.sqr.calc(setNames(p, par.name), ...),
+              method = "Brent", lower = br[1], upper = br[2],
+              lambda = lambda, max.month = max.month, df = df.optim.in
+            )
+            res <- as.data.frame(as.list(setNames(ans$par, names(par))))
+            res$value <- ans$value
+            res$fevals <- ans$counts[1]
+            res$gevals <- NA
+            res$niter <- NA
+            res$convcode <- ans$convergence
+            res$kkt1 <- NA
+            res$kkt2 <- NA
+            res$xtime <- NA
+            rownames(res) <- "Brent"
+          } else if (TRUE) {
             # Build bounds & choose method: use L-BFGS-B only when Alpha
             # is a factor (the explosion case)
             use.bounded <- ("Alpha" %in% names(par))
@@ -749,6 +781,10 @@ iter.run <- function(input.list) {
 
           # Standard Error calc
           for (v in names(par)) par[v] <- res[1, v]
+          # estimate on a bound (Brent bracket or alpha bounds): SEs not valid
+          lb <- rep_len(lower_bounds, length(par))
+          ub <- rep_len(upper_bounds, length(par))
+          res$at.bound <- any((is.finite(lb) & par - lb < 1e-4) | (is.finite(ub) & ub - par < 1e-4))
           dfx <- unit.split(df.optim.in)
 
           # dependent - kernel bandwidht
@@ -774,13 +810,23 @@ iter.run <- function(input.list) {
           res$vintage.weights <- if (error.function == "U_pair") vintage.weights else NA
           res$sdf.model <- sdf.model
           res$datetime <- Sys.time() + 2 * 60 * 60
+          # B9 provenance
+          res$git.commit <- provenance$git.commit
+          res$git.dirty <- provenance$git.dirty
+          res$config.md5 <- provenance$config.md5
+          res$scenario.id <- provenance$scenario.id
+          res$data.prepared.folder <- if (use.simulation) NA else data.prepared.folder
 
-          # validation error
+          # validation error on the held-out vintages: at the estimation
+          # horizon (horizon-specific scale) and, for comparisons across
+          # horizons, at the common H = 0 inception loss of the same
+          # criterion (B8; for U_pair this is U_{v,0} of the held-out vintages)
           res$validation.error <- err.sqr.calc(par,
             max.month = max.month,
             lambda = 0, # set to zero
             df = df.val
           )
+          res$validation.error.H0 <- err.sqr.calc(par, max.month = 1, lambda = 0, df = df.val)
 
           factor.list[[factor]] <- res
         }
@@ -790,9 +836,13 @@ iter.run <- function(input.list) {
       if (do.cache & nrow(output) > 0) {
         cache.path <- paste0(data.out.folder, "/cache_", paste0(public.filename, "_", cache.folder.tag), "/")
         if (!dir.exists(cache.path)) dir.create(cache.path)
+        # file name carries fold, horizon, lambda and milliseconds: with a
+        # seconds-only timestamp, folds/horizons finishing within the same
+        # second overwrote each other's cache file (results silently lost)
         path.cache <- paste0(
           cache.path,
-          format(Sys.time() + 2 * 60 * 60, "%Y-%m-%d_%H%M%S"),
+          format(Sys.time() + 2 * 60 * 60, "%Y-%m-%d_%H%M%OS3"),
+          "_cv", input.list$cv.year, "_m", max.month, "_l", lambda,
           "_cached_res.csv"
         )
         write.csv(output, path.cache)

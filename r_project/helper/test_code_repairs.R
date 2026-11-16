@@ -9,6 +9,9 @@
 #   B4  constant-composition VYP pooling  (helper/pool_vintage.R, empirical/prep_preqin.R)
 #   B5  common vintage grid (origin t0, data end T.max) and U_{v,H} criterion
 #   B6  FW pools normalized by total vintage commitment
+#   B7  SR_CV = full-sample estimate / SD_CV in the LaTeX tables
+#   B8  common H = 0 held-out validation loss
+#   B9  provenance in results and tables; Brent for one-parameter models
 #   Sample rule: main sample = complete-history funds; all funds = robustness
 #
 # Each test prints PASS/FAIL; the script exits non-zero if any test fails.
@@ -417,6 +420,48 @@ if (!file.exists(f.fund) || !file.exists(f.vyp) || !file.exists(q.file)) {
     if (oc == "predetermined") cat(sprintf("       note: %d BO vintages have cash flows before Dec 31 of vintage - 1; their t0 is the first cash-flow date\n", n.early))
   }
 }
+
+# ---------------------------------------------------------------------------
+# B7/B9: table export (SR_CV definition, provenance header)
+# ---------------------------------------------------------------------------
+cat("\n== B7/B9: LaTeX table export ==\n")
+suppressPackageStartupMessages(library(dplyr))
+plot.exprs <- parse(here("results/plot_empirical_estimates.R"))
+for (ex in plot.exprs) {
+  if (is.call(ex) && identical(ex[[1]], as.name("<-")) &&
+      as.character(ex[[2]]) %in% c(".export_latex_tables", ".table_provenance")) eval(ex, globalenv())
+}
+toy.tab <- rbind(
+  data.frame(Type = "BO", weighting = c("EW", "FW"), method = "Asymptotic", Factor = "MKT", max.month = 1,
+             MKT = c(1.21, 1.05), SE.MKT = c(0.07, 0.09), t.MKT = c(17.3, 11.7),
+             git.commit = "abc1234", git.dirty = FALSE, scenario.id = "toy", data.prepared.folder = "data_prepared_2026_c"),
+  data.frame(Type = "BO", weighting = c("EW", "FW"), method = "Cross-Validation", Factor = "MKT", max.month = 1,
+             MKT = c(1.40, 0.80), SE.MKT = c(0.20, 0.25), t.MKT = c(7.0, 3.2),
+             git.commit = NA, git.dirty = NA, scenario.id = NA, data.prepared.folder = NA)
+)
+tab.base <- file.path(tempdir(), "b7_toy")
+suppressMessages(.export_latex_tables(toy.tab, "BO", "MKT", tab.base))
+tex <- readLines(paste0(tab.base, "_tables.tex"))
+row <- tex[grepl("^0.1 yr &", tex)][1] # max.month = 1 is labelled 1/12 = 0.1 yr
+cells <- trimws(strsplit(sub("\\\\\\\\.*$", "", row), "&")[[1]])
+sr.ew <- as.numeric(cells[6]); sr.fw <- as.numeric(cells[11])
+check("SR_CV column = full-sample estimate / SD_CV (not fold mean / SD_CV)",
+      isTRUE(all.equal(sr.ew, round(1.21 / 0.20, 2))) && isTRUE(all.equal(sr.fw, round(1.05 / 0.25, 2))),
+      sprintf("EW %.2f (fold-mean ratio would be 7.00), FW %.2f (3.20)", sr.ew, sr.fw))
+check("table header records generation commit and the results' commit, scenario and data folder",
+      any(grepl("^% Generated .* at commit", tex)) && any(grepl("commit\\(s\\) abc1234", tex)) &&
+        any(grepl("Scenario\\(s\\): toy", tex)) && any(grepl("data_prepared_2026_c", tex)))
+
+cat("\n== B8/B9: estimator source checks ==\n")
+est.src <- paste(readLines(here("estim_model_optimized.R")), collapse = "\n")
+check("held-out folds also report the common H = 0 loss (validation.error.H0)",
+      grepl("res$validation.error.H0 <- err.sqr.calc(par, max.month = 1", est.src, fixed = TRUE))
+check("one-parameter models use Brent's method (parameter name restored); results carry provenance and an at.bound flag",
+      grepl('method = "Brent"', est.src, fixed = TRUE) && grepl("err.sqr.calc(setNames(p, par.name), ...)", est.src, fixed = TRUE) &&
+        grepl("res$git.commit <- provenance$git.commit", est.src, fixed = TRUE) && grepl("res$at.bound <-", est.src, fixed = TRUE))
+f.toy <- function(b) (b - 1.2345678)^2 * (1 + 0.1 * b^2)
+br <- optim(c(MKT = 1), f.toy, method = "Brent", lower = -1, upper = 4)$par
+check("Brent on the [-1, 4] bracket finds the minimum to 1e-6", abs(br - optimize(f.toy, c(-1, 4), tol = 1e-12)$minimum) < 1e-6)
 
 # ---------------------------------------------------------------------------
 # Every Preqin scenario in the empirical config resolves to an existing file,

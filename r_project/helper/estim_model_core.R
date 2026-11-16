@@ -346,6 +346,8 @@ run_estimation <- function(
     # setting never leaks from one scenario into the next)
     assign("origin.convention", origin_convention, envir = .GlobalEnv)
     assign("vintage.weights", vintage_weights, envir = .GlobalEnv)
+    # B9 provenance: scenario id recorded in every result row
+    assign("scenario.id", scenario_id, envir = .GlobalEnv)
 
     # Alpha bounds
     assign("alpha.lower", alpha_lower, envir = .GlobalEnv)

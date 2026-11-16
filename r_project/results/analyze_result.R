@@ -69,12 +69,12 @@ cv.res <- list()
 for (Factor in q.factors) {
   # Select columns without duplicating MKT when Factor == "MKT"
   if (Factor == "MKT") {
-    select_cols <- c("MKT", "Type", "max.month", "validation.error")
+    select_cols <- c("MKT", "Type", "max.month", "validation.error", "validation.error.H0")
   } else if (Factor == "ALL" || grepl("\\+", Factor)) {
     available_factors <- setdiff(intersect(c("Alpha", "SMB", "HML", "ME", "ROE", "IA", "EG"), colnames(df.f)), "MKT")
-    select_cols <- c("MKT", available_factors, "Type", "max.month", "validation.error")
+    select_cols <- c("MKT", available_factors, "Type", "max.month", "validation.error", "validation.error.H0")
   } else {
-    select_cols <- c("MKT", Factor, "Type", "max.month", "validation.error")
+    select_cols <- c("MKT", Factor, "Type", "max.month", "validation.error", "validation.error.H0")
   }
   # Only select columns that actually exist in df.f (e.g. no validation.error if no CV runs)
   select_cols <- intersect(select_cols, colnames(df.f))
@@ -94,6 +94,7 @@ for (Factor in q.factors) {
     m <- aggregate(. ~ id, mean, data = df)
     s <- aggregate(. ~ id, sd, data = df)
     s["validation.error"] <- NULL
+    s["validation.error.H0"] <- NULL # B8: common H = 0 held-out loss (fold mean kept in m)
   }
   n <- ncol(s)
   a <- 2
@@ -125,7 +126,7 @@ if (length(cv.res) > 0) {
     df.cv[i, "Type"] <- strsplit(df.cv$id, "_")[[i]][1]
     df.cv[i, "max.month"] <- strsplit(df.cv$id, "_")[[i]][2]
   }
-  cv_select_cols <- c("Type", "max.month", "MKT", "SE.MKT", "Factor", "validation.error")
+  cv_select_cols <- c("Type", "max.month", "MKT", "SE.MKT", "Factor", "validation.error", "validation.error.H0")
   if (any(df.cv$Factor != "ALL" & !grepl("\\+", df.cv$Factor))) {
     cv_select_cols <- c(cv_select_cols, "Coef", "SE.Coef")
   }
