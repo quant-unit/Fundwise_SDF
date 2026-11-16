@@ -911,6 +911,15 @@ iter.run <- function(input.list) {
 
 if (do.cross.validation) {
   for (v in names(vintage.blocks)) df.res <- iter.run(vintage.blocks[[v]])
+  # All folds and the full-sample fit finished: mark these horizons complete
+  # for this result identity (the resume check in run_estimation() requires
+  # the marker; fold rows alone do not show that every fold ran)
+  if (do.cache) {
+    write.cv.complete.markers(
+      paste0(data.out.folder, "/cache_", public.filename, "_", cache.folder.tag),
+      result.identity.used$cache.identity, max.months, lambdas
+    )
+  }
 } else {
   system.time(df.res <- iter.run(vintage.blocks$ALL))
 }

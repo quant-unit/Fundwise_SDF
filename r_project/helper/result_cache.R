@@ -174,7 +174,7 @@ read.result.cache <- function(cache.dir, expected.input.md5 = NULL, verbose = TR
   rows <- rows[!vapply(rows, is.null, TRUE)]
   if (length(rows) == 0) return(data.frame())
   df <- as.data.frame(data.table::rbindlist(rows, use.names = TRUE, fill = TRUE))
-  current.result.rows(df, expected.identity, expected.input.md5, basename(cache.dir), verbose)
+  dedupe.result.rows(current.result.rows(df, expected.identity, expected.input.md5, basename(cache.dir), verbose))
 }
 
 # Summaries are results too: plotting an old CSV must not bypass validation.
@@ -184,4 +184,27 @@ read.result.summary <- function(path) {
   out <- current.result.rows(df, label = path)
   if (nrow(out) != nrow(df)) stop("Stale result summary; rerun estimation and analysis: ", path)
   out
+}
+
+# Cross-validation completion markers: one empty file per (identity,
+# horizon, lambda), written after all folds and the full-sample fit finished.
+cv.marker.path <- function(cache.dir, identity, max.month, lambda) {
+  file.path(cache.dir, paste0("cv_complete_", identity, "_m", max.month, "_l", lambda, ".marker"))
+}
+write.cv.complete.markers <- function(cache.dir, identity, max.months, lambdas) {
+  if (!dir.exists(cache.dir)) dir.create(cache.dir, recursive = TRUE)
+  for (m in max.months) for (l in lambdas) file.create(cv.marker.path(cache.dir, identity, m, l))
+  invisible(TRUE)
+}
+
+# Duplicate rows of the same estimate (same identity, fold, type, factor,
+# horizon and lambda; e.g. a no-CV and a CV run sharing a folder, or a rerun
+# after a failure) are reduced to the most recent one, so fold statistics are
+# never double counted.
+dedupe.result.rows <- function(df) {
+  keys <- intersect(c("cache.identity", "CV.key", "Type", "Factor", "max.month", "lambda"), names(df))
+  if (nrow(df) == 0 || length(keys) == 0) return(df)
+  if ("datetime" %in% names(df)) df <- df[order(as.character(df$datetime)), , drop = FALSE]
+  key <- do.call(paste, c(lapply(keys, function(k) as.character(df[[k]])), sep = "\r"))
+  df[!duplicated(key, fromLast = TRUE), , drop = FALSE]
 }

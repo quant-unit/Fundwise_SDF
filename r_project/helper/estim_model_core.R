@@ -41,9 +41,15 @@ get_completed_horizons <- function(cache_folder_path, do_cross_validation = FALS
     if (nrow(df) == 0 || !all(c("max.month", "lambda") %in% colnames(df))) {
         return(empty)
     }
-    # When CV is requested, only count horizons that have CV fold results
-    if (do_cross_validation && "CV.key" %in% colnames(df)) {
-        df <- df[df$CV.key != "ALL", , drop = FALSE]
+    # When CV is requested, a horizon is complete only if the whole CV run
+    # finished (before, any fold row counted as complete, so a CV run that
+    # stopped in a fold was skipped on rerun)
+    if (do_cross_validation) {
+        # complete only with the marker written after all folds and the
+        # full-sample fit (fold rows alone may stem from a run that stopped)
+        if (is.null(cache_identity)) return(empty)
+        done <- file.exists(cv.marker.path(cache_folder_path, cache_identity, df$max.month, df$lambda))
+        df <- df[done & df$CV.key != "ALL", , drop = FALSE]
     }
     if (nrow(df) == 0) {
         return(empty)

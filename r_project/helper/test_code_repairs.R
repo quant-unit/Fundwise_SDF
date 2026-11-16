@@ -518,6 +518,20 @@ br <- optim(c(MKT = 1), f.toy, method = "Brent", lower = -1, upper = 4)$par
 check("Brent on the [-1, 4] bracket finds the minimum to 1e-6", abs(br - optimize(f.toy, c(-1, 4), tol = 1e-12)$minimum) < 1e-6)
 
 # ---------------------------------------------------------------------------
+# Result cache: duplicate estimates are reduced to one row
+# ---------------------------------------------------------------------------
+cat("\n== Result cache: deduplication ==\n")
+source(here("helper/result_cache.R"))
+dup <- data.frame(cache.identity = "id1", CV.key = c("1991", "1991", "ALL", "ALL", "1994"), Type = "BO", Factor = "MKT",
+                  max.month = 120, lambda = 0, MKT = c(1.10, 1.10, 1.20, 1.20, 1.30),
+                  datetime = c("2026-11-16 10:00:00", "2026-11-16 11:00:00", "2026-11-16 10:00:00", "2026-11-16 12:00:00", "2026-11-16 10:00:00"))
+dd <- dedupe.result.rows(dup)
+check("duplicate fold and full-sample rows are reduced to the latest one", nrow(dd) == 3 && all(dd$datetime[dd$CV.key != "1994"] > "2026-11-16 10:30:00"))
+mk <- tempfile("markers"); write.cv.complete.markers(mk, "id1", c(1, 120), 0)
+check("CV completion markers are written per horizon and lambda",
+      all(file.exists(cv.marker.path(mk, "id1", c(1, 120), 0))) && !file.exists(cv.marker.path(mk, "id1", 60, 0)))
+
+# ---------------------------------------------------------------------------
 # Every Preqin scenario in the empirical config resolves to an existing file,
 # in the main sample and in the all-funds robustness sample
 # ---------------------------------------------------------------------------
