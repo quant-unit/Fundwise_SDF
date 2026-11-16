@@ -75,7 +75,8 @@ Signed-off steps, newest first. Branch \code{revision-2026}. Where a log entry c
 \item \textbf{Caveat for the R2-4.1(ii) decline.} ``Remaining NAV is a small fraction of total distributions'' holds at the vintage level (median terminal-NAV share 12\% BO, 16\% VC) but not fund by fund. Additionally, about 220 complete-history funds with $V\le 2010$ stop reporting after age 5 but before the data end while NAV is still above 5\% of their total value. Planned robustness variant: exclude funds that stop before the data end with NAV above a threshold (e.g.\ 20\% of total value).
 \item \textbf{Cash-flow dating (open, second order).} The export's dated Capital Call and Distribution rows reconcile exactly to the cumulative columns for all 1{,}033 funds. The current pipeline books flows on quarter-end NAV dates, on average 50 days after the true (mid-quarter) date. Switching to dated rows is safe; deferred.
 \item \textbf{Tests.} \file{r_project/helper/test_code_repairs.R} covers B4, B6, the sample rule and the funnel counts; all pass. It fails if a prepared file is missing.
-\item \textbf{Not yet done.} The estimation configs still read \file{data_prepared_2026_b/}; no table has been regenerated. \file{prep_preqin.Rmd} still contains the old reporter-mean code.
+\item \textbf{Configs switched.} \file{config/empirical_scenarios.yaml} reads \file{data_prepared_2026_c/} and writes to \file{results/data_out_2026-emp-c/}, so new results do not mix with the reporter-mean results in \file{results/data_out_2026-emp/}; all 62 Preqin scenarios resolve to existing files.
+\item \textbf{Not yet done.} No table has been regenerated. \file{prep_preqin.Rmd} still contains the old reporter-mean code.
 \end{itemize}
 
 \clearpage

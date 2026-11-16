@@ -148,7 +148,7 @@ North America, vintages <= 2010: 383 Buyout and 432 Venture Capital complete-his
 
 **Tests.** `Rscript helper/test_code_repairs.R` checks the pooling identity, the FW normalization, the sample rule and the funnel counts on synthetic data and on all prepared files. It fails if a prepared file is missing.
 
-> The estimation configs (`config/empirical_scenarios.yaml`) still read `data_prepared_2026_b`; switch `data_prepared_folder` to `data_prepared_2026_c` to estimate on the repaired pools.
+**Estimation.** `config/empirical_scenarios.yaml` reads `data_prepared_2026_c` and writes to `results/data_out_2026-emp-c` (results on the old `_b` pools stay in `results/data_out_2026-emp`). For the all-funds robustness sample, set `data_prepared_folder: "data_prepared_2026_c_allfunds"` (and a separate `data_out_folder`) in a scenario. Under a non-UTF-8 locale, run `Rscript` with `LANG=en_US.UTF-8` so the YAML file parses.
 
 ### Running Empirical Analysis
 
