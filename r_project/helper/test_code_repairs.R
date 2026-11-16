@@ -471,6 +471,22 @@ if (exists("fund") && exists("vyp") && exists("q")) {
     }
   }
   check("prepared-unit horizon errors are identical to the data-frame f1() (linear and exp.aff, 3 models, 4 horizons)", same.obj)
+
+  # Optimizer scaling (G1 finding): (alpha, beta) model, Buyout EW VYP, H = 0.
+  # Grid minimum (beta step 0.05, alpha step 0.0005): beta 0.50, alpha 0.0065,
+  # objective 0.02571. Unscaled L-BFGS-B from (1, 0) stopped at beta 1.005.
+  obj.l2 <- function(p) {
+    e <- vapply(prep$units, unit.horizon.error, 0, max.month = 1, par0 = c(RF = 1, p))
+    if (any(!is.finite(e))) 1e10 else sqrt(sum(e^2)) / length(e)
+  }
+  p0 <- c(MKT = 1, Alpha = 0)
+  o.raw <- optim(p0, obj.l2, method = "L-BFGS-B", lower = c(-Inf, -0.02), upper = c(Inf, 0.02))
+  o.sc <- optim(p0, obj.l2, method = "L-BFGS-B", lower = c(-Inf, -0.02), upper = c(Inf, 0.02),
+                control = list(parscale = optim.parscale(p0)))
+  check("scaled L-BFGS-B reaches the (alpha, beta) grid minimum; unscaled stops near the start",
+        o.sc$value <= 0.02571 && abs(o.sc$par[["MKT"]] - 0.494) < 0.02 && o.raw$value > o.sc$value * 1.05,
+        sprintf("scaled beta %.3f alpha %.4f obj %.5f; unscaled beta %.3f obj %.5f",
+                o.sc$par[["MKT"]], o.sc$par[["Alpha"]], o.sc$value, o.raw$par[["MKT"]], o.raw$value))
 } else {
   check("speed equivalence data available", FALSE)
 }

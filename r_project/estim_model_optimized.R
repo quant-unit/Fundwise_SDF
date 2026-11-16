@@ -767,6 +767,10 @@ iter.run <- function(input.list) {
               upper_bounds <- Inf
               optim_method <- "Nelder-Mead"
             }
+            # Parameter scales (alpha ~ 0.001, loadings ~ 1): without them
+            # L-BFGS-B stopped near the start in beta (e.g. Buyout H = 0:
+            # beta 1.005 instead of the minimum at 0.494); see optim.parscale()
+            par.scale <- optim.parscale(par)
 
             res <- tryCatch(
               {
@@ -776,7 +780,8 @@ iter.run <- function(input.list) {
                   df = df.optim.prep,
                   lower = lower_bounds,
                   upper = upper_bounds,
-                  method = optim_method
+                  method = optim_method,
+                  control = list(parscale = par.scale)
                 )
                 if (nrow(res_tmp) == 0) stop("optimx returned 0 rows")
 
@@ -789,7 +794,8 @@ iter.run <- function(input.list) {
                     itnmax = 1000,
                     lower = lower_bounds,
                     upper = upper_bounds,
-                    method = optim_method
+                    method = optim_method,
+                    control = list(parscale = par.scale)
                   )
                   if (nrow(res_tmp2) > 0) res_tmp <- res_tmp2
                 }
@@ -799,7 +805,7 @@ iter.run <- function(input.list) {
                 warning("optimx failed (", e$message, "). Falling back to native optimizers.")
                 if (use.bounded) {
                   ans <- stats::nlminb(par, err.sqr.calc,
-                    lower = lower_bounds, upper = upper_bounds,
+                    lower = lower_bounds, upper = upper_bounds, scale = 1 / par.scale,
                     lambda = lambda, max.month = max.month, df = df.optim.prep
                   )
                   res_df <- as.data.frame(as.list(ans$par))

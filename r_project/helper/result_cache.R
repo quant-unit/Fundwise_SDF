@@ -7,7 +7,7 @@
 # Resume and analysis use the same identity: version, resolved estimator
 # settings, and paths/hashes of the cash flows, factors and configuration.
 # Analysis verifies those files; it never guesses freshness from timestamps.
-PIPELINE.VERSION <- "2026-11-16-r2"
+PIPELINE.VERSION <- "2026-11-16-r3" # r3: optimizer parameter scaling (alpha models change)
 
 RESULT.DEPENDENCIES <- c("input", "public", "simulation.factors", "equity", "config")
 RESULT.IDENTITY.COLUMNS <- c("pipeline.version", "cache.identity", "settings.md5",

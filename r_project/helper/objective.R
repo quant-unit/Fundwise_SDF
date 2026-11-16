@@ -171,3 +171,9 @@ u.criterion <- function(e, vintage.key, s = rep(1, length(e)), vintage.weights =
   if (!any(ok)) return(NA_real_)
   mean(w[ok] * u[ok])
 }
+
+# Typical parameter scales for the optimizer (optim/optimx parscale): alpha is
+# a monthly return (~0.001-0.01), factor loadings are ~1. With equal scales
+# L-BFGS-B effectively moved only alpha and stopped near the starting beta in
+# the (alpha, beta) model (G1 finding, 2026-11-16; test in test_code_repairs.R).
+optim.parscale <- function(par) ifelse(names(par) == "Alpha", 0.001, 1)
