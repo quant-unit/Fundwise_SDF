@@ -26,6 +26,10 @@ defaults:
     max_vin: 2005
     stdvs: 0.2
     exp_aff_sdf: false
+    # B1: "multiplicative" = mean-one lognormal deal shocks G_u * (1 + eps_u),
+    # exact conditional pricing at theta_0; "additive" = former G_u + eps_u with
+    # default truncation (stress case; use_shifted_lognormal picks the shock)
+    shock_model: "multiplicative"
     use_shifted_lognormal: false
     simulate_mkt: false
     deterministic_inv_timing: false

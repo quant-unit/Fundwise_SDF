@@ -175,7 +175,9 @@ North America, vintages <= 2010: 383 Buyout and 432 Venture Capital complete-his
 
 ### Running Simulation Studies
 
-1. **Generate Simulated Data** (`simulation/simulation_improved.R`):
+> **2026 revision (B1).** `run_simulation_study.R` generates data with `simulation/simulation_multifactor.R` (`create.simulation.multifactor`). Deal payoffs compound over the months after the investment month, matching the estimator's discounting, and the default `shock_model: "multiplicative"` uses mean-one lognormal shocks G_u (1 + eps_u), so the DGP prices exactly at the true parameters. `shock_model: "additive"` keeps the former additive shocks with default truncation as a stress case. Data and results generated before this change must be regenerated. The older `simulation_improved.R` described below is legacy and not used by the runner.
+
+1. **Generate Simulated Data** (`simulation/simulation_improved.R`, legacy):
    ```r
    create.simulation(
      no.deals = 15,              # Deals per fund

@@ -68,6 +68,48 @@ if (!"Alpha" %in% colnames(df.q5)) {
 }
 
 # ============================================================================
+# deal.multiplier() - payoff multiple of one deal (revision plan B1)
+# ============================================================================
+#
+# G: gross benchmark returns 1 + alpha + RF + beta' F on the fund's monthly rows
+#    (linear SDF), so that the estimator discounts a flow at row b back to row a
+#    by R_{a,b} = prod_{u = a+1}^{b} G_u.
+# A deal invested at row `start` and exited at row `end` pays
+#    m = prod_{u = start+1}^{end} G_u (1 + eps_u)        (shock.model = "multiplicative")
+# with 1 + eps_u = exp(N(-s^2/2, s^2)) > 0, s^2 = log(1 + stdv^2), i.e.
+# E[1 + eps_u] = 1 and sd(1 + eps_u) = stdv. Then E[m | factor path] = R_{start,end}
+# exactly, so the DGP satisfies conditional pricing (P) and (X) at theta_0 for
+# every stdv, and m > 0 whenever G > 0 (no default truncation needed).
+#
+# Repairs relative to the former code: (a) compounding over (start+1):end
+# instead of start:end, which added a zero-noise pricing error of G_start - 1
+# per deal; (b) the former additive shocks (G_u + e_u, Gaussian or shifted
+# lognormal) with default truncation (path < 0 -> m = 0) raise E[m] above
+# R_{start,end} (E[(G + e)_+] > G). They remain available as a stress case,
+# shock.model = "additive" (use.shifted selects the shifted-lognormal shock).
+deal.multiplier <- function(G, start, end, stdv, shock.model = "multiplicative", use.shifted = FALSE) {
+    if (end <= start) return(1) # no holding period: the deal returns its capital
+    g <- G[(start + 1):end]
+    k <- length(g)
+    if (shock.model == "multiplicative") {
+        if (stdv == 0) return(prod(g))
+        s2 <- log(1 + stdv^2)
+        return(prod(g * exp(rnorm(k, -s2 / 2, sqrt(s2)))))
+    }
+    if (shock.model == "additive") {
+        if (use.shifted) {
+            sigma <- sqrt(log(1 + stdv^2))
+            e <- exp(rnorm(k, -sigma^2 / 2, sigma)) - 1
+        } else {
+            e <- rnorm(k, 0, stdv)
+        }
+        path <- cumprod(g + e)
+        return(if (any(path < 0)) 0 else path[k]) # default truncation (stress case)
+    }
+    stop("unknown shock.model: ", shock.model)
+}
+
+# ============================================================================
 # create.simulation.multifactor() - Multi-Factor DGP Support
 # ============================================================================
 
@@ -118,7 +160,9 @@ create.simulation.multifactor <- function(
     simulate.mkt = FALSE,
     deterministic.inv.timing = FALSE,
     scenario_id = NULL,
-    output_folder = "simulation/data_prepared_sim") {
+    output_folder = "simulation/data_prepared_sim",
+    shock.model = "multiplicative") {
+    stopifnot(shock.model %in% c("multiplicative", "additive"))
     set.seed(100) # For reproducibility
     months <- 12
 
@@ -140,6 +184,7 @@ create.simulation.multifactor <- function(
 
     cat("DGP Configuration:\n")
     cat("  alpha =", alpha, "\n")
+    cat("  shock model =", shock.model, if (shock.model == "additive") "(stress case: default truncation)" else "", "\n")
     cat("  beta_MKT =", beta_MKT, "\n")
     if (!is.null(active_second_factor)) {
         cat("  beta_", active_second_factor, " = ",
@@ -195,7 +240,8 @@ create.simulation.multifactor <- function(
             end <- min(end, nrow(df))
 
             if (exp.aff) {
-                # Exponential-affine SDF
+                # Exponential-affine SDF: log gross return per month, mean-one
+                # multiplicative noise; compounded over (start+1):end (B1)
                 df$deal <- alpha + log(1 + df$RF) +
                     beta_MKT * log(1 + df$MKT) +
                     beta_ME * log(1 + df$ME) +
@@ -203,31 +249,16 @@ create.simulation.multifactor <- function(
                     beta_ROE * log(1 + df$ROE) +
                     beta_EG * log(1 + df$EG) +
                     rnorm(nrow(df), 0, stdv) - stdv^2 / 2
-                m <- exp(sum(df$deal[start:end]))
+                m <- if (end > start) exp(sum(df$deal[(start + 1):end])) else 1
             } else {
-                # Simple linear SDF
-                base_deal <- alpha + df$RF +
+                # Simple linear SDF: gross benchmark return G_u (B1, deal.multiplier)
+                G <- 1 + alpha + df$RF +
                     beta_MKT * df$MKT +
                     beta_ME * df$ME +
                     beta_IA * df$IA +
                     beta_ROE * df$ROE +
                     beta_EG * df$EG
-
-                if (use.shifted) {
-                    lower.bound <- -1
-                    sigma <- sqrt(log(1 + stdv^2 / lower.bound^2))
-                    mu <- log(-lower.bound) - sigma^2 / 2
-                    df$deal <- base_deal + exp(rnorm(nrow(df), mu, sigma)) + lower.bound
-                } else {
-                    df$deal <- base_deal + rnorm(nrow(df), 0, stdv)
-                }
-
-                path <- cumprod(1 + df$deal[start:end])
-                if (any(path < 0)) {
-                    m <- 0 # Default
-                } else {
-                    m <- tail(path, 1)
-                }
+                m <- deal.multiplier(G, start, end, stdv, shock.model, use.shifted)
             }
 
             df$CF[start] <- df$CF[start] - 1
@@ -345,7 +376,8 @@ create.simulation.multifactor <- function(
         stdvs = stdvs,
         exp.aff.sdf = exp.aff.sdf,
         use.shifted.lognormal = use.shifted.lognormal,
-        simulate.mkt = simulate.mkt
+        simulate.mkt = simulate.mkt,
+        shock.model = shock.model
     )
 
     cat("Saving files to:", DATA_PREPARED_SIM_PATH, "\n")

@@ -128,6 +128,9 @@ run_simulation_study <- function(
                         use.shifted.lognormal = if (is.null(dgp$use_shifted_lognormal)) FALSE else dgp$use_shifted_lognormal,
                         simulate.mkt = if (is.null(dgp$simulate_mkt)) FALSE else dgp$simulate_mkt,
                         deterministic.inv.timing = if (is.null(dgp$deterministic_inv_timing)) FALSE else dgp$deterministic_inv_timing,
+                        # B1: mean-one multiplicative deal shocks by default;
+                        # "additive" (with default truncation) is a stress case
+                        shock.model = if (is.null(dgp$shock_model)) "multiplicative" else dgp$shock_model,
                         scenario_id = id
                     )
 

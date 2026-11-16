@@ -3,6 +3,7 @@
 ### Run from r_project/:  LANG=en_US.UTF-8 Rscript helper/test_code_repairs.R
 ######################
 # Implemented so far:
+#   B1  simulator: compounding over (start+1):end, mean-one multiplicative shocks
 #   B2  H = 0 convention: origin date not discounted (helper/objective.R)
 #   B3  gradient, Hessian, sandwich SEs and Wald test (helper/inference.R)
 #   B4  constant-composition VYP pooling  (helper/pool_vintage.R, empirical/prep_preqin.R)
@@ -244,6 +245,42 @@ check("H = 0 error equals CF_t0 + sum_{t > t0} CF_t / R_{t0,t}",
 lim <- horizon.error(cf, ret.of(1.2, alpha = 1e3), 1)
 check("H = 0 error -> CF_t0 as alpha -> infinity (no extra discounting of t0)",
       abs(lim - cf[1]) < 1e-9, sprintf("value at alpha = 1000/month: %.6f", lim))
+
+# ---------------------------------------------------------------------------
+# B1: simulator timing and conditionally mean-one deal multipliers
+# ---------------------------------------------------------------------------
+cat("\n== B1: simulator ==\n")
+invisible(capture.output(suppressMessages(source(here("simulation/simulation_multifactor.R")))))
+q.sim <- df.q5[as.integer(format(df.q5$Date, "%Y")) >= 1990, ]
+G.path <- 1 + 0.001 + q.sim$RF + 1.3 * q.sim$MKT
+check("deal multiple at stdv = 0 equals R_{start,end} = prod_{start+1..end} G (and 1 if end = start)",
+      abs(deal.multiplier(G.path, 10, 70, 0) - prod(G.path[11:70])) < 1e-15 && deal.multiplier(G.path, 5, 5, 0.2) == 1,
+      sprintf("former start:end compounding adds G_start - 1 = %.4f", G.path[10] - 1))
+b1.dir <- file.path(tempdir(), "b1_sim")
+invisible(capture.output(gen <- create.simulation.multifactor(
+  no.deals = 15, investment.period = 5, max.holding.period = 10, alpha = 0.001, beta_MKT = 1.3,
+  no.samples = 1, no.funds = 3, min.vin = 1990, max.vin = 1993, stdvs = 0,
+  scenario_id = "b1test", output_folder = b1.dir
+)))
+sim.f <- read.csv(gen$fund_path)
+sim.f$Date <- as.Date(sim.f$Date)
+pv.sim <- sapply(split(sim.f, sim.f$Fund.ID), function(d) {
+  qq <- df.q5[as.integer(format(df.q5$Date, "%Y")) >= d$Vintage[1], ]
+  R <- cumprod(1 + 0.001 + qq$RF + 1.3 * qq$MKT)
+  sum(d$CF * R[1] / R[match(d$Date, qq$Date)])
+})
+check("simulated funds at stdv = 0 have PV(theta_0) = 0 (linear SDF)", max(abs(pv.sim)) < 1e-13,
+      sprintf("%d funds, max |PV| %.1e", length(pv.sim), max(abs(pv.sim))))
+set.seed(4)
+M <- 20000
+R.true <- prod(G.path[11:70])
+ratio <- replicate(M, deal.multiplier(G.path, 10, 70, 0.2)) / R.true
+z <- (mean(ratio) - 1) / (sd(ratio) / sqrt(M))
+check("multiplicative shocks: E[m | factor path] = R_{start,end} at stdv = 0.2 (5-year deal)",
+      abs(z) < 3, sprintf("mean m / R = %.4f, z = %.2f, sd = %.2f", mean(ratio), z, sd(ratio)))
+add <- replicate(M, deal.multiplier(1, 0, 1, 2, shock.model = "additive"))
+check("additive Gaussian shocks with default truncation are biased (stress case only)",
+      mean(add) > 1.3, sprintf("E[(G + e)_+] for G = 1, sd = 2: %.3f (theory 1.396)", mean(add)))
 
 # ---------------------------------------------------------------------------
 # B3: gradient, Hessian, sandwich covariance and Wald test on a toy NLS model
