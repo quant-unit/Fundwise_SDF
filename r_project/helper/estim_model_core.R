@@ -125,7 +125,7 @@ filter_remaining_horizons <- function(max_months, lambdas, completed) {
 #' @param weighting Weighting scheme: "EW", "FW", "EW_VYP", "FW_VYP"
 #' @param max_months Vector of maximum compounding months
 #' @param lambdas Regularization parameter(s)
-#' @param kernel_bandwidth HAC bandwidth (default: 12)
+#' @param kernel_bandwidth HAC bandwidth: "llsw" (default, S = ceil(1.3 sqrt(V)), fixed-b tests) or a number of vintage years
 #' @param do_cross_validation Enable cross-validation
 #' @param part_to_keep Partition index to keep (for partitioned runs)
 #' @param no_partitions Number of partitions
@@ -154,7 +154,7 @@ run_estimation <- function(
     weighting = "EW_VYP",
     max_months = c(1, 60, 120, 150, 180, 210, 240, 300, 360),
     lambdas = 0,
-    kernel_bandwidth = 12,
+    kernel_bandwidth = "llsw", # S = ceil(1.3 sqrt(V)); a number = fixed bandwidth
     # Cross-validation
     do_cross_validation = FALSE,
     part_to_keep = 1,

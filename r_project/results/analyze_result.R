@@ -24,6 +24,7 @@ dir.cache
 # pre-repair rows in the folder are ignored (review fix 2026-11-16)
 source(here("helper/result_cache.R"))
 source(here("helper/result_reporting.R"))
+source(here("helper/fixedb.R")) # fixed-b p-values (decision 2026-11-17)
 df.f <- read.result.cache(dir.cache)
 if (nrow(df.f) == 0) stop("No current cached results; rerun estimation before analysis: ", dir.cache)
 if (nrow(df.f) > 0) df.f$CV.key <- as.character(df.f$CV.key)
@@ -182,29 +183,36 @@ for (i in seq_len(nrow(df.all))) {
     if (paste0("SE.", factor, ".indep") %in% colnames(df.all)) {
       df.all[i, "SE.Coef.indep"] <- df.all[i, paste0("SE.", factor, ".indep")]
     }
+    if (paste0("SE.", factor, ".jk") %in% colnames(df.all)) {
+      df.all[i, "SE.Coef.jk"] <- df.all[i, paste0("SE.", factor, ".jk")]
+    }
   }
 }
 
 # Select columns defensively
 all_select_cols <- c(
-  "Type", "max.month", "MKT", "SE.MKT", "SE.MKT.indep", "Factor"
+  "Type", "max.month", "MKT", "SE.MKT", "SE.MKT.indep", "SE.MKT.jk", "Factor"
 )
 
 # For single factor runs we need Coef and SE.Coef. For ALL runs we keep the individual factor columns.
 if (any(df.all$Factor != "ALL")) {
-  all_select_cols <- c(all_select_cols, "Coef", "SE.Coef", "SE.Coef.indep")
+  all_select_cols <- c(all_select_cols, "Coef", "SE.Coef", "SE.Coef.indep", "SE.Coef.jk")
 }
 if (any(df.all$Factor == "ALL")) {
   available_factors <- setdiff(intersect(c("Alpha", "SMB", "HML", "ME", "ROE", "IA", "EG"), colnames(df.all)), c("MKT"))
   for (f in available_factors) {
-    all_select_cols <- c(all_select_cols, f, paste0("SE.", f), paste0("SE.", f, ".indep"))
+    all_select_cols <- c(all_select_cols, f, paste0("SE.", f), paste0("SE.", f, ".indep"), paste0("SE.", f, ".jk"))
   }
 }
 
 # keep the boundary flag (SEs not valid on a bound) and the provenance columns
 # for the table headers (review fix: these were dropped here)
 all_select_cols <- c(
-  all_select_cols, "at.bound", RESULT.PROVENANCE.COLUMNS
+  all_select_cols, "at.bound", RESULT.PROVENANCE.COLUMNS,
+  # inference (decision 2026-11-17): bandwidth S, vintages V, b = S / V,
+  # effective number of units, jackknife diagnostics, Wald p-values
+  "hac.S", "hac.V", "hac.b", "neff.units", "jk.units", "jk.selfcheck",
+  "Wald.p.value.MKT_1", "Wald.p.value.MKT_1.chisq"
 )
 all_select_cols <- intersect(all_select_cols, colnames(df.all))
 if (nrow(df.all) > 0) {
@@ -269,7 +277,7 @@ prepare_and_print_tables <- function(df, types, table_type, suffix, spec) {
       cap <- paste0(
         "Asymptotic results for ", type, " Funds. ",
         "This table reports asymptotic parameter estimates for linear two-factor models using ", weighting_text, ". ",
-        "Standard errors are estimated by a SHAC estimator (Equation \\ref{eq:asy_se}) with a Bartlett kernel bandwidth of $D=12$ vintage years to correct for dependence between overlapping funds. ",
+        "Standard errors are estimated by a SHAC estimator (Equation \\ref{eq:asy_se}) with a Bartlett kernel over vintage years and truncation $S=\\lceil 1.3\\sqrt{V}\\rceil$ (Lazarus, Lewis, Stock and Watson, 2018), $V$ the number of vintages; tests use Kiefer--Vogelsang fixed-$b$ critical values with $b=S/V$. ",
         "MCM (Maximum Compounding Month) denotes the maximum cash flow compounding horizon. ",
         "$^{\\dagger}$ denotes an estimate on a parameter bound; its asymptotic standard errors are not valid and are not reported."
       )
@@ -419,10 +427,16 @@ write.csv(df.cv, paste0(dir.cache, "/0_cross_validation_summary.csv"))
 # Write asymptotic inference
 if (nrow(df.all) > 0) {
   df.all$t.MKT <- df.all$MKT / df.all$SE.MKT
+  # two-sided p-values of t (H0: coefficient = 0) from the Kiefer-Vogelsang
+  # fixed-b distribution at b = hac.b; normal p-values if b is not recorded
+  # (results from before the decision of 17 November 2026)
+  p.t <- function(t) if ("hac.b" %in% colnames(df.all)) fixedb.pvalue(t^2, df.all$hac.b, 1) else 2 * pnorm(-abs(t))
+  df.all$p.MKT <- p.t(df.all$t.MKT)
   if ("Coef" %in% colnames(df.all)) {
     df.all$t.Coef <- df.all$Coef / df.all$SE.Coef
-    df.all$sig <- ((abs(df.all$t.MKT) > 1.96) & (abs(df.all$t.Coef) > 1.96))
-    sum(df.all$sig)
+    df.all$p.Coef <- p.t(df.all$t.Coef)
+    df.all$sig <- (df.all$p.MKT < 0.05) & (df.all$p.Coef < 0.05)
+    sum(df.all$sig, na.rm = TRUE)
   }
   nrow(df.all)
   # Independent SE t-stats (only if .indep columns exist)

@@ -22,6 +22,17 @@
 #   (3) off-diagonal Hessian perturbs only parameters i and j
 #       (was par + delta, which moved all parameters at once);
 #   (4) Wald statistic uses V^{-1} (was V).
+#
+# Bandwidth and tests (decision of 17 November 2026, helper/fixedb.R):
+#   bw = "llsw": S = ceil(1.3 sqrt(V)) with V the number of distinct vintages of
+#   the units (Lazarus, Lewis, Stock and Watson 2018); a number keeps a fixed
+#   bandwidth. Wald p-values use the Kiefer-Vogelsang fixed-b distribution at
+#   b = S / V (Wald.p.value.MKT_1); the chi-square p-value is kept in
+#   Wald.p.value.MKT_1.chisq. indep = TRUE: no kernel, b = 0, chi-square.
+#   neff.units = (sum g^2)^2 / sum g^4 with g the score contributions of the
+#   first parameter: the effective number of units carrying the estimate.
+
+if (!exists("fixedb.pvalue")) source(if (file.exists("helper/fixedb.R")) "helper/fixedb.R" else here::here("helper/fixedb.R"))
 
 num.grad <- function(fun, par, delta = 1e-4) {
   g <- vapply(seq_along(par), function(k) {
@@ -71,10 +82,16 @@ bartlett.weight <- function(x, y, bw) {
 sandwich.covariance <- function(units, par, unit.loss, vintages, bw = 12, indep = FALSE,
                                 theta.null = NULL, delta = 1e-4) {
   n <- length(units)
+  V <- length(unique(vintages))
+  S <- if (identical(bw, "llsw")) hac.bandwidth.llsw(V) else as.numeric(bw)
+  b <- if (indep) 0 else S / V
+  hac <- list(hac.S = if (indep) NA_real_ else S, hac.V = V, hac.b = b)
   G <- t(vapply(units, function(u) num.grad(function(p) unit.loss(p, u), par, delta), numeric(length(par))))
   if (length(par) == 1) G <- matrix(G, ncol = 1)
   colnames(G) <- names(par)
-  W <- if (indep) diag(n) else outer(vintages, vintages, bartlett.weight, bw = bw)
+  g1 <- G[, 1]
+  neff <- if (all(is.finite(g1)) && sum(g1^4) > 0) sum(g1^2)^2 / sum(g1^4) else NA_real_
+  W <- if (indep) diag(n) else outer(vintages, vintages, bartlett.weight, bw = S)
   psi <- t(G) %*% W %*% G / n
   hessian <- Reduce("+", lapply(units, function(u) num.hess(function(p) unit.loss(p, u), par, delta))) / n
   # A singular Hessian (parameters not identified in this sample) gives NA SEs
@@ -86,8 +103,9 @@ sandwich.covariance <- function(units, par, unit.loss, vintages, bw = 12, indep 
   if (is.null(h.inv)) {
     se <- setNames(rep(NA_real_, length(par)), paste0("SE.", names(par)))
     na.m <- matrix(NA_real_, length(par), length(par), dimnames = list(names(par), names(par)))
-    return(list(Psi = psi, Hessian = hessian, CoVM = na.m, par = par, SE = se,
-                Wald.stat = NA_real_, Wald.p.value.MKT_1 = NA_real_, se.singular = TRUE))
+    return(c(list(Psi = psi, Hessian = hessian, CoVM = na.m, par = par, SE = se,
+                Wald.stat = NA_real_, Wald.p.value.MKT_1 = NA_real_, Wald.p.value.MKT_1.chisq = NA_real_,
+                se.singular = TRUE, neff.units = neff), hac))
   }
   covm <- h.inv %*% psi %*% t(h.inv) / n
   dimnames(covm) <- list(names(par), names(par))
@@ -98,14 +116,17 @@ sandwich.covariance <- function(units, par, unit.loss, vintages, bw = 12, indep 
   # singular V (score covariance Psi of reduced rank, e.g. a CV fold with fewer
   # vintages than parameters): no Wald test; the SEs above stay finite
   wald.stat <- tryCatch(as.numeric(t(d) %*% solve(covm) %*% d), error = function(e) NA_real_)
-  list(
+  p.chisq <- 1 - pchisq(wald.stat, df = length(par))
+  c(list(
     Psi = psi,
     Hessian = hessian,
     CoVM = covm,
     par = par,
     SE = std.err,
     Wald.stat = wald.stat,
-    Wald.p.value.MKT_1 = 1 - pchisq(wald.stat, df = length(par)),
-    se.singular = FALSE
-  )
+    Wald.p.value.MKT_1 = if (indep) p.chisq else fixedb.pvalue(wald.stat, b, length(par)),
+    Wald.p.value.MKT_1.chisq = p.chisq,
+    se.singular = FALSE,
+    neff.units = neff
+  ), hac)
 }

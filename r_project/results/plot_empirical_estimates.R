@@ -610,6 +610,40 @@ plot_empirical_estimates <- function(
     result.table.provenance(dat)
 }
 
+# Inference robustness table (decision 2026-11-17): next to the main table,
+# SE_A (Bartlett, S = ceil(1.3 sqrt V)), the leave-one-vintage-out jackknife SE
+# and the effective number of vintages carrying the beta estimate; S, V and b
+# in the notes. Empty when the results predate these columns.
+.inference_robustness_table <- function(ft_data, fund_type, fct, is_single, horizons, fmt2, fmt3) {
+    need <- c("neff.units", "hac.S", "hac.V", "hac.b")
+    if (!all(need %in% names(ft_data))) return(character())
+    se.col <- if (is_single) "SE.MKT" else "SE.Coef"
+    jk.col <- paste0(se.col, ".jk")
+    fac <- if (is_single) "MKT" else fct
+    get <- function(w, h, col) {
+        d <- ft_data[ft_data$weighting == w & ft_data$method == "Asymptotic" & ft_data$Factor == fac & as.numeric(ft_data$max.month) == h, , drop = FALSE]
+        if (nrow(d) == 0 || !(col %in% names(d))) NA else d[[col]][1]
+    }
+    par.label <- if (is_single) "$\\hat{\\beta}$" else if (tolower(fct) == "alpha") "$\\hat{\\alpha}$" else paste0("$\\hat{\\beta}_{", fct, "}$")
+    lines <- c("", "\\begin{table}[htbp]", "\\centering", "\\footnotesize",
+        paste0("\\caption{Inference robustness: ", fund_type, " --- ", if (is_single) "Single-Factor (MKT)" else paste0("MKT + ", fct), " Model, SEs of ", par.label, "}"),
+        paste0("\\label{tab:inference_", tolower(fund_type), "_", tolower(fct), "}"),
+        "\\begin{tabular}{l *{3}{r} *{3}{r}}", "\\toprule",
+        " & \\multicolumn{3}{c}{Equal-Weighted (EW)} & \\multicolumn{3}{c}{Value-Weighted (FW)} \\\\",
+        "\\cmidrule(lr){2-4} \\cmidrule(lr){5-7}",
+        "Horizon & SE$_A$ & SE$_{JK}$ & $N_{\\mathrm{eff}}$ & SE$_A$ & SE$_{JK}$ & $N_{\\mathrm{eff}}$ \\\\", "\\midrule")
+    for (h in horizons) {
+        lines <- c(lines, paste0(round(h / 12, 1), " yr",
+            " & ", fmt3(get("EW", h, se.col)), " & ", fmt3(get("EW", h, jk.col)), " & ", fmt2(get("EW", h, "neff.units")),
+            " & ", fmt3(get("FW", h, se.col)), " & ", fmt3(get("FW", h, jk.col)), " & ", fmt2(get("FW", h, "neff.units")), " \\\\"))
+    }
+    sv <- unique(na.omit(ft_data[ft_data$method == "Asymptotic" & ft_data$Factor == fac, c("hac.S", "hac.V", "hac.b"), drop = FALSE]))
+    sv.text <- if (nrow(sv)) paste(sprintf("$S=%g$, $V=%g$, $b=%.3f$", sv$hac.S, sv$hac.V, sv$hac.b), collapse = "; ") else "--"
+    c(lines, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
+        paste0("{\\scriptsize\\textit{Notes:} SE$_A$ = Bartlett (Newey--West) sandwich over vintage years, truncation $S=\\lceil 1.3\\sqrt{V}\\rceil$; SE$_{JK}$ = leave-one-vintage-out jackknife SE (assumes independent vintages); $N_{\\mathrm{eff}}=(\\sum_v g_v^2)^2/\\sum_v g_v^4$, $g_v$ the score contribution of vintage $v$ to $\\hat{\\beta}$, i.e.\\ the effective number of vintages carrying the estimate. ", sv.text, ". With few effective vintages all standard errors are approximate.}"),
+        "\\end{table}")
+}
+
 .export_latex_tables <- function(all_data_full, fund_type, factors, base_file) {
     source(here::here("helper/result_reporting.R"), local = TRUE)
     # Filter to fund type
@@ -649,10 +683,18 @@ plot_empirical_estimates <- function(
         ifelse(is.na(est) | is.na(sd.cv) | sd.cv == 0, NA, est / sd.cv)
     }
 
+    # Stars from two-sided fixed-b p-values (analyze_result.R: p.MKT, p.Coef;
+    # decision 2026-11-17); results without them fall back to normal |t| cutoffs
+    sig_stars_p <- function(p) ifelse(is.na(p), "", ifelse(p < 0.001, "$^{***}$", ifelse(p < 0.01, "$^{**}$", ifelse(p < 0.05, "$^{*}$", ""))))
+    pick_p <- function(d, col) if (nrow(d) > 0 && col %in% names(d)) d[[col]][1] else NA
+
     # Estimates on a parameter bound (at.bound, B9): dagger instead of
     # significance stars, asymptotic SE and t not reported (review fix)
     on.bound <- function(d) nrow(d) > 0 && boundary.mask(d)[1]
-    star.or.bound <- function(d, t_val) if (on.bound(d)) "$^{\\dagger}$" else sig_stars(t_val)
+    star.or.bound <- function(d, t_val, p_val = NA) {
+        if (on.bound(d)) return("$^{\\dagger}$")
+        if (!is.na(p_val)) sig_stars_p(p_val) else sig_stars(t_val)
+    }
     na.if.bound <- function(d, cell) if (on.bound(d)) "--" else cell
 
     # Accumulate all table lines across factors into one file
@@ -743,12 +785,12 @@ plot_empirical_estimates <- function(
 
             row <- paste0(
                 horizon_label,
-                " & ", fmt3(ew_beta), star.or.bound(ew_a, ew_t_a),
+                " & ", fmt3(ew_beta), star.or.bound(ew_a, ew_t_a, pick_p(ew_a, "p.MKT")),
                 " & ", na.if.bound(ew_a, fmt3(ew_se_a)),
                 " & ", fmt3(ew_se_cv),
                 " & ", na.if.bound(ew_a, fmt2(ew_t_a)),
                 " & ", fmt2(stability.ratio(ew_beta, ew_se_cv)),
-                " & ", fmt3(fw_beta), star.or.bound(fw_a, fw_t_a),
+                " & ", fmt3(fw_beta), star.or.bound(fw_a, fw_t_a, pick_p(fw_a, "p.MKT")),
                 " & ", na.if.bound(fw_a, fmt3(fw_se_a)),
                 " & ", fmt3(fw_se_cv),
                 " & ", na.if.bound(fw_a, fmt2(fw_t_a)),
@@ -792,12 +834,12 @@ plot_empirical_estimates <- function(
 
                 row <- paste0(
                     horizon_label,
-                    " & ", fmt3(ew_beta), star.or.bound(ew_a, ew_t_a),
+                    " & ", fmt3(ew_beta), star.or.bound(ew_a, ew_t_a, pick_p(ew_a, "p.Coef")),
                     " & ", na.if.bound(ew_a, fmt3(ew_se_a)),
                     " & ", fmt3(ew_se_cv),
                     " & ", na.if.bound(ew_a, fmt2(ew_t_a)),
                     " & ", fmt2(stability.ratio(ew_beta, ew_se_cv)),
-                    " & ", fmt3(fw_beta), star.or.bound(fw_a, fw_t_a),
+                    " & ", fmt3(fw_beta), star.or.bound(fw_a, fw_t_a, pick_p(fw_a, "p.Coef")),
                     " & ", na.if.bound(fw_a, fmt3(fw_se_a)),
                     " & ", fmt3(fw_se_cv),
                     " & ", na.if.bound(fw_a, fmt2(fw_t_a)),
@@ -814,13 +856,13 @@ plot_empirical_estimates <- function(
             "\\bottomrule",
             "\\end{tabular}",
             "\\par\\vspace{2pt}",
-            "{\\scriptsize\\textit{Notes:} $\\hat{\\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. $^{\\dagger}$\\,estimate on a parameter bound; SE$_A$ and $t_A$ not valid and not reported. Significance markers based on $t_A$ are reported for completeness only: $^{*}$\\,$p<0.05$, $^{**}$\\,$p<0.01$, $^{***}$\\,$p<0.005$.}",
+            "{\\scriptsize\\textit{Notes:} $\\hat{\\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. $^{\\dagger}$\\,estimate on a parameter bound; SE$_A$ and $t_A$ not valid and not reported. SE$_A$: Bartlett (Newey--West) sandwich over vintage years with truncation $S=\\lceil 1.3\\sqrt{V}\\rceil$, $V$ the number of vintages (Lazarus, Lewis, Stock and Watson, 2018). Significance markers from two-sided Kiefer--Vogelsang fixed-$b$ $p$-values of $t_A$ at $b=S/V$: $^{*}$\\,$p<0.05$, $^{**}$\\,$p<0.01$, $^{***}$\\,$p<0.001$.}",
             "\\end{table}"
         )
 
 
         # Append this factor's table to the combined output
-        all_lines <- c(all_lines, lines)
+        all_lines <- c(all_lines, lines, .inference_robustness_table(ft_data, fund_type, fct, is_single, horizons, fmt2, fmt3))
     }
 
     # Write all tables to a single file

@@ -510,7 +510,7 @@ suppressPackageStartupMessages(library(dplyr))
 plot.exprs <- parse(here("results/plot_empirical_estimates.R"))
 for (ex in plot.exprs) {
   if (is.call(ex) && identical(ex[[1]], as.name("<-")) &&
-      as.character(ex[[2]]) %in% c(".export_latex_tables", ".table_provenance")) eval(ex, globalenv())
+      as.character(ex[[2]]) %in% c(".export_latex_tables", ".table_provenance", ".inference_robustness_table")) eval(ex, globalenv())
 }
 toy.tab <- rbind(
   data.frame(Type = "BO", weighting = c("EW", "FW"), method = "Asymptotic", Factor = "MKT", max.month = 1,
@@ -613,6 +613,48 @@ est.src <- paste(readLines(here("estim_model_optimized.R")), collapse = "\n")
 check("workers receive only their own type's rows (full data sets not exported)",
       grepl("df.optim.in = est.by.type, df.val = val.by.type", est.src, fixed = TRUE) &&
         grepl('.noexport = c("input.list", "df.estimate", "df.validate"', est.src, fixed = TRUE))
+
+cat("\n== Inference: bandwidth rule and fixed-b (decision 2026-11-17) ==\n")
+source(here("helper/fixedb.R"))
+bartlett.direct <- function(u, M) { T <- length(u); s <- sum(u^2) / T
+  for (j in seq_len(M - 1)) s <- s + 2 * (1 - j / M) * sum(u[(j + 1):T] * u[1:(T - j)]) / T; s }
+bartlett.psum <- function(u, M) { T <- length(u); S <- cumsum(u)
+  (2 / (M * T)) * sum(S^2) - (2 / (M * T)) * sum(S[seq_len(T - M)] * S[M + seq_len(T - M)]) }
+set.seed(11); rel <- 0
+for (k in 1:100) { T <- sample(30:300, 1); M <- sample(1:T, 1); u <- rnorm(T); u <- u - mean(u)
+  rel <- max(rel, abs(bartlett.direct(u, M) - bartlett.psum(u, M)) / bartlett.direct(u, M)) }
+check("partial-sum form of the Bartlett HAC (used by the fixed-b simulator) equals the kernel sum", rel < 1e-10, sprintf("max rel diff %.1e", rel))
+check("bandwidth rule S = ceil(1.3 sqrt(V)): 7 for V = 25 and 27, 2 for V = 2",
+      hac.bandwidth.llsw(25) == 7 && hac.bandwidth.llsw(27) == 7 && hac.bandwidth.llsw(2) == 2)
+kv <- data.frame(b = c(0.10, 0.26, 0.28, 0.44, 0.50, 1.00), c975 = c(2.235, 2.736, 2.805, 3.318, 3.514, 4.77))
+cv <- vapply(kv$b, function(b) fixedb.crit.t(0.05, b), 0)
+# Tolerance from measured Monte Carlo error (17 Nov 2026): SD of the 97.5%
+# quantile across seeds with 1e5 replications 0.009 (b = 0.28) and 0.020
+# (b = 0.50); Table I used 5e4 replications, so its own SD is about sqrt(2)
+# times larger. Three combined SDs are about 3% of the critical value.
+check("fixed-b two-sided 5% critical values reproduce Kiefer-Vogelsang (2005) Table I within Monte Carlo error (3%)",
+      all(abs(cv - kv$c975) < 0.03 * kv$c975), paste(sprintf("b=%.2f: %.3f vs %.3f", kv$b, cv, kv$c975), collapse = "; "))
+p.at.cv <- fixedb.pvalue(2.805^2, 0.28, 1)
+check("fixed-b p-value of t = 2.805 at b = 0.28 is 0.05 (Table I)", abs(p.at.cv - 0.05) < 0.004, sprintf("p = %.4f", p.at.cv))
+ft <- fixedb.table(); k95 <- which.min(abs(ft$tail - 0.05))
+# At b = 0.02 the fixed-b quantiles lie just above chi-square(q): Table I
+# implies (2.018 / 1.96)^2 = 1.060 for q = 1 (97.5% of t = 95% of W). For
+# q > 1 there is no published table; observed 1.06-1.11 (17 Nov 2026), so
+# only a sanity bound is checked.
+ratio <- ft$tab[1, , k95] / qchisq(0.95, ft$q)
+check("joint fixed-b Wald quantiles at b = 0.02 lie just above chi-square(q); q = 1 matches Table I",
+      abs(ratio[1] - (2.018 / 1.96)^2) < 0.03 * (2.018 / 1.96)^2 && all(ratio > 1 & ratio < 1.2),
+      paste(sprintf("q=%d: %.3f", ft$q, ratio), collapse = ", "))
+check("fixed-b critical values increase with b (q = 1, 95%)", all(diff(ft$tab[, 1, k95]) > -0.05))
+sw.l <- sandwich.covariance(toy.units, th, loss.toy, vins, bw = "llsw")
+sw.7 <- sandwich.covariance(toy.units, th, loss.toy, vins, bw = hac.bandwidth.llsw(length(unique(vins))))
+check("bw = \"llsw\" equals the fixed bandwidth ceil(1.3 sqrt(V)) and reports S, V, b",
+      isTRUE(all.equal(sw.l$SE, sw.7$SE)) && sw.l$hac.S == hac.bandwidth.llsw(length(unique(vins))) && sw.l$hac.V == length(unique(vins)) &&
+        abs(sw.l$hac.b - sw.l$hac.S / sw.l$hac.V) < 1e-12 && is.finite(sw.l$Wald.p.value.MKT_1) && is.finite(sw.l$Wald.p.value.MKT_1.chisq),
+      sprintf("S=%g V=%g b=%.3f, p fixed-b %.3f vs chi-square %.3f", sw.l$hac.S, sw.l$hac.V, sw.l$hac.b, sw.l$Wald.p.value.MKT_1, sw.l$Wald.p.value.MKT_1.chisq))
+neff.of <- function(g) sum(g^2)^2 / sum(g^4)
+check("effective number of units: n for equal scores, about 1 for one dominant unit",
+      abs(neff.of(rep(c(1, -1), 10)) - 20) < 1e-12 && neff.of(c(100, rep(0.01, 19))) < 1.01)
 
 cat(sprintf("\n%d test(s) failed\n", n.fail))
 if (n.fail > 0) quit(status = 1)

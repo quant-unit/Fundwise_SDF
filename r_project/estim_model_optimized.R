@@ -62,7 +62,7 @@ if (source.internally) {
   include.alpha.term <- FALSE
   final.nav.discount <- 100
   lambdas <- 0
-  kernel.bandwidth <- 12
+  kernel.bandwidth <- "llsw" # S = ceil(1.3 sqrt(V)), fixed-b tests (helper/fixedb.R)
   alpha.lower <- -0.01
   alpha.upper <- 0.01
   if (use.vintage.year.pfs) weighting <- paste0(weighting, "_VYP")
@@ -573,6 +573,38 @@ estim.CoVM <- function(dfx, par, indep = FALSE, max.month) {
     bw = kernel.bandwidth, indep = indep, delta = delta
   )
 }
+# Leave-one-unit-out jackknife (VYP: one unit per vintage). Refits with the
+# estimator's method: Brent on the same bracket for one parameter, L-BFGS-B
+# with bounds and parameter scales when Alpha is estimated, Nelder-Mead
+# otherwise; all refits start at the full-sample estimate par.hat.
+jackknife.se <- function(par.hat, prep, max.month, lambda, lower, upper) {
+  refit <- function(units) {
+    d <- structure(list(units = units), class = "prepared.units")
+    if (length(par.hat) == 1) {
+      nm <- names(par.hat)
+      o <- stats::optim(par.hat, function(p) err.sqr.calc(setNames(p, nm), max.month, lambda, d),
+        method = "Brent", lower = lower[1], upper = upper[1])
+      return(setNames(o$par, nm))
+    }
+    f <- function(p) err.sqr.calc(p, max.month, lambda, d)
+    if ("Alpha" %in% names(par.hat)) {
+      o <- stats::optim(par.hat, f, method = "L-BFGS-B", lower = rep_len(lower, length(par.hat)),
+        upper = rep_len(upper, length(par.hat)), control = list(parscale = optim.parscale(par.hat)))
+    } else {
+      o <- stats::optim(par.hat, f, method = "Nelder-Mead")
+    }
+    setNames(o$par, names(par.hat))
+  }
+  n <- length(prep$units)
+  if (n < 3) return(list(se = as.list(setNames(rep(NA_real_, length(par.hat)), names(par.hat))), selfcheck = NA_real_, n = n))
+  full <- refit(prep$units)
+  est <- t(vapply(seq_len(n), function(i) refit(prep$units[-i]), numeric(length(par.hat))))
+  if (length(par.hat) == 1) est <- matrix(est, ncol = 1)
+  colnames(est) <- names(par.hat)
+  se <- sqrt((n - 1) / n * colSums(sweep(est, 2, colMeans(est))^2))
+  list(se = as.list(se), selfcheck = max(abs(full - par.hat)), n = n)
+}
+
 # interactive check only (speed: skipped in runner calls, result unused)
 if (source.internally) {
   system.time(
@@ -861,12 +893,33 @@ iter.run <- function(input.list) {
           cov <- estim.CoVM(dfx, par = par, indep = FALSE, max.month = max.month)
           # print(cov)
           for (v in names(cov$SE)) res[, v] <- cov$SE[v]
+          # Wald test of beta = 1, others 0: fixed-b p-value (b = hac.b) and the
+          # former chi-square p-value; bandwidth S, vintages V, b = S / V and the
+          # effective number of units (score shares of beta), helper/inference.R
           res$Wald.p.value.MKT_1 <- cov$Wald.p.value.MKT_1
+          res$Wald.p.value.MKT_1.chisq <- cov$Wald.p.value.MKT_1.chisq
+          res$hac.S <- cov$hac.S
+          res$hac.V <- cov$hac.V
+          res$hac.b <- cov$hac.b
+          res$neff.units <- cov$neff.units
           res$se.singular <- isTRUE(cov$se.singular) # Hessian not invertible: SEs NA
 
           # independet with other funds
           cov.indep <- estim.CoVM(dfx, par = par, indep = TRUE, max.month = max.month)
           for (v in names(cov.indep$SE)) res[, paste0(v, ".indep")] <- cov.indep$SE[v]
+
+          # Leave-one-vintage-out jackknife SE (robustness, decision of
+          # 17 November 2026): full-sample fits on vintage-year portfolios
+          # (one unit per vintage) with the L2 or L1 criterion. Each refit uses
+          # the estimator's method and bounds, started at the full-sample
+          # estimate. jk.selfcheck = largest change when the full sample is
+          # refitted this way (should be ~0; shows optimizer precision).
+          if (use.vintage.year.pfs && error.function %in% c("L2_Lasso", "L1_Ridge") && cv.key == "ALL") {
+            jk <- jackknife.se(par, df.optim.prep, max.month, lambda, lower_bounds, upper_bounds)
+            for (v in names(par)) res[, paste0("SE.", v, ".jk")] <- jk$se[[v]]
+            res$jk.selfcheck <- jk$selfcheck
+            res$jk.units <- jk$n
+          }
 
           # print(res)
           res$Factor <- factor
