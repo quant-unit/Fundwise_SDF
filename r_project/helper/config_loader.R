@@ -232,6 +232,15 @@ merge_with_defaults_flat <- function(scenario, defaults) {
 # Convert Scenario to Estimation Parameters
 # ============================================================================
 
+# Alpha bounds: YAML reads "-Inf"/"Inf" as strings (only -.inf/.inf are
+# numbers), which used to reach the optimizer as a character bound
+alpha_bound <- function(x, default) {
+    if (is.null(x)) return(default)
+    b <- suppressWarnings(as.numeric(x))
+    if (length(b) != 1L || is.na(b)) stop("alpha bound is not a number: ", x)
+    b
+}
+
 #' Convert simulation scenario to parameters for run_estimation()
 #'
 #' @param scenario Scenario object with merged defaults
@@ -275,8 +284,8 @@ scenario_to_estimation_params <- function(scenario, base_path = "simulation") {
         scenario_id = scenario$id,
         max_vintage = est$max_vintage,
         cache_folder_tag = cache_folder_tag, # Pass the correctly constructed cache folder tag
-        alpha_lower = if (!is.null(est$alpha_lower)) est$alpha_lower else -Inf,
-        alpha_upper = if (!is.null(est$alpha_upper)) est$alpha_upper else Inf,
+        alpha_lower = alpha_bound(est$alpha_lower, -Inf),
+        alpha_upper = alpha_bound(est$alpha_upper, Inf),
         # review fix: pass the B5 estimator options in simulations too
         origin_convention = if (!is.null(est$origin_convention)) est$origin_convention else "first.cf",
         vintage_weights = if (!is.null(est$vintage_weights)) est$vintage_weights else "equal"
@@ -322,8 +331,8 @@ empirical_scenario_to_params <- function(scenario) {
         max_vintage = if (!is.null(scenario$max_vintage)) scenario$max_vintage else 2021,
         max_vintages = scenario$max_vintages,
         final_nav_discount = if (!is.null(scenario$final_nav_discount)) scenario$final_nav_discount else 100,
-        alpha_lower = if (!is.null(scenario$alpha_lower)) scenario$alpha_lower else -Inf,
-        alpha_upper = if (!is.null(scenario$alpha_upper)) scenario$alpha_upper else Inf,
+        alpha_lower = alpha_bound(scenario$alpha_lower, -Inf),
+        alpha_upper = alpha_bound(scenario$alpha_upper, Inf),
         origin_convention = if (!is.null(scenario$origin_convention)) scenario$origin_convention else "first.cf",
         vintage_weights = if (!is.null(scenario$vintage_weights)) scenario$vintage_weights else "equal"
     )

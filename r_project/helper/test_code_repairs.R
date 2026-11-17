@@ -575,5 +575,15 @@ if (inherits(cfg, "error")) {
   }
 }
 
+scfg <- tryCatch(load_simulation_config(here("config/simulation_scenarios.yaml")), error = function(e) e)
+if (!inherits(scfg, "error")) {
+  bounds <- unlist(lapply(names(scfg$scenarios), function(id) {
+    p <- scenario_to_estimation_params(merge_with_defaults(scfg$scenarios[[id]], scfg$defaults))
+    c(p$alpha_lower, p$alpha_upper)
+  }))
+  check("simulation alpha bounds are numeric (YAML '-Inf' is a string)", is.numeric(bounds) && !anyNA(bounds),
+        sprintf("%d bounds", length(bounds)))
+}
+
 cat(sprintf("\n%d test(s) failed\n", n.fail))
 if (n.fail > 0) quit(status = 1)
