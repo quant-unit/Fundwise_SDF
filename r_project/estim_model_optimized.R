@@ -395,7 +395,7 @@ if (error.function == "L2_Lasso") {
     if (any(!is.finite(npvs))) {
       return(1e10) # Large but finite penalty so optimizer can continue
     }
-    p <- ifelse(length(par) == 1, par, par[-1])
+    p <- if (length(par) == 1) par else par[-1] # penalized coefficients (ifelse() kept only the first)
     return(
       sqrt(sum(npvs^2)) / length(npvs) + lambda / length(p) * sum(abs(p))
     )
@@ -409,7 +409,7 @@ if (error.function == "L1_Ridge") {
     if (any(!is.finite(npvs))) {
       return(1e10) # Large but finite penalty so optimizer can continue
     }
-    p <- ifelse(length(par) == 1, par, par[-1])
+    p <- if (length(par) == 1) par else par[-1] # penalized coefficients (ifelse() kept only the first)
     return(
       sum(abs(npvs)) / length(npvs) + lambda / length(p) * sum(p^2)
     )
@@ -434,7 +434,7 @@ if (error.function == "U_pair") {
     if (!is.finite(u)) {
       return(1e10)
     }
-    p <- ifelse(length(par) == 1, par, par[-1])
+    p <- if (length(par) == 1) par else par[-1] # penalized coefficients (ifelse() kept only the first)
     return(u + lambda / length(p) * sum(abs(p)))
   }
 }

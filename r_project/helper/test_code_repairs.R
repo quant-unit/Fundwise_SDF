@@ -337,6 +337,17 @@ check("independent-units sandwich matches analytic", rel(sw.i$CoVM, solve(H.an) 
 sw.sing <- sandwich.covariance(toy.units, c(MKT = 0.3, z = 1), function(p, u) (u$y - p[1] - 0 * p[2])^2, vins)
 check("singular Hessian gives NA SEs and Wald test with se.singular = TRUE (no error)",
       isTRUE(sw.sing$se.singular) && all(is.na(sw.sing$SE)) && is.na(sw.sing$Wald.p.value.MKT_1))
+# non-finite loss near the estimate (benchmark return <= 0, horizon errors NaN):
+# solve() does not stop on NaN, so this must be caught explicitly (G1 review)
+sw.nan <- suppressWarnings(sandwich.covariance(toy.units, c(MKT = 0.3, z = 1), function(p, u) (log(p[1] - 10) + u$y)^2, vins))
+check("non-finite Hessian gives NA SEs with se.singular = TRUE (no error)",
+      isTRUE(sw.nan$se.singular) && all(is.na(sw.nan$SE)))
+# regular Hessian but score covariance of rank 1 (as in CV folds with fewer
+# vintages than parameters): finite SEs, no Wald test, se.singular = FALSE
+sw.psi <- sandwich.covariance(toy.units, c(MKT = 0.3, z = 0.3), function(p, u) (p[1] - u$x)^2 + (p[2] - u$x)^2, vins)
+check("rank-deficient score covariance: finite SEs, Wald test NA, se.singular = FALSE",
+      identical(sw.psi$se.singular, FALSE) && all(is.finite(sw.psi$SE)) && is.na(sw.psi$Wald.p.value.MKT_1),
+      sprintf("SE %s", paste(signif(sw.psi$SE, 3), collapse = ", ")))
 # SE must be evaluated at the estimated horizon, not a fixed one
 pv.u <- lapply(1:25, function(i) { set.seed(100 + i); list(cf = c(-1, rep(0, 59), exp(rnorm(1, 0.6, 0.4)), rep(0, 299)), mkt = rnorm(360, 0.007, 0.045), v = 1985 + i) })
 l.h <- function(m) function(p, u) horizon.error(u$cf, cumprod(1 + 0.003 + p[1] * u$mkt), m)^2
@@ -526,6 +537,8 @@ cat("\n== B8/B9: estimator source checks ==\n")
 est.src <- paste(readLines(here("estim_model_optimized.R")), collapse = "\n")
 check("held-out folds also report the common H = 0 loss (validation.error.H0)",
       grepl("res$validation.error.H0 <- err.sqr.calc(par, max.month = 1", est.src, fixed = TRUE))
+check("penalty uses all slope coefficients (ifelse() kept only the first; G1 review)",
+      !grepl("ifelse(length(par) == 1", est.src, fixed = TRUE) && lengths(regmatches(est.src, gregexpr("p <- if (length(par) == 1) par else par[-1]", est.src, fixed = TRUE))) == 3)
 check("one-parameter models use Brent's method (parameter name restored); results carry provenance and an at.bound flag",
       grepl('method = "Brent"', est.src, fixed = TRUE) && grepl("err.sqr.calc(setNames(p, par.name), ...)", est.src, fixed = TRUE) &&
         grepl("res$git.commit <- provenance$git.commit", est.src, fixed = TRUE) && grepl("res$at.bound <-", est.src, fixed = TRUE))
