@@ -27,6 +27,8 @@ if (!requireNamespace("data.table", quietly = TRUE)) {
     install.packages("data.table")
 }
 library(data.table)
+# memory-aware number of parallel workers (n.parallel.workers)
+if (!exists("n.parallel.workers")) source("helper/parallel_workers.R")
 
 # ============================================================================
 # Load Q-Factors Data
@@ -162,7 +164,7 @@ create.simulation.multifactor <- function(
     scenario_id = NULL,
     output_folder = "simulation/data_prepared_sim",
     shock.model = "multiplicative",
-    n.cores = max(1, parallel::detectCores() - 2),
+    n.cores = n.parallel.workers(no.samples), # capped by cores and free memory
     write.fund.level = TRUE) {
     stopifnot(shock.model %in% c("multiplicative", "additive"))
     set.seed(100) # For reproducibility

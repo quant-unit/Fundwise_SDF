@@ -585,5 +585,21 @@ if (!inherits(scfg, "error")) {
         sprintf("%d bounds", length(bounds)))
 }
 
+cat("\n== Parallel workers: memory-aware cap ==\n")
+source(here("helper/parallel_workers.R"))
+avail <- available.memory.gb()
+check("available memory is read from the system", is.finite(avail) && avail > 0, sprintf("%.1f GB", avail))
+Sys.setenv(SDF_MAX_WORKERS = "2")
+w.env <- n.parallel.workers(1000, verbose = FALSE)
+Sys.unsetenv("SDF_MAX_WORKERS")
+w.mem <- n.parallel.workers(1000, gb.per.worker = 1e6, verbose = FALSE) # nothing fits: one worker
+check("worker count respects SDF_MAX_WORKERS, the task count and the memory budget (never below 1)",
+      w.env <= 2 && n.parallel.workers(3, verbose = FALSE) <= 3 && w.mem == 1,
+      sprintf("env cap %d, memory-starved %d, default %d", w.env, w.mem, n.parallel.workers(1000, verbose = FALSE)))
+est.src <- paste(readLines(here("estim_model_optimized.R")), collapse = "\n")
+check("workers receive only their own type's rows (full data sets not exported)",
+      grepl("df.optim.in = est.by.type, df.val = val.by.type", est.src, fixed = TRUE) &&
+        grepl('.noexport = c("input.list", "df.estimate", "df.validate"', est.src, fixed = TRUE))
+
 cat(sprintf("\n%d test(s) failed\n", n.fail))
 if (n.fail > 0) quit(status = 1)

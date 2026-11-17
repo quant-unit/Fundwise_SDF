@@ -102,6 +102,7 @@ if (source.internally) {
 if (!exists("origin.convention")) origin.convention <- "first.cf" # or "predetermined"
 if (!exists("vintage.weights")) vintage.weights <- "equal" # or "n.funds" (U_pair only)
 source("helper/objective.R")
+source("helper/parallel_workers.R")
 
 # B9: Brent bracket for one-parameter (MKT) models, and provenance recorded in
 # every result row (git commit, uncommitted changes, config file hash, scenario)
@@ -682,11 +683,18 @@ iter.run <- function(input.list) {
   # One cluster per call (fold), not per horizon: stopping a fork cluster
   # and forking a new one at once fails intermittently with "error writing
   # to connection" (G1: 21 of 40 cycles in a standalone test). foreach
-  # exports this function's variables (max.month, lambda, data) on every
-  # call; nothing here assigns globals, so workers see the same state.
+  # exports this function's small variables (max.month, lambda, ...) on
+  # every call; nothing here assigns globals, so workers see the same state.
+  # Memory: each task receives only its own type's rows (est.by.type,
+  # val.by.type); the full data sets are not exported to every worker, and
+  # the number of workers is capped by free memory (helper/parallel_workers.R).
+  cv.key <- input.list$cv.year
+  split.types <- function(df) split(df, factor(as.character(df$type), levels = types))[types]
+  est.by.type <- split.types(df.estimate)
+  # full-sample fit: validation data = estimation data, split only once
+  val.by.type <- if (identical(df.validate, df.estimate)) est.by.type else split.types(df.validate)
   if (do.parallel) {
-    n.workers <- max(1, min(length(types), parallel::detectCores() - 2, 10))
-    cl <- parallel::makeForkCluster(n.workers)
+    cl <- parallel::makeForkCluster(n.parallel.workers(length(types)))
     on.exit(parallel::stopCluster(cl), add = TRUE) # also after an error
     doParallel::registerDoParallel(cl)
   }
@@ -697,10 +705,10 @@ iter.run <- function(input.list) {
     for (max.month in max.months) {
       print(paste("Max.M", max.month, "Lambda", lambda, " - ", Sys.time()))
 
-      output <- foreach(type = types, .combine = "rbind", .verbose = FALSE) %op% {
-        df.optim.in <- df.estimate[df.estimate$type == type, ]
+      output <- foreach(type = types, df.optim.in = est.by.type, df.val = val.by.type, .combine = "rbind",
+                        .noexport = c("input.list", "df.estimate", "df.validate", "est.by.type", "val.by.type"),
+                        .verbose = FALSE) %op% {
         df.optim.in$Fund.ID <- (as.character(df.optim.in$Fund.ID))
-        df.val <- df.validate[df.validate$type == type, ]
         df.val$Fund.ID <- (as.character(df.val$Fund.ID))
         # prepared once per type and fold, reused by every objective call
         if (nrow(df.optim.in) > 0) df.optim.prep <- as.prepared(df.optim.in)
@@ -866,7 +874,7 @@ iter.run <- function(input.list) {
           res$max.month <- max.month
           res$lambda <- lambda
           res$kernel.bandwidth <- kernel.bandwidth
-          res$CV.key <- input.list$cv.year
+          res$CV.key <- cv.key
           res$weighting <- weighting
           res$error.fun <- error.function
           res$origin.convention <- origin.convention
