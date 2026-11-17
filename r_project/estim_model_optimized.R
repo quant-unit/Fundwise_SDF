@@ -675,21 +675,27 @@ iter.run <- function(input.list) {
   }
 
   # 2) RUNNER
+  # Speed: types (asset classes; simulation samples) are estimated in
+  # parallel on forked workers. The cluster used to be created but the
+  # loop ran with %do%, i.e. serially. Results are identical (the
+  # estimation is deterministic; .combine keeps the order of types).
+  # One cluster per call (fold), not per horizon: stopping a fork cluster
+  # and forking a new one at once fails intermittently with "error writing
+  # to connection" (G1: 21 of 40 cycles in a standalone test). foreach
+  # exports this function's variables (max.month, lambda, data) on every
+  # call; nothing here assigns globals, so workers see the same state.
+  if (do.parallel) {
+    n.workers <- max(1, min(length(types), parallel::detectCores() - 2, 10))
+    cl <- parallel::makeForkCluster(n.workers)
+    on.exit(parallel::stopCluster(cl), add = TRUE) # also after an error
+    doParallel::registerDoParallel(cl)
+  }
+  `%op%` <- if (do.parallel) foreach::`%dopar%` else foreach::`%do%`
+
   l <- list()
   for (lambda in lambdas) {
     for (max.month in max.months) {
       print(paste("Max.M", max.month, "Lambda", lambda, " - ", Sys.time()))
-
-      # Speed: types (asset classes; simulation samples) are estimated in
-      # parallel on forked workers. The cluster used to be created but the
-      # loop ran with %do%, i.e. serially. Results are identical (the
-      # estimation is deterministic; .combine keeps the order of types).
-      if (do.parallel) {
-        n.workers <- max(1, min(length(types), parallel::detectCores() - 2, 10))
-        cl <- parallel::makeForkCluster(n.workers)
-        doParallel::registerDoParallel(cl)
-      }
-      `%op%` <- if (do.parallel) foreach::`%dopar%` else foreach::`%do%`
 
       output <- foreach(type = types, .combine = "rbind", .verbose = FALSE) %op% {
         df.optim.in <- df.estimate[df.estimate$type == type, ]
@@ -907,8 +913,6 @@ iter.run <- function(input.list) {
 
       # print(output)
       l[[paste0(max.month, lambda)]] <- output
-
-      if (do.parallel) parallel::stopCluster(cl)
     }
   }
   df.res <- data.frame(Reduce(rbind.all.columns, l))
