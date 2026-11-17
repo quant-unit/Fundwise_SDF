@@ -7,7 +7,7 @@
 # Resume and analysis use the same identity: version, resolved estimator
 # settings, and paths/hashes of the cash flows, factors and configuration.
 # Analysis verifies those files; it never guesses freshness from timestamps.
-PIPELINE.VERSION <- "2026-11-16-r3" # r3: optimizer parameter scaling (alpha models change)
+PIPELINE.VERSION <- "2026-11-17-r5" # r5: admissible domain (A7, gross.floor) and constrained multi-start fit; r3: optimizer parameter scaling
 
 RESULT.DEPENDENCIES <- c("input", "public", "simulation.factors", "equity", "config")
 RESULT.IDENTITY.COLUMNS <- c("pipeline.version", "cache.identity", "settings.md5",
@@ -16,7 +16,7 @@ RESULT.PROVENANCE.COLUMNS <- c("git.commit", "git.dirty", "scenario.id", "data.p
   RESULT.IDENTITY.COLUMNS)
 RESULT.SETTINGS <- c("sdf.model", "factors.to.use", "error.function", "include.alpha.term",
   "weighting", "max.vintage", "kernel.bandwidth", "alpha.lower", "alpha.upper",
-  "origin.convention", "vintage.weights", "part.to.keep", "no.partitions", "brent.interval")
+  "origin.convention", "vintage.weights", "part.to.keep", "no.partitions", "brent.interval", "gross.floor")
 
 # Input data file of an estimation run, relative to r_project/ (single
 # definition, used by run_estimation() and estim_model_optimized.R)

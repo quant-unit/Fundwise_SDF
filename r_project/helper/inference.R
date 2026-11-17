@@ -29,8 +29,12 @@
 #   bandwidth. Wald p-values use the Kiefer-Vogelsang fixed-b distribution at
 #   b = S / V (Wald.p.value.MKT_1); the chi-square p-value is kept in
 #   Wald.p.value.MKT_1.chisq. indep = TRUE: no kernel, b = 0, chi-square.
-#   neff.units = (sum g^2)^2 / sum g^4 with g the score contributions of the
-#   first parameter: the effective number of units carrying the estimate.
+#   Effective number of units carrying coefficient j (decision of 17 November
+#   2026, external review): neff_j = (sum c^2)^2 / sum c^4 with c_i the j-th
+#   element of the influence contribution H^{-1} g_i of unit i (g_i: score of
+#   unit i). For one parameter this equals the former score-based measure
+#   (the scalar H cancels). neff.units = neff of the first parameter (beta_MKT).
+#   A concentration measure, not degrees of freedom.
 
 if (!exists("fixedb.pvalue")) source(if (file.exists("helper/fixedb.R")) "helper/fixedb.R" else here::here("helper/fixedb.R"))
 
@@ -89,8 +93,7 @@ sandwich.covariance <- function(units, par, unit.loss, vintages, bw = 12, indep 
   G <- t(vapply(units, function(u) num.grad(function(p) unit.loss(p, u), par, delta), numeric(length(par))))
   if (length(par) == 1) G <- matrix(G, ncol = 1)
   colnames(G) <- names(par)
-  g1 <- G[, 1]
-  neff <- if (all(is.finite(g1)) && sum(g1^4) > 0) sum(g1^2)^2 / sum(g1^4) else NA_real_
+  neff.of <- function(c) if (all(is.finite(c)) && sum(c^4) > 0) sum(c^2)^2 / sum(c^4) else NA_real_
   W <- if (indep) diag(n) else outer(vintages, vintages, bartlett.weight, bw = S)
   psi <- t(G) %*% W %*% G / n
   hessian <- Reduce("+", lapply(units, function(u) num.hess(function(p) unit.loss(p, u), par, delta))) / n
@@ -105,8 +108,11 @@ sandwich.covariance <- function(units, par, unit.loss, vintages, bw = 12, indep 
     na.m <- matrix(NA_real_, length(par), length(par), dimnames = list(names(par), names(par)))
     return(c(list(Psi = psi, Hessian = hessian, CoVM = na.m, par = par, SE = se,
                 Wald.stat = NA_real_, Wald.p.value.MKT_1 = NA_real_, Wald.p.value.MKT_1.chisq = NA_real_,
-                se.singular = TRUE, neff.units = neff), hac))
+                se.singular = TRUE, neff.units = NA_real_,
+                neff = as.list(setNames(rep(NA_real_, length(par)), names(par)))), hac))
   }
+  infl <- G %*% h.inv # influence contributions H^{-1} g_i (H symmetric), one row per unit
+  neff <- setNames(lapply(seq_along(par), function(j) neff.of(infl[, j])), names(par))
   covm <- h.inv %*% psi %*% t(h.inv) / n
   dimnames(covm) <- list(names(par), names(par))
   std.err <- sqrt(diag(covm))
@@ -124,9 +130,12 @@ sandwich.covariance <- function(units, par, unit.loss, vintages, bw = 12, indep 
     par = par,
     SE = std.err,
     Wald.stat = wald.stat,
-    Wald.p.value.MKT_1 = if (indep) p.chisq else fixedb.pvalue(wald.stat, b, length(par)),
+    # fixed-b p-value: computed at analysis time from Wald.stat, q and b
+    # (helper/fixedb.R); chi-square for independent units
+    Wald.p.value.MKT_1 = if (indep) p.chisq else NA_real_,
     Wald.p.value.MKT_1.chisq = p.chisq,
     se.singular = FALSE,
-    neff.units = neff
+    neff.units = neff[[1]],
+    neff = neff
   ), hac)
 }

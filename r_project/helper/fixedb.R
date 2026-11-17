@@ -18,8 +18,25 @@
 # with S_t the partial sums of the demeaned series; this equals the direct
 # kernel sum exactly (checked in helper/test_code_repairs.R).
 # The t statistic for one restriction has W = t^2.
+#
+# Two calibrations (decision of 17 November 2026, after the external reviews):
+#   q = 1 (all t-tests in the tables): conditional ("Rao-Blackwell") method. In
+#     the Gaussian location model the mean is independent of the demeaned
+#     series, so with Omega the HAC estimate, P(W > w | Omega) = 2 Phi(-sqrt(w Omega))
+#     exactly, and p(w) = E[2 Phi(-sqrt(w Omega))]. Averaging this over simulated
+#     Omega has far smaller Monte Carlo error than counting draws of W
+#     (critical-value SE about 0.001 with 1e6 draws). Exact b: the distribution
+#     depends on M = round(b T); Omega quantiles are stored per M in
+#     FIXEDB.Q1.FILE and simulated on first use (fixed seed per M).
+#   q >= 2 (joint Wald tests, not printed): quantile table FIXEDB.FILE.
+# Estimation rows store the Wald statistic, q and b; p-values are computed at
+# analysis time, so a recalibration never invalidates estimation results.
 
 FIXEDB.FILE <- "helper/fixedb_quantiles.rds"
+FIXEDB.Q1.FILE <- "helper/fixedb_q1_omega.rds"
+FIXEDB.T <- 1000
+FIXEDB.Q1.REPS <- 1e6
+FIXEDB.Q1.N <- 4000 # stored quantiles of Omega per M (midpoints (i - 0.5) / N)
 
 hac.bandwidth.llsw <- function(V) ceiling(1.3 * sqrt(V))
 
@@ -107,7 +124,8 @@ fixedb.pvalue <- function(W, b, q = 1) {
   W <- rep_len(W, n); b <- rep_len(b, n); q <- rep_len(q, n)
   ft <- fixedb.table()
   vapply(seq_len(n), function(k) {
-    if (is.na(W[k])) return(NA_real_)
+    if (is.na(W[k]) || is.na(q[k])) return(NA_real_)
+    if (q[k] == 1) return(fixedb.q1.pvalue(W[k], b[k])) # conditional method
     qs <- .fixedb.quantiles(b[k], q[k])
     if (is.null(qs)) return(NA_real_)
     if (W[k] <= qs[1]) return(max(ft$tail)) # p above 0.999
@@ -117,9 +135,80 @@ fixedb.pvalue <- function(W, b, q = 1) {
 }
 
 # Critical value of a t statistic, two-sided level alpha (e.g. 0.05), at fixed b
+# (conditional method; fixedb.crit.t.table gives the quantile-table value)
 fixedb.crit.t <- function(alpha, b) {
+  if (is.null(fixedb.q1.omega(b))) return(NA_real_)
+  stats::uniroot(function(c) fixedb.q1.pvalue(c^2, b) - alpha, c(0.5, 50), tol = 1e-10)$root
+}
+fixedb.crit.t.table <- function(alpha, b) {
   ft <- fixedb.table()
   qs <- .fixedb.quantiles(b, 1)
   if (is.null(qs)) return(NA_real_)
   sqrt(exp(approx(log(ft$tail), log(qs), xout = log(alpha))$y))
+}
+
+# ---- q = 1: conditional p-values ----------------------------------------------
+
+# Omega draws (Bartlett HAC of the demeaned Gaussian series, bandwidth M, length T)
+fixedb.omega.simulate <- function(M, reps = FIXEDB.Q1.REPS, T = FIXEDB.T, chunk = 5000, seed = 100000 + M) {
+  set.seed(seed)
+  idx1 <- seq_len(T - M); idx2 <- M + idx1
+  out <- numeric(0)
+  for (k in seq_len(ceiling(reps / chunk))) {
+    y <- matrix(rnorm(T * chunk), T, chunk)
+    S <- apply(sweep(y, 2, colMeans(y)), 2, cumsum)
+    cross <- if (M < T) 2 * colSums(S[idx1, , drop = FALSE] * S[idx2, , drop = FALSE]) else 0
+    out <- c(out, (2 / (M * T)) * colSums(S^2) - (1 / (M * T)) * cross)
+  }
+  out[seq_len(reps)]
+}
+
+fixedb.q1.M <- function(b, T = FIXEDB.T) max(1L, as.integer(round(b * T)))
+
+.fixedb.q1.env <- new.env()
+.fixedb.q1.path <- function(file = FIXEDB.Q1.FILE) {
+  if (file.exists(file)) return(file)
+  alt <- file.path(here::here(), "r_project", file)
+  if (file.exists(dirname(alt))) alt else here::here(file)
+}
+fixedb.q1.store <- function(file = FIXEDB.Q1.FILE) {
+  if (is.null(.fixedb.q1.env$store)) {
+    path <- .fixedb.q1.path(file)
+    .fixedb.q1.env$store <- if (file.exists(path)) readRDS(path) else
+      list(T = FIXEDB.T, reps = FIXEDB.Q1.REPS, N = FIXEDB.Q1.N, omega = list(),
+           note = "Quantiles of the fixed-b Omega (Bartlett, q = 1) per bandwidth M; see helper/fixedb.R")
+  }
+  .fixedb.q1.env$store
+}
+
+# Simulate and store the Omega quantiles of the given M values (parallel); saves the store
+fixedb.q1.precompute <- function(M.values, file = FIXEDB.Q1.FILE, cores = 1) {
+  st <- fixedb.q1.store(file)
+  todo <- setdiff(as.integer(M.values), as.integer(names(st$omega)))
+  if (!length(todo)) return(invisible(st))
+  qs <- parallel::mclapply(todo, function(M) {
+    stats::quantile(fixedb.omega.simulate(M, st$reps, st$T), (seq_len(st$N) - 0.5) / st$N, names = FALSE, type = 7)
+  }, mc.cores = cores)
+  for (k in seq_along(todo)) st$omega[[as.character(todo[k])]] <- qs[[k]]
+  st$omega <- st$omega[order(as.integer(names(st$omega)))]
+  .fixedb.q1.env$store <- st
+  saveRDS(st, .fixedb.q1.path(file), compress = "xz")
+  invisible(st)
+}
+
+fixedb.q1.omega <- function(b) {
+  if (!is.finite(b) || b <= 0 || b > 1 + 1e-9) return(NULL)
+  M <- fixedb.q1.M(b); st <- fixedb.q1.store()
+  if (is.null(st$omega[[as.character(M)]])) st <- fixedb.q1.precompute(M)
+  st$omega[[as.character(M)]]
+}
+
+# two-sided p-value of t (W = t^2) at fixed b, conditional method
+fixedb.q1.pvalue <- function(W, b) {
+  n <- max(length(W), length(b)); W <- rep_len(W, n); b <- rep_len(b, n)
+  vapply(seq_len(n), function(k) {
+    if (is.na(W[k])) return(NA_real_)
+    om <- fixedb.q1.omega(b[k]); if (is.null(om)) return(NA_real_)
+    mean(2 * stats::pnorm(-sqrt(max(W[k], 0) * om)))
+  }, 0)
 }

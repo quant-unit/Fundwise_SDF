@@ -25,6 +25,7 @@
 #' @param cache_folder_path Full path to the cache folder
 #' @return data.frame with columns max.month and lambda (empty if none found)
 source(file.path(if (file.exists("helper/result_cache.R")) "." else "..", "helper/result_cache.R"))
+source(file.path(if (file.exists("helper/admissible.R")) "." else "..", "helper/admissible.R"))
 
 get_completed_horizons <- function(cache_folder_path, do_cross_validation = FALSE, input_md5 = NULL,
                                    cache_identity = NULL) {
@@ -275,12 +276,13 @@ run_estimation <- function(
         stop("Input file not found: ", input_path)
     }
     brent_interval <- if (exists("brent.interval", envir = .GlobalEnv)) get("brent.interval", .GlobalEnv) else c(-1, 4)
+    gross_floor <- if (exists("gross.floor", envir = .GlobalEnv)) get("gross.floor", .GlobalEnv) else GROSS.FLOOR
     settings <- list(sdf.model = sdf_model, factors.to.use = as.character(unlist(factors_to_use)),
         error.function = error_function, include.alpha.term = include_alpha_term,
         weighting = weighting, max.vintage = max_vintage, kernel.bandwidth = kernel_bandwidth,
         alpha.lower = alpha_lower, alpha.upper = alpha_upper, origin.convention = origin_convention,
         vintage.weights = vintage_weights, part.to.keep = part_to_keep, no.partitions = no_partitions,
-        brent.interval = brent_interval)
+        brent.interval = brent_interval, gross.floor = gross_floor)
     identity <- make.estimation.identity(input_path, public_filename, data_prepared_folder,
         settings, config_path, use_simulation)
     input_md5 <- identity$input.md5
@@ -375,6 +377,7 @@ run_estimation <- function(
     assign("config.path", identity$config.path, envir = .GlobalEnv)
     assign("result.identity.used", identity, envir = .GlobalEnv)
     assign("brent.interval", brent_interval, envir = .GlobalEnv)
+    assign("gross.floor", gross_floor, envir = .GlobalEnv) # Assumption A7, helper/admissible.R
 
     # Alpha bounds
     assign("alpha.lower", alpha_lower, envir = .GlobalEnv)

@@ -186,6 +186,10 @@ for (i in seq_len(nrow(df.all))) {
     if (paste0("SE.", factor, ".jk") %in% colnames(df.all)) {
       df.all[i, "SE.Coef.jk"] <- df.all[i, paste0("SE.", factor, ".jk")]
     }
+    # effective number of units of the second coefficient (influence-based, r5)
+    if (paste0("neff.", factor) %in% colnames(df.all)) {
+      df.all[i, "neff.Coef"] <- df.all[i, paste0("neff.", factor)]
+    }
   }
 }
 
@@ -211,8 +215,11 @@ all_select_cols <- c(
   all_select_cols, "at.bound", RESULT.PROVENANCE.COLUMNS,
   # inference (decision 2026-11-17): bandwidth S, vintages V, b = S / V,
   # effective number of units, jackknife diagnostics, Wald p-values
-  "hac.S", "hac.V", "hac.b", "neff.units", "jk.units", "jk.selfcheck",
-  "Wald.p.value.MKT_1", "Wald.p.value.MKT_1.chisq"
+  "hac.S", "hac.V", "hac.b", "neff.units", "neff.MKT", "neff.Coef", "jk.units", "jk.selfcheck",
+  "jk.n.bound", "jk.n.switch", "Wald.stat.MKT_1", "Wald.q", "Wald.p.value.MKT_1", "Wald.p.value.MKT_1.chisq",
+  # admissible domain (assumption A7, r5): active constraints and the lowest
+  # monthly gross benchmark return at the estimate; inference method
+  "active.constraints", "min.G", "min.G.date", "gross.floor", "inference", "fit.method"
 )
 all_select_cols <- intersect(all_select_cols, colnames(df.all))
 if (nrow(df.all) > 0) {
@@ -431,6 +438,11 @@ if (nrow(df.all) > 0) {
   # fixed-b distribution at b = hac.b; normal p-values if b is not recorded
   # (results from before the decision of 17 November 2026)
   p.t <- function(t) if ("hac.b" %in% colnames(df.all)) fixedb.pvalue(t^2, df.all$hac.b, 1) else 2 * pnorm(-abs(t))
+  # Wald test of beta = 1 (others 0): fixed-b p-value from the stored statistic
+  # (r5 rows store Wald.stat.MKT_1, Wald.q and hac.b; older rows the p-value)
+  if (all(c("Wald.stat.MKT_1", "Wald.q", "hac.b") %in% colnames(df.all))) {
+    df.all$Wald.p.value.MKT_1 <- fixedb.pvalue(df.all$Wald.stat.MKT_1, df.all$hac.b, df.all$Wald.q)
+  }
   df.all$p.MKT <- p.t(df.all$t.MKT)
   if ("Coef" %in% colnames(df.all)) {
     df.all$t.Coef <- df.all$Coef / df.all$SE.Coef

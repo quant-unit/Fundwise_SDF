@@ -103,6 +103,9 @@ if (!exists("origin.convention")) origin.convention <- "first.cf" # or "predeter
 if (!exists("vintage.weights")) vintage.weights <- "equal" # or "n.funds" (U_pair only)
 source("helper/objective.R")
 source("helper/parallel_workers.R")
+# Admissible parameter domain (Assumption A7) and constrained multi-start fit
+source("helper/admissible.R")
+if (!exists("gross.floor")) gross.floor <- GROSS.FLOOR
 
 # B9: Brent bracket for one-parameter (MKT) models, and provenance recorded in
 # every result row (git commit, uncommitted changes, config file hash, scenario)
@@ -381,6 +384,18 @@ if (sdf.model == "exp.aff") {
 # tested in helper/test_code_repairs.R); f1() is kept as the reference.
 factor.cols.all <- unique(c("RF", setdiff(colnames(df.public), "Date")))
 as.prepared <- function(df) prepare.units(df, factor.cols.all)
+
+# Admissible domain (Assumption A7, helper/admissible.R): the months of each
+# type's full-sample window with their factor values. The gross-return floor
+# applies in each of these months in the full-sample, CV and jackknife fits
+# alike. Taken from df0, so simulated factors (simulation branch) count.
+admissible.months <- lapply(split(df0[, c("Date", factor.cols.all)], as.character(df0$type)), function(d) {
+  d <- d[!duplicated(d$Date), , drop = FALSE]
+  d[order(d$Date), , drop = FALSE]
+})
+theta.domain <- function(type, par.names) {
+  admissible.constraints(admissible.months[[type]], par.names, gross.floor, brent.interval, c(alpha.lower, alpha.upper))
+}
 f1.prep <- function(u, max.month, par0) unit.horizon.error(u, max.month, par0, sdf.model)
 unit.errors <- function(par, df, max.month) {
   prep <- as.prepared(df)
@@ -573,36 +588,39 @@ estim.CoVM <- function(dfx, par, indep = FALSE, max.month) {
     bw = kernel.bandwidth, indep = indep, delta = delta
   )
 }
-# Leave-one-unit-out jackknife (VYP: one unit per vintage). Refits with the
-# estimator's method: Brent on the same bracket for one parameter, L-BFGS-B
-# with bounds and parameter scales when Alpha is estimated, Nelder-Mead
-# otherwise; all refits start at the full-sample estimate par.hat.
-jackknife.se <- function(par.hat, prep, max.month, lambda, lower, upper) {
+# Leave-one-unit-out jackknife (VYP: one unit per vintage). Every refit uses
+# the estimator's domain Theta (con) and fitting rule: Brent on the feasible
+# interval for one parameter; otherwise starts at the full-sample estimate and
+# at the distinct local optima of the full-sample search (endpoints), so that a
+# refit moving to another basin is detected (refit.admissible). Returns the SEs,
+# the number of refits on a bound of Theta and of refits that left the basin of
+# the full-sample estimate, and selfcheck = largest change when the full sample
+# is refitted this way.
+jackknife.se <- function(par.hat, prep, max.month, lambda, con, endpoints, parscale, smooth = TRUE) {
+  nm <- names(par.hat)
+  na.out <- list(se = as.list(setNames(rep(NA_real_, length(par.hat)), nm)), selfcheck = NA_real_, n = length(prep$units), n.bound = NA, n.switch = NA)
   refit <- function(units) {
     d <- structure(list(units = units), class = "prepared.units")
-    if (length(par.hat) == 1) {
-      nm <- names(par.hat)
-      o <- stats::optim(par.hat, function(p) err.sqr.calc(setNames(p, nm), max.month, lambda, d),
-        method = "Brent", lower = lower[1], upper = upper[1])
-      return(setNames(o$par, nm))
-    }
     f <- function(p) err.sqr.calc(p, max.month, lambda, d)
-    if ("Alpha" %in% names(par.hat)) {
-      o <- stats::optim(par.hat, f, method = "L-BFGS-B", lower = rep_len(lower, length(par.hat)),
-        upper = rep_len(upper, length(par.hat)), control = list(parscale = optim.parscale(par.hat)))
-    } else {
-      o <- stats::optim(par.hat, f, method = "Nelder-Mead")
+    if (length(par.hat) == 1) {
+      br <- feasible.interval(con)
+      o <- stats::optim(par.hat, function(p) f(setNames(p, nm)), method = "Brent", lower = br[1], upper = br[2])
+      p <- setNames(o$par, nm)
+      return(list(par = p, at.bound = length(active.constraints(p, con)) > 0, switched = FALSE))
     }
-    setNames(o$par, names(par.hat))
+    refit.admissible(f, par.hat, endpoints, con, parscale, smooth)
   }
   n <- length(prep$units)
-  if (n < 3) return(list(se = as.list(setNames(rep(NA_real_, length(par.hat)), names(par.hat))), selfcheck = NA_real_, n = n))
+  if (n < 3) return(na.out)
   full <- refit(prep$units)
-  est <- t(vapply(seq_len(n), function(i) refit(prep$units[-i]), numeric(length(par.hat))))
+  fits <- lapply(seq_len(n), function(i) refit(prep$units[-i]))
+  if (is.null(full) || any(vapply(fits, is.null, TRUE))) return(na.out)
+  est <- t(vapply(fits, function(r) as.numeric(r$par), numeric(length(par.hat))))
   if (length(par.hat) == 1) est <- matrix(est, ncol = 1)
-  colnames(est) <- names(par.hat)
+  colnames(est) <- nm
   se <- sqrt((n - 1) / n * colSums(sweep(est, 2, colMeans(est))^2))
-  list(se = as.list(se), selfcheck = max(abs(full - par.hat)), n = n)
+  list(se = as.list(se), selfcheck = max(abs(full$par - par.hat)), n = n,
+       n.bound = sum(vapply(fits, `[[`, TRUE, "at.bound")), n.switch = sum(vapply(fits, `[[`, TRUE, "switched")))
 }
 
 # interactive check only (speed: skipped in runner calls, result unused)
@@ -779,11 +797,11 @@ iter.run <- function(input.list) {
           # print(par)
 
           if (length(par) == 1) {
-            # B9: one-parameter models use Brent's method on a fixed bracket
-            # (positivity margin of G_u, assumption A7; brent.interval)
-            br <- if (names(par) == "Alpha") c(alpha.lower, alpha.upper) else brent.interval
-            lower_bounds <- br[1]
-            upper_bounds <- br[2]
+            # B9: one-parameter models use Brent's method on the feasible
+            # interval of Theta (brent.interval and the gross-return floor,
+            # assumption A7, helper/admissible.R)
+            con <- theta.domain(type, names(par))
+            br <- feasible.interval(con)
             # optim(method = "Brent") passes an unnamed scalar: restore the name
             par.name <- names(par)
             ans <- stats::optim(par, function(p, ...) err.sqr.calc(setNames(p, par.name), ...),
@@ -800,125 +818,91 @@ iter.run <- function(input.list) {
             res$kkt2 <- NA
             res$xtime <- NA
             rownames(res) <- "Brent"
-          } else if (TRUE) {
-            # Build bounds & choose method: use L-BFGS-B only when Alpha
-            # is a factor (the explosion case)
-            use.bounded <- ("Alpha" %in% names(par))
-            if (use.bounded) {
-              lower_bounds <- ifelse(names(par) == "Alpha", alpha.lower, -Inf)
-              upper_bounds <- ifelse(names(par) == "Alpha", alpha.upper, Inf)
-              optim_method <- "L-BFGS-B"
-            } else {
-              lower_bounds <- -Inf
-              upper_bounds <- Inf
-              optim_method <- "Nelder-Mead"
-            }
-            # Parameter scales (alpha ~ 0.001, loadings ~ 1): without them
-            # L-BFGS-B stopped near the start in beta (e.g. Buyout H = 0:
-            # beta 1.005 instead of the minimum at 0.494); see optim.parscale()
-            par.scale <- optim.parscale(par)
-
-            res <- tryCatch(
-              {
-                res_tmp <- optimx::optimx(par, err.sqr.calc,
-                  lambda = lambda,
-                  max.month = max.month,
-                  df = df.optim.prep,
-                  lower = lower_bounds,
-                  upper = upper_bounds,
-                  method = optim_method,
-                  control = list(parscale = par.scale)
-                )
-                if (nrow(res_tmp) == 0) stop("optimx returned 0 rows")
-
-                # if optimx does not terminate
-                if (sum(abs(res_tmp[1, names(par)] - par)) < 0.001) {
-                  res_tmp2 <- optimx::optimx(par, err.sqr.calc,
-                    lambda = lambda,
-                    max.month = max.month,
-                    df = df.optim.prep,
-                    itnmax = 1000,
-                    lower = lower_bounds,
-                    upper = upper_bounds,
-                    method = optim_method,
-                    control = list(parscale = par.scale)
-                  )
-                  if (nrow(res_tmp2) > 0) res_tmp <- res_tmp2
-                }
-                res_tmp
-              },
-              error = function(e) {
-                warning("optimx failed (", e$message, "). Falling back to native optimizers.")
-                if (use.bounded) {
-                  ans <- stats::nlminb(par, err.sqr.calc,
-                    lower = lower_bounds, upper = upper_bounds, scale = 1 / par.scale,
-                    lambda = lambda, max.month = max.month, df = df.optim.prep
-                  )
-                  res_df <- as.data.frame(as.list(ans$par))
-                  res_df$value <- ans$objective
-                  res_df$fevals <- ans$evaluations[1]
-                  res_df$gevals <- ans$evaluations[2]
-                  res_df$niter <- ans$iterations
-                } else {
-                  ans <- stats::optim(par, err.sqr.calc,
-                    method = "Nelder-Mead",
-                    lambda = lambda, max.month = max.month, df = df.optim.prep
-                  )
-                  res_df <- as.data.frame(as.list(ans$par))
-                  res_df$value <- ans$value
-                  res_df$fevals <- ans$counts[1]
-                  res_df$gevals <- ans$counts[2]
-                  res_df$niter <- NA
-                }
-                res_df$convcode <- ans$convergence
-                res_df$kkt1 <- NA
-                res_df$kkt2 <- NA
-                res_df$xtime <- NA
-                return(res_df)
-              }
-            )
           } else {
-            res <- data.frame(MKT = 1, HML = 1, SMB = 1, HDY = 1, QLT = 1, MOM = 1, ESG = 1, LOV = 1)
+            # Constrained multi-start fit on Theta (assumption A7; decision of
+            # 17 November 2026, helper/admissible.R): fixed start set around the
+            # pipeline start, Nelder-Mead, polished along the boundary when a
+            # constraint is within reach. Replaces optimx (Nelder-Mead from one
+            # start; L-BFGS-B when Alpha is estimated), which stopped in a local
+            # minimum and had no domain beyond the alpha bounds. Parameter scales:
+            # optim.parscale() (alpha ~ 0.001, loadings ~ 1).
+            con <- theta.domain(type, names(par))
+            par.scale <- optim.parscale(par)
+            fit <- fit.admissible(function(p) err.sqr.calc(p, max.month, lambda, df.optim.prep),
+              admissible.starts(par, con, par.scale), con, par.scale, smooth = error.function != "L1_Ridge")
+            res <- as.data.frame(as.list(fit$par))
+            res$value <- fit$value
+            res$fevals <- NA
+            res$gevals <- NA
+            res$niter <- NA
+            res$convcode <- fit$convergence
+            res$kkt1 <- NA
+            res$kkt2 <- NA
+            res$xtime <- NA
+            res$fit.method <- fit$method
+            res$n.starts <- fit$n.starts
+            rownames(res) <- fit$method
           }
 
           # Standard Error calc
           for (v in names(par)) par[v] <- res[1, v]
-          # estimate on a bound (Brent bracket or alpha bounds): SEs not valid
-          lb <- rep_len(lower_bounds, length(par))
-          ub <- rep_len(upper_bounds, length(par))
-          res$at.bound <- any((is.finite(lb) & par - lb < 1e-4) | (is.finite(ub) & ub - par < 1e-4))
+          # estimate on a bound of Theta (beta bracket, alpha bounds or the
+          # gross-return floor): SEs and tests not valid; tables print a dagger
+          act <- active.constraints(par, con)
+          res$at.bound <- length(act) > 0
+          res$active.constraints <- paste(act, collapse = ",")
+          mg <- min.gross.return(par, con)
+          res$min.G <- mg$value
+          res$min.G.date <- format(mg$date)
+          res$gross.floor <- gross.floor
           dfx <- unit.split(df.optim.in)
 
-          # dependent - kernel bandwidht
-          cov <- estim.CoVM(dfx, par = par, indep = FALSE, max.month = max.month)
-          # print(cov)
-          for (v in names(cov$SE)) res[, v] <- cov$SE[v]
-          # Wald test of beta = 1, others 0: fixed-b p-value (b = hac.b) and the
-          # former chi-square p-value; bandwidth S, vintages V, b = S / V and the
-          # effective number of units (score shares of beta), helper/inference.R
-          res$Wald.p.value.MKT_1 <- cov$Wald.p.value.MKT_1
-          res$Wald.p.value.MKT_1.chisq <- cov$Wald.p.value.MKT_1.chisq
-          res$hac.S <- cov$hac.S
-          res$hac.V <- cov$hac.V
-          res$hac.b <- cov$hac.b
-          res$neff.units <- cov$neff.units
-          res$se.singular <- isTRUE(cov$se.singular) # Hessian not invertible: SEs NA
+          # Inference (decisions of 17 November 2026). L1: none, because no
+          # valid inference is established for the L1 criterion (its estimate
+          # sits at a kink; State of evidence, sections E and I); the SE columns
+          # are NA. Otherwise the Bartlett sandwich with S = ceil(1.3 sqrt V):
+          # the rows store the Wald statistic of beta = 1 (others 0), q and
+          # b = S / V; the fixed-b p-value is computed at analysis time
+          # (results/analyze_result.R), so a recalibration of the fixed-b
+          # distribution never invalidates estimation results. The chi-square
+          # p-value does not depend on that calibration and stays in the row.
+          # neff.<par>: effective number of units carrying each coefficient
+          # (influence contributions, helper/inference.R).
+          if (error.function == "L1_Ridge") {
+            for (v in names(par)) res[, paste0("SE.", v)] <- res[, paste0("SE.", v, ".indep")] <- NA_real_
+            res$inference <- "none (L1)"
+          } else {
+            cov <- estim.CoVM(dfx, par = par, indep = FALSE, max.month = max.month)
+            for (v in names(cov$SE)) res[, v] <- cov$SE[v]
+            res$Wald.stat.MKT_1 <- cov$Wald.stat
+            res$Wald.q <- length(par)
+            res$Wald.p.value.MKT_1.chisq <- cov$Wald.p.value.MKT_1.chisq
+            res$hac.S <- cov$hac.S
+            res$hac.V <- cov$hac.V
+            res$hac.b <- cov$hac.b
+            res$neff.units <- cov$neff.units # = neff.MKT
+            for (v in names(par)) res[, paste0("neff.", v)] <- cov$neff[[v]]
+            res$se.singular <- isTRUE(cov$se.singular) # Hessian not invertible: SEs NA
 
-          # independet with other funds
-          cov.indep <- estim.CoVM(dfx, par = par, indep = TRUE, max.month = max.month)
-          for (v in names(cov.indep$SE)) res[, paste0(v, ".indep")] <- cov.indep$SE[v]
+            # independent units (no kernel)
+            cov.indep <- estim.CoVM(dfx, par = par, indep = TRUE, max.month = max.month)
+            for (v in names(cov.indep$SE)) res[, paste0(v, ".indep")] <- cov.indep$SE[v]
+            res$inference <- "sandwich"
 
-          # Leave-one-vintage-out jackknife SE (robustness, decision of
-          # 17 November 2026): full-sample fits on vintage-year portfolios
-          # (one unit per vintage) with the L2 or L1 criterion. Each refit uses
-          # the estimator's method and bounds, started at the full-sample
-          # estimate. jk.selfcheck = largest change when the full sample is
-          # refitted this way (should be ~0; shows optimizer precision).
-          if (use.vintage.year.pfs && error.function %in% c("L2_Lasso", "L1_Ridge") && cv.key == "ALL") {
-            jk <- jackknife.se(par, df.optim.prep, max.month, lambda, lower_bounds, upper_bounds)
-            for (v in names(par)) res[, paste0("SE.", v, ".jk")] <- jk$se[[v]]
-            res$jk.selfcheck <- jk$selfcheck
-            res$jk.units <- jk$n
+            # Leave-one-vintage-out jackknife SE (robustness): full-sample fits
+            # on vintage-year portfolios (one unit per vintage). Same domain
+            # and refit rule as the estimator (jackknife.se). jk.n.bound: refits
+            # on a bound of Theta; jk.n.switch: refits that left the basin of
+            # the full-sample estimate; tables flag SE_JK when either is > 0.
+            if (use.vintage.year.pfs && error.function == "L2_Lasso" && cv.key == "ALL") {
+              ends <- if (length(par) > 1) fit$endpoints else list()
+              jk <- jackknife.se(par, df.optim.prep, max.month, lambda, con, ends, optim.parscale(par))
+              for (v in names(par)) res[, paste0("SE.", v, ".jk")] <- jk$se[[v]]
+              res$jk.selfcheck <- jk$selfcheck
+              res$jk.units <- jk$n
+              res$jk.n.bound <- jk$n.bound
+              res$jk.n.switch <- jk$n.switch
+            }
           }
 
           # print(res)

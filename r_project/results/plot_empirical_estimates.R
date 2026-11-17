@@ -610,19 +610,37 @@ plot_empirical_estimates <- function(
     result.table.provenance(dat)
 }
 
-# Inference robustness table (decision 2026-11-17): next to the main table,
-# SE_A (Bartlett, S = ceil(1.3 sqrt V)), the leave-one-vintage-out jackknife SE
-# and the effective number of vintages carrying the beta estimate; S, V and b
-# in the notes. Empty when the results predate these columns.
+# Inference robustness table (decisions of 17 November 2026): next to the main
+# table, SE_A (Bartlett, S = ceil(1.3 sqrt V)), the leave-one-vintage-out
+# jackknife SE and the effective number of vintages carrying the coefficient;
+# S, V and b in the notes. SEs are suppressed for estimates on a bound of the
+# admissible domain (as in the main table); SE_JK carries a double dagger when
+# a jackknife refit hit a bound of the domain or left the basin of the
+# full-sample estimate. Not produced when the results have no SEs (L1) or
+# predate these columns.
 .inference_robustness_table <- function(ft_data, fund_type, fct, is_single, horizons, fmt2, fmt3) {
-    need <- c("neff.units", "hac.S", "hac.V", "hac.b")
-    if (!all(need %in% names(ft_data))) return(character())
+    if (!all(c("hac.S", "hac.V", "hac.b") %in% names(ft_data))) return(character())
+    source(here::here("helper/result_reporting.R"), local = TRUE) # boundary.mask()
     se.col <- if (is_single) "SE.MKT" else "SE.Coef"
     jk.col <- paste0(se.col, ".jk")
+    # N_eff of the reported coefficient (influence-based since r5); older
+    # results only have neff.units, which belongs to beta_MKT
+    neff.col <- if (is_single) intersect(c("neff.MKT", "neff.units"), names(ft_data))[1] else intersect("neff.Coef", names(ft_data))[1]
     fac <- if (is_single) "MKT" else fct
-    get <- function(w, h, col) {
-        d <- ft_data[ft_data$weighting == w & ft_data$method == "Asymptotic" & ft_data$Factor == fac & as.numeric(ft_data$max.month) == h, , drop = FALSE]
-        if (nrow(d) == 0 || !(col %in% names(d))) NA else d[[col]][1]
+    rows <- ft_data[ft_data$method == "Asymptotic" & ft_data$Factor == fac, , drop = FALSE]
+    if (!(se.col %in% names(rows)) || all(is.na(rows[[se.col]]))) return(character())
+    row.of <- function(w, h) ft_data[ft_data$weighting == w & ft_data$method == "Asymptotic" & ft_data$Factor == fac & as.numeric(ft_data$max.month) == h, , drop = FALSE]
+    val <- function(d, col) if (nrow(d) == 0 || is.na(col) || !(col %in% names(d))) NA else d[[col]][1]
+    bound <- function(d) nrow(d) > 0 && boundary.mask(d)[1]
+    jk.flag <- function(d) {
+        n <- sum(c(val(d, "jk.n.bound"), val(d, "jk.n.switch")), na.rm = TRUE)
+        if (n > 0) "$^{\\ddagger}$" else ""
+    }
+    cells <- function(w, h) {
+        d <- row.of(w, h)
+        if (bound(d)) return(c("--", "--", fmt2(val(d, neff.col))))
+        jk <- val(d, jk.col)
+        c(fmt3(val(d, se.col)), if (is.na(jk)) "--" else paste0(fmt3(jk), jk.flag(d)), fmt2(val(d, neff.col)))
     }
     par.label <- if (is_single) "$\\hat{\\beta}$" else if (tolower(fct) == "alpha") "$\\hat{\\alpha}$" else paste0("$\\hat{\\beta}_{", fct, "}$")
     lines <- c("", "\\begin{table}[htbp]", "\\centering", "\\footnotesize",
@@ -633,14 +651,14 @@ plot_empirical_estimates <- function(
         "\\cmidrule(lr){2-4} \\cmidrule(lr){5-7}",
         "Horizon & SE$_A$ & SE$_{JK}$ & $N_{\\mathrm{eff}}$ & SE$_A$ & SE$_{JK}$ & $N_{\\mathrm{eff}}$ \\\\", "\\midrule")
     for (h in horizons) {
-        lines <- c(lines, paste0(round(h / 12, 1), " yr",
-            " & ", fmt3(get("EW", h, se.col)), " & ", fmt3(get("EW", h, jk.col)), " & ", fmt2(get("EW", h, "neff.units")),
-            " & ", fmt3(get("FW", h, se.col)), " & ", fmt3(get("FW", h, jk.col)), " & ", fmt2(get("FW", h, "neff.units")), " \\\\"))
+        lines <- c(lines, paste0(round(h / 12, 1), " yr & ", paste(c(cells("EW", h), cells("FW", h)), collapse = " & "), " \\\\"))
     }
-    sv <- unique(na.omit(ft_data[ft_data$method == "Asymptotic" & ft_data$Factor == fac, c("hac.S", "hac.V", "hac.b"), drop = FALSE]))
+    sv <- unique(na.omit(rows[, c("hac.S", "hac.V", "hac.b"), drop = FALSE]))
     sv.text <- if (nrow(sv)) paste(sprintf("$S=%g$, $V=%g$, $b=%.3f$", sv$hac.S, sv$hac.V, sv$hac.b), collapse = "; ") else "--"
     c(lines, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
-        paste0("{\\scriptsize\\textit{Notes:} SE$_A$ = Bartlett (Newey--West) sandwich over vintage years, truncation $S=\\lceil 1.3\\sqrt{V}\\rceil$; SE$_{JK}$ = leave-one-vintage-out jackknife SE (assumes independent vintages); $N_{\\mathrm{eff}}=(\\sum_v g_v^2)^2/\\sum_v g_v^4$, $g_v$ the score contribution of vintage $v$ to $\\hat{\\beta}$, i.e.\\ the effective number of vintages carrying the estimate. ", sv.text, ". With few effective vintages all standard errors are approximate.}"),
+        paste0("{\\scriptsize\\textit{Notes:} SE$_A$ = Bartlett (Newey--West) sandwich over vintage years, truncation $S=\\lceil 1.3\\sqrt{V}\\rceil$; SE$_{JK}$ = leave-one-vintage-out jackknife SE (assumes independent vintages; every refit on the same admissible domain); $^{\\ddagger}$\\,at least one jackknife refit lies on a bound of the admissible domain or in a different local minimum than the full-sample estimate. ",
+            "$N_{\\mathrm{eff}}=(\\sum_v c_v^2)^2/\\sum_v c_v^4$, $c_v$ the influence contribution of vintage $v$ to ", par.label, " (the score of $v$ premultiplied by the inverse Hessian): the effective number of vintages carrying the estimate, a concentration measure, not degrees of freedom. ",
+            "``--'' for estimates on a bound of the admissible domain. ", sv.text, ". With few effective vintages all standard errors are approximate.}"),
         "\\end{table}")
 }
 
@@ -697,6 +715,10 @@ plot_empirical_estimates <- function(
     }
     na.if.bound <- function(d, cell) if (on.bound(d)) "--" else cell
 
+    # L1 tables (output file *_L1): own labels; no inference (decision of
+    # 17 November 2026: no valid inference established for the L1 criterion)
+    is.l1 <- grepl("_L1$", basename(base_file))
+
     # Accumulate all table lines across factors into one file
     all_lines <- c("% Auto-generated by plot_empirical_estimates.R", .table_provenance(ft_data))
 
@@ -739,7 +761,7 @@ plot_empirical_estimates <- function(
             "\\centering",
             "\\footnotesize",
             paste0("\\caption{", caption_text, "}"),
-            paste0("\\label{tab:empirical_", tolower(fund_type), "_", tolower(fct), "}"),
+            paste0("\\label{tab:empirical_", tolower(fund_type), "_", tolower(fct), if (is.l1) "_l1", "}"),
             "\\begin{tabular}{l *{5}{r} *{5}{r}}",
             "\\toprule",
             " & \\multicolumn{5}{c}{Equal-Weighted (EW)} & \\multicolumn{5}{c}{Value-Weighted (FW)} \\\\",
@@ -856,7 +878,9 @@ plot_empirical_estimates <- function(
             "\\bottomrule",
             "\\end{tabular}",
             "\\par\\vspace{2pt}",
-            "{\\scriptsize\\textit{Notes:} $\\hat{\\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. $^{\\dagger}$\\,estimate on a parameter bound; SE$_A$ and $t_A$ not valid and not reported. SE$_A$: Bartlett (Newey--West) sandwich over vintage years with truncation $S=\\lceil 1.3\\sqrt{V}\\rceil$, $V$ the number of vintages (Lazarus, Lewis, Stock and Watson, 2018). Significance markers from two-sided Kiefer--Vogelsang fixed-$b$ $p$-values of $t_A$ at $b=S/V$: $^{*}$\\,$p<0.05$, $^{**}$\\,$p<0.01$, $^{***}$\\,$p<0.001$.}",
+            paste0("{\\scriptsize\\textit{Notes:} $\\hat{\\beta}$ = parameter estimate; SE$_A$ = asymptotic standard error; SD$_{CV}$ = cross-validation fold dispersion (standard deviation across hold-out folds); $t_A$ = asymptotic $t$-ratio; $\\mathrm{SR}_{CV}$ = signed stability ratio (estimate / fold dispersion), so negative values reflect negative coefficients and $|\\mathrm{SR}_{CV}|$ measures the estimate relative to fold dispersion. $^{\\dagger}$\\,estimate on a bound of the admissible domain ($\\beta_{MKT}\\in[-1,4]$, $\\alpha\\in[-2\\%,2\\%]$ per month, monthly gross benchmark return $1+r_f+\\theta^\\top F_t\\ge 0.08$ over the estimation window); SE$_A$ and $t_A$ not valid and not reported. ",
+            if (is.l1) "L1 criterion: no valid inference is established for this estimator (it sits at a vintage whose pricing error is zero), so SE$_A$, $t_A$ and significance markers are not reported; SD$_{CV}$ measures sensitivity to omitting blocks of vintages, not sampling uncertainty.}" else
+            "SE$_A$: Bartlett (Newey--West) sandwich over vintage years with truncation $S=\\lceil 1.3\\sqrt{V}\\rceil$, $V$ the number of vintages (Lazarus, Lewis, Stock and Watson, 2018). Significance markers from two-sided Kiefer--Vogelsang fixed-$b$ $p$-values of $t_A$ at $b=S/V$: $^{*}$\\,$p<0.05$, $^{**}$\\,$p<0.01$, $^{***}$\\,$p<0.001$.}"),
             "\\end{table}"
         )
 

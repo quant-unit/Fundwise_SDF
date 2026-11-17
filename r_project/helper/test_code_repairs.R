@@ -650,11 +650,115 @@ sw.l <- sandwich.covariance(toy.units, th, loss.toy, vins, bw = "llsw")
 sw.7 <- sandwich.covariance(toy.units, th, loss.toy, vins, bw = hac.bandwidth.llsw(length(unique(vins))))
 check("bw = \"llsw\" equals the fixed bandwidth ceil(1.3 sqrt(V)) and reports S, V, b",
       isTRUE(all.equal(sw.l$SE, sw.7$SE)) && sw.l$hac.S == hac.bandwidth.llsw(length(unique(vins))) && sw.l$hac.V == length(unique(vins)) &&
-        abs(sw.l$hac.b - sw.l$hac.S / sw.l$hac.V) < 1e-12 && is.finite(sw.l$Wald.p.value.MKT_1) && is.finite(sw.l$Wald.p.value.MKT_1.chisq),
-      sprintf("S=%g V=%g b=%.3f, p fixed-b %.3f vs chi-square %.3f", sw.l$hac.S, sw.l$hac.V, sw.l$hac.b, sw.l$Wald.p.value.MKT_1, sw.l$Wald.p.value.MKT_1.chisq))
+        abs(sw.l$hac.b - sw.l$hac.S / sw.l$hac.V) < 1e-12 && is.finite(sw.l$Wald.stat) && is.finite(sw.l$Wald.p.value.MKT_1.chisq) &&
+        is.na(sw.l$Wald.p.value.MKT_1), # fixed-b p-value: at analysis time from Wald.stat (r5)
+      sprintf("S=%g V=%g b=%.3f, Wald %.2f, p fixed-b (analysis) %.3f vs chi-square %.3f", sw.l$hac.S, sw.l$hac.V, sw.l$hac.b, sw.l$Wald.stat,
+        fixedb.pvalue(sw.l$Wald.stat, sw.l$hac.b, length(th)), sw.l$Wald.p.value.MKT_1.chisq))
 neff.of <- function(g) sum(g^2)^2 / sum(g^4)
 check("effective number of units: n for equal scores, about 1 for one dominant unit",
       abs(neff.of(rep(c(1, -1), 10)) - 20) < 1e-12 && neff.of(c(100, rep(0.01, 19))) < 1.01)
+
+
+cat("\n== r5: admissible domain (A7), constrained multi-start fit, inference changes (decision 2026-11-17) ==\n")
+source(here("helper/admissible.R"))
+set.seed(21)
+mo <- data.frame(Date = seq(as.Date("1985-01-31"), by = "month", length.out = 120), RF = 0.003, MKT = rnorm(120, 0.007, 0.045), EG = rnorm(120, 0.004, 0.02), Alpha = 1)
+mo$MKT[30] <- -0.23 # a crash month, as in October 1987
+con2 <- admissible.constraints(mo, c("MKT", "EG"))
+th2 <- c(MKT = 1.7, EG = 2.5)
+G2 <- 1 + mo$RF + 1.7 * mo$MKT + 2.5 * mo$EG
+check("floor constraints: slack = G_t(theta) - floor in every month; MKT bracket as box rows",
+      max(abs(slack(th2, con2)[con2$kind == "floor"] - (G2 - GROSS.FLOOR))) < 1e-12 && all(c("MKT.lower", "MKT.upper") %in% con2$kind) &&
+        abs(min.gross.return(th2, con2)$value - min(G2)) < 1e-12)
+con1 <- admissible.constraints(mo, "MKT")
+fi <- feasible.interval(con1)
+grid1 <- seq(-1, 4, by = 1e-5); ok1 <- vapply(grid1, function(b) all(1 + mo$RF + b * mo$MKT >= GROSS.FLOOR), TRUE)
+check("one-parameter feasible interval = [-1, 4] cut by the floor (brute force on a 1e-5 grid)",
+      abs(fi[1] - min(grid1[ok1])) < 1e-5 && abs(fi[2] - max(grid1[ok1])) < 1e-5, sprintf("[%.5f, %.5f]", fi[1], fi[2]))
+con.inf <- admissible.constraints(mo, c("MKT", "Alpha"), alpha.bounds = c(-Inf, Inf))
+check("infinite alpha bounds add no constraint rows", !any(grepl("Alpha", con.inf$kind)))
+# boundary solution: the unconstrained minimum (3.5, 20) violates the floor
+# (crash month: G = 1.003 - 3.5 * 0.23 - 20 * 0.02 < 0). For a squared distance
+# the solution is the projection onto Theta: with one active floor row u,
+# p - target = lambda * u with lambda >= 0 (KKT), checked exactly.
+mo.b <- mo; mo.b$EG[30] <- -0.02
+con.b <- admissible.constraints(mo.b, c("MKT", "EG"))
+tg <- c(MKT = 3.5, EG = 20)
+check("the target lies outside Theta", !in.domain(tg, con.b))
+f.out <- function(p) sum((p - tg)^2)
+r.out <- fit.admissible(f.out, admissible.starts(c(MKT = 1, EG = 0), con.b), con.b)
+act.rows <- which(slack(r.out$par, con.b) < BOUND.TOL)
+u <- con.b$ui[act.rows[1], ]; dvec <- r.out$par - tg
+cosang <- sum(dvec * u) / sqrt(sum(dvec^2) * sum(u^2))
+check("constrained fit lands on the floor when the minimum lies outside Theta: KKT of the projection holds, flagged on the bound",
+      r.out$at.bound && r.out$active == "floor" && length(act.rows) == 1 && in.domain(r.out$par, con.b) && cosang > 1 - 1e-6 &&
+        abs(r.out$min.G - GROSS.FLOOR) < BOUND.TOL,
+      sprintf("par (%.4f, %.4f), min G %.6f, cos(p - target, normal) %.8f, active rows %d, method %s", r.out$par[1], r.out$par[2], r.out$min.G, cosang, length(act.rows), r.out$method))
+# two basins: a start at the pipeline centre alone stays in the worse one
+f.two <- function(p) min((p[["MKT"]] - 1)^2 + p[["EG"]]^2, (p[["MKT"]] - 2)^2 + (p[["EG"]] - 1)^2 - 0.5)
+r.two <- fit.admissible(f.two, admissible.starts(c(MKT = 1, EG = 0), con2), con2, smooth = FALSE)
+o.one <- optim(c(MKT = 1, EG = 0), f.two)
+check("multi-start finds the lower of two basins that a single start from the centre misses",
+      abs(r.two$value + 0.5) < 1e-6 && o.one$value > -0.4 && !r.two$at.bound, sprintf("multi-start %.4f at (%.3f, %.3f); single start %.4f", r.two$value, r.two$par[1], r.two$par[2], o.one$value))
+sw.r <- refit.admissible(f.two, c(MKT = 1, EG = 0), r.two$endpoints, con2, c(1, 1), smooth = FALSE)
+check("a refit started at the worse basin's point and the search's end points reports the switch",
+      isTRUE(sw.r$switched) && abs(sw.r$value + 0.5) < 1e-6)
+sw.n <- refit.admissible(f.two, r.two$par, r.two$endpoints, con2, c(1, 1), smooth = FALSE)
+check("a refit started at the best point reports no switch", identical(sw.n$switched, FALSE))
+# alpha bound with parameter scaling
+con.a <- admissible.constraints(mo, c("MKT", "Alpha"))
+f.a <- function(p) (p[["MKT"]] - 0.5)^2 + 1e4 * (p[["Alpha"]] - 0.03)^2
+r.a <- fit.admissible(f.a, admissible.starts(c(MKT = 1, Alpha = 0), con.a, c(1, 0.001)), con.a, c(1, 0.001))
+check("alpha minimum beyond +2%: estimate on the alpha bound, flagged",
+      abs(r.a$par[["Alpha"]] - 0.02) < BOUND.TOL && r.a$at.bound && grepl("Alpha.upper", r.a$active) && abs(r.a$par[["MKT"]] - 0.5) < 1e-3,
+      sprintf("alpha %.6f, beta %.4f, active %s", r.a$par[["Alpha"]], r.a$par[["MKT"]], r.a$active))
+check("estimator uses the domain and the multi-start fit; jackknife refits use the same domain (source check)",
+      grepl("con <- theta.domain(type, names(par))", est.src, fixed = TRUE) && grepl("fit.admissible(function(p) err.sqr.calc", est.src, fixed = TRUE) &&
+        grepl("br <- feasible.interval(con)", est.src, fixed = TRUE) && grepl("refit.admissible(f, par.hat, endpoints, con, parscale, smooth)", est.src, fixed = TRUE) &&
+        !grepl("optimx::optimx(par, err.sqr.calc,\n                  lambda = lambda,\n                  max.month = max.month,\n                  df = df.optim.prep", est.src, fixed = TRUE))
+check("gross.floor is part of the result identity; pipeline version bumped",
+      "gross.floor" %in% RESULT.SETTINGS && PIPELINE.VERSION != "2026-11-16-r3")
+# inference changes
+check("L1: no inference (SE columns NA, no jackknife); rows store the Wald statistic, q and the chi-square p-value (source check)",
+      grepl('res$inference <- "none (L1)"', est.src, fixed = TRUE) && grepl('error.function == "L2_Lasso" && cv.key == "ALL"', est.src, fixed = TRUE) &&
+        grepl("res$Wald.stat.MKT_1 <- cov$Wald.stat", est.src, fixed = TRUE) && !grepl("res$Wald.p.value.MKT_1 <- cov$Wald.p.value.MKT_1\n", est.src, fixed = TRUE))
+ana.src <- paste(readLines(here("results/analyze_result.R")), collapse = "\n")
+check("analysis computes the fixed-b Wald p-value from the stored statistic",
+      grepl("fixedb.pvalue(df.all$Wald.stat.MKT_1, df.all$hac.b, df.all$Wald.q)", ana.src, fixed = TRUE))
+u1 <- lapply(toy.units, identity)
+loss1 <- function(p, u) (u$y - p[1] * u$x - 1)^2
+sw1 <- sandwich.covariance(u1, c(MKT = 0.5), loss1, vins, bw = "llsw")
+g1 <- vapply(u1, function(u) num.grad(function(p) loss1(p, u), c(MKT = 0.5)), 0)
+check("N_eff per coefficient: influence-based value equals the score-based value for one parameter",
+      abs(sw1$neff$MKT - sum(g1^2)^2 / sum(g1^4)) < 1e-8 && abs(sw1$neff.units - sw1$neff$MKT) < 1e-12)
+sw3 <- sandwich.covariance(toy.units, th, loss.toy, vins, bw = "llsw")
+check("N_eff reported for every coefficient", length(sw3$neff) == 3 && all(vapply(sw3$neff, is.finite, TRUE)),
+      paste(sprintf("%s %.2f", names(sw3$neff), unlist(sw3$neff)), collapse = ", "))
+# conditional fixed-b (q = 1)
+c28 <- fixedb.crit.t(0.05, 0.28)
+check("conditional fixed-b: p at the critical value equals the level; p(0) = 1",
+      abs(fixedb.q1.pvalue(c28^2, 0.28) - 0.05) < 1e-8 && fixedb.q1.pvalue(0, 0.28) == 1)
+# 2.7906 +- 0.0030: reviewer B (conditional method, 1e5 draws); our store uses 1e6 draws (SE about 0.001)
+check("conditional 5% critical value at b = 0.28 agrees with the external reviewers' value 2.7906 (+- 0.0030)",
+      abs(c28 - 2.7906) < 3 * sqrt(0.003^2 + 0.001^2), sprintf("%.4f", c28))
+c02 <- fixedb.crit.t(0.05, 0.02)
+check("conditional 5% critical value at b = 0.02 is near Table I (2.018) and above 1.96", c02 > 1.96 && abs(c02 - 2.018) < 0.03, sprintf("%.4f", c02))
+check("conditional and quantile-table critical values agree within Monte Carlo error (b = 0.26, 0.28, 0.50)",
+      all(abs(vapply(c(0.26, 0.28, 0.5), function(b) fixedb.crit.t(0.05, b) - fixedb.crit.t.table(0.05, b), 0)) < 0.04))
+# tables: bound suppression and jackknife flag in the robustness table; L1 labels
+rb <- data.frame(Type = "VC", weighting = c("EW", "FW"), method = "Asymptotic", Factor = "Alpha", max.month = 0,
+                 SE.Coef = c(0.019, 0.004), SE.Coef.jk = c(0, 0.005), neff.Coef = c(2.6, 4.8), at.bound = c(TRUE, FALSE),
+                 jk.n.bound = c(27, 1), jk.n.switch = c(0, 0), hac.S = 7, hac.V = 27, hac.b = 7 / 27)
+rbt <- .inference_robustness_table(rb, "VC", "Alpha", FALSE, 0, function(x) formatC(x, format = "f", digits = 2), function(x) formatC(x, format = "f", digits = 3))
+rrow <- trimws(strsplit(sub("\\\\\\\\.*$", "", rbt[grepl("^0 yr &", rbt)]), "&")[[1]])
+check("robustness table: '--' for SEs on a bound; double dagger on SE_JK when a refit hit a bound",
+      rrow[2] == "--" && rrow[3] == "--" && rrow[5] == "0.004" && grepl("ddagger", rrow[6]), paste(rrow, collapse = " | "))
+l1.base <- file.path(tempdir(), "toy_US_MKT_L1")
+toy.l1 <- toy.tab; toy.l1$SE.MKT <- NA; toy.l1$t.MKT <- NA
+suppressMessages(.export_latex_tables(toy.l1, "BO", "MKT", l1.base))
+tex.l1 <- readLines(paste0(l1.base, "_tables.tex"))
+check("L1 tables: own label, no robustness table, note says no inference",
+      any(grepl("label\\{tab:empirical_bo_mkt_l1\\}", tex.l1)) && !any(grepl("Inference robustness", tex.l1)) && any(grepl("no valid inference is established", tex.l1)))
 
 cat(sprintf("\n%d test(s) failed\n", n.fail))
 if (n.fail > 0) quit(status = 1)
