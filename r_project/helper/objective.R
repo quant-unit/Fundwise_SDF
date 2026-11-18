@@ -177,3 +177,104 @@ u.criterion <- function(e, vintage.key, s = rep(1, length(e)), vintage.weights =
 # L-BFGS-B effectively moved only alpha and stopped near the starting beta in
 # the (alpha, beta) model (G1 finding, 2026-11-16; test in test_code_repairs.R).
 optim.parscale <- function(par) ifelse(names(par) == "Alpha", 0.001, 1)
+
+# ---------------------------------------------------------------------------
+# Fast criterion (Step 4 Monte Carlo; decision of 18 November 2026: used in
+# the Monte Carlo only, the empirical pipeline keeps unit.errors()).
+#
+# Same arithmetic as unit.horizon.error() for the linear SDF: all units that
+# share a grid (the funds of a vintage start at t0 and end at T.max) share the
+# benchmark path ret_t = prod G_u, so ret is computed once per grid instead of
+# once per unit, and each unit only needs its nonzero cash flows:
+#   e_i = (sum_t cf_it / ret_t) * mean(ret_1, ..., ret_min(m, n)).
+# Equivalence with unit.errors() / u.criterion(): helper/test_mc.R (T1).
+# ---------------------------------------------------------------------------
+
+# df: padded unit rows (Date, CF, Fund.ID, type, Vintage, optional Size, and
+# the factor columns), as passed to prepare.units(). Units in the same order
+# as prepare.units() (split by Fund.ID).
+prepare.fast <- function(df, factor.cols, split.key = df$Fund.ID) {
+  factor.cols <- intersect(factor.cols, colnames(df))
+  date.all <- as.numeric(df$Date)
+  # common calendar: one row of factor values per date
+  first <- !duplicated(date.all)
+  cal <- data.frame(date = date.all[first], df[first, factor.cols, drop = FALSE])
+  cal <- cal[order(cal$date), , drop = FALSE]
+  X <- as.matrix(cal[, factor.cols, drop = FALSE])
+  row <- match(date.all, cal$date)
+  rows <- split(seq_len(nrow(df)), split.key, drop = TRUE)
+  k0 <- vapply(rows, function(i) min(row[i]), 0L)
+  n <- vapply(rows, length, 0L)
+  # every unit must occupy the contiguous calendar rows k0, ..., k0 + n - 1
+  ok <- vapply(seq_along(rows), function(j) identical(sort(row[rows[[j]]]), as.integer(k0[j] + seq_len(n[j]) - 1L)), TRUE)
+  if (!all(ok)) stop("prepare.fast: units are not on contiguous calendar grids (pad them first)")
+  # grids shared by units: (start row, length)
+  grid.key <- paste(k0, n)
+  grids <- unique(data.frame(k0 = k0, n = n, key = grid.key, stringsAsFactors = FALSE))
+  unit.grid <- match(grid.key, grids$key)
+  # nonzero cash flows: unit, position on the unit's grid
+  cf.unit <- integer(); cf.pos <- integer(); cf.val <- numeric()
+  for (j in seq_along(rows)) {
+    i <- rows[[j]]; nz <- i[df$CF[i] != 0]
+    cf.unit <- c(cf.unit, rep(j, length(nz))); cf.pos <- c(cf.pos, row[nz] - k0[j] + 1L); cf.val <- c(cf.val, df$CF[nz])
+  }
+  key <- vapply(rows, function(i) paste(df$type[i[1]], df$Vintage[i[1]]), "")
+  groups <- sort(unique(key)) # vintage keys in u.criterion() order (tapply)
+  group <- match(key, groups)
+  structure(list(X = X, grids = grids[, c("k0", "n")], unit.grid = unit.grid,
+    cf.unit = cf.unit, cf.pos = cf.pos, cf.row = k0[cf.unit] + cf.pos - 1L, cf.val = cf.val, n.units = length(rows),
+    fund.id = names(rows), key = key, group = group, n.groups = length(groups), group.n = setNames(tabulate(group, length(groups)), groups),
+    vintage = vapply(rows, function(i) as.numeric(df$Vintage[i[1]]), 0),
+    size = if ("Size" %in% colnames(df)) vapply(rows, function(i) df$Size[i[1]], 0) else rep(1, length(rows))),
+    class = "fast.units")
+}
+
+# Horizon errors of all units at par (named; RF enters with loading 1, as in
+# unit.errors()). Non-finite where a gross return is not positive (log NaN),
+# like the pipeline. The cumulative log return is taken once over the
+# calendar; a grid starting at row k0 uses its differences to row k0 - 1
+# (equal to the per-unit cumulative sum up to rounding, T1).
+fast.unit.errors <- function(par, fp, max.month) {
+  par0 <- c(RF = 1, par)
+  L <- c(0, cumsum(log(1 + as.numeric(fp$X[, names(par0), drop = FALSE] %*% par0))))
+  m <- max(as.integer(max.month), 1L)
+  g <- fp$grids
+  base <- L[g$k0] # cumulative log return before the grid's first row
+  A <- vapply(seq_len(nrow(g)), function(k) {
+    j <- min(m, g$n[k])
+    sum(exp(L[g$k0[k] + seq_len(j)] - base[k])) / j
+  }, 0)
+  disc <- exp(L[fp$cf.row + 1L] - base[fp$unit.grid[fp$cf.unit]])
+  dcf <- numeric(fp$n.units)
+  s <- rowsum(fp$cf.val / disc, fp$cf.unit, reorder = TRUE)
+  dcf[as.integer(rownames(s))] <- s[, 1]
+  setNames(dcf * A[fp$unit.grid], fp$fund.id)
+}
+
+# U criterion of fast.unit.errors() output: same value as u.criterion(e,
+# fp$key, s, vintage.weights) (T1), with the vintage grouping precomputed
+fast.u.criterion <- function(e, fp, s = fp$size, vintage.weights = "equal") {
+  sum.by <- function(x) { out <- numeric(fp$n.groups); r <- rowsum(x, fp$group, reorder = TRUE); out[as.integer(rownames(r))] <- r[, 1]; out }
+  u <- (sum.by(e)^2 - sum.by(e^2)) / (sum.by(s)^2 - sum.by(s^2))
+  w <- u.unit.weights(fp$group.n, vintage.weights)
+  ok <- !is.na(w)
+  if (!any(ok)) return(NA_real_)
+  mean(w[ok] * u[ok])
+}
+
+# Units of selected vintage keys (CV folds, jackknife, per-vintage SE units)
+fast.subset <- function(fp, keep) {
+  j <- which(keep)
+  map <- match(seq_len(fp$n.units), j)
+  sel <- fp$cf.unit %in% j
+  used <- sort(unique(fp$unit.grid[j]))
+  out <- fp
+  out$grids <- fp$grids[used, , drop = FALSE]
+  out$unit.grid <- match(fp$unit.grid[j], used)
+  out$cf.unit <- map[fp$cf.unit[sel]]; out$cf.pos <- fp$cf.pos[sel]; out$cf.row <- fp$cf.row[sel]; out$cf.val <- fp$cf.val[sel]
+  out$n.units <- length(j)
+  for (f in c("fund.id", "key", "vintage", "size")) out[[f]] <- fp[[f]][j]
+  groups <- sort(unique(out$key)); out$group <- match(out$key, groups); out$n.groups <- length(groups)
+  out$group.n <- setNames(tabulate(out$group, length(groups)), groups)
+  out
+}
