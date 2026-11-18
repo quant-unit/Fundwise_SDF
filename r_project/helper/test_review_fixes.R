@@ -66,7 +66,19 @@ invisible(do.call(run_estimation, params))
 check("changed public factors are re-estimated", engine.calls == 4)
 writeLines("max_vintage: 2005", config.file)
 invisible(do.call(run_estimation, params))
-check("changed configuration is re-estimated", engine.calls == 5)
+check("editing the configuration file without changing settings resumes (config is provenance only)", engine.calls == 4)
+stored <- do.call(rbind, lapply(list.files(cache, "_cached_res\\.csv$", full.names = TRUE), read.csv, stringsAsFactors = FALSE))
+check("result files store data paths relative to the project root",
+  !any(is.absolute.path(na.omit(c(stored$input.path, stored$public.path, stored$config.path)))))
+# a row as written before 18 November 2026: absolute paths, configuration in the hash
+current <- read.result.cache(cache, verbose = FALSE)
+legacy <- current[1, ]
+legacy$input.path <- file.path(normalizePath(stage), legacy$input.path)
+legacy$public.path <- file.path("/elsewhere/clone/r_project", legacy$public.path)
+legacy$cache.identity <- "former-hash-including-config"
+legacy <- current.result.rows(legacy, verbose = FALSE)
+check("rows with absolute paths and the former identity stay current with the same identity",
+  nrow(legacy) == 1 && identical(legacy$cache.identity, current$cache.identity[1]) && identical(legacy$input.path, current$input.path[1]))
 summary.file <- file.path(stage, "saved-summary.csv")
 write.csv(df.res, summary.file, row.names = FALSE)
 check("current summaries remain readable", nrow(read.result.summary(summary.file)) == 1)

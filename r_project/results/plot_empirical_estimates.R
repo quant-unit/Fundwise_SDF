@@ -86,6 +86,7 @@ plot_empirical_estimates <- function(
     exclude_cv = FALSE,
     region = NULL,
     error_function = "L2_Lasso") {
+    source(here::here("helper/result_reporting.R"), local = TRUE) # boundary.mask()
     # -------------------------------------------------------------------------
     # Define file paths for the 4 CSV sources
     # -------------------------------------------------------------------------
@@ -144,7 +145,10 @@ plot_empirical_estimates <- function(
         }
         df <- read.result.summary(src$path)
         if (nrow(df) == 0) return(NULL)
-        keep_cols <- c("Type", "max.month", "MKT", "Factor", "Coef")
+        # full-sample estimate on a bound of the admissible domain (D2), or CV
+        # fold mean with at least one fold on a bound (the CV summary's at.bound)
+        df$on.bound <- boundary.mask(df)
+        keep_cols <- c("Type", "max.month", "MKT", "Factor", "Coef", "on.bound")
         df <- df[, intersect(keep_cols, names(df)), drop = FALSE]
         df$source <- src$label
         df$weighting <- src$weighting
@@ -269,6 +273,32 @@ plot_empirical_estimates <- function(
     column_factors <- factors
 
     # -------------------------------------------------------------------------
+    # Estimates on a bound of the admissible domain (D2), and CV fold means
+    # with a fold on a bound: not part of the line, drawn as a cross in the
+    # series colour; the axis range is set by the interior points (or the
+    # caller's limits), and a marked point outside it is drawn at the axis
+    # limit. The tables carry the values (dagger for full-sample estimates).
+    # -------------------------------------------------------------------------
+    plot_data$on.bound <- if (is.null(plot_data$on.bound)) FALSE else plot_data$on.bound %in% TRUE
+    any_bound <- any(plot_data$on.bound & plot_data$Factor %in% factors)
+    estimate_layers <- function(df, ylim = NULL) {
+        df$y_line <- ifelse(df$on.bound, NA_real_, df$y)
+        bound_df <- df[df$on.bound, , drop = FALSE]
+        if (nrow(bound_df) > 0 && is.null(ylim)) ylim <- range(df$y_line, na.rm = TRUE)
+        if (nrow(bound_df) > 0) {
+            lo <- if (is.na(ylim[1])) -Inf else ylim[1]
+            hi <- if (is.na(ylim[2])) Inf else ylim[2]
+            bound_df$y <- pmin(pmax(bound_df$y, lo), hi)
+        }
+        list(
+            geom_line(data = df, aes(y = y_line), linewidth = main.linewidth, alpha = 0.9, na.rm = TRUE),
+            geom_point(data = df[!df$on.bound, , drop = FALSE], aes(y = y), size = 2.5 * cex, fill = "white", stroke = 0.8),
+            if (nrow(bound_df) > 0) geom_point(data = bound_df, aes(y = y), shape = 4, size = 3 * cex, stroke = 1.2, show.legend = FALSE),
+            if (!is.null(ylim)) coord_cartesian(ylim = ylim)
+        )
+    }
+
+    # -------------------------------------------------------------------------
     # Build MKT row: one subplot per column factor
     # -------------------------------------------------------------------------
     mkt_plots <- list()
@@ -276,26 +306,21 @@ plot_empirical_estimates <- function(
     for (i in seq_along(column_factors)) {
         cf <- column_factors[i]
 
-        if (cf == "MKT") {
-            # Single-factor model: use rows where Factor == "MKT"
-            mkt_df <- plot_data %>%
-                filter(Factor == "MKT") %>%
-                select(horizon_years, MKT, source) %>%
-                rename(beta_MKT = MKT)
-        } else {
-            # Two-factor model: use rows where Factor == cf, take MKT column
-            mkt_df <- plot_data %>%
-                filter(Factor == cf) %>%
-                select(horizon_years, MKT, source) %>%
-                rename(beta_MKT = MKT)
-        }
+        # Single-factor model: rows with Factor == "MKT"; two-factor model:
+        # rows with Factor == cf, MKT column
+        mkt_df <- plot_data %>%
+            filter(Factor == cf) %>%
+            select(horizon_years, MKT, source, on.bound) %>%
+            rename(y = MKT)
+        ylim_mkt <- if (!is.null(y.max.mkt) || !is.null(y.min.mkt)) {
+            c(if (is.null(y.min.mkt)) NA else y.min.mkt, if (is.null(y.max.mkt)) NA else y.max.mkt)
+        } else NULL
 
         p <- ggplot(mkt_df, aes(
-            x = horizon_years, y = beta_MKT,
+            x = horizon_years,
             color = source, linetype = source, shape = source
         )) +
-            geom_line(linewidth = main.linewidth, alpha = 0.9) +
-            geom_point(size = 2.5 * cex, fill = "white", stroke = 0.8) +
+            estimate_layers(mkt_df, ylim_mkt) +
             scale_color_manual(values = colors_source, name = "Estimation Method") +
             scale_linetype_manual(values = linetypes_source, name = "Estimation Method") +
             scale_shape_manual(values = shapes_source, name = "Estimation Method") +
@@ -308,16 +333,6 @@ plot_empirical_estimates <- function(
                 x = if (has_second_factor && !single_factor_only) NULL else "Horizon (Years)",
                 y = if (i == 1) expression(beta[MKT]) else NULL
             ) +
-            {
-                if (!is.null(y.max.mkt) || !is.null(y.min.mkt)) {
-                    coord_cartesian(ylim = c(
-                        if (is.null(y.min.mkt)) NA else y.min.mkt,
-                        if (is.null(y.max.mkt)) NA else y.max.mkt
-                    ))
-                } else {
-                    NULL
-                }
-            } +
             {
                 if (!is.null(v.lines.mkt)) {
                     lapply(seq_along(v.lines.mkt), function(idx) {
@@ -377,14 +392,16 @@ plot_empirical_estimates <- function(
             } else {
                 coef_df <- plot_data %>%
                     filter(Factor == cf) %>%
-                    select(horizon_years, Coef, source)
+                    select(horizon_years, Coef, source, on.bound) %>%
+                    rename(y = Coef)
+                # Per-factor y-limits: look up cf in y.lim.second, fall back to "default"
+                ylim_vec <- if (is.null(y.lim.second)) NULL else if (!is.null(y.lim.second[[cf]])) y.lim.second[[cf]] else y.lim.second[["default"]]
 
                 p <- ggplot(coef_df, aes(
-                    x = horizon_years, y = Coef,
+                    x = horizon_years,
                     color = source, linetype = source, shape = source
                 )) +
-                    geom_line(linewidth = main.linewidth, alpha = 0.9) +
-                    geom_point(size = 2.5 * cex, fill = "white", stroke = 0.8) +
+                    estimate_layers(coef_df, ylim_vec) +
                     scale_color_manual(values = colors_source, name = "Estimation Method") +
                     scale_linetype_manual(values = linetypes_source, name = "Estimation Method") +
                     scale_shape_manual(values = shapes_source, name = "Estimation Method") +
@@ -397,25 +414,6 @@ plot_empirical_estimates <- function(
                         x = "Horizon (Years)",
                         y = if (first_coef_plot) sec_ylab else NULL
                     ) +
-                    {
-                        # Per-factor y-limits: look up cf in y.lim.second, fall back to "default"
-                        if (!is.null(y.lim.second)) {
-                            ylim_vec <- if (!is.null(y.lim.second[[cf]])) {
-                                y.lim.second[[cf]]
-                            } else if (!is.null(y.lim.second[["default"]])) {
-                                y.lim.second[["default"]]
-                            } else {
-                                NULL
-                            }
-                            if (!is.null(ylim_vec)) {
-                                coord_cartesian(ylim = ylim_vec)
-                            } else {
-                                NULL
-                            }
-                        } else {
-                            NULL
-                        }
-                    } +
                     {
                         if (!is.null(v.lines.second)) {
                             lapply(seq_along(v.lines.second), function(idx) {
@@ -496,6 +494,12 @@ plot_empirical_estimates <- function(
     # Add shared legend at bottom
     # -------------------------------------------------------------------------
     # Collect legends and unify at bottom via patchwork
+    if (any_bound) {
+        combined_plot <- combined_plot + plot_annotation(
+            caption = paste(strwrap("\u00d7 estimate on a bound of the admissible domain (CV: at least one fold on a bound): not connected, drawn at the axis limit if outside it; values in the tables",
+                width = floor(13 * width / cex)), collapse = "\n"), # about 13 characters per inch at 8 pt
+            theme = theme(plot.caption = element_text(family = "serif", size = 8 * cex, hjust = 0)))
+    }
     combined_plot <- combined_plot +
         plot_layout(guides = "collect") &
         theme(legend.position = "bottom")
@@ -2006,6 +2010,8 @@ plot_max_vintage_cutoff_combined_alpha_mkt <- function(
 
     plot_data <- all_data %>% filter(Type == fund_type, Factor == "Alpha")
     if (nrow(plot_data) == 0) stop("No Alpha-factor data found for fund type.")
+    source(here::here("helper/result_reporting.R"), local = TRUE) # boundary.mask()
+    plot_data$on.bound <- boundary.mask(plot_data) # D2: marked, not connected (as in plot_empirical_estimates)
 
     plot_data$max.month <- as.numeric(plot_data$max.month)
     plot_data$horizon_years <- plot_data$max.month / 12
@@ -2046,9 +2052,21 @@ plot_max_vintage_cutoff_combined_alpha_mkt <- function(
                              ylim_vec = NULL,
                              v.lines_vec = NULL, v.colors_vec = NULL,
                              h.lines_vec = NULL, h.colors_vec = NULL) {
-        p <- ggplot(df, aes(x = horizon_years, y = .data[[y_col]], color = vintage, group = vintage)) +
-            geom_line(linewidth = main.linewidth, alpha = 0.85) +
-            geom_point(size = 1.5 * cex, alpha = 0.85) +
+        # estimates on a bound of the admissible domain: crosses, not connected;
+        # axis range from the interior points, crosses outside it at the limit
+        df$y <- df[[y_col]]
+        df$y_line <- ifelse(df$on.bound, NA_real_, df$y)
+        bound_df <- df[df$on.bound, , drop = FALSE]
+        if (nrow(bound_df) > 0) {
+            if (is.null(ylim_vec)) ylim_vec <- range(df$y_line, na.rm = TRUE)
+            bound_df$y <- pmin(pmax(bound_df$y, if (is.na(ylim_vec[1])) -Inf else ylim_vec[1]), if (is.na(ylim_vec[2])) Inf else ylim_vec[2])
+        }
+        p <- ggplot(df, aes(x = horizon_years, color = vintage, group = vintage)) +
+            geom_line(aes(y = y_line), linewidth = main.linewidth, alpha = 0.85, na.rm = TRUE) +
+            geom_point(data = df[!df$on.bound, , drop = FALSE], aes(y = y), size = 1.5 * cex, alpha = 0.85) +
+            {
+                if (nrow(bound_df) > 0) geom_point(data = bound_df, aes(y = y), shape = 4, size = 2.5 * cex, stroke = 1, show.legend = FALSE) else NULL
+            } +
             scale_color_viridis_d(option = "turbo", name = "Max Vintage Year", guide = guide_legend(nrow = 1)) +
             scale_x_continuous(breaks = seq(0, max(c(0, df$horizon_years), na.rm = TRUE), by = 5), expand = c(0.02, 0)) +
             labs(title = title, x = if (show_x) "Horizon (Years)" else NULL, y = if (show_y_label) y_label else NULL) +
@@ -2148,7 +2166,14 @@ plot_max_vintage_cutoff_combined_alpha_mkt <- function(
     row1 <- Reduce(`|`, mkt_plots)
     row2 <- Reduce(`|`, alpha_plots)
 
-    combined_plot <- panel_a_label / row1 / panel_b_label / row2 +
+    combined_plot <- panel_a_label / row1 / panel_b_label / row2
+    if (any(plot_data$on.bound)) {
+        combined_plot <- combined_plot + plot_annotation(
+            caption = paste(strwrap("\u00d7 estimate on a bound of the admissible domain: not connected, drawn at the axis limit if outside it",
+                width = floor(13 * width / cex)), collapse = "\n"), # about 13 characters per inch at 8 pt
+            theme = theme(plot.caption = element_text(family = "serif", size = 8 * cex, hjust = 0)))
+    }
+    combined_plot <- combined_plot +
         plot_layout(heights = c(0.08, 1, 0.08, 1), guides = "collect") &
         theme(legend.position = "bottom")
 

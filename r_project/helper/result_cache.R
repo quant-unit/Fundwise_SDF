@@ -5,15 +5,25 @@
 ######################
 #
 # Resume and analysis use the same identity: version, resolved estimator
-# settings, and paths/hashes of the cash flows, factors and configuration.
+# settings, and paths/hashes of the data files (cash flows, factors).
 # Analysis verifies those files; it never guesses freshness from timestamps.
+# The configuration file is provenance only (config.path, config.md5;
+# decision of 18 November 2026): what it resolves to is in settings.md5, so
+# editing the YAML (comments, other scenarios) does not invalidate results.
+#
+# Data paths are stored relative to the project root (r_project/, the folder
+# that holds estim_model_optimized.R), so result files carry no local
+# absolute paths. cache.identity is recomputed from the stored columns
+# whenever rows are read (current.result.rows), so rows written before
+# 18 November 2026 (absolute paths, configuration in the hash) keep their
+# identity.
 PIPELINE.VERSION <- "2026-11-17-r5" # r5: admissible domain (A7, gross.floor) and constrained multi-start fit; r3: optimizer parameter scaling
 
-RESULT.DEPENDENCIES <- c("input", "public", "simulation.factors", "equity", "config")
-RESULT.IDENTITY.COLUMNS <- c("pipeline.version", "cache.identity", "settings.md5",
-  as.vector(rbind(paste0(RESULT.DEPENDENCIES, ".path"), paste0(RESULT.DEPENDENCIES, ".md5"))))
+RESULT.DEPENDENCIES <- c("input", "public", "simulation.factors", "equity")
+RESULT.DEPENDENCY.COLUMNS <- as.vector(rbind(paste0(RESULT.DEPENDENCIES, ".path"), paste0(RESULT.DEPENDENCIES, ".md5")))
+RESULT.IDENTITY.COLUMNS <- c("pipeline.version", "cache.identity", "settings.md5", RESULT.DEPENDENCY.COLUMNS)
 RESULT.PROVENANCE.COLUMNS <- c("git.commit", "git.dirty", "scenario.id", "data.prepared.folder",
-  RESULT.IDENTITY.COLUMNS)
+  "config.path", "config.md5", RESULT.IDENTITY.COLUMNS)
 RESULT.SETTINGS <- c("sdf.model", "factors.to.use", "error.function", "include.alpha.term",
   "weighting", "max.vintage", "kernel.bandwidth", "alpha.lower", "alpha.upper",
   "origin.convention", "vintage.weights", "part.to.keep", "no.partitions", "brent.interval", "gross.floor")
@@ -40,6 +50,53 @@ value.md5 <- function(value) {
   on.exit(unlink(path))
   writeBin(serialize(value, NULL, version = 2), path)
   file.md5(path)
+}
+
+# Project root: the nearest folder at or above the working directory that
+# holds estim_model_optimized.R (r_project/; scripts also run from results/).
+project.root <- function() {
+  d <- normalizePath(getwd(), winslash = "/")
+  repeat {
+    if (file.exists(file.path(d, "estim_model_optimized.R"))) return(d)
+    parent <- dirname(d)
+    if (parent == d) return(normalizePath(getwd(), winslash = "/"))
+    d <- parent
+  }
+}
+
+is.absolute.path <- function(path) grepl("^(/|[A-Za-z]:)", path)
+
+# Stored form of a data path: relative to the project root. Absolute paths of
+# rows written in another checkout are cut after their r_project/ folder.
+relative.data.path <- function(path, root = project.root()) {
+  path <- gsub("\\\\", "/", as.character(path))
+  abs <- !is.na(path) & nzchar(path) & is.absolute.path(path)
+  inside <- abs & startsWith(path, paste0(root, "/"))
+  path[inside] <- substring(path[inside], nchar(root) + 2L)
+  other <- abs & !inside & grepl("/r_project/", path, fixed = TRUE)
+  path[other] <- sub("^.*/r_project/", "", path[other])
+  path
+}
+
+# Path to open: relative paths are taken from the project root.
+resolve.data.path <- function(path, root = project.root()) {
+  path <- as.character(path)
+  rel <- !is.na(path) & nzchar(path) & !is.absolute.path(path)
+  path[rel] <- file.path(root, path[rel])
+  path
+}
+
+# cache.identity of each row: hash of the pipeline version, the settings
+# hash and the data paths (stored form) and hashes; one hash per distinct row.
+result.identity.hash <- function(df) {
+  cols <- c("pipeline.version", "settings.md5", RESULT.DEPENDENCY.COLUMNS)
+  vals <- lapply(df[cols], as.character)
+  path.cols <- paste0(RESULT.DEPENDENCIES, ".path")
+  vals[path.cols] <- lapply(vals[path.cols], relative.data.path)
+  key <- do.call(paste, c(vals, sep = "\r"))
+  first <- which(!duplicated(key))
+  hashes <- vapply(first, function(i) value.md5(lapply(vals, `[`, i)), "")
+  hashes[match(key, key[first])]
 }
 
 public.file.path <- function(public.filename, data.prepared.folder) {
@@ -76,10 +133,11 @@ make.result.identity <- function(input.path, public.path, settings, config.path 
     present <- length(path) == 1L && !is.na(path) && nzchar(path)
     if (present) {
       path <- normalizePath(path.expand(path), winslash = "/", mustWork = FALSE)
-      if (!grepl("^(/|[A-Za-z]:)", path)) path <- file.path(getwd(), path)
+      if (!is.absolute.path(path)) path <- file.path(getwd(), path)
       if (name != "simulation.factors" && !file.exists(path)) stop("Input file not found: ", path)
       hash <- if (file.exists(path)) file.md5(path) else NA_character_
       if (file.exists(path) && is.na(hash)) stop("Cannot hash input file: ", path)
+      path <- relative.data.path(path)
     } else {
       path <- hash <- NA_character_
     }
@@ -91,8 +149,9 @@ make.result.identity <- function(input.path, public.path, settings, config.path 
   if ("factors.to.use" %in% names(settings)) settings$factors.to.use <- as.character(unlist(settings$factors.to.use))
   settings <- lapply(settings, function(x) if (is.numeric(x)) as.numeric(x) else x)
   fields$settings.md5 <- value.md5(settings)
-  fields$cache.identity <- value.md5(fields)
-  as.data.frame(fields, stringsAsFactors = FALSE)
+  out <- as.data.frame(fields, stringsAsFactors = FALSE)
+  out$cache.identity <- result.identity.hash(out)
+  out
 }
 
 make.estimation.identity <- function(input.path, public.filename, data.prepared.folder,
@@ -127,9 +186,10 @@ result.identities.current <- function(df) {
     ok[absent & !is.na(stored)] <- FALSE
     for (path in unique(paths[!absent])) {
       i <- which(!absent & paths == path)
-      actual <- current.hash(path)
+      file <- resolve.data.path(path)
+      actual <- current.hash(file)
       matches <- !is.na(stored[i]) & !is.na(actual) & stored[i] == actual
-      if (name == "simulation.factors" && !file.exists(path)) matches <- is.na(stored[i])
+      if (name == "simulation.factors" && !file.exists(file)) matches <- is.na(stored[i])
       ok[i] <- ok[i] & matches
     }
   }
@@ -143,6 +203,9 @@ current.result.rows <- function(df, expected.identity = NULL, expected.input.md5
     if (verbose) message(label, ": ignored ", nrow(df), " result row(s) without a complete cache identity")
     return(df[FALSE, , drop = FALSE])
   }
+  # stored form of the paths, and the identity under the current definition
+  for (col in intersect(c(paste0(RESULT.DEPENDENCIES, ".path"), "config.path"), names(df))) df[[col]] <- relative.data.path(df[[col]])
+  df$cache.identity <- result.identity.hash(df)
   ok <- result.identities.current(df)
   if (!is.null(expected.identity)) ok <- ok & !is.na(df$cache.identity) & df$cache.identity == expected.identity
   if (!is.null(expected.input.md5)) ok <- ok & !is.na(df$input.md5) & df$input.md5 == expected.input.md5
