@@ -162,6 +162,26 @@ for (lev in c("fund", "vyp")) {
   if (lev == "fund") check("T1 simulated funds: U criterion (fast) = u.criterion() on the pipeline errors within 1e-10",
     rel.diff(fast.u.criterion(fast.unit.errors(c(MKT = 1.2), fp.dir, 120), fp.dir), u.criterion(ref.errors(c(MKT = 1.2), prep.rows, 120), vapply(prep.rows$units, `[[`, "", "key"))) <= 1e-10)
 }
+# ---------------------------------------------------------------------------
+# T4: checkpoints (simulation/mc_driver.R): a restart skips finished batches,
+# a lost batch is recomputed identically, another specification is refused
+# ---------------------------------------------------------------------------
+source(here("simulation/mc_driver.R"))
+spec <- list(design = mc.design(c("1990" = 3, "1991" = 4, "1993" = 2, "1995" = 5), sigma = 0.2),
+             estimators = c("L2.vyp", "U.eq"), models = "MKT", horizons = c(0, 120))
+out4 <- file.path(tempdir(), "mc_t4"); unlink(out4, recursive = TRUE)
+first <- mc.run("t4", spec, 1:4, pub, out.dir = out4, batch.size = 2, workers = 2, verbose = FALSE)
+check("T4 a run writes one checkpoint per batch", length(list.files(file.path(out4, "t4"))) == 2 && nrow(first) == 4 * 2 * 2)
+mt <- file.info(file.path(out4, "t4", "batch_0001.rds"))$mtime
+unlink(file.path(out4, "t4", "batch_0002.rds"))
+again <- mc.run("t4", spec, 1:4, pub, out.dir = out4, batch.size = 2, workers = 2, verbose = FALSE)
+drop.t <- function(d) { d$seconds <- NULL; attr(d, "provenance") <- NULL; d[order(d$rep, d$estimator, d$max.month), ] }
+check("T4 a restart skips finished batches and recomputes the lost one identically",
+  identical(file.info(file.path(out4, "t4", "batch_0001.rds"))$mtime, mt) && identical(drop.t(again), drop.t(first)))
+spec2 <- spec; spec2$horizons <- c(0, 60)
+check("T4 checkpoints of another specification are refused", inherits(tryCatch(mc.run("t4", spec2, 1:4, pub, out.dir = out4, batch.size = 2, workers = 1, verbose = FALSE), error = function(e) e), "error"))
+unlink(out4, recursive = TRUE)
+
 t.gen <- system.time(for (s in 1:20) { x <- mc.draw(mc.design(shape), s, pub); mc.as.fast(x, pub, "fund"); mc.as.fast(x, pub, "vyp") })[["elapsed"]] / 20
 cat(sprintf("Generator, Buyout shape (%d funds, %d deals): %.2f s per replication incl. both fast structures; %.1f MB in memory\n",
   sum(shape), sum(shape) * 15, t.gen, as.numeric(object.size(list(dr, mc.as.fast(dr, pub, "fund")))) / 2^20))
