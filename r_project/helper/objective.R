@@ -236,9 +236,14 @@ prepare.fast <- function(df, factor.cols, split.key = df$Fund.ID) {
 # (equal to the per-unit cumulative sum up to rounding, T1).
 fast.unit.errors <- function(par, fp, max.month) {
   par0 <- c(RF = 1, par)
-  L <- c(0, cumsum(log(1 + as.numeric(fp$X[, names(par0), drop = FALSE] %*% par0))))
-  m <- max(as.integer(max.month), 1L)
   g <- fp$grids
+  # compound only from the earliest grid start: a non-positive gross return in
+  # an earlier calendar month (outside every unit's grid) must not turn the
+  # errors into NaN, as it does not in the per-unit pipeline computation
+  r0 <- min(g$k0)
+  L <- rep(NA_real_, nrow(fp$X) + 1L)
+  L[r0:(nrow(fp$X) + 1L)] <- c(0, cumsum(log(1 + as.numeric(fp$X[r0:nrow(fp$X), names(par0), drop = FALSE] %*% par0))))
+  m <- max(as.integer(max.month), 1L)
   base <- L[g$k0] # cumulative log return before the grid's first row
   A <- vapply(seq_len(nrow(g)), function(k) {
     j <- min(m, g$n[k])
@@ -252,8 +257,10 @@ fast.unit.errors <- function(par, fp, max.month) {
 }
 
 # U criterion of fast.unit.errors() output: same value as u.criterion(e,
-# fp$key, s, vintage.weights) (T1), with the vintage grouping precomputed
-fast.u.criterion <- function(e, fp, s = fp$size, vintage.weights = "equal") {
+# fp$key, s, vintage.weights) (T1), with the vintage grouping precomputed.
+# Fund weights s: equal (EW, the default, as the pipeline for EW data even
+# when the file has a Size column); pass s = fp$size for FW (fund sizes).
+fast.u.criterion <- function(e, fp, s = rep(1, length(e)), vintage.weights = "equal") {
   sum.by <- function(x) { out <- numeric(fp$n.groups); r <- rowsum(x, fp$group, reorder = TRUE); out[as.integer(rownames(r))] <- r[, 1]; out }
   u <- (sum.by(e)^2 - sum.by(e^2)) / (sum.by(s)^2 - sum.by(s^2))
   w <- u.unit.weights(fp$group.n, vintage.weights)

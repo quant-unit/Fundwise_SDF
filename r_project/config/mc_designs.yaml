@@ -1,0 +1,60 @@
+# Step 4 Monte Carlo designs (revision plan, Section I, "Step 4: scope and
+# compute plan"; calibration in the log entry "Step 4, stage 4").
+# Read by mc.load.designs() in simulation/mc_driver.R. Every design inherits
+# the defaults; a design lists only what it changes. Fund counts per vintage:
+#   shape: BO | VC  -> the empirical counts (vintages <= 2010, local file)
+#   shape_scale     -> counts multiplied and rounded, at least 2 per vintage
+#   vintages        -> keep only these vintage years (from:to)
+#   consecutive     -> stylized: `funds` funds in each of `count` consecutive vintages ending `last`
+# sigma: monthly sd of the mean-one lognormal deal shock; shared_sd: log-sd
+# of the shock shared by all deals of a vintage.
+defaults:
+  theta0: {MKT: 1}
+  sigma: 0.130            # Buyout calibration (fund-level dispersion)
+  shared_sd: 0
+  no_deals: 15
+  investment_period: 5
+  max_holding_period: 11.5 # calibration (median fund duration)
+  t_max: "2021-12-31"
+  quarterly: true
+  estimators: [L2.vyp, L2.fund, U.eq, U.n]
+  models: [MKT, Alpha]
+  horizons: [0, 60, 120, 180, 240, 360]
+  reps: 250
+
+designs:
+  # core (1,000 replications)
+  core_BO: {shape: BO, reps: 1000}
+  core_VC: {shape: VC, sigma: 0.154, reps: 1000}
+  # margins, Buyout shape (250 replications)
+  m1_thin:   {shape: BO, shape_scale: 0.25}
+  m1_wide:   {shape: BO, shape_scale: 4}
+  m2_early:  {shape: BO, vintages: "1985:1997"}
+  m2_late:   {shape: BO, vintages: "1998:2010"}
+  m3_sigma:  {shape: BO, sigma: 0.195}                 # 1.5 x calibrated
+  m4_shared: {shape: BO, shared_sd: 0.153}             # matches the Buyout U level at H = 0
+  m4_shared2: {shape: BO, shared_sd: 0.306}            # twice (about the VC level)
+  m5_life_2_2:  {shape: BO, investment_period: 2, max_holding_period: 2}
+  m5_life_3_10: {shape: BO, investment_period: 3, max_holding_period: 10}
+  m6_ME:  {shape: BO, theta0: {MKT: 1, ME: 0.5},  models: [ME],  estimators: [L2.vyp, U.eq]}
+  m6_IA:  {shape: BO, theta0: {MKT: 1, IA: 0.5},  models: [IA],  estimators: [L2.vyp, U.eq]}
+  m6_ROE: {shape: BO, theta0: {MKT: 1, ROE: 0.5}, models: [ROE], estimators: [L2.vyp, U.eq]}
+  m6_EG:  {shape: BO, theta0: {MKT: 1, EG: 0.5},  models: [EG],  estimators: [L2.vyp, U.eq]}
+  m7_beta2: {shape: BO, theta0: {MKT: 2}}
+  # DLP12 grid G: stylized consecutive vintages ending 2005, their deal model
+  # (5-year investment period, holding up to 10 years), sigma = 0.3, H = 0 and
+  # 15 years, (alpha, beta), L2 on vintage portfolios; 500 replications.
+  # V in {10, 20, 39}: V = 80 consecutive vintages do not fit the 1967-2021
+  # factor history (design correction, log entry "Step 4, stage 4").
+  g_n5_V10:   {consecutive: {funds: 5, count: 10, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
+  g_n20_V10:  {consecutive: {funds: 20, count: 10, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
+  g_n50_V10:  {consecutive: {funds: 50, count: 10, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
+  g_n200_V10: {consecutive: {funds: 200, count: 10, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
+  g_n5_V20:   {consecutive: {funds: 5, count: 20, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
+  g_n20_V20:  {consecutive: {funds: 20, count: 20, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
+  g_n50_V20:  {consecutive: {funds: 50, count: 20, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
+  g_n200_V20: {consecutive: {funds: 200, count: 20, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
+  g_n5_V39:   {consecutive: {funds: 5, count: 39, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
+  g_n20_V39:  {consecutive: {funds: 20, count: 39, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
+  g_n50_V39:  {consecutive: {funds: 50, count: 39, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
+  g_n200_V39: {consecutive: {funds: 200, count: 39, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}

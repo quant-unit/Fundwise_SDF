@@ -182,6 +182,36 @@ spec2 <- spec; spec2$horizons <- c(0, 60)
 check("T4 checkpoints of another specification are refused", inherits(tryCatch(mc.run("t4", spec2, 1:4, pub, out.dir = out4, batch.size = 2, workers = 1, verbose = FALSE), error = function(e) e), "error"))
 unlink(out4, recursive = TRUE)
 
+# extension: more replications of the same specification keep the finished batches
+spec.r <- spec; spec.r$reps <- 2
+unlink(out4, recursive = TRUE)
+mc.run("t4", spec.r, 1:2, pub, out.dir = out4, batch.size = 2, workers = 1, verbose = FALSE)
+mt <- file.info(file.path(out4, "t4", "batch_0001.rds"))$mtime
+spec.r$reps <- 4
+ext <- mc.run("t4", spec.r, 1:4, pub, out.dir = out4, batch.size = 2, workers = 2, verbose = FALSE)
+check("T4 extending a design to more replications keeps its finished batches",
+  identical(file.info(file.path(out4, "t4", "batch_0001.rds"))$mtime, mt) && identical(drop.t(ext), drop.t(first)))
+# failures: a failing replication leaves no finished batch, only a _failed file
+spec.f <- spec; spec.f$models <- "NOT_A_FACTOR"
+res.f <- suppressWarnings(mc.run("t4f", spec.f, 1:2, pub, out.dir = out4, batch.size = 2, workers = 2, verbose = FALSE))
+check("T4 a batch with failed replications is not marked finished (kept as _failed for inspection)",
+  !file.exists(file.path(out4, "t4f", "batch_0001.rds")) && file.exists(file.path(out4, "t4f", "batch_0001_failed.rds")) && nrow(res.f) == 0)
+unlink(out4, recursive = TRUE)
+
+# fast criterion: a gross return <= 0 only before every unit's grid must not
+# turn the errors into NaN (the pipeline compounds over each unit's grid only)
+pre <- seq_len(min(mc.as.fast(dr, pub, "fund")$grids$k0) - 1L)
+win <- setdiff(seq_along(dr$dates), pre)
+# (no actual parameter point does this with the 1967-2021 factors, so the test
+# makes one calendar month before every grid explosive: RF = -5 gives G < 0
+# there; that month is unused, so the errors must equal those without it)
+pub.bad <- pub; pub.bad$RF[pre[length(pre)]] <- -5
+for (par.t in list(c(MKT = 1), c(MKT = 1.2, Alpha = 0.002))) for (m in c(1, 120)) {
+  a <- fast.unit.errors(par.t, mc.as.fast(dr, pub.bad, "fund"), m); b <- fast.unit.errors(par.t, mc.as.fast(dr, pub, "fund"), m)
+  if (!(all(is.finite(a)) && identical(unname(a), unname(b)))) { check("T1 errors unaffected by a non-positive gross return before every grid", FALSE); break }
+}
+check("T1 errors unaffected by a non-positive gross return before every grid (finite, identical)", all(is.finite(a)) && identical(unname(a), unname(b)))
+
 t.gen <- system.time(for (s in 1:20) { x <- mc.draw(mc.design(shape), s, pub); mc.as.fast(x, pub, "fund"); mc.as.fast(x, pub, "vyp") })[["elapsed"]] / 20
 cat(sprintf("Generator, Buyout shape (%d funds, %d deals): %.2f s per replication incl. both fast structures; %.1f MB in memory\n",
   sum(shape), sum(shape) * 15, t.gen, as.numeric(object.size(list(dr, mc.as.fast(dr, pub, "fund")))) / 2^20))

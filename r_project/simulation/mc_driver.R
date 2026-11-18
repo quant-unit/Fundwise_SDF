@@ -134,7 +134,7 @@ mc.run <- function(name, spec, reps, public, out.dir = "simulation/data_out_mc",
   batches <- split(reps, ceiling(reps / batch.size))
   prov <- list(git.commit = tryCatch(system("git rev-parse --short HEAD", intern = TRUE, ignore.stderr = TRUE)[1], error = function(e) NA),
                git.dirty = tryCatch(length(system("git status --porcelain --untracked-files=no", intern = TRUE, ignore.stderr = TRUE)) > 0, error = function(e) NA),
-               spec.md5 = value.md5(spec), public.md5 = value.md5(public), settings = MC.SETTINGS)
+               spec.md5 = mc.spec.md5(spec), public.md5 = value.md5(public), settings = MC.SETTINGS)
   for (k in names(batches)) {
     file <- file.path(dir, sprintf("batch_%04d.rds", as.integer(k)))
     if (file.exists(file)) {
@@ -147,12 +147,32 @@ mc.run <- function(name, spec, reps, public, out.dir = "simulation/data_out_mc",
     run1 <- function(s) tryCatch(mc.replication(spec$design, s, public, spec$estimators, spec$models, spec$horizons),
                                  error = function(e) data.frame(rep = s, error = conditionMessage(e)))
     rows <- if (workers > 1) parallel::mclapply(batches[[k]], run1, mc.cores = workers) else lapply(batches[[k]], run1)
+    # a worker that died (e.g. out of memory) returns a try-error, not rows
+    rows <- lapply(seq_along(rows), function(j) {
+      x <- rows[[j]]
+      if (is.data.frame(x)) x else data.frame(rep = batches[[k]][j], error = paste("worker failed:", as.character(x)[1]))
+    })
     rows <- do.call(rbind.all.columns.mc, rows)
-    saveRDS(list(provenance = prov, name = name, reps = batches[[k]], rows = rows), file)
-    if (verbose) cat(sprintf("%s batch %s: %d replications in %.0f s\n", name, k, length(batches[[k]]), as.numeric(difftime(Sys.time(), t0, units = "secs"))))
+    failed <- if ("error" %in% names(rows)) unique(rows$rep[!is.na(rows$error)]) else integer()
+    out <- list(provenance = prov, name = name, reps = batches[[k]], rows = rows)
+    if (length(failed)) {
+      # not a finished batch: kept for inspection, recomputed by a restart
+      saveRDS(out, sub("\\.rds$", "_failed.rds", file))
+      warning(name, " batch ", k, ": ", length(failed), " replication(s) failed, e.g. ", rows$error[!is.na(rows$error)][1], "; batch not marked finished")
+    } else {
+      saveRDS(out, file)
+      unlink(sub("\\.rds$", "_failed.rds", file)) # a failed earlier attempt is superseded
+    }
+    if (verbose) cat(sprintf("%s batch %s: %d replications in %.0f s%s\n", name, k, length(batches[[k]]), as.numeric(difftime(Sys.time(), t0, units = "secs")),
+                             if (length(failed)) sprintf(", %d FAILED", length(failed)) else ""))
   }
   mc.read(name, out.dir)
 }
+
+# Hash of what determines the rows: the design, estimators, models and
+# horizons, not the number of replications (extending a design keeps its
+# finished batches)
+mc.spec.md5 <- function(spec) value.md5(spec[c("design", "estimators", "models", "horizons")])
 
 rbind.all.columns.mc <- function(...) {
   l <- list(...)
@@ -170,4 +190,28 @@ mc.read <- function(name, out.dir = "simulation/data_out_mc") {
   rows <- do.call(rbind.all.columns.mc, lapply(b, `[[`, "rows"))
   attr(rows, "provenance") <- lapply(b, `[[`, "provenance")
   rows
+}
+
+# Designs from config/mc_designs.yaml: one spec per design (design, estimators,
+# models, horizons, reps), defaults merged in. Empirical fund counts are read
+# once per shape from the local fund file (aggregates only).
+mc.load.designs <- function(file = "config/mc_designs.yaml", shape.file = "empirical/data_prepared_2026_c/preqin_cashflows_EW_North America_NAV.csv") {
+  cfg <- yaml::read_yaml(file)
+  shapes <- list()
+  lapply(setNames(names(cfg$designs), names(cfg$designs)), function(id) {
+    d <- modifyList(cfg$defaults, cfg$designs[[id]])
+    if (!is.null(d$consecutive)) {
+      k <- d$consecutive # keys funds, count, last ("n" would be read as a YAML boolean)
+      n <- setNames(rep(as.integer(k$funds), k$count), as.character(seq(k$last - k$count + 1, k$last)))
+    } else {
+      if (is.null(shapes[[d$shape]])) shapes[[d$shape]] <<- mc.data.shape(d$shape, file = shape.file)
+      n <- shapes[[d$shape]]
+      if (!is.null(d$vintages)) { r <- as.integer(strsplit(d$vintages, ":")[[1]]); n <- n[as.integer(names(n)) >= r[1] & as.integer(names(n)) <= r[2]] }
+      if (!is.null(d$shape_scale)) n <- setNames(pmax(2L, as.integer(round(n * d$shape_scale))), names(n))
+    }
+    list(design = mc.design(n, theta0 = unlist(d$theta0), sigma = d$sigma, shared.sd = d$shared_sd, no.deals = d$no_deals,
+                            investment.period = d$investment_period, max.holding.period = d$max_holding_period,
+                            t.max = as.Date(d$t_max), quarterly = isTRUE(d$quarterly)),
+         estimators = unlist(d$estimators), models = unlist(d$models), horizons = as.numeric(unlist(d$horizons)), reps = d$reps)
+  })
 }
