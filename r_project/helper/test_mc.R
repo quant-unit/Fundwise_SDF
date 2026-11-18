@@ -97,5 +97,74 @@ t.fast <- system.time(for (k in 1:200) fast.u.criterion(fast.unit.errors(c(MKT =
 cat(sprintf("Speed, Buyout EW funds (%d units), U criterion at 10 years: pipeline %.2f ms, fast %.2f ms per evaluation (x%.0f)\n",
   fp$n.units, 1000 * t.ref, 1000 * t.fast, t.ref / t.fast))
 
+# ---------------------------------------------------------------------------
+# T2: in-memory generator (simulation/mc_generate.R); T1 on a simulated
+# replication (fast structure built directly = prepare.fast() on its rows =
+# the pipeline's unit errors)
+# ---------------------------------------------------------------------------
+source(here("simulation/mc_generate.R"))
+pub <- mc.public.factors(here("empirical/data_prepared_2026/q_factors.csv"))
+shape <- mc.data.shape("BO", file = ew)
+# padded rows of a replication, merged with the factors as the pipeline does
+sim.rows <- function(dr, level) {
+  d <- mc.as.rows(dr, level); d$Fund.ID <- as.factor(paste(d$Fund.ID, d$type, sep = "_"))
+  d <- pad.all.units(d, "first.cf", max(d$Date)); d$Fund.ID <- as.factor(as.character(d$Fund.ID))
+  merge(d, pub, by = "Date", all.x = TRUE)
+}
+fc <- factor.cols(pub)
+same.fast <- function(a, b) identical(a$fund.id, sub("_SIM$", "", b$fund.id)) || identical(sub("_SIM_SIM$", "_SIM", a$fund.id), b$fund.id)
+
+d0 <- mc.design(shape, sigma = 0)
+dr0 <- mc.draw(d0, 1, pub)
+for (lev in c("fund", "vyp")) {
+  f.direct <- mc.as.fast(dr0, pub, lev)
+  e0 <- vapply(c(1, 120, 360), function(m) max(abs(fast.unit.errors(c(MKT = 1), f.direct, m))), 0)
+  check(sprintf("T2 sigma = 0: every %s unit priced exactly at theta_0 (H = 0, 10, 30 years)", lev), max(e0) <= 1e-12, sprintf("max |e| %.1e", max(e0)))
+}
+dr <- mc.draw(mc.design(shape, sigma = 0.2), 1, pub)
+check("T2 fund counts per vintage equal the design", identical(as.integer(table(unique(dr$deals[, c("vintage", "fund")])$vintage)), unname(shape)) &&
+  identical(names(table(dr$deals$vintage)), names(shape)))
+check("T2 every deal starts in or after January of its vintage and ends by T.max",
+  all(dr$dates[dr$deals$start] >= as.Date(paste0(dr$deals$vintage, "-01-31"))) && all(dr$deals$end <= length(dr$dates)) && max(dr$dates) == as.Date("2021-12-31"))
+check("T2 cash flows booked at quarter ends", all(as.integer(format(dr$dates[c(dr$deals$start, dr$deals$end)], "%m")) %% 3 == 0))
+check("T2 same seed, same replication; other seed, other replication", identical(mc.draw(mc.design(shape), 7, pub), mc.draw(mc.design(shape), 7, pub)) &&
+  !identical(mc.draw(mc.design(shape), 7, pub)$deals$mult, mc.draw(mc.design(shape), 8, pub)$deals$mult))
+# mean-one shock: Z = m / R_{a,b}(theta_0), R recomputed here by direct products
+G <- 1 + pub$RF[seq_along(dr$dates)] + pub$MKT[seq_along(dr$dates)]
+# log Z = sum of k i.i.d. N(-s^2/2, s^2): standardized, it is N(0, 1) (the
+# mean of Z itself is too heavy-tailed to test sharply)
+for (sg in c(0.2, 0.3)) {
+  x <- mc.draw(mc.design(shape, sigma = sg), 3, pub)$deals
+  x <- x[x$end > x$start, ]
+  k <- x$end - x$start; s2 <- log(1 + sg^2)
+  z <- (log(x$mult / vapply(seq_len(nrow(x)), function(i) prod(G[(x$start[i] + 1):x$end[i]]), 0)) + k * s2 / 2) / sqrt(k * s2)
+  check(sprintf("T2 sigma = %.1f: mean-one lognormal deal shock (standardized log shock: mean 0, sd 1, within 4 SEs)", sg),
+    abs(mean(z)) <= 4 / sqrt(length(z)) && abs(sd(z) - 1) <= 4 / sqrt(2 * length(z)),
+    sprintf("mean %.4f, sd %.4f, %d deals", mean(z), sd(z), length(z)))
+}
+w <- with(mc.draw(mc.design(shape, sigma = 0, shared.sd = 0.3), 5, pub)$deals, tapply(log(mult / vapply(seq_along(start), function(i) if (end[i] > start[i]) prod(G[(start[i] + 1):end[i]]) else 1, 0)), vintage, function(x) c(mean(x), sd(x))))
+w <- do.call(rbind, w)
+check("T2 shared vintage shock: constant within a vintage, sd across vintages near 0.3",
+  max(w[, 2], na.rm = TRUE) < 1e-12 && abs(sd(w[, 1]) - 0.3) < 0.12, sprintf("sd across %d vintages %.3f", nrow(w), sd(w[, 1])))
+# T1 on the simulated replication, fund level and vintage portfolios
+for (lev in c("fund", "vyp")) {
+  rows <- sim.rows(dr, lev)
+  fp.rows <- prepare.fast(rows, fc); prep.rows <- prepare.units(rows, fc); fp.dir <- mc.as.fast(dr, pub, lev)
+  worst <- c(direct = 0, pipeline = 0)
+  for (par in pars) for (m in months) {
+    a <- fast.unit.errors(par, fp.dir, m); b <- fast.unit.errors(par, fp.rows, m); r <- ref.errors(par, prep.rows, m)
+    worst["direct"] <- max(worst["direct"], rel.diff(unname(a), unname(b)))
+    worst["pipeline"] <- max(worst["pipeline"], rel.diff(unname(a), unname(r)))
+  }
+  check(sprintf("T1 simulated %s units: same units as the padded rows", lev), fp.dir$n.units == fp.rows$n.units && same.fast(fp.dir, fp.rows))
+  check(sprintf("T1 simulated %s units: direct structure = prepare.fast() on the rows within 1e-10", lev), worst[["direct"]] <= 1e-10, sprintf("%.1e", worst[["direct"]]))
+  check(sprintf("T1 simulated %s units: = pipeline unit errors within 1e-10", lev), worst[["pipeline"]] <= 1e-10, sprintf("%.1e", worst[["pipeline"]]))
+  if (lev == "fund") check("T1 simulated funds: U criterion (fast) = u.criterion() on the pipeline errors within 1e-10",
+    rel.diff(fast.u.criterion(fast.unit.errors(c(MKT = 1.2), fp.dir, 120), fp.dir), u.criterion(ref.errors(c(MKT = 1.2), prep.rows, 120), vapply(prep.rows$units, `[[`, "", "key"))) <= 1e-10)
+}
+t.gen <- system.time(for (s in 1:20) { x <- mc.draw(mc.design(shape), s, pub); mc.as.fast(x, pub, "fund"); mc.as.fast(x, pub, "vyp") })[["elapsed"]] / 20
+cat(sprintf("Generator, Buyout shape (%d funds, %d deals): %.2f s per replication incl. both fast structures; %.1f MB in memory\n",
+  sum(shape), sum(shape) * 15, t.gen, as.numeric(object.size(list(dr, mc.as.fast(dr, pub, "fund")))) / 2^20))
+
 cat("\n", n.fail, "test(s) failed\n")
 if (n.fail > 0) quit(status = 1)
