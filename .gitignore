@@ -60,4 +60,6 @@ r_project/*/figures/*
 !r_project/simulation/data_results_sim/data_out_2020
 .Rproj.user
 r_project/simulation/data_out_2026_g1/*
+# Step 4 Monte Carlo checkpoints (one .rds per design and batch; results are summarized by simulation/mc_analyze.R)
+r_project/simulation/data_out_mc/
 !r_project/simulation/data_out_2026_g1/bias_analysis
