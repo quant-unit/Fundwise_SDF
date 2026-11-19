@@ -7,10 +7,13 @@
 # threshold: z = (estimate - threshold) / Monte Carlo SE, signed so that the
 # statement holds for z > 0; the statement needs more replications if
 # |z| < 2. Differences between estimators use the paired SE (same draws).
+# (g) The persistent-shock statements of the additions (log entry "Step 4,
+# additions: production and first look"): m4p_shared(2) against m4p_ind(2),
+# the same draws with independent shocks, paired by replication.
 # Writes results/mc_step4/extension_check.csv.
 source("simulation/mc_driver.R")
 D <- mc.load.designs()
-margins <- grep("^m[0-9]", names(D), value = TRUE)
+margins <- grep("^m[0-9]+_", names(D), value = TRUE) # the first production's margins (not m4p)
 grid <- grep("^g_", names(D), value = TRUE)
 rows <- lapply(setNames(c(margins, grid), c(margins, grid)), mc.read)
 out <- list()
@@ -61,6 +64,22 @@ for (V in c(10, 20, 39)) {
   x <- sel(a, "L2.vyp", "Alpha", 0)$MKT - 1; y <- sel(b, "L2.vyp", "Alpha", 0)$MKT - 1
   add("G: |bias| at H = 0 smaller with 200 than with 5 funds per vintage", sprintf("V = %d", V), 0, abs(mean(x)) - abs(mean(y)),
       sqrt(var(x) / length(x) + var(y) / length(y)), 0, +1)
+}
+# (g) persistent shared shocks (rho_W = 0.6) against independent ones, paired:
+# every estimator rejects the true beta more often at H = 0 and 15 years; the
+# sd of the estimate is larger (SE of the sd difference from a paired bootstrap)
+rej <- function(d) { t <- (d$MKT - 1) / d$SE.MKT; p <- rep(NA, nrow(d)); ok <- is.finite(t) & is.finite(d$hac.b)
+  p[ok] <- fixedb.pvalue(t[ok]^2, d$hac.b[ok], 1) < 0.05; p }
+for (k in c("", "2")) {
+  ind <- mc.read(paste0("m4p_ind", k)); per <- mc.read(paste0("m4p_shared", k)); id <- paste0("m4p_shared", k)
+  for (e in c("L2.vyp", "U.eq", "U.n", "IV")) for (h in c(0, 180)) {
+    f <- function(x) { d <- sel(x, e, "MKT", h); data.frame(rep = d$rep, rj = rej(d), b = d$MKT) }
+    m <- merge(f(ind), f(per), by = "rep"); mt <- m[!is.na(m$rj.x) & !is.na(m$rj.y), ]
+    d <- mt$rj.y - mt$rj.x
+    add(paste0("persistence raises rejection of the true beta (", e, ", paired)"), id, h / 12, mean(d), sd(d) / sqrt(nrow(mt)), 0, +1)
+    set.seed(1); bs <- replicate(500, { i <- sample(nrow(m), replace = TRUE); sd(m$b.y[i]) - sd(m$b.x[i]) })
+    add(paste0("persistence widens the sd of the estimate (", e, ", paired)"), id, h / 12, sd(m$b.y) - sd(m$b.x), sd(bs), 0, +1)
+  }
 }
 res <- do.call(rbind, out)
 dir.create("results/mc_step4", showWarnings = FALSE, recursive = TRUE)

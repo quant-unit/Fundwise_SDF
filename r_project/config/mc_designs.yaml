@@ -67,8 +67,15 @@ designs:
   iv_m4_shared:  {shape: BO, shared_sd: 0.153, estimators: [IV], models: [MKT]}
   iv_m4_shared2: {shape: BO, shared_sd: 0.306, estimators: [IV], models: [MKT]}
   # persistent shared vintage shocks (DGP (b)): AR(1) across vintage years, rho 0.6
-  m4p_shared:  {shape: BO, shared_sd: 0.153, shared_rho: 0.6, estimators: [L2.vyp, U.eq, U.n, IV], models: [MKT]}
-  m4p_shared2: {shape: BO, shared_sd: 0.306, shared_rho: 0.6, estimators: [L2.vyp, U.eq, U.n, IV], models: [MKT]}
+  # 1,000 replications by the extension rule (log entry "Step 4, extension rule
+  # for the persistent-shock statements"); m4p_ind, m4p_ind2: the same M4
+  # designs with independent shocks (the draws of m4_shared, m4_shared2), single
+  # factor and the m4p estimators, so every m4p replication has its paired
+  # independent-shock replication at 1,000
+  m4p_shared:  {shape: BO, shared_sd: 0.153, shared_rho: 0.6, estimators: [L2.vyp, U.eq, U.n, IV], models: [MKT], reps: 1000}
+  m4p_shared2: {shape: BO, shared_sd: 0.306, shared_rho: 0.6, estimators: [L2.vyp, U.eq, U.n, IV], models: [MKT], reps: 1000}
+  m4p_ind:     {shape: BO, shared_sd: 0.153, estimators: [L2.vyp, U.eq, U.n, IV], models: [MKT], reps: 1000}
+  m4p_ind2:    {shape: BO, shared_sd: 0.306, estimators: [L2.vyp, U.eq, U.n, IV], models: [MKT], reps: 1000}
   # growing V with fixed funds per vintage (Referee 2's H = 0 plateau check):
   # consecutive vintages ending 2005 on factor paths resampled i.i.d. from the
   # 1967-2021 months (100 or 400 vintages do not fit the history)
