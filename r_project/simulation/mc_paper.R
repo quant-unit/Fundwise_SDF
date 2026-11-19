@@ -7,8 +7,10 @@
 # Writes into results/mc_step4/paper/:
 #   main text:        table_S1_core.tex, figure_S1_decomposition.pdf,
 #                     figure_S2_margins.pdf, table_S2_two_factor.tex
-#   online appendix:  table_AS1_size.tex, table_AS2_se_study.tex,
-#                     table_AS3_alpha_beta.tex, table_AS4_grid.tex
+#   online appendix:  table_AS1_size.tex (Panel C: the additions of 19 November),
+#                     table_AS2_se_study.tex, table_AS3_alpha_beta.tex,
+#                     table_AS4_grid.tex, figure_S3_growing_V.pdf (growing V,
+#                     the reply to R2-3.1)
 #   exhibits_data.csv: every printed number with its source key (one row per
 #                     cell), for the check against the summary.
 suppressMessages({ library(ggplot2) })
@@ -156,10 +158,51 @@ for (d in c("core_BO", "core_VC", MARGINS[-1])) {
   vals <- unlist(lapply(names(EST.LABEL), function(e) vapply(c(0, 15), function(h) cell("AS1", srow(d, e, "MKT", "MKT", h), "size", pct), "")))
   a1 <- c(a1, sprintf("%s (%s) & %s \\\\", DESIGN.LABEL[d], format(srow(d, "L2.vyp", "MKT", "MKT", 0)$reps, big.mark = "{,}"), paste(vals, collapse = " & ")))
 }
+# Panel C: the additions of 19 November (single factor; IV of the cores from
+# iv_core_BO / iv_core_VC, the same draws as the cores)
+C.EST <- c(L2.vyp = "L2, VYP", U.eq = "$U$, $q_v=1$", IV = "IV")
+C.ROWS <- list(
+  list(head = "Data-shaped cores", rows = list(
+    c(label = "Core, Buyout", d = "core_BO", iv = "iv_core_BO"), c(label = "Core, VC", d = "core_VC", iv = "iv_core_VC"))),
+  list(head = "M4 shared shock: independent or AR(1), $\\rho_W=0.6$", rows = list(
+    c(label = "$c$, independent", d = "m4p_ind"), c(label = "$c$, persistent", d = "m4p_shared"),
+    c(label = "$2c$, independent", d = "m4p_ind2"), c(label = "$2c$, persistent", d = "m4p_shared2"))),
+  list(head = "Equal fund counts, historical path", rows = list(
+    c(label = "$V=25$ (1981--2005), 5 funds each", d = "h_V25_n5"), c(label = "$V=25$ (1981--2005), 20 funds each", d = "h_V25_n20"),
+    c(label = "$V=25$ (1986--2010), 15 funds each", d = "w_V25_n15"))),
+  list(head = "Equal fund counts, resampled paths", rows = lapply(
+    c("v_V25_n5", "v_V100_n5", "v_V400_n5", "v_V25_n20", "v_V100_n20", "v_V400_n20"), function(d) {
+      k <- regmatches(d, regexec("v_V([0-9]+)_n([0-9]+)", d))[[1]]
+      c(label = sprintf("$V=%s$, %s funds each", k[2], k[3]), d = d) })))
+# Panel C is a table of its own (continued), so that each table fits a page
+a1.notes <- "Panel A: $x_v=\\mu+u_v$ at the vintage years of the calendar, $u$ an AR(1) series in calendar years sampled at those years (gaps shorten the dependence); $t$-test of the true $\\mu$ with the Bartlett sandwich over vintage-year distances, $S=\\lceil1.3\\sqrt V\\rceil=7$, and the fixed-$b$ or normal critical value; "
 a1 <- c(a1, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
-  paste0("{\\scriptsize\\textit{Notes:} Panel A: $x_v=\\mu+u_v$ at the vintage years of the calendar, $u$ an AR(1) series in calendar years sampled at those years (gaps shorten the dependence); $t$-test of the true $\\mu$ with the Bartlett sandwich over vintage-year distances, $S=\\lceil1.3\\sqrt V\\rceil=7$, and the fixed-$b$ or normal critical value; ",
+  paste0("{\\scriptsize\\textit{Notes:} ", a1.notes,
     sprintf("$10^5$ draws per cell, Monte Carlo SE %s points. ", formatC(100 * max(dr$mcse), format = "f", digits = 2)),
-    "Panel B: designs as in Table~\\ref{tab:mc_core} and the margins of Figure~\\ref{fig:mc_margins}; test as in the empirical tables, among replications with an interior estimate; Monte Carlo SE 0.7 points (1{,}000 replications) and 1.4 points (250).}"),
+    "Panel B: designs as in Table~\\ref{tab:mc_core} and the margins of Figure~\\ref{fig:mc_margins}; test as in the empirical tables, among replications with an interior estimate; Monte Carlo SE 0.7 points (1{,}000 replications) and 1.4 points (250). Panel C: Table~\\ref{tab:mc_size_additions}.}"),
+  "\\end{table}", "",
+  "\\begin{table}[htbp]", "\\centering", "\\footnotesize",
+  "\\caption{Monte Carlo: size of the 5\\% test of the true value (continued)}", "\\label{tab:mc_size_additions}",
+  "\\begin{tabular}{l r rr rr rr}", "\\toprule",
+  "\\multicolumn{8}{l}{\\textit{Panel C: additions, single-factor $\\hat\\beta_{MKT}$, rejection in \\%}} \\\\", "\\addlinespace[2pt]",
+  paste0(" & & ", paste(sprintf("\\multicolumn{2}{c}{%s}", C.EST), collapse = " & "), " \\\\"),
+  "\\cmidrule(lr){3-4} \\cmidrule(lr){5-6} \\cmidrule(lr){7-8}",
+  "Design & Repl. & 0 yr & 15 yr & 0 yr & 15 yr & 0 yr & 15 yr \\\\", "\\midrule")
+for (g in C.ROWS) {
+  a1 <- c(a1, sprintf("\\multicolumn{8}{l}{\\textit{%s}} \\\\", g$head))
+  for (x in g$rows) {
+    vals <- unlist(lapply(names(C.EST), function(e) vapply(c(0, 15), function(h) {
+      d <- if (e == "IV" && !is.na(x["iv"])) x[["iv"]] else x[["d"]]
+      cell("AS1", srow(d, e, "MKT", "MKT", h), "size", pct) }, "")))
+    a1 <- c(a1, sprintf("\\quad %s & %s & %s \\\\", x[["label"]], format(srow(x[["d"]], "L2.vyp", "MKT", "MKT", 0)$reps, big.mark = "{,}"), paste(vals, collapse = " & ")))
+  }
+}
+a1 <- c(a1, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
+  paste0("{\\scriptsize\\textit{Notes:} Panel C: single factor, horizons 0 and 15 years; IV is the root of $V^{-1}\\sum_v z_vPV_v(\\beta)=0$ with $z_v=A_{v,H}(1)/A_{v,0}(1)$ (the mean pricing moment at $H=0$), tested among fits with a root. ",
+    "Shared-shock rows: the M4 designs of Figure~\\ref{fig:mc_margins} on the same draws, the shared log shock either independent across vintages or an AR(1) across vintage years with the same marginal law. ",
+    "Equal-count rows: the deal model of the cores with the same number of funds in each of $V$ consecutive vintages. On the historical path they over-reject at $V=25$ where the data-shaped core does not; the excess comes from the sandwich evaluated at the estimate, not from dependence across vintages or from the resampled paths. ",
+    "Resampled rows: consecutive vintages ending 2005; each replication draws its own factor path, whole months of 1967--2021 resampled i.i.d.\\ on a calendar from the first vintage to 2021 (Figure~\\ref{fig:mc_growing_v}). ",
+    "Monte Carlo SE 0.7 points (1{,}000 replications) and 1.0 point (500) at a 5\\% rate.}"),
   "\\end{table}")
 write.table.tex("table_AS1_size.tex", a1)
 
@@ -318,6 +361,43 @@ p2 <- ggplot(f2, aes(value, design, colour = estimator, shape = estimator)) +
 ggsave(file.path(out.dir, "figure_S2_margins.pdf"), p2, width = 8, height = 7, device = "pdf")
 message("wrote ", file.path(out.dir, "figure_S2_margins.pdf"))
 
+# Figure S3: growing V with fixed funds per vintage (Referee 2's H = 0 plateau
+# diagnostic): bias and rejection of the true beta against V, resampled paths
+# (rejection bars: binomial SE at the observed rate)
+S3.SERIES <- c("L2, vintage portfolios", "L2: target shift", "U, q = 1", "IV")
+S3.COL <- setNames(c(COL[["teal"]], COL[["teal"]], COL[["purple"]], COL[["orange"]]), S3.SERIES)
+S3.LTY <- setNames(c("solid", "longdash", "solid", "solid"), S3.SERIES)
+S3.SHP <- setNames(c(16, 1, 15, 17), S3.SERIES)
+fg3 <- do.call(rbind, lapply(c(5, 20), function(n) do.call(rbind, lapply(c(25, 100, 400), function(V) {
+  d <- sprintf("v_V%d_n%d", V, n)
+  do.call(rbind, lapply(c("L2.vyp", "U.eq", "IV"), function(e) {
+    r <- srow(d, e, "MKT", "MKT", 0)
+    for (col in c("bias", "mcse.bias", "size", "tested", if (e == "L2.vyp") "shift")) rec("FS3", list(design = d, estimator = e, model = "MKT", parameter = "MKT", H = 0), col, r[[col]], NA)
+    lab <- c(L2.vyp = "L2, vintage portfolios", U.eq = "U, q = 1", IV = "IV")[[e]]
+    out <- data.frame(funds = sprintf("%d funds per vintage", n), V = V, series = lab,
+      metric = c("Bias", "Rejection at 5% (%)"), value = c(r$bias, 100 * r$size), se = c(r$mcse.bias, 100 * sqrt(r$size * (1 - r$size) / r$tested)))
+    if (e == "L2.vyp") out <- rbind(out, data.frame(funds = out$funds[1], V = V, series = "L2: target shift", metric = "Bias", value = r$shift, se = NA))
+    out
+  }))
+}))))
+fg3$series <- factor(fg3$series, levels = S3.SERIES); fg3$funds <- factor(fg3$funds, levels = c("5 funds per vintage", "20 funds per vintage"))
+fg3$metric <- factor(fg3$metric, levels = c("Bias", "Rejection at 5% (%)"))
+ref <- data.frame(metric = factor(levels(fg3$metric), levels = levels(fg3$metric)), y = c(0, 5))
+p3 <- ggplot(fg3, aes(V, value, colour = series, linetype = series, shape = series)) +
+  geom_hline(data = ref, aes(yintercept = y), colour = "grey40", linewidth = 0.4) +
+  geom_line(linewidth = 0.7) + geom_point(size = 1.8) +
+  geom_errorbar(data = fg3[is.finite(fg3$se), ], aes(ymin = value - 2 * se, ymax = value + 2 * se), width = 0.06, linewidth = 0.4, linetype = "solid", show.legend = FALSE) +
+  facet_grid(metric ~ funds, scales = "free_y", switch = "y") +
+  scale_x_log10(breaks = c(25, 100, 400)) +
+  scale_colour_manual(values = S3.COL, breaks = S3.SERIES, limits = S3.SERIES) +
+  scale_linetype_manual(values = S3.LTY, breaks = S3.SERIES, limits = S3.SERIES) +
+  scale_shape_manual(values = S3.SHP, breaks = S3.SERIES, limits = S3.SERIES) +
+  labs(x = "Number of vintages V (log scale); H = 0", y = NULL) +
+  guides(colour = guide_legend(nrow = 1), linetype = guide_legend(nrow = 1), shape = guide_legend(nrow = 1)) +
+  theme_paper + theme(strip.placement = "outside", legend.key.width = unit(1.4, "cm"))
+ggsave(file.path(out.dir, "figure_S3_growing_V.pdf"), p3, width = 7, height = 5.2, device = "pdf")
+message("wrote ", file.path(out.dir, "figure_S3_growing_V.pdf"))
+
 # ---- figure environments with captions (for \input in the paper) ------------------
 tp <- attr(s.rds, "target.precision"); tp <- tp[tp$estimator == "L2.vyp" & tp$model == "MKT", ]
 tp.text <- function(d) { y <- tp[tp$design == d, ]; sprintf("%s--%s at 0--20 years, %s at 30 years",
@@ -338,6 +418,17 @@ write.table.tex("figure_S2_margins.tex", c("\\begin{figure}[htbp]", "\\centering
   paste0("{\\scriptsize\\textit{Notes:} Bias and RMSE of the single-factor $\\hat\\beta_{MKT}$ at 0, 15 and 30 years, L2 on vintage portfolios and $U_{v,H}$ with $q_v=1$. Each design changes one feature of the Buyout core (Table~\\ref{tab:mc_core}): ",
     "M1 fund counts scaled by 0.25 (at least 2 per vintage) or 4; M2 the early or late half of the vintage calendar; M3 $1.5\\times$ the calibrated $\\sigma$; M4 a shared vintage shock of the size that matches the empirical Buyout $U_{v,H}$ level, or twice that (then the $U_{v,H}$ target moves away from the true value, T7); M5 investment and holding periods of 2/2 or 3/10 years; M7 true $\\beta_{MKT}=2$. ",
     "Bars: $\\pm2$ Monte Carlo SE of the bias. 250 replications (M5 2/2: 1{,}000).}"),
+  "\\end{figure}"))
+
+write.table.tex("figure_S3_growing_V.tex", c("\\begin{figure}[htbp]", "\\centering",
+  "\\includegraphics[width=0.85\\textwidth]{figure_S3_growing_V.pdf}",
+  "\\caption{Monte Carlo: more vintages with the same funds per vintage}", "\\label{fig:mc_growing_v}",
+  "\\par\\vspace{2pt}",
+  paste0("{\\scriptsize\\textit{Notes:} Single-factor $\\hat\\beta_{MKT}$ (true value 1) at $H=0$ for $V=25$, 100 and 400 consecutive vintages ending 2005 with 5 or 20 funds each, deal model of the cores. ",
+    "Each replication draws its own factor path: whole months of 1967--2021 resampled i.i.d.\\ on a calendar from the first vintage to 2021 (100 or 400 vintages do not fit the history). ",
+    "L2 on vintage portfolios with its target shift (the minimizer of the criterion averaged over replications 1--200, minus the true value); $U_{v,H}$ with $q_v=1$; IV as in Table~\\ref{tab:mc_size_additions}. ",
+    "The L2 bias does not fall with $V$; it equals the target shift and shrinks with the funds per vintage (the noise tilt, T3/T4), and with a fixed bias and a shrinking SE its rejection rate rises with $V$. ",
+    "Bars: $\\pm2$ Monte Carlo SE. 500 replications per design.}"),
   "\\end{figure}"))
 
 # ---- every printed number -------------------------------------------------------
