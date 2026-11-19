@@ -911,6 +911,10 @@ plot_empirical_estimates <- function(
 # (q_v = n_v) as robustness, for EW and FW fund weighting alike; estimates on a
 # bound get a dagger and no SE or marker (D2). U results are full-sample fits
 # only (no CV folds, no jackknife), so each cell is estimate and SE_A.
+# The q_v = n_v columns show point estimates only (decision of 19 November
+# 2026, log entry "U tables: no inference for q_v = n_v"): in the Step 4 Monte
+# Carlo their sandwich SE is 0.49-0.61 of the sampling sd and the fixed-b test
+# rejects a true beta in 12-20% (q_v = 1: 3.3-6.4%).
 #
 # Writes <output_file>_tables.tex (one table per model: MKT, or MKT plus one
 # second factor) and <output_file>_data.csv (every printed cell).
@@ -919,7 +923,9 @@ export_u_pair_tables <- function(data_dir, fund_type, output_file,
                                  region = "North America", data_source = "preqin") {
     source(here::here("helper/result_reporting.R"), local = TRUE)
     # Table columns, left to right: fund weighting (EW, FW) x vintage weights q_v
-    cols <- data.frame(weighting = c("EW", "EW", "FW", "FW"), q = c("equal", "n.funds", "equal", "n.funds"))
+    # (inference: whether SE_A and markers are printed for the column)
+    cols <- data.frame(weighting = c("EW", "EW", "FW", "FW"), q = c("equal", "n.funds", "equal", "n.funds"),
+                       inference = c(TRUE, FALSE, TRUE, FALSE))
     folder.of <- function(w, q) file.path(data_dir, paste0("cache_q_factors_", data_source, "_", w, "_", region, "_U_pair",
         if (q == "n.funds") "_qn.funds" else ""))
     dat <- do.call(rbind, lapply(seq_len(nrow(cols)), function(j) {
@@ -936,18 +942,20 @@ export_u_pair_tables <- function(data_dir, fund_type, output_file,
 
     fmt3 <- function(x) if (is.na(x)) "--" else formatC(round(x, 3), format = "f", digits = 3)
     stars <- function(p) if (is.na(p)) "" else if (p < 0.001) "$^{***}$" else if (p < 0.01) "$^{**}$" else if (p < 0.05) "$^{*}$" else ""
-    # one printed cell pair (estimate with marker, SE_A) and its CSV record
-    cell <- function(model, par, w, q, h) {
+    # one printed cell (estimate with marker, and SE_A if the column has inference) and its CSV record
+    cell <- function(model, par, w, q, h, inference) {
         d <- dat[dat$Factor == model & dat$weighting == w & dat$q == q & dat$max.month == h, , drop = FALSE]
-        if (nrow(d) == 0) return(list(tex = c("--", "--"), rec = NULL))
+        if (nrow(d) == 0) return(list(tex = if (inference) c("--", "--") else "--", rec = NULL))
         if (nrow(d) > 1) stop("Duplicate U rows: ", fund_type, " ", model, " ", w, " ", q, " ", h)
         est <- d[[if (par == "MKT") "MKT" else "Coef"]]
         se <- d[[if (par == "MKT") "SE.MKT" else "SE.Coef"]]
         p <- d[[if (par == "MKT") "p.MKT" else "p.Coef"]]
         bound <- boundary.mask(d)
-        list(tex = c(paste0(fmt3(est), if (bound) "$^{\\dagger}$" else stars(p)), if (bound) "--" else fmt3(se)),
+        shown <- inference && !bound
+        list(tex = if (inference) c(paste0(fmt3(est), if (bound) "$^{\\dagger}$" else stars(p)), if (bound) "--" else fmt3(se))
+                   else paste0(fmt3(est), if (bound) "$^{\\dagger}$" else ""),
              rec = data.frame(Type = fund_type, model = model, parameter = par, weighting = w, vintage.weights = q,
-                              max.month = h, estimate = est, SE.A = if (bound) NA else se, p = if (bound) NA else p,
+                              max.month = h, estimate = est, SE.A = if (shown) se else NA, p = if (shown) p else NA,
                               at.bound = bound, active.constraints = if ("active.constraints" %in% names(d)) d$active.constraints else NA,
                               hac.V = d$hac.V, hac.S = d$hac.S, hac.b = d$hac.b, git.commit = d$git.commit))
     }
@@ -961,22 +969,22 @@ export_u_pair_tables <- function(data_dir, fund_type, output_file,
             paste0("\\caption{Cross-fund pair-product estimates ($U_{v,H}$): ", fund_type, " --- ",
                 if (model == "MKT") "Single-Factor (MKT) Model" else paste0("MKT + ", model, " Model"), "}"),
             paste0("\\label{tab:upair_", tolower(fund_type), "_", tolower(model), "}"),
-            "\\begin{tabular}{l *{4}{r} *{4}{r}}", "\\toprule",
-            " & \\multicolumn{4}{c}{Equal-weighted funds (EW)} & \\multicolumn{4}{c}{Value-weighted funds (FW)} \\\\",
-            "\\cmidrule(lr){2-5} \\cmidrule(lr){6-9}",
-            " & \\multicolumn{2}{c}{$q_v=1$} & \\multicolumn{2}{c}{$q_v=n_v$} & \\multicolumn{2}{c}{$q_v=1$} & \\multicolumn{2}{c}{$q_v=n_v$} \\\\",
-            "\\cmidrule(lr){2-3} \\cmidrule(lr){4-5} \\cmidrule(lr){6-7} \\cmidrule(lr){8-9}",
-            "Horizon & Est. & SE$_A$ & Est. & SE$_A$ & Est. & SE$_A$ & Est. & SE$_A$ \\\\", "\\midrule")
+            "\\begin{tabular}{l *{3}{r} *{3}{r}}", "\\toprule",
+            " & \\multicolumn{3}{c}{Equal-weighted funds (EW)} & \\multicolumn{3}{c}{Value-weighted funds (FW)} \\\\",
+            "\\cmidrule(lr){2-4} \\cmidrule(lr){5-7}",
+            " & \\multicolumn{2}{c}{$q_v=1$} & $q_v=n_v$ & \\multicolumn{2}{c}{$q_v=1$} & $q_v=n_v$ \\\\",
+            "\\cmidrule(lr){2-3} \\cmidrule(lr){4-4} \\cmidrule(lr){5-6} \\cmidrule(lr){7-7}",
+            "Horizon & Est. & SE$_A$ & Est. & Est. & SE$_A$ & Est. \\\\", "\\midrule")
         for (k in seq_along(pars)) {
             par <- pars[k]
             if (length(pars) > 1) {
                 lines <- c(lines, if (k > 1) "\\addlinespace[4pt]",
-                    paste0("\\multicolumn{9}{l}{\\textit{Panel ", LETTERS[k], ": ", if (par == "MKT") "Market Factor" else par,
+                    paste0("\\multicolumn{7}{l}{\\textit{Panel ", LETTERS[k], ": ", if (par == "MKT") "Market Factor" else par,
                         " (", par.label(par), ")}} \\\\"),
                     "\\addlinespace[2pt]")
             }
             for (h in horizons) {
-                cs <- lapply(seq_len(nrow(cols)), function(j) cell(model, par, cols$weighting[j], cols$q[j], h))
+                cs <- lapply(seq_len(nrow(cols)), function(j) cell(model, par, cols$weighting[j], cols$q[j], h, cols$inference[j]))
                 recs <- c(recs, lapply(cs, `[[`, "rec"))
                 lines <- c(lines, paste0(round(h / 12, 1), " yr & ", paste(unlist(lapply(cs, `[[`, "tex")), collapse = " & "), " \\\\"))
             }
@@ -987,6 +995,7 @@ export_u_pair_tables <- function(data_dir, fund_type, output_file,
             paste0("{\\scriptsize\\textit{Notes:} Estimates minimize $V^{-1}\\sum_v w_vU_{v,H}(\\theta)$ over the admissible domain; $U_{v,H}$ is the within-vintage cross-fund pair-product criterion (the squared pooled pricing error without each fund's own squared error), unbiased for the squared shared vintage pricing error for any $n_v\\ge2$; vintages with fewer than two funds are dropped. ",
                 "EW/FW: fund weighting within a vintage (equal, or by fund size). $q_v$: vintage weights, $w_v=Vq_v/\\sum_uq_u$; $q_v=1$ is the main specification, $q_v=n_v$ (the vintage's fund count) a robustness check. ",
                 "SE$_A$: Bartlett (Newey--West) sandwich over vintage years with truncation $S=\\lceil 1.3\\sqrt{V}\\rceil$; markers from two-sided Kiefer--Vogelsang fixed-$b$ $p$-values at $b=S/V$: $^{*}$\\,$p<0.05$, $^{**}$\\,$p<0.01$, $^{***}$\\,$p<0.001$. ",
+                "For $q_v=n_v$ only point estimates are reported: in a Monte Carlo on data shaped like ours the sandwich SE of these estimates is 0.49--0.61 of their sampling standard deviation and the test rejects a true $\\beta_{MKT}$ in 12--20\\% of samples at the 5\\% level (3.3--6.4\\% for $q_v=1$). ",
                 "$^{\\dagger}$\\,estimate on a bound of the admissible domain ($\\beta_{MKT}\\in[-1,4]$, $\\alpha\\in[-2\\%,2\\%]$ per month, monthly gross benchmark return $1+r_f+\\theta^\\top F_t\\ge 0.08$ over the estimation window); SE$_A$ and marker not reported. ",
                 "Full-sample fits only (no cross-validation or jackknife for this criterion). ", sv.text, ".}"),
             "\\end{table}")
