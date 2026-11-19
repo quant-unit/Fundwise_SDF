@@ -102,7 +102,7 @@ ad.run <- function(id, public, workers = n.parallel.workers(1000)) {
     fp <- ad.prepare(L$samples[[as.character(k)]], L$t.max, public, if (is.null(L$factors)) NULL else L$factors[[as.character(k)]])
     data.frame(sample = k, mc.fit(MC.ESTIMATORS$L2.vyp, fp, "Alpha", 0), n.units = fp$n.units, error = NA_character_)
   }, error = function(e) data.frame(sample = k, error = conditionMessage(e)))
-  rows <- rbind.all.columns.mc(parallel::mclapply(ks, fit1, mc.cores = workers, mc.preschedule = FALSE))
+  rows <- do.call(rbind.all.columns.mc, parallel::mclapply(ks, fit1, mc.cores = workers, mc.preschedule = FALSE))
   rows <- rows[order(rows$sample), ]
   prov <- list(git.commit = system("git rev-parse --short HEAD", intern = TRUE),
                git.dirty = length(system("git status --porcelain --untracked-files=no", intern = TRUE)) > 0,
