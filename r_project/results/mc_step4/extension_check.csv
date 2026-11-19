@@ -174,3 +174,35 @@
 "G: |bias| at H = 0 smaller with 200 than with 5 funds per vintage","V = 10",0,0.418161647160015,0.041094929897469,0,10.1755045744894,TRUE,FALSE
 "G: |bias| at H = 0 smaller with 200 than with 5 funds per vintage","V = 20",0,0.500913635621,0.0393936073438351,0,12.7156071605458,TRUE,FALSE
 "G: |bias| at H = 0 smaller with 200 than with 5 funds per vintage","V = 39",0,0.652834200282991,0.0369123529574699,0,17.6860630108078,TRUE,FALSE
+"persistence raises rejection of the true beta (L2.vyp, paired)","m4p_shared",0,0.05,0.0100797619813962,0,4.96043459084478,TRUE,FALSE
+"persistence widens the sd of the estimate (L2.vyp, paired)","m4p_shared",0,0.03550825896874,0.00229387102810878,0,15.4796231059317,TRUE,FALSE
+"persistence raises rejection of the true beta (L2.vyp, paired)","m4p_shared",15,0.052,0.00820751870929113,0,6.33565415344526,TRUE,FALSE
+"persistence widens the sd of the estimate (L2.vyp, paired)","m4p_shared",15,0.0342814564212421,0.00178228955717537,0,19.2345044514385,TRUE,FALSE
+"persistence raises rejection of the true beta (U.eq, paired)","m4p_shared",0,0.048,0.00926184548466347,0,5.18255244912932,TRUE,FALSE
+"persistence widens the sd of the estimate (U.eq, paired)","m4p_shared",0,0.0448763172374821,0.00219331470884032,0,20.460500746475,TRUE,FALSE
+"persistence raises rejection of the true beta (U.eq, paired)","m4p_shared",15,0.041,0.00770573671872959,0,5.32071124365634,TRUE,FALSE
+"persistence widens the sd of the estimate (U.eq, paired)","m4p_shared",15,0.0379091754860806,0.00175304018990974,0,21.6248182467696,TRUE,FALSE
+"persistence raises rejection of the true beta (U.n, paired)","m4p_shared",0,0.135,0.015395194445411,0,8.76897011458282,TRUE,FALSE
+"persistence widens the sd of the estimate (U.n, paired)","m4p_shared",0,0.061681499664433,0.00262153730343736,0,23.5287514633327,TRUE,FALSE
+"persistence raises rejection of the true beta (U.n, paired)","m4p_shared",15,0.118,0.0130478445057507,0,9.04363934962536,TRUE,FALSE
+"persistence widens the sd of the estimate (U.n, paired)","m4p_shared",15,0.0601416347576843,0.00211766978932337,0,28.3999115730411,TRUE,FALSE
+"persistence raises rejection of the true beta (IV, paired)","m4p_shared",0,0.0110330992978937,0.00479996217592521,0,2.29858046657774,TRUE,FALSE
+"persistence widens the sd of the estimate (IV, paired)","m4p_shared",0,0.0833627099025996,0.00431238574270085,0,19.3309956196983,TRUE,FALSE
+"persistence raises rejection of the true beta (IV, paired)","m4p_shared",15,0.025,0.00603418688900262,0,4.14306027636678,TRUE,FALSE
+"persistence widens the sd of the estimate (IV, paired)","m4p_shared",15,0.0584307712269453,0.00249364130470712,0,23.4319070335611,TRUE,FALSE
+"persistence raises rejection of the true beta (L2.vyp, paired)","m4p_shared2",0,0.024,0.011813702364778,0,2.03153924645629,TRUE,FALSE
+"persistence widens the sd of the estimate (L2.vyp, paired)","m4p_shared2",0,0.078846765540117,0.00425672516589664,0,18.5228696867275,TRUE,FALSE
+"persistence raises rejection of the true beta (L2.vyp, paired)","m4p_shared2",15,0.045,0.00877792982724592,0,5.12649347689292,TRUE,FALSE
+"persistence widens the sd of the estimate (L2.vyp, paired)","m4p_shared2",15,0.0794269157055945,0.00334043967322011,0,23.777383660705,TRUE,FALSE
+"persistence raises rejection of the true beta (U.eq, paired)","m4p_shared2",0,0.051,0.0113369981709237,0,4.4985453142968,TRUE,FALSE
+"persistence widens the sd of the estimate (U.eq, paired)","m4p_shared2",0,0.0886665527046724,0.00448324966630325,0,19.7772953335842,TRUE,FALSE
+"persistence raises rejection of the true beta (U.eq, paired)","m4p_shared2",15,0.047,0.00841794879182938,0,5.58330790104343,TRUE,FALSE
+"persistence widens the sd of the estimate (U.eq, paired)","m4p_shared2",15,0.087503213702122,0.00348192040158999,0,25.1307335061894,TRUE,FALSE
+"persistence raises rejection of the true beta (U.n, paired)","m4p_shared2",0,0.134,0.0161958731257782,0,8.27371262786188,TRUE,FALSE
+"persistence widens the sd of the estimate (U.n, paired)","m4p_shared2",0,0.108446158256289,0.00549514558011439,0,19.7349017738001,TRUE,FALSE
+"persistence raises rejection of the true beta (U.n, paired)","m4p_shared2",15,0.155,0.0140418008877839,0,11.0384701534151,TRUE,FALSE
+"persistence widens the sd of the estimate (U.n, paired)","m4p_shared2",15,0.123939753945215,0.00455065833414408,0,27.2355656796472,TRUE,FALSE
+"persistence raises rejection of the true beta (IV, paired)","m4p_shared2",0,0.0456960680127524,0.00697513333153638,0,6.55128236848874,TRUE,FALSE
+"persistence widens the sd of the estimate (IV, paired)","m4p_shared2",0,0.201110898665963,0.00777541819608349,0,25.8649623202599,TRUE,FALSE
+"persistence raises rejection of the true beta (IV, paired)","m4p_shared2",15,0.0313765182186235,0.00656491096965269,0,4.77942783438591,TRUE,FALSE
+"persistence widens the sd of the estimate (IV, paired)","m4p_shared2",15,0.160172954051439,0.00746587532891609,0,21.4540086721074,TRUE,FALSE
