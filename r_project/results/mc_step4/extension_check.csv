@@ -115,22 +115,22 @@
 "H = 0: |L2 error| > |U error| on average (paired)","m4_shared2",0,0.0342890031409577,0.00419284956143364,0,8.17797124331679,TRUE,FALSE
 "M4: U (q_v = 1) biased at H = 0 and 30 years","m4_shared2",0,0.143131782750916,0.0134054717391865,0,10.6771164443633,TRUE,FALSE
 "M4: U (q_v = 1) biased at H = 0 and 30 years","m4_shared2",30,0.277668492577575,0.0182905377844377,0,15.1809911687685,TRUE,FALSE
-"U (alpha, beta) on a bound < 5%","m5_life_2_2",0,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
-"U (alpha, beta) on a bound < 5%","m5_life_2_2",0,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
-"U (q_v = n_v) rejects the true beta in more than 5%","m5_life_2_2",0,0.084,0.0137840487520902,0.05,2.46661925037404,TRUE,FALSE
-"U (alpha, beta) on a bound < 5%","m5_life_2_2",5,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
-"U (alpha, beta) on a bound < 5%","m5_life_2_2",5,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
-"U (q_v = n_v) rejects the true beta in more than 5%","m5_life_2_2",5,0.044,0.0137840487520902,0.05,-0.435285750066007,FALSE,TRUE
-"U (alpha, beta) on a bound < 5%","m5_life_2_2",10,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
-"U (alpha, beta) on a bound < 5%","m5_life_2_2",10,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
-"U (q_v = n_v) rejects the true beta in more than 5%","m5_life_2_2",10,0.032,0.0137840487520902,0.05,-1.30585725019802,FALSE,TRUE
-"U (alpha, beta) on a bound < 5%","m5_life_2_2",15,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
-"U (alpha, beta) on a bound < 5%","m5_life_2_2",15,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
-"U (q_v = n_v) rejects the true beta in more than 5%","m5_life_2_2",15,0.028,0.0137840487520902,0.05,-1.59604775024203,FALSE,TRUE
-"U (alpha, beta) on a bound < 5%","m5_life_2_2",20,0.016,0.00793574193128784,0.05,4.28441351727303,TRUE,FALSE
-"U (alpha, beta) on a bound < 5%","m5_life_2_2",20,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
-"U (q_v = n_v) rejects the true beta in more than 5%","m5_life_2_2",20,0.02,0.0137840487520902,0.05,-2.17642875033004,FALSE,FALSE
-"H = 0: |L2 error| > |U error| on average (paired)","m5_life_2_2",0,-0.00140429870354158,0.00108900113020296,0,-1.28952915161791,FALSE,TRUE
+"U (alpha, beta) on a bound < 5%","m5_life_2_2",0,0,0.00314642654451045,0.05,15.8910431540932,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m5_life_2_2",0,0,0.00314642654451045,0.05,15.8910431540932,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m5_life_2_2",0,0.088,0.00689202437604511,0.05,5.51361950083609,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m5_life_2_2",5,0,0.00314642654451045,0.05,15.8910431540932,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m5_life_2_2",5,0,0.00314642654451045,0.05,15.8910431540932,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m5_life_2_2",5,0.056,0.00689202437604511,0.05,0.870571500132014,TRUE,TRUE
+"U (alpha, beta) on a bound < 5%","m5_life_2_2",10,0,0.00314642654451045,0.05,15.8910431540932,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m5_life_2_2",10,0,0.00314642654451045,0.05,15.8910431540932,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m5_life_2_2",10,0.054,0.00689202437604511,0.05,0.580381000088009,TRUE,TRUE
+"U (alpha, beta) on a bound < 5%","m5_life_2_2",15,0,0.00314642654451045,0.05,15.8910431540932,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m5_life_2_2",15,0,0.00314642654451045,0.05,15.8910431540932,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m5_life_2_2",15,0.039,0.00689202437604511,0.05,-1.59604775024203,FALSE,TRUE
+"U (alpha, beta) on a bound < 5%","m5_life_2_2",20,0.019,0.00431729081716764,0.05,7.18042895714345,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m5_life_2_2",20,0,0.00314642654451045,0.05,15.8910431540932,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m5_life_2_2",20,0.03,0.00689202437604511,0.05,-2.90190500044005,FALSE,FALSE
+"H = 0: |L2 error| > |U error| on average (paired)","m5_life_2_2",0,-0.000688239609284474,0.000588794405954854,0,-1.16889631138453,FALSE,TRUE
 "U (alpha, beta) on a bound < 5%","m5_life_3_10",0,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
 "U (alpha, beta) on a bound < 5%","m5_life_3_10",0,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
 "U (q_v = n_v) rejects the true beta in more than 5%","m5_life_3_10",0,0.232,0.0137840487520902,0.05,13.2036677520022,TRUE,FALSE
@@ -147,12 +147,12 @@
 "U (alpha, beta) on a bound < 5%","m5_life_3_10",20,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
 "U (q_v = n_v) rejects the true beta in more than 5%","m5_life_3_10",20,0.112,0.0137840487520902,0.05,4.49795275068207,TRUE,FALSE
 "H = 0: |L2 error| > |U error| on average (paired)","m5_life_3_10",0,0.0237675939573943,0.00488563827304752,0,4.86478790059271,TRUE,FALSE
-"M6: L2 overestimates the second loading at H = 0","m6_ME",0,0.051442385739257,0.0111661185267186,0,4.60700695735622,TRUE,FALSE
-"M6: U (q_v = 1) second loading within 0.05 at 15 years","m6_ME",15,0.0234020006375906,0.0275094205389663,0.05,0.966868761366097,TRUE,TRUE
+"M6: L2 overestimates the second loading at H = 0","m6_ME",0,0.0462036053174486,0.00592798293632228,0,7.79415288703805,TRUE,FALSE
+"M6: U (q_v = 1) second loading within 0.05 at 15 years","m6_ME",15,0.0375069010273301,0.0155876199675924,0.05,0.801475722313205,TRUE,TRUE
 "M6: L2 overestimates the second loading at H = 0","m6_IA",0,0.189573960380997,0.0142163197040528,0,13.3349533724226,TRUE,FALSE
 "M6: U (q_v = 1) second loading within 0.05 at 15 years","m6_IA",15,0.00217849395238195,0.0167938125081177,0.05,2.84756698483459,TRUE,FALSE
-"M6: L2 overestimates the second loading at H = 0","m6_ROE",0,0.162290534064365,0.0129670193538733,0,12.5156390713559,TRUE,FALSE
-"M6: U (q_v = 1) second loading within 0.05 at 15 years","m6_ROE",15,0.018270260760272,0.0179203671574967,0.05,1.77059649285447,TRUE,TRUE
+"M6: L2 overestimates the second loading at H = 0","m6_ROE",0,0.156054501820939,0.007562256372155,0,20.6359708189142,TRUE,FALSE
+"M6: U (q_v = 1) second loading within 0.05 at 15 years","m6_ROE",15,0.000416123741697083,0.00788042431538026,0.05,6.29203127571822,TRUE,FALSE
 "M6: L2 overestimates the second loading at H = 0","m6_EG",0,0.108764080652054,0.00835590182702807,0,13.0164383095364,TRUE,FALSE
 "M6: U (q_v = 1) second loading within 0.05 at 15 years","m6_EG",15,0.00905875937748257,0.0138778562196524,0.05,2.95011275333294,TRUE,FALSE
 "U (alpha, beta) on a bound < 5%","m7_beta2",0,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
