@@ -21,7 +21,18 @@
 #     lognormal shocks of the old generator, drawn as one normal (the same
 #     distribution, one draw per deal instead of k);
 #     W_v = exp(N(-c^2 / 2, c^2)) is a shock shared by all deals of vintage v
-#     (design margin M4; c = 0 in the core).
+#     (design margin M4; c = 0 in the core); independent across vintages, or
+#     (shared.rho != 0, DGP (b) of the plan) log W_v = -c^2 / 2 + c u_v with
+#     u an AR(1) series in calendar years (unit variance, coefficient rho)
+#     sampled at the vintage years, so the marginal law is unchanged and gaps
+#     shorten the dependence (as in D0).
+# Factor path: the historical monthly factors (the default; the paper
+# conditions on them), or (path = list(resample = "iid", from, to)) a path
+# drawn for each replication by resampling the historical months from..to
+# i.i.d. with replacement, all factors and r_f of a month together, on a
+# synthetic monthly calendar from January of the first vintage to T.max
+# (needed for more vintages than the history holds). The path is drawn first
+# from the replication's seed and returned with the draw.
 #   E[m | factor path] = R_{a,b}(theta_0): every fund is priced exactly at
 #   theta_0 in expectation (PV_i(theta_0) = 0 when sigma = 0 and c = 0).
 # Units: funds (EW, every deal 1 unit) or vintage portfolios
@@ -49,20 +60,40 @@ mc.data.shape <- function(type, max.vintage = 2010,
 }
 
 # A design: fund counts per vintage (named by year) and the DGP
+# (shared.rho and path enter the design only when set, so the designs that
+# do not use them keep their specification hash and their draws)
 mc.design <- function(n.funds, theta0 = c(MKT = 1), sigma = 0.2, shared.sd = 0,
                       no.deals = 15, investment.period = 5, max.holding.period = 10,
-                      t.max = as.Date("2021-12-31"), quarterly = TRUE) {
-  stopifnot(!is.null(names(n.funds)), all(n.funds >= 1), all(names(theta0) %in% c("MKT", "Alpha", "ME", "IA", "ROE", "EG")))
-  list(n.funds = n.funds, theta0 = theta0, sigma = sigma, shared.sd = shared.sd, no.deals = no.deals,
+                      t.max = as.Date("2021-12-31"), quarterly = TRUE, shared.rho = 0, path = NULL) {
+  stopifnot(!is.null(names(n.funds)), all(n.funds >= 1), all(names(theta0) %in% c("MKT", "Alpha", "ME", "IA", "ROE", "EG")),
+            abs(shared.rho) < 1, is.null(path) || identical(path$resample, "iid"))
+  d <- list(n.funds = n.funds, theta0 = theta0, sigma = sigma, shared.sd = shared.sd, no.deals = no.deals,
        investment.period = investment.period, max.holding.period = max.holding.period,
        t.max = t.max, quarterly = quarterly)
+  if (shared.rho != 0) d$shared.rho <- shared.rho
+  if (!is.null(path)) d$path <- list(resample = "iid", from = as.Date(path$from), to = as.Date(path$to))
+  d
+}
+
+# A factor path for one replication: historical months path$from..path$to
+# resampled i.i.d. (whole months), on month ends from January of the first
+# vintage to T.max
+mc.resample.path <- function(design, public) {
+  src <- public[public$Date >= design$path$from & public$Date <= design$path$to, ]
+  stopifnot(nrow(src) > 0, !anyNA(src))
+  first <- seq(as.Date(sprintf("%d-01-01", min(as.integer(names(design$n.funds))))), as.Date(format(design$t.max, "%Y-%m-01")), by = "month")
+  dates <- as.Date(format(first + 32, "%Y-%m-01")) - 1
+  out <- src[sample.int(nrow(src), length(dates), replace = TRUE), , drop = FALSE]
+  out$Date <- dates
+  rownames(out) <- NULL
+  out
 }
 
 # One replication: the deals (vintage, fund, booked start and end rows of the
 # factor calendar, multiple). Reproducible from the seed alone.
 mc.draw <- function(design, seed, public) {
   set.seed(seed)
-  cal <- public[public$Date <= design$t.max, ]
+  cal <- if (is.null(design$path)) public[public$Date <= design$t.max, ] else mc.resample.path(design, public)
   T <- nrow(cal)
   par0 <- c(RF = 1, design$theta0)
   lG <- c(0, cumsum(log(as.numeric(1 + as.matrix(cal[, names(par0)]) %*% par0)))) # log R up to each row
@@ -85,10 +116,18 @@ mc.draw <- function(design, seed, public) {
   k <- b - a
   s2 <- log(1 + design$sigma^2)
   z <- if (design$sigma > 0) rnorm(nd, -k * s2 / 2, sqrt(k * s2)) else numeric(nd)
-  w <- if (design$shared.sd > 0) rnorm(length(vint), -design$shared.sd^2 / 2, design$shared.sd) else numeric(length(vint))
+  w <- if (design$shared.sd == 0) numeric(length(vint)) else if (is.null(design$shared.rho)) {
+    rnorm(length(vint), -design$shared.sd^2 / 2, design$shared.sd)
+  } else {
+    span <- min(vint):max(vint); u <- rnorm(length(span)); r <- design$shared.rho
+    for (t in seq_along(span)[-1]) u[t] <- r * u[t - 1] + sqrt(1 - r^2) * u[t]
+    -design$shared.sd^2 / 2 + design$shared.sd * u[match(vint, span)]
+  }
   mult <- exp(lG[b + 1L] - lG[a + 1L] + z + w[match(fund.vint[deal.fund], vint)])
-  list(design = design, seed = seed, dates = cal$Date,
+  out <- list(design = design, seed = seed, dates = cal$Date,
        deals = data.frame(vintage = fund.vint[deal.fund], fund = fund.id[deal.fund], start = a, end = b, mult = mult))
+  if (!is.null(design$path)) out$public <- cal # the replication's own factor path
+  out
 }
 
 # Cash flows of a replication as rows (Date, CF, type, Vintage, Fund.ID), for
@@ -122,6 +161,7 @@ mc.as.rows <- function(draw, level = c("fund", "vyp"), type = "SIM") {
 mc.as.fast <- function(draw, public, level = c("fund", "vyp"), type = "SIM",
                        factor.cols = unique(c("RF", setdiff(colnames(public), "Date")))) {
   level <- match.arg(level)
+  if (!is.null(draw$public)) public <- draw$public # a resampled path
   d <- draw$deals
   T <- length(draw$dates)
   X <- as.matrix(public[match(draw$dates, public$Date), factor.cols, drop = FALSE])

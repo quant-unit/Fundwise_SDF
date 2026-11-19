@@ -212,6 +212,92 @@ for (par.t in list(c(MKT = 1), c(MKT = 1.2, Alpha = 0.002))) for (m in c(1, 120)
 }
 check("T1 errors unaffected by a non-positive gross return before every grid (finite, identical)", all(is.finite(a)) && identical(unname(a), unname(b)))
 
+# ---------------------------------------------------------------------------
+# T5-T7: the Step 4 additions of 19 November (plan, Section J, "Gap found"):
+# T5 persistent shared vintage shocks, T6 resampled factor paths, T7 the IV
+# comparator. Designs without the new options are unchanged (spec hashes and
+# draws of all 28 production designs were compared before and after the
+# change; scratch check, plan log).
+# ---------------------------------------------------------------------------
+cons <- function(funds, count, last = 2005) setNames(rep(as.integer(funds), count), as.character(seq(last - count + 1, last)))
+# the shared log shock of each vintage, recovered from sigma = 0 deals: log(mult / R_{a,b}(theta_0))
+shared.log <- function(dr, G) with(dr$deals, tapply(log(mult / vapply(seq_along(start), function(i) if (end[i] > start[i]) prod(G[(start[i] + 1):end[i]]) else 1, 0)), vintage, mean))
+check("T5 shared.rho = 0 leaves the design (and so its hash and draws) as without the option",
+  identical(mc.design(shape, shared.sd = 0.3), mc.design(shape, shared.sd = 0.3, shared.rho = 0)))
+dp <- mc.design(cons(2, 35), sigma = 0, shared.sd = 0.3, shared.rho = 0.6)
+W <- sapply(1:150, function(s) shared.log(mc.draw(dp, s, pub), G))
+# (tolerance of the mean: 4 Monte Carlo SEs; a replication's mean over 35 AR(1) vintages has sd about 0.3 * sqrt((1 + 0.6) / (1 - 0.6) / 35) = 0.10, so 0.0083 over 150 replications)
+within <- with(mc.draw(dp, 1, pub)$deals, tapply(log(mult / vapply(seq_along(start), function(i) if (end[i] > start[i]) prod(G[(start[i] + 1):end[i]]) else 1, 0)), vintage, sd))
+lag1 <- cor(as.vector(W[-1, ]), as.vector(W[-nrow(W), ]))
+check("T5 persistent shock: constant within a vintage; marginal mean -c^2/2 and sd c; lag-1 correlation across vintages near rho",
+  max(within, na.rm = TRUE) < 1e-12 && abs(mean(W) + 0.045) < 0.035 && abs(sd(as.vector(W)) - 0.3) < 0.02 && abs(lag1 - 0.6) < 0.04,
+  sprintf("mean %.4f (-0.045), sd %.4f, lag-1 correlation %.3f", mean(W), sd(as.vector(W)), lag1))
+# gaps: vintages two calendar years apart are correlated rho^2
+dg <- mc.design(setNames(rep(2L, 20), as.character(seq(1968, 2006, by = 2))), sigma = 0, shared.sd = 0.3, shared.rho = 0.6)
+Wg <- sapply(1:150, function(s) shared.log(mc.draw(dg, s, pub), G))
+lag.g <- cor(as.vector(Wg[-1, ]), as.vector(Wg[-nrow(Wg), ]))
+check("T5 persistent shock: vintages two years apart correlated near rho^2 (AR(1) in calendar years)", abs(lag.g - 0.36) < 0.05, sprintf("%.3f", lag.g))
+
+path <- list(resample = "iid", from = "1967-01-31", to = "2021-12-31")
+dpath <- mc.design(cons(2, 100), sigma = 0, path = path)
+drp <- mc.draw(dpath, 4, pub)
+src <- pub[pub$Date >= as.Date(path$from) & pub$Date <= as.Date(path$to), ]
+fcols <- setdiff(colnames(pub), "Date")
+check("T6 resampled path: monthly month ends from January of the first vintage to T.max, as the deal calendar",
+  identical(drp$public$Date, drp$dates) && drp$dates[1] == as.Date("1906-01-31") && max(drp$dates) == as.Date("2021-12-31") &&
+  all(as.integer(diff(as.integer(format(drp$dates, "%Y")) * 12 + as.integer(format(drp$dates, "%m")))) == 1L))
+key <- function(d) do.call(paste, c(lapply(d[, fcols], function(x) sprintf("%.12g", x)), sep = "|"))
+check("T6 resampled path: every month is a whole historical month (all factors and r_f together)", all(key(drp$public) %in% key(src)))
+check("T6 resampled path: same seed, same path; other seed, other path",
+  identical(mc.draw(dpath, 4, pub), drp) && !identical(mc.draw(dpath, 5, pub)$public$MKT, drp$public$MKT))
+for (lev in c("fund", "vyp")) {
+  f.p <- mc.as.fast(drp, pub, lev)
+  e0 <- vapply(c(1, 120, 360), function(m) max(abs(fast.unit.errors(c(MKT = 1), f.p, m))), 0)
+  check(sprintf("T6 sigma = 0 on a resampled path: every %s unit priced exactly at theta_0 (H = 0, 10, 30 years)", lev), max(e0) <= 1e-12, sprintf("max |e| %.1e", max(e0)))
+}
+# T1 on a resampled-path replication: the direct structure equals the pipeline's unit errors on its rows
+drp2 <- mc.draw(mc.design(cons(3, 30), sigma = 0.2, path = path), 6, pub)
+rows.p <- local({ d <- mc.as.rows(drp2, "fund"); d$Fund.ID <- as.factor(paste(d$Fund.ID, d$type, sep = "_"))
+  d <- pad.all.units(d, "first.cf", max(d$Date)); d$Fund.ID <- as.factor(as.character(d$Fund.ID)); merge(d, drp2$public, by = "Date", all.x = TRUE) })
+prep.p <- prepare.units(rows.p, fc); fp.p <- mc.as.fast(drp2, pub, "fund")
+worst.p <- max(unlist(lapply(pars[1:3], function(par) lapply(months, function(m) rel.diff(unname(fast.unit.errors(par, fp.p, m)), unname(ref.errors(par, prep.p, m)))))))
+check("T1 resampled path (funds): direct structure = pipeline unit errors within 1e-10", worst.p <= 1e-10, sprintf("%.1e", worst.p))
+rep.p <- mc.replication(mc.design(cons(5, 60), sigma = 0.13, path = path), 2, pub, c("L2.vyp", "U.eq", "IV"), "MKT", c(0, 180))
+check("T6 the driver runs a resampled-path design: finite estimates and SEs for L2, U and IV",
+  nrow(rep.p) == 6 && all(is.finite(rep.p$MKT)) && all(is.finite(rep.p$SE.MKT[!rep.p$at.bound])))
+
+# T7: IV comparator. (a) the instrument is the T1 scale: e_H = z * e_0
+fpv <- mc.as.fast(dr, pub, "vyp")
+worst.z <- max(unlist(lapply(pars[1:3], function(par) lapply(c(60, 120, 360), function(m)
+  rel.diff(unname(fast.unit.errors(par, fpv, m)), unname(fast.horizon.scale(par, fpv, m) * fast.unit.errors(par, fpv, 0)))))))
+check("T7 instrument: e_H = z * e_0 within 1e-12 (rescaling identity), z = 1 at H = 0",
+  worst.z <= 1e-12 && max(abs(fast.horizon.scale(c(MKT = 1.3), fpv, 0) - 1)) < 1e-14, sprintf("%.1e", worst.z))
+# (b) exact pricing: the root is theta_0
+r0 <- do.call(rbind, lapply(c(0, 60, 180), function(m) mc.fit(MC.ESTIMATORS$IV, mc.as.fast(dr0, pub, "vyp"), "MKT", m)))
+check("T7 sigma = 0: the IV root is theta_0 within 1e-8 at H = 0, 5, 15 years", max(abs(r0$MKT - 1)) < 1e-8 && all(r0$n.roots >= 1),
+  sprintf("max |beta - 1| %.1e; roots %s", max(abs(r0$MKT - 1)), paste(r0$n.roots, collapse = ",")))
+# (c) estimate and SE against an independent computation on the pipeline's unit errors
+rows.v <- sim.rows(dr, "vyp"); prep.v <- prepare.units(rows.v, fc)
+for (m in c(0, 120)) {
+  fit <- mc.fit(MC.ESTIMATORS$IV, fpv, "MKT", m)
+  zz <- ref.errors(c(MKT = 1), prep.v, m) / ref.errors(c(MKT = 1), prep.v, 0)
+  gb <- function(b) mean(zz * ref.errors(c(MKT = b), prep.v, 0))
+  yrs <- fpv$vintage; V <- length(yrs); S <- ceiling(1.3 * sqrt(V)); s <- zz * ref.errors(c(MKT = fit$MKT), prep.v, 0)
+  om <- 0; for (i in seq_len(V)) for (j in seq_len(V)) om <- om + max(0, 1 - abs(yrs[i] - yrs[j]) / S) * s[i] * s[j]
+  Gd <- (gb(fit$MKT + 1e-4) - gb(fit$MKT - 1e-4)) / 2e-4
+  se.ref <- sqrt(om / V / (V * Gd^2))
+  check(sprintf("T7 H = %d years: IV moment zero at the estimate and SE = independent computation (pipeline errors, explicit kernel sum)", m / 12),
+    abs(gb(fit$MKT)) < 1e-10 && abs(fit$SE.MKT / se.ref - 1) < 1e-6 && fit$hac.b == S / V,
+    sprintf("gbar %.1e, SE %.5f vs %.5f, %d root(s)", gb(fit$MKT), fit$SE.MKT, se.ref, fit$n.roots))
+}
+
+# (d) no root in Theta (25 vintages of 5 funds, replication 4: the mean moment stays positive): the
+# minimizer of gbar^2 is reported without SE, so it counts as not tested
+nr <- mc.replication(mc.design(cons(5, 25), sigma = 0.13, max.holding.period = 11.5, path = path), 4, pub, "IV", "MKT", c(0, 180))
+check("T7 no root of the moment in Theta: estimate = minimizer of gbar^2, no SE (not tested)",
+  all(nr$n.roots == 0) && all(is.na(nr$SE.MKT)) && all(nr$fit.method == "min.square") && all(abs(nr$value) > 0.1),
+  sprintf("|gbar| at the minimizer %s", paste(sprintf("%.3f", abs(nr$value)), collapse = ", ")))
+
 t.gen <- system.time(for (s in 1:20) { x <- mc.draw(mc.design(shape), s, pub); mc.as.fast(x, pub, "fund"); mc.as.fast(x, pub, "vyp") })[["elapsed"]] / 20
 cat(sprintf("Generator, Buyout shape (%d funds, %d deals): %.2f s per replication incl. both fast structures; %.1f MB in memory\n",
   sum(shape), sum(shape) * 15, t.gen, as.numeric(object.size(list(dr, mc.as.fast(dr, pub, "fund")))) / 2^20))

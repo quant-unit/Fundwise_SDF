@@ -58,3 +58,23 @@ designs:
   g_n20_V39:  {consecutive: {funds: 20, count: 39, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
   g_n50_V39:  {consecutive: {funds: 50, count: 39, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
   g_n200_V39: {consecutive: {funds: 200, count: 39, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
+  # Additions of 19 November 2026 (plan, Section J, "Gap found"; log entry
+  # "Step 4, additions"), single factor only:
+  # IV comparator on the draws of existing designs (same design, same seeds,
+  # so the rows pair with those designs' rows)
+  iv_core_BO:    {shape: BO, estimators: [IV], models: [MKT], reps: 1000}
+  iv_core_VC:    {shape: VC, sigma: 0.154, estimators: [IV], models: [MKT], reps: 1000}
+  iv_m4_shared:  {shape: BO, shared_sd: 0.153, estimators: [IV], models: [MKT]}
+  iv_m4_shared2: {shape: BO, shared_sd: 0.306, estimators: [IV], models: [MKT]}
+  # persistent shared vintage shocks (DGP (b)): AR(1) across vintage years, rho 0.6
+  m4p_shared:  {shape: BO, shared_sd: 0.153, shared_rho: 0.6, estimators: [L2.vyp, U.eq, U.n, IV], models: [MKT]}
+  m4p_shared2: {shape: BO, shared_sd: 0.306, shared_rho: 0.6, estimators: [L2.vyp, U.eq, U.n, IV], models: [MKT]}
+  # growing V with fixed funds per vintage (Referee 2's H = 0 plateau check):
+  # consecutive vintages ending 2005 on factor paths resampled i.i.d. from the
+  # 1967-2021 months (100 or 400 vintages do not fit the history)
+  v_V25_n5:   {consecutive: {funds: 5, count: 25, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  v_V100_n5:  {consecutive: {funds: 5, count: 100, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  v_V400_n5:  {consecutive: {funds: 5, count: 400, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  v_V25_n20:  {consecutive: {funds: 20, count: 25, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  v_V100_n20: {consecutive: {funds: 20, count: 100, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  v_V400_n20: {consecutive: {funds: 20, count: 400, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}

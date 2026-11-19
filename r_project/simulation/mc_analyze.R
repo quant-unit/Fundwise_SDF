@@ -59,12 +59,24 @@ mc.targets <- function(spec, public, reps = 1:200, workers = 1, check.u = FALSE)
     exact <- est$criterion == "U" && spec$design$shared.sd == 0 && !check.u
     if (exact) return(data.frame(cells[i, ], MKT.target = par[["MKT"]], Coef.target = if (length(par) > 1) par[[2]] else NA_real_,
                                  method = "theta_0 (T7)", target.bound = ""))
+    # IV: the instrument is a function of the factor path and every design
+    # here prices each fund at theta_0 given the path (shared shocks have mean
+    # one and are independent of it), so E[z_v PV_v(theta_0) | path] = 0 (T2)
+    if (est$criterion == "IV") return(data.frame(cells[i, ], MKT.target = par[["MKT"]], Coef.target = NA_real_,
+                                                 method = "theta_0 (moment)", target.bound = ""))
     f <- mc.mean.criterion(est, fps[[est$level]], m)
     con <- mc.domain(first[[est$level]], names(par))
     if (length(par) == 1) {
-      o <- optimize(function(b) f(c(MKT = b)), feasible.interval(con), tol = 1e-6)
+      # with resampled paths each replication has its own domain: the target
+      # is searched where every replication's criterion is finite
+      br <- if (is.null(spec$design$path)) feasible.interval(con) else {
+        iv <- vapply(fps[[est$level]], function(fp) feasible.interval(mc.domain(fp, "MKT")), numeric(2))
+        c(max(iv[1, ]), min(iv[2, ]))
+      }
+      o <- optimize(function(b) f(c(MKT = b)), br, tol = 1e-6)
       out <- setNames(o$minimum, "MKT")
     } else {
+      if (!is.null(spec$design$path)) stop("targets of two-parameter models with resampled paths are not implemented")
       fit <- fit.admissible(f, list(par), con, optim.parscale(par), smooth = TRUE, reltol = 1e-12)
       out <- fit$par
     }

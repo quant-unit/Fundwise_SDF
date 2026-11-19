@@ -30,7 +30,13 @@ MC.ESTIMATORS <- list(
   L2.vyp  = list(level = "vyp",  criterion = "L2"),
   L2.fund = list(level = "fund", criterion = "L2"),
   U.eq    = list(level = "fund", criterion = "U", vintage.weights = "equal"),
-  U.n     = list(level = "fund", criterion = "U", vintage.weights = "n.funds")
+  U.n     = list(level = "fund", criterion = "U", vintage.weights = "n.funds"),
+  # benchmark-path IV comparator (plan W9, Gate G3; one instrument, single
+  # factor only): the root of V^-1 sum_v z_v PV_v(beta) = 0 with
+  # z_v = A_{v,H}(reference) / A_{v,0}(reference) (fast.horizon.scale), a
+  # function of the factor path only; z_v = 1 at H = 0 (the unweighted mean
+  # pricing moment). Fitted by mc.fit.iv().
+  IV      = list(level = "vyp",  criterion = "IV", reference = c(MKT = 1))
 )
 MC.SETTINGS <- list(gross.floor = 0.08, mkt.bounds = c(-1, 4), alpha.bounds = c(-0.02, 0.02),
                     bandwidth = "llsw", delta = 1e-4, wall = 1e10)
@@ -78,8 +84,53 @@ mc.domain <- function(fp, par.names) {
   admissible.constraints(months, par.names, MC.SETTINGS$gross.floor, MC.SETTINGS$mkt.bounds, MC.SETTINGS$alpha.bounds)
 }
 
+# IV comparator, single factor: the root of gbar(beta) = V^-1 sum_v z_v PV_v(beta)
+# on the feasible interval of Theta. gbar is evaluated on a grid of 201 points;
+# each sign change brackets a root (n.roots); the smallest root is taken (the
+# economic root lies below the growth-optimal one, T8) and refined by uniroot.
+# Without a sign change: the minimizer of gbar^2 (n.roots = 0), reported with
+# no SE (the moment has no zero in Theta, so there is no estimate to test;
+# like an estimate on a bound, it counts as not tested). SE: sandwich
+# of the just-identified moment, Var = Omega / (V G^2), Omega the Bartlett sum
+# of the vintage scores s_v = z_v PV_v over vintage-year distances with the
+# estimator's S = ceil(1.3 sqrt V), G = gbar'(beta) by central differences.
+mc.fit.iv <- function(est, fp, model, max.month) {
+  if (model != "MKT") stop("IV comparator: single factor only")
+  t0 <- proc.time()[["elapsed"]]
+  z <- fast.horizon.scale(est$reference, fp, max.month)
+  pv <- function(b) fast.unit.errors(c(MKT = b), fp, 0)
+  gbar <- function(b) { e <- pv(b); if (any(!is.finite(e))) NA_real_ else mean(z * e) }
+  con <- mc.domain(fp, "MKT"); br <- feasible.interval(con)
+  grid <- seq(br[1], br[2], length.out = 201); gv <- vapply(grid, gbar, 0)
+  ch <- which(is.finite(gv[-1]) & is.finite(gv[-length(gv)]) & sign(gv[-1]) != sign(gv[-length(gv)]))
+  if (length(ch)) {
+    i <- ch[1]
+    b.hat <- if (gv[i] == 0) grid[i] else if (gv[i + 1] == 0) grid[i + 1] else uniroot(gbar, grid[c(i, i + 1)], tol = 1e-12)$root
+  } else {
+    b.hat <- optimize(function(b) { g <- gbar(b); if (is.finite(g)) g^2 else MC.SETTINGS$wall }, br, tol = 1e-10)$minimum
+  }
+  par <- c(MKT = b.hat)
+  act <- active.constraints(par, con)
+  se <- NA_real_; S <- NA_real_; V <- fp$n.units; b <- NA_real_
+  if (!length(act) && length(ch)) {
+    d <- MC.SETTINGS$delta
+    G <- (gbar(b.hat + d) - gbar(b.hat - d)) / (2 * d)
+    s <- z * pv(b.hat)
+    S <- if (identical(MC.SETTINGS$bandwidth, "llsw")) hac.bandwidth.llsw(V) else MC.SETTINGS$bandwidth
+    K <- outer(fp$vintage, fp$vintage, bartlett.weight, bw = S)
+    omega <- sum(K * outer(s, s)) / V
+    se <- sqrt(omega / (V * G^2)); b <- S / V
+  }
+  data.frame(model = model, max.month = max.month, MKT = b.hat, Coef = NA_real_, SE.MKT = se, SE.Coef = NA_real_,
+    cov.MKT.Coef = NA_real_, value = gbar(b.hat), convergence = 0L, fit.method = if (length(ch)) "root" else "min.square",
+    n.endpoints = 1L, at.bound = length(act) > 0, active = paste(act, collapse = ","), min.G = min.gross.return(par, con)$value,
+    hac.S = S, hac.V = V, hac.b = b, Wald.stat = NA_real_, q = 1L, neff.MKT = NA_real_, se.singular = NA,
+    n.roots = length(ch), seconds = proc.time()[["elapsed"]] - t0, stringsAsFactors = FALSE)
+}
+
 # One fit: estimator est, model ("MKT" or a second parameter), horizon (months)
 mc.fit <- function(est, fp, model, max.month) {
+  if (est$criterion == "IV") return(mc.fit.iv(est, fp, model, max.month))
   t0 <- proc.time()[["elapsed"]]
   par <- if (model == "MKT") c(MKT = 1) else setNames(c(1, 0), c("MKT", model))
   con <- mc.domain(fp, names(par))
@@ -111,7 +162,9 @@ mc.fit <- function(est, fp, model, max.month) {
 }
 
 # Every estimator, model and horizon of one replication
-mc.replication <- function(design, seed, public, estimators = names(MC.ESTIMATORS), models = c("MKT", "Alpha"),
+# (default: the pipeline's four estimators; the IV comparator is not in the
+# empirical pipeline and is requested by name)
+mc.replication <- function(design, seed, public, estimators = c("L2.vyp", "L2.fund", "U.eq", "U.n"), models = c("MKT", "Alpha"),
                            horizons = c(0, 60, 120, 180, 240, 360)) {
   dr <- mc.draw(design, seed, public)
   fps <- list(fund = NULL, vyp = NULL)
@@ -122,7 +175,7 @@ mc.replication <- function(design, seed, public, estimators = names(MC.ESTIMATOR
     r <- mc.fit(est, fps[[est$level]], m, h)
     out[[length(out) + 1]] <- data.frame(rep = seed, estimator = e, r, stringsAsFactors = FALSE)
   }
-  do.call(rbind, out)
+  do.call(rbind.all.columns.mc, out) # IV rows add n.roots
 }
 
 # Run replications of one design in batches with checkpoints. spec: list with
@@ -214,7 +267,8 @@ mc.load.designs <- function(file = "config/mc_designs.yaml", shape.file = "empir
     }
     list(design = mc.design(n, theta0 = unlist(d$theta0), sigma = d$sigma, shared.sd = d$shared_sd, no.deals = d$no_deals,
                             investment.period = d$investment_period, max.holding.period = d$max_holding_period,
-                            t.max = as.Date(d$t_max), quarterly = isTRUE(d$quarterly)),
+                            t.max = as.Date(d$t_max), quarterly = isTRUE(d$quarterly),
+                            shared.rho = if (is.null(d$shared_rho)) 0 else d$shared_rho, path = d$path),
          estimators = unlist(d$estimators), models = unlist(d$models), horizons = as.numeric(unlist(d$horizons)), reps = d$reps)
   })
 }

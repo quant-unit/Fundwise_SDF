@@ -256,6 +256,24 @@ fast.unit.errors <- function(par, fp, max.month) {
   setNames(dcf * A[fp$unit.grid], fp$fund.id)
 }
 
+# Horizon scale of every unit at par: the factor z with e_H = z * e_0 (the
+# rescaling identity T1, relative to the inception NPV e_0 = the error at
+# max.month 0), i.e. A_{v,H} / A_{v,0} in fast.unit.errors(); 1 at H = 0.
+# The instrument of the IV comparator (simulation/mc_driver.R). Same
+# compounding as fast.unit.errors() (test: e_H = z * e_0, helper/test_mc.R).
+fast.horizon.scale <- function(par, fp, max.month) {
+  par0 <- c(RF = 1, par)
+  g <- fp$grids
+  r0 <- min(g$k0)
+  L <- rep(NA_real_, nrow(fp$X) + 1L)
+  L[r0:(nrow(fp$X) + 1L)] <- c(0, cumsum(log(1 + as.numeric(fp$X[r0:nrow(fp$X), names(par0), drop = FALSE] %*% par0))))
+  m <- max(as.integer(max.month), 1L)
+  base <- L[g$k0]
+  A <- vapply(seq_len(nrow(g)), function(k) sum(exp(L[g$k0[k] + seq_len(min(m, g$n[k]))] - base[k])) / min(m, g$n[k]), 0)
+  A1 <- exp(L[g$k0 + 1L] - base) # the max.month 0 (= 1) scale
+  setNames((A / A1)[fp$unit.grid], fp$fund.id)
+}
+
 # U criterion of fast.unit.errors() output: same value as u.criterion(e,
 # fp$key, s, vintage.weights) (T1), with the vintage grouping precomputed.
 # Fund weights s: equal (EW, the default, as the pipeline for EW data even

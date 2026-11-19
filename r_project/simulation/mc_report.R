@@ -7,10 +7,15 @@
 # results only, no fund-level data).
 source("simulation/mc_driver.R"); source("simulation/mc_analyze.R")
 D <- mc.load.designs()
-tg <- readRDS("simulation/data_out_mc/targets.rds")
-targets <- tg$targets
+# targets of the first production (targets.rds) and of the additions of
+# 19 November (targets_additions.rds, if computed); designs without rows yet
+# are left out
+tgs <- lapply(Filter(file.exists, file.path("simulation/data_out_mc", c("targets.rds", "targets_additions.rds"))), readRDS)
+tg <- list(commit = paste(unique(vapply(tgs, `[[`, "", "commit")), collapse = ","), dirty = any(vapply(tgs, function(x) isTRUE(x$dirty), TRUE)))
+targets <- do.call(rbind, lapply(tgs, `[[`, "targets"))
 s <- do.call(rbind, lapply(names(D), function(id) {
   r <- mc.read(id)
+  if (!nrow(r)) return(NULL)
   x <- mc.summary(r, D[[id]]$design$theta0, targets[targets$design == id & targets$half == "all", ])
   cbind(design = id, x)
 }))
@@ -24,7 +29,7 @@ if (nrow(h)) {
     MKT = abs(w$`MKT.target.1-100` - w$`MKT.target.101-200`) / 2, Coef = abs(w$`Coef.target.1-100` - w$`Coef.target.101-200`) / 2)
 }
 attr(s, "provenance") <- list(targets.commit = tg$commit, targets.dirty = tg$dirty,
-  production = unique(unlist(lapply(names(D), function(id) vapply(attr(mc.read(id), "provenance"), `[[`, "", "git.commit")))))
+  production = unique(unlist(lapply(names(D), function(id) { p <- attr(mc.read(id), "provenance"); if (is.null(p)) character(0) else vapply(p, `[[`, "", "git.commit") }))))
 saveRDS(s, "simulation/data_out_mc/summary.rds")
 dir.create("results/mc_step4", showWarnings = FALSE, recursive = TRUE)
 write.csv(s, "results/mc_step4/summary.csv", row.names = FALSE)
