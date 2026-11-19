@@ -146,7 +146,10 @@ mc.run <- function(name, spec, reps, public, out.dir = "simulation/data_out_mc",
     t0 <- Sys.time()
     run1 <- function(s) tryCatch(mc.replication(spec$design, s, public, spec$estimators, spec$models, spec$horizons),
                                  error = function(e) data.frame(rep = s, error = conditionMessage(e)))
-    rows <- if (workers > 1) parallel::mclapply(batches[[k]], run1, mc.cores = workers) else lapply(batches[[k]], run1)
+    # dynamic scheduling: one replication per job, so no worker idles while
+    # another works through a prescheduled share (slow designs); rows do not
+    # depend on the schedule (each replication is seeded by its index)
+    rows <- if (workers > 1) parallel::mclapply(batches[[k]], run1, mc.cores = workers, mc.preschedule = FALSE) else lapply(batches[[k]], run1)
     # a worker that died (e.g. out of memory) returns a try-error, not rows
     rows <- lapply(seq_along(rows), function(j) {
       x <- rows[[j]]

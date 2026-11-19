@@ -34,11 +34,11 @@ designs:
   m3_sigma:  {shape: BO, sigma: 0.195}                 # 1.5 x calibrated
   m4_shared: {shape: BO, shared_sd: 0.153}             # matches the Buyout U level at H = 0
   m4_shared2: {shape: BO, shared_sd: 0.306}            # twice (about the VC level)
-  m5_life_2_2:  {shape: BO, investment_period: 2, max_holding_period: 2}
+  m5_life_2_2:  {shape: BO, investment_period: 2, max_holding_period: 2, reps: 1000}   # extended (rule, 19 Nov)
   m5_life_3_10: {shape: BO, investment_period: 3, max_holding_period: 10}
-  m6_ME:  {shape: BO, theta0: {MKT: 1, ME: 0.5},  models: [ME],  estimators: [L2.vyp, U.eq]}
+  m6_ME:  {shape: BO, theta0: {MKT: 1, ME: 0.5},  models: [ME],  estimators: [L2.vyp, U.eq], reps: 1000}   # extended (rule, 19 Nov)
   m6_IA:  {shape: BO, theta0: {MKT: 1, IA: 0.5},  models: [IA],  estimators: [L2.vyp, U.eq]}
-  m6_ROE: {shape: BO, theta0: {MKT: 1, ROE: 0.5}, models: [ROE], estimators: [L2.vyp, U.eq]}
+  m6_ROE: {shape: BO, theta0: {MKT: 1, ROE: 0.5}, models: [ROE], estimators: [L2.vyp, U.eq], reps: 1000}  # extended (rule, 19 Nov)
   m6_EG:  {shape: BO, theta0: {MKT: 1, EG: 0.5},  models: [EG],  estimators: [L2.vyp, U.eq]}
   m7_beta2: {shape: BO, theta0: {MKT: 2}}
   # DLP12 grid G: stylized consecutive vintages ending 2005, their deal model

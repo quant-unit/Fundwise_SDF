@@ -1,0 +1,176 @@
+"statement","design","H","estimate","mcse","threshold","z","holds","needs.more"
+"U (alpha, beta) on a bound < 5%","m1_thin",0,0.004,0.00629285308902091,0.05,7.30987985088287,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m1_thin",0,0.004,0.00629285308902091,0.05,7.30987985088287,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m1_thin",0,0.164,0.0137840487520902,0.05,8.27042925125413,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m1_thin",5,0.008,0.00629285308902091,0.05,6.67423812471915,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m1_thin",5,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m1_thin",5,0.148,0.0137840487520902,0.05,7.10966725107811,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m1_thin",10,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m1_thin",10,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m1_thin",10,0.136,0.0137840487520902,0.05,6.2390957509461,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m1_thin",15,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m1_thin",15,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m1_thin",15,0.12,0.0137840487520902,0.05,5.07833375077008,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m1_thin",20,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m1_thin",20,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m1_thin",20,0.088,0.0137840487520902,0.05,2.75680975041804,TRUE,FALSE
+"H = 0: |L2 error| > |U error| on average (paired)","m1_thin",0,0.0292616829357154,0.0099811177884164,0,2.93170399909268,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m1_wide",0,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m1_wide",0,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m1_wide",0,0.188,0.0137840487520902,0.05,10.0115722515182,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m1_wide",5,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m1_wide",5,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m1_wide",5,0.124,0.0137840487520902,0.05,5.36852425081409,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m1_wide",10,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m1_wide",10,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m1_wide",10,0.124,0.0137840487520902,0.05,5.36852425081409,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m1_wide",15,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m1_wide",15,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m1_wide",15,0.104,0.0137840487520902,0.05,3.91757175059406,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m1_wide",20,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m1_wide",20,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m1_wide",20,0.076,0.0137840487520902,0.05,1.88623825028603,TRUE,TRUE
+"H = 0: |L2 error| > |U error| on average (paired)","m1_wide",0,0.00988263562322775,0.00180859076508761,0,5.46427407128168,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m2_early",0,0.004,0.00629285308902091,0.05,7.30987985088287,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m2_early",0,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m2_early",0,0.132,0.0137840487520902,0.05,5.9489052509021,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m2_early",5,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m2_early",5,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m2_early",5,0.1,0.0137840487520902,0.05,3.62738125055006,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m2_early",10,0.028,0.0104337912572564,0.05,2.10853365354608,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m2_early",10,0.008,0.00629285308902091,0.05,6.67423812471915,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m2_early",10,0.124,0.0137840487520902,0.05,5.36852425081409,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m2_early",15,0.012,0.00688650854933035,0.05,5.51803569657881,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m2_early",15,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m2_early",15,0.104,0.0137840487520902,0.05,3.91757175059406,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m2_early",20,0.012,0.00688650854933035,0.05,5.51803569657881,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m2_early",20,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m2_early",20,0.084,0.0137840487520902,0.05,2.46661925037404,TRUE,FALSE
+"H = 0: |L2 error| > |U error| on average (paired)","m2_early",0,0.0643060514537064,0.0110348370192055,0,5.82754882032108,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m2_late",0,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m2_late",0,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m2_late",0,0.156,0.0137840487520902,0.05,7.69004825116612,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m2_late",5,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m2_late",5,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m2_late",5,0.152,0.0137840487520902,0.05,7.39985775112212,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m2_late",10,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m2_late",10,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m2_late",10,0.168,0.0137840487520902,0.05,8.56061975129814,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m2_late",15,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m2_late",15,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m2_late",15,0.172,0.0137840487520902,0.05,8.85081025134214,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m2_late",20,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m2_late",20,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m2_late",20,0.156,0.0137840487520902,0.05,7.69004825116612,TRUE,FALSE
+"H = 0: |L2 error| > |U error| on average (paired)","m2_late",0,0.00573906956994391,0.00268312105524538,0,2.13895290289802,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m3_sigma",0,0.004,0.00629285308902091,0.05,7.30987985088287,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m3_sigma",0,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m3_sigma",0,0.284,0.0137840487520902,0.05,16.9761442525743,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m3_sigma",5,0.004,0.00629285308902091,0.05,7.30987985088287,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m3_sigma",5,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m3_sigma",5,0.236,0.0137840487520902,0.05,13.4938582520462,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m3_sigma",10,0.016,0.00793574193128784,0.05,4.28441351727303,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m3_sigma",10,0.004,0.00629285308902091,0.05,7.30987985088287,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m3_sigma",10,0.204819277108434,0.0138116998305363,0.05,11.2092848098352,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m3_sigma",15,0.008,0.00629285308902091,0.05,6.67423812471915,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m3_sigma",15,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m3_sigma",15,0.208,0.0137840487520902,0.05,11.4625247517382,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m3_sigma",20,0.012,0.00688650854933035,0.05,5.51803569657881,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m3_sigma",20,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m3_sigma",20,0.148,0.0137840487520902,0.05,7.10966725107811,TRUE,FALSE
+"H = 0: |L2 error| > |U error| on average (paired)","m3_sigma",0,0.112088743686246,0.0169869313230139,0,6.59852810109309,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m4_shared",0,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m4_shared",0,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m4_shared",0,0.208,0.0137840487520902,0.05,11.4625247517382,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m4_shared",5,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m4_shared",5,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m4_shared",5,0.176,0.0137840487520902,0.05,9.14100075138615,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m4_shared",10,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m4_shared",10,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m4_shared",10,0.168,0.0137840487520902,0.05,8.56061975129814,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m4_shared",15,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m4_shared",15,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m4_shared",15,0.18,0.0137840487520902,0.05,9.43119125143015,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m4_shared",20,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m4_shared",20,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m4_shared",20,0.148,0.0137840487520902,0.05,7.10966725107811,TRUE,FALSE
+"H = 0: |L2 error| > |U error| on average (paired)","m4_shared",0,0.037606278346948,0.00460051297476017,0,8.17436632681348,TRUE,FALSE
+"M4: U (q_v = 1) biased at H = 0 and 30 years","m4_shared",0,0.0422088505796172,0.00813147857758045,0,5.19079650483155,TRUE,FALSE
+"M4: U (q_v = 1) biased at H = 0 and 30 years","m4_shared",30,0.053170787221481,0.0136842728675884,0,3.88553982633725,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m4_shared2",0,0.004,0.00629285308902091,0.05,7.30987985088287,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m4_shared2",0,0.02,0.00885437744847146,0.05,3.38815463589469,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m4_shared2",0,0.192,0.0137840487520902,0.05,10.3017627515622,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m4_shared2",5,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m4_shared2",5,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m4_shared2",5,0.212,0.0137840487520902,0.05,11.7527152517822,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m4_shared2",10,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m4_shared2",10,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m4_shared2",10,0.164,0.0137840487520902,0.05,8.27042925125413,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m4_shared2",15,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m4_shared2",15,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m4_shared2",15,0.196,0.0137840487520902,0.05,10.5919532516062,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m4_shared2",20,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m4_shared2",20,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m4_shared2",20,0.188,0.0137840487520902,0.05,10.0115722515182,TRUE,FALSE
+"H = 0: |L2 error| > |U error| on average (paired)","m4_shared2",0,0.0342890031409577,0.00419284956143364,0,8.17797124331679,TRUE,FALSE
+"M4: U (q_v = 1) biased at H = 0 and 30 years","m4_shared2",0,0.143131782750916,0.0134054717391865,0,10.6771164443633,TRUE,FALSE
+"M4: U (q_v = 1) biased at H = 0 and 30 years","m4_shared2",30,0.277668492577575,0.0182905377844377,0,15.1809911687685,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m5_life_2_2",0,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m5_life_2_2",0,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m5_life_2_2",0,0.084,0.0137840487520902,0.05,2.46661925037404,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m5_life_2_2",5,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m5_life_2_2",5,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m5_life_2_2",5,0.044,0.0137840487520902,0.05,-0.435285750066007,FALSE,TRUE
+"U (alpha, beta) on a bound < 5%","m5_life_2_2",10,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m5_life_2_2",10,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m5_life_2_2",10,0.032,0.0137840487520902,0.05,-1.30585725019802,FALSE,TRUE
+"U (alpha, beta) on a bound < 5%","m5_life_2_2",15,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m5_life_2_2",15,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m5_life_2_2",15,0.028,0.0137840487520902,0.05,-1.59604775024203,FALSE,TRUE
+"U (alpha, beta) on a bound < 5%","m5_life_2_2",20,0.016,0.00793574193128784,0.05,4.28441351727303,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m5_life_2_2",20,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m5_life_2_2",20,0.02,0.0137840487520902,0.05,-2.17642875033004,FALSE,FALSE
+"H = 0: |L2 error| > |U error| on average (paired)","m5_life_2_2",0,-0.00140429870354158,0.00108900113020296,0,-1.28952915161791,FALSE,TRUE
+"U (alpha, beta) on a bound < 5%","m5_life_3_10",0,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m5_life_3_10",0,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m5_life_3_10",0,0.232,0.0137840487520902,0.05,13.2036677520022,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m5_life_3_10",5,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m5_life_3_10",5,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m5_life_3_10",5,0.152,0.0137840487520902,0.05,7.39985775112212,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m5_life_3_10",10,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m5_life_3_10",10,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m5_life_3_10",10,0.164,0.0137840487520902,0.05,8.27042925125413,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m5_life_3_10",15,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m5_life_3_10",15,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m5_life_3_10",15,0.18,0.0137840487520902,0.05,9.43119125143015,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m5_life_3_10",20,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m5_life_3_10",20,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m5_life_3_10",20,0.112,0.0137840487520902,0.05,4.49795275068207,TRUE,FALSE
+"H = 0: |L2 error| > |U error| on average (paired)","m5_life_3_10",0,0.0237675939573943,0.00488563827304752,0,4.86478790059271,TRUE,FALSE
+"M6: L2 overestimates the second loading at H = 0","m6_ME",0,0.051442385739257,0.0111661185267186,0,4.60700695735622,TRUE,FALSE
+"M6: U (q_v = 1) second loading within 0.05 at 15 years","m6_ME",15,0.0234020006375906,0.0275094205389663,0.05,0.966868761366097,TRUE,TRUE
+"M6: L2 overestimates the second loading at H = 0","m6_IA",0,0.189573960380997,0.0142163197040528,0,13.3349533724226,TRUE,FALSE
+"M6: U (q_v = 1) second loading within 0.05 at 15 years","m6_IA",15,0.00217849395238195,0.0167938125081177,0.05,2.84756698483459,TRUE,FALSE
+"M6: L2 overestimates the second loading at H = 0","m6_ROE",0,0.162290534064365,0.0129670193538733,0,12.5156390713559,TRUE,FALSE
+"M6: U (q_v = 1) second loading within 0.05 at 15 years","m6_ROE",15,0.018270260760272,0.0179203671574967,0.05,1.77059649285447,TRUE,TRUE
+"M6: L2 overestimates the second loading at H = 0","m6_EG",0,0.108764080652054,0.00835590182702807,0,13.0164383095364,TRUE,FALSE
+"M6: U (q_v = 1) second loading within 0.05 at 15 years","m6_EG",15,0.00905875937748257,0.0138778562196524,0.05,2.95011275333294,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m7_beta2",0,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m7_beta2",0,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m7_beta2",0,0.304,0.0137840487520902,0.05,18.4270967527943,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m7_beta2",5,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m7_beta2",5,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m7_beta2",5,0.168,0.0137840487520902,0.05,8.56061975129814,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m7_beta2",10,0.008,0.00629285308902091,0.05,6.67423812471915,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m7_beta2",10,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m7_beta2",10,0.184,0.0137840487520902,0.05,9.72138175147416,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m7_beta2",15,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m7_beta2",15,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m7_beta2",15,0.248,0.0137840487520902,0.05,14.3644297521782,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m7_beta2",20,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (alpha, beta) on a bound < 5%","m7_beta2",20,0,0.00629285308902091,0.05,7.9455215770466,TRUE,FALSE
+"U (q_v = n_v) rejects the true beta in more than 5%","m7_beta2",20,0.172,0.0137840487520902,0.05,8.85081025134214,TRUE,FALSE
+"H = 0: |L2 error| > |U error| on average (paired)","m7_beta2",0,0.0112855489162266,0.00319067743212126,0,3.53703849928936,TRUE,FALSE
+"G: |bias| at H = 0 smaller with 200 than with 5 funds per vintage","V = 10",0,0.418161647160015,0.041094929897469,0,10.1755045744894,TRUE,FALSE
+"G: |bias| at H = 0 smaller with 200 than with 5 funds per vintage","V = 20",0,0.500913635621,0.0393936073438351,0,12.7156071605458,TRUE,FALSE
+"G: |bias| at H = 0 smaller with 200 than with 5 funds per vintage","V = 39",0,0.652834200282991,0.0369123529574699,0,17.6860630108078,TRUE,FALSE
