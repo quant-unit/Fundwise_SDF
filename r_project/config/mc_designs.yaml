@@ -85,3 +85,7 @@ designs:
   # stream first)
   h_V25_n5:   {consecutive: {funds: 5, count: 25, last: 2005}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
   h_V25_n20:  {consecutive: {funds: 20, count: 25, last: 2005}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  # window against counts (log entry "Step 4, window-versus-counts check"):
+  # equal counts in the Buyout core's window, 15 funds in each of the 25
+  # vintages 1986-2010 (375 funds; the core has 383), historical path
+  w_V25_n15:  {consecutive: {funds: 15, count: 25, last: 2010}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
