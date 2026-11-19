@@ -7,10 +7,12 @@
 # results only, no fund-level data).
 source("simulation/mc_driver.R"); source("simulation/mc_analyze.R")
 D <- mc.load.designs()
-# targets of the first production (targets.rds) and of the additions of
-# 19 November (targets_additions.rds, if computed); designs without rows yet
-# are left out
-tgs <- lapply(Filter(file.exists, file.path("simulation/data_out_mc", c("targets.rds", "targets_additions.rds"))), readRDS)
+# targets of the first production (targets.rds), of the additions of
+# 19 November (targets_additions.rds) and of later additions (other
+# targets*.rds, simulation/mc_targets.R --out=); each design's targets must
+# come from one file. Designs without rows yet are left out
+tgs <- lapply(list.files("simulation/data_out_mc", pattern = "^targets.*\\.rds$", full.names = TRUE), readRDS)
+stopifnot(!anyDuplicated(unlist(lapply(tgs, function(x) unique(x$targets$design)))))
 tg <- list(commit = paste(unique(vapply(tgs, `[[`, "", "commit")), collapse = ","), dirty = any(vapply(tgs, function(x) isTRUE(x$dirty), TRUE)))
 targets <- do.call(rbind, lapply(tgs, `[[`, "targets"))
 s <- do.call(rbind, lapply(names(D), function(id) {

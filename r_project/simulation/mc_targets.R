@@ -5,12 +5,19 @@
 #   LANG=en_US.UTF-8 Rscript simulation/mc_targets.R              -> targets.rds (every design)
 #   LANG=en_US.UTF-8 Rscript simulation/mc_targets.R design ...   -> targets_additions.rds (those designs only;
 #     the additions of 19 November, so the targets of the first production stay as committed)
-# Both in simulation/data_out_mc/; simulation/mc_report.R reads both.
+#   LANG=en_US.UTF-8 Rscript simulation/mc_targets.R --out=targets_NAME.rds design ...
+#     -> that file (later additions, so earlier target files are never overwritten)
+# All in simulation/data_out_mc/; simulation/mc_report.R reads every targets*.rds there.
 source("simulation/mc_driver.R"); source("simulation/mc_analyze.R")
 pub <- mc.public.factors(); D <- mc.load.designs()
-ids <- commandArgs(TRUE)
-stopifnot(all(ids %in% names(D)))
-out.file <- file.path("simulation/data_out_mc", if (length(ids)) "targets_additions.rds" else "targets.rds")
+args <- commandArgs(TRUE)
+out.arg <- grep("^--out=", args, value = TRUE)
+ids <- setdiff(args, out.arg)
+stopifnot(all(ids %in% names(D)), length(out.arg) <= 1, !length(out.arg) || length(ids))
+out.name <- if (length(out.arg)) sub("^--out=", "", out.arg) else if (length(ids)) "targets_additions.rds" else "targets.rds"
+stopifnot(grepl("^targets.*\\.rds$", out.name))
+out.file <- file.path("simulation/data_out_mc", out.name)
+if (length(out.arg) && file.exists(out.file)) stop(out.file, " exists; choose another --out name")
 if (!length(ids)) ids <- names(D)
 w <- n.parallel.workers(48)
 out <- list()
