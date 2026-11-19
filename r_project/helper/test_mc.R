@@ -298,6 +298,69 @@ check("T7 no root of the moment in Theta: estimate = minimizer of gbar^2, no SE 
   all(nr$n.roots == 0) && all(is.na(nr$SE.MKT)) && all(nr$fit.method == "min.square") && all(abs(nr$value) > 0.1),
   sprintf("|gbar| at the minimizer %s", paste(sprintf("%.3f", abs(nr$value)), collapse = ", ")))
 
+# ---------------------------------------------------------------------------
+# T9: Online Appendix D on the stored G1 samples (simulation/mc_appendix_d.R).
+# (a) The reader's fast structure equals the pipeline's preparation of the same
+# samples, built here the way estim_model_optimized.R builds it (unique Fund.ID
+# per sample, all rows padded together to the file's common data end, public
+# factors merged by date, simulated MKT and RF merged by (Date, sample_id)):
+# same units, unit errors and L2 criterion within 1e-10. (b) The domain (the
+# months of the sample's window with that sample's factor values) equals the
+# pipeline's admissible months. (c) The alpha bounds equal the config
+# loader's. (d) The inputs are those of the G1 table (md5 in the G1 results).
+# Samples 1 and 2 of S2, S5 (simulated market) and Panel B S3 (truncated
+# payoffs). With the same prepared data the estimator is the pipeline's (T3).
+source(here("simulation/mc_appendix_d.R"))
+source(here("helper/config_loader.R"))
+ad.pub <- ad.public(); ad.fc <- unique(c("RF", setdiff(colnames(ad.pub), "Date")))
+ad.cfg <- load_simulation_config(here(AD.CONFIG))
+ad.pars <- list(c(MKT = 1, Alpha = 0), c(MKT = 0.7, Alpha = 0.004), c(MKT = 1.3, Alpha = -0.003), c(MKT = 2.5, Alpha = 0.01), c(MKT = -0.5, Alpha = 0.015))
+for (id in c("big_n_v_50funds_alpha", "big_n_v_50funds_alpha_stdv30_shifted_mkt", "big_n_v_50funds_alpha_stdv30_additive")) {
+  L <- ad.load(id)
+  g1 <- read.csv(list.files(sprintf("simulation/data_out_2026_g1/cache_q_factors_%s_simulated_cashflows_EW_VYP", id), "_m0_l0_cached_res\\.csv$", full.names = TRUE)[1])
+  check(sprintf("T9 %s: input file is the G1 table's (md5)", id), identical(unique(g1$input.md5), L$md5), L$md5)
+  ref <- as.data.frame(data.table::rbindlist(L$samples[c("1", "2")])); ref$sample <- NULL
+  ref$Fund.ID <- as.factor(paste(ref$Fund.ID, ref$type, sep = "_"))
+  ref <- pad.all.units(ref, "first.cf", L$t.max)
+  df0 <- merge(ref, ad.pub, by = "Date", all.x = TRUE)
+  if (!is.null(L$factors)) {
+    sf <- read.csv(L$factors.file); sf$Date <- as.Date(sf$Date)
+    df0$sample_id <- as.integer(sub(".*\\.(\\d+)$", "\\1", as.character(df0$type)))
+    df0 <- merge(df0, sf[, c("Date", "sample_id", "MKT", "RF")], by = c("Date", "sample_id"), all.x = TRUE, suffixes = c(".hist", ".sim"))
+    df0$MKT <- ifelse(is.na(df0$MKT.sim), df0$MKT.hist, df0$MKT.sim); df0$RF <- ifelse(is.na(df0$RF.sim), df0$RF.hist, df0$RF.sim)
+    df0$MKT.sim <- df0$MKT.hist <- df0$RF.sim <- df0$RF.hist <- df0$sample_id <- NULL
+  }
+  df0 <- df0[df0$Vintage <= 2021, ]
+  bounds <- unlist(scenario_to_estimation_params(ad.cfg$scenarios[[id]])[c("alpha_lower", "alpha_upper")])
+  check(sprintf("T9 %s: alpha bounds = the config loader's", id), identical(unname(bounds), ad.alpha.bounds(id)), paste(ad.alpha.bounds(id), collapse = ", "))
+  MC.SETTINGS$alpha.bounds <- ad.alpha.bounds(id)
+  for (k in 1:2) {
+    d.k <- df0[df0$type == L$samples[[as.character(k)]]$type[1], ]
+    prep <- prepare.units(d.k, ad.fc)
+    fp <- ad.prepare(L$samples[[as.character(k)]], L$t.max, ad.pub, if (is.null(L$factors)) NULL else L$factors[[as.character(k)]])
+    worst <- c(errors = 0, L2 = 0)
+    for (par in ad.pars) {
+      a <- fast.unit.errors(par, fp, 0); b <- ref.errors(par, prep, 0)
+      worst["errors"] <- max(worst["errors"], rel.diff(unname(a), unname(b)))
+      worst["L2"] <- max(worst["L2"], rel.diff(sqrt(sum(a^2)) / length(a), sqrt(sum(b^2)) / length(b)))
+    }
+    check(sprintf("T9 %s sample %d: same units; unit errors and L2 criterion = pipeline preparation within 1e-10", id, k),
+      identical(fp$fund.id, names(prep$units)) && max(worst) <= 1e-10, sprintf("%d units, max relative difference %.1e", fp$n.units, max(worst)))
+    mo <- d.k[!duplicated(d.k$Date), c("Date", ad.fc)]; mo <- mo[order(mo$Date), ]
+    cp <- admissible.constraints(mo, c("MKT", "Alpha"), MC.SETTINGS$gross.floor, MC.SETTINGS$mkt.bounds, MC.SETTINGS$alpha.bounds)
+    cf <- mc.domain(fp, c("MKT", "Alpha"))
+    check(sprintf("T9 %s sample %d: domain = the pipeline's admissible months (sample's own factor path)", id, k),
+      identical(dim(cp$ui), dim(cf$ui)) && max(abs(cp$ui - cf$ui)) == 0 && max(abs(cp$ci - cf$ci)) == 0 && identical(cp$kind, cf$kind),
+      sprintf("%d constraints; months %s to %s", nrow(cf$ui), format(min(mo$Date)), format(max(mo$Date))))
+  }
+}
+ad.own <- sapply(AD.ROWS$scenario, ad.alpha.bounds)
+ad.ref <- sapply(AD.ROWS$scenario, function(id) unname(unlist(scenario_to_estimation_params(ad.cfg$scenarios[[id]])[c("alpha_lower", "alpha_upper")])))
+check("T9 all 19 scenarios: alpha bounds = the config loader's (S6 and S10 with upper bound 1%)", identical(unname(ad.own), unname(ad.ref)) &&
+  all(ad.own[2, grepl("_mkt(2|8)", AD.ROWS$scenario)] == 0.01) && all(ad.own[2, !grepl("_mkt(2|8)", AD.ROWS$scenario)] == 0.02),
+  sprintf("upper bounds %s", paste(sort(unique(ad.own[2, ])), collapse = ", ")))
+MC.SETTINGS$alpha.bounds <- c(-0.02, 0.02)
+
 t.gen <- system.time(for (s in 1:20) { x <- mc.draw(mc.design(shape), s, pub); mc.as.fast(x, pub, "fund"); mc.as.fast(x, pub, "vyp") })[["elapsed"]] / 20
 cat(sprintf("Generator, Buyout shape (%d funds, %d deals): %.2f s per replication incl. both fast structures; %.1f MB in memory\n",
   sum(shape), sum(shape) * 15, t.gen, as.numeric(object.size(list(dr, mc.as.fast(dr, pub, "fund")))) / 2^20))
