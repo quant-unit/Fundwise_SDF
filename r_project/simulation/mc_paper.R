@@ -11,6 +11,8 @@
 #                     table_AS2_se_study.tex, table_AS3_alpha_beta.tex,
 #                     table_AS4_grid.tex, figure_S3_growing_V.pdf (growing V,
 #                     the reply to R2-3.1)
+#   online appendix D: table_AD_dlp12.tex (the DLP12 comparison, S1-S10 under r5,
+#                     from results/mc_step4/appendix_d_summary.csv)
 #   exhibits_data.csv: every printed number with its source key (one row per
 #                     cell), for the check against the summary.
 suppressMessages({ library(ggplot2) })
@@ -293,6 +295,57 @@ a4 <- c(a4, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
     sprintf("Monte Carlo SE of the bias %s. At $H=0$ the bias falls with the number of funds per vintage in each column, not with $V$.}", mcse.range(g$mcse.bias))),
   "\\end{table}")
 write.table.tex("table_AS4_grid.tex", a4)
+
+# ---- Table A-D: the DLP12 comparison (Online Appendix D) under r5 -------------
+# results/mc_step4/appendix_d_summary.csv (simulation/mc_appendix_d.R): the G1
+# samples of S1-S10, both panels, re-estimated with the r5 estimator. Same
+# label, layout and DLP12 benchmark row as the G1 table
+# (simulation/diressen_simulation.R).
+ad <- read.csv("results/mc_step4/appendix_d_summary.csv", stringsAsFactors = FALSE)
+stopifnot(nrow(ad) == 19, all(ad$failed == 0), all(ad$samples == 1000))
+f2 <- function(x) formatC(round(x, 2) + 0, format = "f", digits = 2)
+pct0 <- function(x) paste0(formatC(round(100 * x) + 0, format = "f", digits = 0), "\\%")
+# row labels as in the G1 table: design, then (Panel B) the shock distribution
+# (normal for S1-S3, shifted lognormal from S4; under multiplicative shocks they
+# coincide), then the changed features
+AD.BASE.LABEL <- c(S1 = "$n=20$, $\\sigma=20\\%$", S2 = "$n=50$, $\\sigma=20\\%$")
+AD.TAIL <- c(S5 = ", Sim.~MKT", S6 = ", Sim.~MKT, $\\bar{\\alpha}=1\\%$", S7 = ", Sim.~MKT, Det.~Timing", S8 = ", Sim.~MKT, Max.~Hold 5",
+  S9 = ", Sim.~MKT, Max.~Hold 5, Det.~Timing", S10 = ", Sim.~MKT, Max.~Hold 5, Det.~Timing, $\\bar{\\alpha}=1\\%$")
+ad.label <- function(panel, row) {
+  base <- if (row %in% names(AD.BASE.LABEL)) AD.BASE.LABEL[[row]] else "$n=50$, $\\sigma=30\\%$"
+  shock <- if (panel == "A") "" else if (row %in% c("S1", "S2", "S3")) ", Normal" else ", Shifted LN"
+  sprintf("(%s) %s%s%s", row, base, shock, if (row %in% names(AD.TAIL)) AD.TAIL[[row]] else "")
+}
+AD.COLS <- c("true.beta", "mean.beta", "sd.beta", "p25.beta", "p75.beta", "true.alpha", "mean.alpha", "sd.alpha", "p25.alpha", "p75.alpha")
+ad.row <- function(i) {
+  r <- ad[i, ]; key <- list(source = "appendix_d", row = paste(r$panel, r$row), design = r$scenario)
+  vals <- vapply(AD.COLS, function(k) rec("AD", key, k, r[[k]], f2(r[[k]])), "")
+  sprintf("%s & %s & %s \\\\", ad.label(r$panel, r$row), paste(vals, collapse = " & "), rec("AD", key, "on.bound", r$on.bound, pct0(r$on.bound)))
+}
+td <- c("\\begin{table}[htbp]", "\\centering",
+  "\\caption{Comparison to simulation \\cite[Table 1]{DLP12}}", "\\label{tab:driessen_comparison}",
+  "\\resizebox{\\linewidth}{!}{%", "\\begin{tabular}{l ccccc cccccc}", "\\toprule",
+  "& \\multicolumn{5}{c}{Market Beta ($\\beta$)} & \\multicolumn{6}{c}{Alpha ($\\alpha$, monthly \\%)} \\\\",
+  "\\cmidrule(lr){2-6} \\cmidrule(lr){7-12}",
+  "Scenario & True & Mean & SD & 25\\% & 75\\% & True & Mean & SD & 25\\% & 75\\% & \\% Bound \\\\", "\\midrule",
+  "\\multicolumn{12}{l}{\\textit{Panel A: mean-one multiplicative deal shocks}} \\\\")
+for (i in which(ad$panel == "A")) td <- c(td, ad.row(i))
+td <- c(td, "\\addlinespace", "\\multicolumn{12}{l}{\\textit{Panel B: additive deal shocks with default truncation (former shock model)}} \\\\")
+for (i in which(ad$panel == "B")) td <- c(td, ad.row(i))
+td <- c(td, "\\addlinespace", "\\multicolumn{12}{l}{\\textit{Driessen et al. 2012, Table 1}} \\\\",
+  # DLP12, Table 1, benchmark column (published values, as in the G1 table)
+  "Benchmark Estimates ($n=50$, $\\sigma_{\\text{monthly}}=30\\%$) & 1.00 & 0.98 & 0.32 & 0.80 & 1.15 & 0.00 & 0.05 & 0.2 & -0.06 & 0.15 & n/a \\\\",
+  "\\bottomrule", "\\end{tabular}%", "}", "\\par\\vspace{2pt}",
+  paste0("{\\scriptsize\\textit{Notes:} Small-sample properties at $H=0$ of the estimator of the paper's tables: L2 on equally weighted vintage-year portfolios, $(\\alpha,\\beta)$ minimized over the admissible domain ",
+    "($\\beta\\in[-1,4]$, $\\alpha\\le\\bar\\alpha$, gross benchmark return at least 0.08 in every month of the window; constrained multi-start minimizer), mimicking Table~1 of \\cite{DLP12}. ",
+    "1{,}000 Monte Carlo samples per scenario. All scenarios: 20 vintage years (1986--2005), 15 deals per fund, investment period 5 years; unless stated otherwise $n=20$ funds per vintage, $\\sigma=20\\%$ monthly deal volatility, a normal shock, the historical factor path, random deal timing, holding periods up to 10 years and $\\bar\\alpha=2\\%$ per month. ",
+    "Panel~A: deal payoffs compound over the months after the investment month with mean-one lognormal monthly shocks, $G_u(1+\\varepsilon_u)$, $\\mathrm{E}[1+\\varepsilon_u]=1$, so the process prices exactly at the true parameters; normal and shifted-lognormal shocks then coincide and (S4) equals (S3). ",
+    "Panel~B: the former additive shocks $G_u+\\varepsilon_u$ with default truncation (a deal path below zero pays nothing), which raises the expected payoff above the benchmark. ",
+    "$n$: funds per vintage; $\\sigma$: monthly deal volatility; \\textit{Shifted LN}: shifted lognormal shock (cf.\\ \\cite{DLP12}); \\textit{Sim.~MKT}: total market return i.i.d.\\ shifted lognormal (S\\&P~500 1980--2003 moments), risk-free rate 4\\% per year; ",
+    "\\textit{Det.~Timing}: evenly spaced deal investment dates; \\textit{Max.~Hold 5}: holding periods up to 5 years; $\\bar\\alpha$: upper bound on $\\alpha$. ",
+    "\\textit{\\% Bound}: share of samples whose estimate lies on the boundary of the domain (an active constraint): almost always $\\alpha=\\bar\\alpha$; $\\beta$ at $-1$ or 4 in at most 1.7\\% of samples, the gross floor never. Alpha in monthly percent. The last row: the benchmark estimates of \\cite[Table~1]{DLP12}.}"),
+  "\\end{table}")
+write.table.tex("table_AD_dlp12.tex", td)
 
 # ---- figures --------------------------------------------------------------------
 # palette: the paper's teal and purple (validated with an orange third colour:

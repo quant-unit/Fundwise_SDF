@@ -317,7 +317,8 @@ ad.cfg <- load_simulation_config(here(AD.CONFIG))
 ad.pars <- list(c(MKT = 1, Alpha = 0), c(MKT = 0.7, Alpha = 0.004), c(MKT = 1.3, Alpha = -0.003), c(MKT = 2.5, Alpha = 0.01), c(MKT = -0.5, Alpha = 0.015))
 for (id in c("big_n_v_50funds_alpha", "big_n_v_50funds_alpha_stdv30_shifted_mkt", "big_n_v_50funds_alpha_stdv30_additive")) {
   L <- ad.load(id)
-  g1 <- read.csv(list.files(sprintf("simulation/data_out_2026_g1/cache_q_factors_%s_simulated_cashflows_EW_VYP", id), "_m0_l0_cached_res\\.csv$", full.names = TRUE)[1])
+  g1f <- list.files(sprintf("simulation/data_out_2026_g1/cache_q_factors_%s_simulated_cashflows_EW_VYP", id), "_m0_l0_cached_res\\.csv$", full.names = TRUE)
+  g1 <- read.csv(g1f[length(g1f)]) # the latest run at H = 0 (the table's; S1 also has an earlier one)
   check(sprintf("T9 %s: input file is the G1 table's (md5)", id), identical(unique(g1$input.md5), L$md5), L$md5)
   ref <- as.data.frame(data.table::rbindlist(L$samples[c("1", "2")])); ref$sample <- NULL
   ref$Fund.ID <- as.factor(paste(ref$Fund.ID, ref$type, sep = "_"))
