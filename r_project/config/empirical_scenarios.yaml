@@ -744,3 +744,103 @@ scenarios:
     max_vintages: [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
     active: false
     final_nav_discount: 50
+
+  # --------------------------------------------------------------------------
+  # Sample robustness (revision plan, Section B; log entries "robustness runs:
+  # scope" and "robustness runs"): the North America L2 (no CV) and U_{v,H}
+  # (q_v = 1) scenarios on the all-funds sample and on the complete-history
+  # sample without early stoppers with terminal NAV > 20% of total value. Each
+  # variant writes to its own output folder, so its caches never mix with the
+  # main results.
+  # --------------------------------------------------------------------------
+  ew_no_cv_north_america_allfunds:
+    description: "Equal-weighted VYP, no CV, North America; sample: all funds (complete and truncated histories)"
+    weighting: "EW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    data_prepared_folder: "data_prepared_2026_c_allfunds"
+    data_out_folder: "results/data_out_2026-emp-c-allfunds"
+    active: true
+
+  fw_no_cv_north_america_allfunds:
+    description: "Fund-weighted VYP, no CV, North America; sample: all funds (complete and truncated histories)"
+    weighting: "FW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    data_prepared_folder: "data_prepared_2026_c_allfunds"
+    data_out_folder: "results/data_out_2026-emp-c-allfunds"
+    active: true
+
+  u_ew_no_cv_north_america_allfunds:
+    description: "U_{v,H}, equal fund weights, equal vintage weights, North America; sample: all funds (complete and truncated histories)"
+    weighting: "EW"
+    region: "North America"
+    use_vintage_year_pfs: false
+    error_function: "U_pair"
+    vintage_weights: "equal"
+    do_cross_validation: false
+    factors_to_use: ""
+    data_prepared_folder: "data_prepared_2026_c_allfunds"
+    data_out_folder: "results/data_out_2026-emp-c-allfunds"
+    active: true
+
+  u_fw_no_cv_north_america_allfunds:
+    description: "U_{v,H}, fund-size fund weights, equal vintage weights, North America; sample: all funds (complete and truncated histories)"
+    weighting: "FW"
+    region: "North America"
+    use_vintage_year_pfs: false
+    error_function: "U_pair"
+    vintage_weights: "equal"
+    do_cross_validation: false
+    factors_to_use: ""
+    data_prepared_folder: "data_prepared_2026_c_allfunds"
+    data_out_folder: "results/data_out_2026-emp-c-allfunds"
+    active: true
+
+  ew_no_cv_north_america_navtrim20:
+    description: "Equal-weighted VYP, no CV, North America; sample: complete histories without funds stopping early with terminal NAV > 20% of total value (empirical/prep_nav_threshold.R)"
+    weighting: "EW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    data_prepared_folder: "data_prepared_2026_c_navtrim20"
+    data_out_folder: "results/data_out_2026-emp-c-navtrim20"
+    active: true
+
+  fw_no_cv_north_america_navtrim20:
+    description: "Fund-weighted VYP, no CV, North America; sample: complete histories without funds stopping early with terminal NAV > 20% of total value (empirical/prep_nav_threshold.R)"
+    weighting: "FW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    data_prepared_folder: "data_prepared_2026_c_navtrim20"
+    data_out_folder: "results/data_out_2026-emp-c-navtrim20"
+    active: true
+
+  u_ew_no_cv_north_america_navtrim20:
+    description: "U_{v,H}, equal fund weights, equal vintage weights, North America; sample: complete histories without funds stopping early with terminal NAV > 20% of total value (empirical/prep_nav_threshold.R)"
+    weighting: "EW"
+    region: "North America"
+    use_vintage_year_pfs: false
+    error_function: "U_pair"
+    vintage_weights: "equal"
+    do_cross_validation: false
+    factors_to_use: ""
+    data_prepared_folder: "data_prepared_2026_c_navtrim20"
+    data_out_folder: "results/data_out_2026-emp-c-navtrim20"
+    active: true
+
+  u_fw_no_cv_north_america_navtrim20:
+    description: "U_{v,H}, fund-size fund weights, equal vintage weights, North America; sample: complete histories without funds stopping early with terminal NAV > 20% of total value (empirical/prep_nav_threshold.R)"
+    weighting: "FW"
+    region: "North America"
+    use_vintage_year_pfs: false
+    error_function: "U_pair"
+    vintage_weights: "equal"
+    do_cross_validation: false
+    factors_to_use: ""
+    data_prepared_folder: "data_prepared_2026_c_navtrim20"
+    data_out_folder: "results/data_out_2026-emp-c-navtrim20"
+    active: true
