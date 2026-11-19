@@ -12,8 +12,14 @@
 #            objective sqrt(sum e^2) / N is a monotone transform per draw, not
 #            under the expectation)
 #   U_{v,H}: Q(theta) = mean over replications of the U criterion.
-# One parameter: Brent on the domain box; two: Nelder-Mead from theta_0 (the
-# targets are interior). Without a shared vintage shock the U target is
+# Like the estimator, the target is the minimizer over the admissible domain
+# Theta, built from the replication whose grids start earliest (the most
+# months, so the most restrictive floor): one parameter by Brent on the
+# feasible interval; two by fit.admissible() started at theta_0 (wall outside
+# Theta, polish along the boundary). A target on a bound is flagged: the
+# averaged criterion then falls towards the edge (e.g. the exploding alpha at
+# H = 0, T5). An unconstrained search gave a nonsense target there (the first
+# version; corrected before any use). Without a shared vintage shock the U target is
 # theta_0 exactly (E U_v = A^2 (mu_v^2 + c_v), zero at theta_0; T7); it is
 # computed only as a check.
 #
@@ -45,22 +51,25 @@ mc.targets <- function(spec, public, reps = 1:200, workers = 1, check.u = FALSE)
   draws <- lapply(reps, function(s) mc.draw(spec$design, s, public))
   fps <- lapply(setNames(levels, levels), function(l) lapply(draws, function(d) mc.as.fast(d, public, l)))
   th0 <- spec$design$theta0
+  first <- lapply(fps, function(l) l[[which.min(vapply(l, function(fp) min(fp$grids$k0), 0))]])
   cells <- expand.grid(estimator = spec$estimators, model = spec$models, max.month = spec$horizons, stringsAsFactors = FALSE)
   one <- function(i) {
     est <- MC.ESTIMATORS[[cells$estimator[i]]]; model <- cells$model[i]; m <- cells$max.month[i]
     par <- if (model == "MKT") c(MKT = unname(th0["MKT"])) else setNames(c(th0[["MKT"]], if (model %in% names(th0)) th0[[model]] else 0), c("MKT", model))
     exact <- est$criterion == "U" && spec$design$shared.sd == 0 && !check.u
-    if (exact) return(data.frame(cells[i, ], MKT.target = par[["MKT"]], Coef.target = if (length(par) > 1) par[[2]] else NA_real_, method = "theta_0 (T7)"))
+    if (exact) return(data.frame(cells[i, ], MKT.target = par[["MKT"]], Coef.target = if (length(par) > 1) par[[2]] else NA_real_,
+                                 method = "theta_0 (T7)", target.bound = ""))
     f <- mc.mean.criterion(est, fps[[est$level]], m)
+    con <- mc.domain(first[[est$level]], names(par))
     if (length(par) == 1) {
-      o <- optimize(function(b) f(c(MKT = b)), MC.SETTINGS$mkt.bounds, tol = 1e-6)
-      out <- c(o$minimum, NA_real_)
+      o <- optimize(function(b) f(c(MKT = b)), feasible.interval(con), tol = 1e-6)
+      out <- setNames(o$minimum, "MKT")
     } else {
-      o <- optim(par, function(p) f(setNames(p, names(par))), method = "Nelder-Mead",
-                 control = list(parscale = optim.parscale(par), reltol = 1e-12, maxit = 2000))
-      out <- unname(o$par)
+      fit <- fit.admissible(f, list(par), con, optim.parscale(par), smooth = TRUE, reltol = 1e-12)
+      out <- fit$par
     }
-    data.frame(cells[i, ], MKT.target = out[1], Coef.target = out[2], method = "averaged criterion")
+    data.frame(cells[i, ], MKT.target = unname(out[1]), Coef.target = if (length(out) > 1) unname(out[2]) else NA_real_,
+               method = "averaged criterion", target.bound = paste(active.constraints(out, con), collapse = ","))
   }
   res <- if (workers > 1) parallel::mclapply(seq_len(nrow(cells)), one, mc.cores = workers) else lapply(seq_len(nrow(cells)), one)
   bad <- !vapply(res, is.data.frame, TRUE)
