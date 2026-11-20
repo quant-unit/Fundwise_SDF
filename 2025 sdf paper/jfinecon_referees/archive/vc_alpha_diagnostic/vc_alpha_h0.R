@@ -15,6 +15,10 @@
 # alpha-derivative of the criterion at the bound estimate; (E) refits without
 # the mid-1990s block that (D) points to; (F) the same comparison at H > 0
 # (2.5-30 years), full-sample fits checked against the G1 tables first.
+# Part (F) also writes its fits to results/figures_bovc_us_g1/
+# vc_alpha_without_1993_1997.csv (estimates only), read by
+# results/main_exhibits_u.R for the Online Appendix table (log entry
+# "U-first main exhibits: built").
 source("simulation/mc_driver.R")
 options(width = 200)
 pub <- local({ p <- read.csv("empirical/data_prepared_2026/q_factors.csv"); p$Date <- as.Date(p$Date)
@@ -104,13 +108,21 @@ cat("\n(F) VC (alpha, beta) by horizon, full sample (checked against the G1 tabl
 g1 <- read.csv("results/figures_bovc_us_g1/empirical_VC_US_Alpha_data.csv", stringsAsFactors = FALSE); g1 <- g1[g1$Factor == "Alpha" & g1$method == "Asymptotic", ]
 gu <- read.csv("results/figures_bovc_us_g1/upair_VC_US_data.csv", stringsAsFactors = FALSE); gu <- gu[gu$model == "Alpha" & gu$vintage.weights == "equal", ]
 HF <- c(0, 30, 60, 120, 180, 240, 360); fmt <- function(x) sprintf("%5.2f/%5.2f%s", x$MKT, 100 * x$Coef, if (x$at.bound) "*" else " ")
-worst <- 0
+worst <- 0; F.rows <- list()
 cat(sprintf("  %-26s %s\n", "H (years)", paste(sprintf("%13s", HF / 12), collapse = "")))
 for (k in grep("^VC", names(fps), value = TRUE)) { fp <- fps[[k]]; w <- strsplit(k, " ")[[1]][2]
   full <- lapply(HF, function(m) fit2(k, fp, m = m)); red <- lapply(HF, function(m) fit2(k, fast.subset(fp, !(fp$vintage %in% 1993:1997)), m = m))
   ref <- vapply(seq_along(HF), function(i) { m <- HF[i]
     if (grepl(" L2$", k)) { y <- g1[g1$weighting == w & g1$max.month == m, ]; c(y$MKT, y$Coef) } else { y <- gu[gu$weighting == w & gu$max.month == m, ]; c(y$estimate[y$parameter == "MKT"], y$estimate[y$parameter == "Alpha"]) } }, c(0, 0))
   worst <- max(worst, abs(sapply(full, `[[`, "MKT") - ref[1, ]), abs(sapply(full, `[[`, "Coef") - ref[2, ]) * 100)
+  fp.red <- fast.subset(fp, !(fp$vintage %in% 1993:1997)); both <- c(full, red)
+  F.rows[[length(F.rows) + 1]] <- data.frame(type = "VC", weighting = w, estimator = sub(".* ", "", k), sample = rep(c("full", "without 1993-1997"), each = length(HF)),
+    n.vintages = rep(c(length(unique(fp$vintage)), length(unique(fp.red$vintage))), each = length(HF)), max.month = rep(HF, 2), H = rep(HF / 12, 2),
+    beta = sapply(both, `[[`, "MKT"), alpha = sapply(both, `[[`, "Coef"), criterion = sapply(both, `[[`, "value"), at.bound = sapply(both, `[[`, "at.bound"),
+    active = sapply(both, `[[`, "active"), stringsAsFactors = FALSE)
   cat(sprintf("  %-26s %s\n", paste(k, "full"), paste(sprintf("%13s", sapply(full, fmt)), collapse = "")))
   cat(sprintf("  %-26s %s\n", paste(k, "without 1993-97"), paste(sprintf("%13s", sapply(red, fmt)), collapse = ""))) }
 cat(sprintf("  full-sample fits against the G1 tables: largest difference %.1e (beta; alpha in %%)\n", worst))
+stopifnot(worst < 1e-8)
+write.csv(do.call(rbind, F.rows), "results/figures_bovc_us_g1/vc_alpha_without_1993_1997.csv", row.names = FALSE)
+cat("  wrote results/figures_bovc_us_g1/vc_alpha_without_1993_1997.csv\n")
