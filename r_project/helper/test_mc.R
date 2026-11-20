@@ -362,6 +362,75 @@ check("T9 all 19 scenarios: alpha bounds = the config loader's (S6 and S10 with 
   sprintf("upper bounds %s", paste(sort(unique(ad.own[2, ])), collapse = ", ")))
 MC.SETTINGS$alpha.bounds <- c(-0.02, 0.02)
 
+# ---------------------------------------------------------------------------
+# T10: path-correlated vintage shock (simulation/mc_generate.R, path.shock;
+# log entry "hardening weak links 1 and 3"). (a) With a = 0 the draw equals
+# the control's (same design without the shock); (b) at sigma = 0 the shock
+# is constant within a vintage and equals a log R_v - K_v log mean(G^a),
+# computed here independently from the path; (c) its mean over draws is one
+# (unconditional pricing (P)); (d) given the path it is not one (X fails).
+cons20 <- cons(20, 25)
+ps <- function(a, sigma = 0.13) mc.design(cons20, sigma = sigma, max.holding.period = 11.5, path = path, path.shock = list(a = a, window.years = 10))
+ctrl <- mc.design(cons20, sigma = 0.13, max.holding.period = 11.5, path = path)
+check("T10 a = 0: the draw equals the control's (shock uses no random numbers)",
+  identical(mc.draw(ps(0), 7, pub)$deals, mc.draw(ctrl, 7, pub)$deals) && identical(mc.draw(ps(0), 7, pub)$public, mc.draw(ctrl, 7, pub)$public))
+d10 <- mc.draw(ps(0.615, sigma = 0), 3, pub)
+G10 <- as.numeric(1 + d10$public$RF + d10$public$MKT)
+src10 <- pub[pub$Date >= as.Date(path$from) & pub$Date <= as.Date(path$to), ]
+lm10 <- log(mean((1 + src10$RF + src10$MKT)^0.615))
+wv <- with(d10$deals, tapply(log(mult) - vapply(seq_along(start), function(i) sum(log(G10[seq_len(end[i] - start[i]) + start[i]])), 0), vintage, range))
+w.ref <- vapply(as.integer(names(cons20)), function(v) { f <- match(as.Date(paste0(v, "-01-31")), d10$public$Date); K <- min(120L, nrow(d10$public) - f + 1L)
+  0.615 * sum(log(G10[f:(f + K - 1L)])) - K * lm10 }, 0)
+check("T10 sigma = 0: the shock is constant within a vintage and equals a log R_v - K_v log mean(G^a) (independent computation)",
+  max(vapply(wv, function(r) diff(r), 0)) < 1e-10 && max(abs(vapply(wv, `[`, 0, 1) - w.ref)) < 1e-10,
+  sprintf("max spread %.1e, max difference %.1e", max(vapply(wv, function(r) diff(r), 0)), max(abs(vapply(wv, `[`, 0, 1) - w.ref))))
+ew <- vapply(1:400, function(sd) { d <- mc.draw(ps(0.615, sigma = 0), sd, pub); G <- as.numeric(1 + d$public$RF + d$public$MKT)
+  i <- which(d$deals$vintage == 1990)[1]; exp(log(d$deals$mult[i]) - sum(log(G[seq_len(d$deals$end[i] - d$deals$start[i]) + d$deals$start[i]]))) }, 0)
+check("T10 (P): the shock's mean over 400 draws is one within 4 Monte Carlo SEs (vintage 1990, a = 0.615)",
+  abs(mean(ew) - 1) < 4 * sd(ew) / sqrt(length(ew)), sprintf("mean %.4f, SE %.4f, sd of log shock %.3f", mean(ew), sd(ew) / sqrt(length(ew)), sd(log(ew))))
+check("T10 (X fails): given the path the shock is not one (spread across draws)", sd(log(ew)) > 0.25, sprintf("sd of the log shock %.3f (design target 0.306)", sd(log(ew))))
+
+# T11: fund sizes and fund-size weighting (design B). (a) sizes are drawn last:
+# the deals and the EW fast structures equal those of the design without
+# sizes; (b) the FW fast structures equal prepare.fast() on the FW rows and the
+# pipeline's unit errors, and the FW U criterion equals u.criterion() with
+# sizes, within 1e-10; (c) the FW vintage pools equal pool.vintage() on the
+# FW fund rows; (d) at sigma = 0 every FW unit is priced exactly at theta_0.
+source(here("helper/pool_vintage.R"))
+szd <- function(sigma = 0.13) mc.design(shape, sigma = sigma, max.holding.period = 11.5, sizes = list(sdlog = 1.19))
+plain <- mc.design(shape, sigma = 0.13, max.holding.period = 11.5)
+a11 <- mc.draw(szd(), 5, pub); b11 <- mc.draw(plain, 5, pub)
+check("T11 sizes drawn last: deals and EW structures equal the design without sizes",
+  identical(a11$deals, b11$deals) && identical(unclass(mc.as.fast(a11, pub, "fund")), unclass(mc.as.fast(b11, pub, "fund"))) &&
+  identical(unclass(mc.as.fast(a11, pub, "vyp")), unclass(mc.as.fast(b11, pub, "vyp"))))
+fw.rows <- function(dr, level) { d <- mc.as.rows(dr, level, fw = TRUE); d$Fund.ID <- as.factor(paste(d$Fund.ID, d$type, sep = "_"))
+  d <- pad.all.units(d, "first.cf", max(d$Date)); d$Fund.ID <- as.factor(as.character(d$Fund.ID)); merge(d, pub, by = "Date", all.x = TRUE) }
+for (lev in c("fund", "vyp")) {
+  rows <- fw.rows(a11, lev); fpr <- prepare.fast(rows, fc); prr <- prepare.units(rows, fc); fpd <- mc.as.fast(a11, pub, paste0(lev, ".fw"))
+  worst <- c(direct = 0, pipeline = 0)
+  for (par in pars[1:5]) for (m in months) { a <- fast.unit.errors(par, fpd, m); b <- fast.unit.errors(par, fpr, m); r <- ref.errors(par, prr, m)
+    worst["direct"] <- max(worst["direct"], rel.diff(unname(a), unname(b))); worst["pipeline"] <- max(worst["pipeline"], rel.diff(unname(a), unname(r))) }
+  check(sprintf("T11 FW %s units: direct structure = prepare.fast() on the FW rows and = pipeline unit errors within 1e-10", lev),
+    fpd$n.units == fpr$n.units && max(worst) <= 1e-10, sprintf("%.1e / %.1e", worst[["direct"]], worst[["pipeline"]]))
+  if (lev == "fund") {
+    s.ref <- vapply(prr$units, `[[`, 0, "size"); key.ref <- vapply(prr$units, `[[`, "", "key")
+    check("T11 FW U criterion (fast, sizes) = u.criterion() with the pipeline's sizes within 1e-10; sizes match the rows",
+      rel.diff(fast.u.criterion(fast.unit.errors(c(MKT = 1.2), fpd, 120), fpd, fpd$size), u.criterion(ref.errors(c(MKT = 1.2), prr, 120), key.ref, s.ref)) <= 1e-10 &&
+      max(abs(unname(fpd$size) - unname(s.ref))) < 1e-12)
+  }
+}
+fr <- mc.as.rows(a11, "fund", fw = TRUE); fr$NAV <- 0; fr$CON <- 0; fr$DIS <- 0
+pv <- do.call(rbind, lapply(split(fr, fr$Vintage), pool.vintage, fund.size.weighting = TRUE))
+vr <- mc.as.rows(a11, "vyp", fw = TRUE)
+mm <- merge(pv[, c("Vintage", "Date", "CF")], vr[, c("Vintage", "Date", "CF")], by = c("Vintage", "Date"), all = TRUE)
+check("T11 FW vintage pools = pool.vintage(fund.size.weighting = TRUE) on the FW fund rows",
+  !anyNA(mm) && max(abs(mm$CF.x - mm$CF.y)) < 1e-12, sprintf("%d dates, max difference %.1e", nrow(mm), max(abs(mm$CF.x - mm$CF.y))))
+z11 <- mc.draw(szd(sigma = 0), 9, pub)
+check("T11 sigma = 0: every FW fund and FW vintage portfolio is priced exactly at theta_0 (H = 0)",
+  max(abs(fast.unit.errors(c(MKT = 1), mc.as.fast(z11, pub, "fund.fw"), 0))) < 1e-10 && max(abs(fast.unit.errors(c(MKT = 1), mc.as.fast(z11, pub, "vyp.fw"), 0))) < 1e-10)
+r11 <- mc.replication(szd(), 3, pub, c("L2.vyp.fw", "U.eq.fw"), "MKT", c(0, 180))
+check("T11 the driver fits FW L2 and FW U (interior, with SEs)", nrow(r11) == 4 && all(is.finite(r11$MKT)) && all(is.finite(r11$SE.MKT[!r11$at.bound])))
+
 t.gen <- system.time(for (s in 1:20) { x <- mc.draw(mc.design(shape), s, pub); mc.as.fast(x, pub, "fund"); mc.as.fast(x, pub, "vyp") })[["elapsed"]] / 20
 cat(sprintf("Generator, Buyout shape (%d funds, %d deals): %.2f s per replication incl. both fast structures; %.1f MB in memory\n",
   sum(shape), sum(shape) * 15, t.gen, as.numeric(object.size(list(dr, mc.as.fast(dr, pub, "fund")))) / 2^20))

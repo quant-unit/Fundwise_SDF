@@ -96,3 +96,19 @@ designs:
   # equal counts in the Buyout core's window, 15 funds in each of the 25
   # vintages 1986-2010 (375 funds; the core has 383), historical path
   w_V25_n15:  {consecutive: {funds: 15, count: 25, last: 2010}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  # Hardening of the revised storyline (log entries "hardening weak links 1
+  # and 3: scope" and "...: results"), single factor.
+  # (A) vintage shock correlated with the factor path: w_v = a log R_v -
+  # log E[R_v^a], R_v the benchmark return over the first 10 years of the
+  # vintage; a = 0.307 / 0.615 gives sd(w_v) = c / 2c (0.153 / 0.306). Pricing
+  # holds unconditionally, not given the path. Controls: v_V25_n20 and
+  # v_V100_n20 (same draws apart from the shock).
+  pc_V25_n20_c:   {consecutive: {funds: 20, count: 25, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, path_shock: {a: 0.307, window_years: 10}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  pc_V25_n20_2c:  {consecutive: {funds: 20, count: 25, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, path_shock: {a: 0.615, window_years: 10}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  pc_V100_n20_c:  {consecutive: {funds: 20, count: 100, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, path_shock: {a: 0.307, window_years: 10}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  pc_V100_n20_2c: {consecutive: {funds: 20, count: 100, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, path_shock: {a: 0.615, window_years: 10}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  # (B) heterogeneous fund sizes (lognormal, sd of log size as the data: Buyout
+  # 1.19, VC 0.90), EW and FW versions of L2 and U; drawn last, so the EW
+  # estimates equal those of core_BO / core_VC
+  s_core_BO: {shape: BO, sizes: {sdlog: 1.19}, estimators: [L2.vyp, U.eq, L2.vyp.fw, U.eq.fw], models: [MKT], horizons: [0, 180], reps: 1000}
+  s_core_VC: {shape: VC, sigma: 0.154, sizes: {sdlog: 0.90}, estimators: [L2.vyp, U.eq, L2.vyp.fw, U.eq.fw], models: [MKT], horizons: [0, 180], reps: 1000}

@@ -38,10 +38,22 @@ mc.mean.criterion <- function(est, fps, max.month) {
     v <- vapply(fps, function(fp) {
       e <- fast.unit.errors(p, fp, max.month)
       if (any(!is.finite(e))) return(Inf)
-      if (est$criterion == "L2") mean(e^2) else fast.u.criterion(e, fp, vintage.weights = est$vintage.weights)
+      if (est$criterion == "L2") mean(e^2) else fast.u.criterion(e, fp, mc.u.sizes(est, fp), vintage.weights = est$vintage.weights)
     }, 0)
     mean(v)
   }
+}
+
+# Smallest root of the IV moment averaged over replications, on the interval
+# where every replication's moment is defined (grid of 401 points, uniroot)
+mc.mean.iv.root <- function(est, fps, max.month) {
+  zs <- lapply(fps, function(fp) fast.horizon.scale(est$reference, fp, max.month))
+  g <- function(b) mean(vapply(seq_along(fps), function(r) { e <- fast.unit.errors(c(MKT = b), fps[[r]], 0); if (any(!is.finite(e))) NA_real_ else mean(zs[[r]] * e) }, 0))
+  iv <- vapply(fps, function(fp) feasible.interval(mc.domain(fp, "MKT")), numeric(2)); br <- c(max(iv[1, ]), min(iv[2, ]))
+  grid <- seq(br[1], br[2], length.out = 401); gv <- vapply(grid, g, 0)
+  ch <- which(is.finite(gv[-1]) & is.finite(gv[-length(gv)]) & sign(gv[-1]) != sign(gv[-length(gv)]))
+  if (!length(ch)) return(list(root = NA_real_, n.roots = 0L))
+  list(root = uniroot(g, grid[c(ch[1], ch[1] + 1)], tol = 1e-10)$root, n.roots = length(ch))
 }
 
 # Targets of every estimator, model and horizon of a design (spec from
@@ -56,14 +68,20 @@ mc.targets <- function(spec, public, reps = 1:200, workers = 1, check.u = FALSE)
   one <- function(i) {
     est <- MC.ESTIMATORS[[cells$estimator[i]]]; model <- cells$model[i]; m <- cells$max.month[i]
     par <- if (model == "MKT") c(MKT = unname(th0["MKT"])) else setNames(c(th0[["MKT"]], if (model %in% names(th0)) th0[[model]] else 0), c("MKT", model))
-    exact <- est$criterion == "U" && spec$design$shared.sd == 0 && !check.u
+    # U: theta_0 by T7 only without vintage-level effects (no shared shock, no path shock)
+    exact <- est$criterion == "U" && spec$design$shared.sd == 0 && is.null(spec$design$path.shock) && !check.u
     if (exact) return(data.frame(cells[i, ], MKT.target = par[["MKT"]], Coef.target = if (length(par) > 1) par[[2]] else NA_real_,
                                  method = "theta_0 (T7)", target.bound = ""))
-    # IV: the instrument is a function of the factor path and every design
-    # here prices each fund at theta_0 given the path (shared shocks have mean
-    # one and are independent of it), so E[z_v PV_v(theta_0) | path] = 0 (T2)
-    if (est$criterion == "IV") return(data.frame(cells[i, ], MKT.target = par[["MKT"]], Coef.target = NA_real_,
+    # IV: the instrument is a function of the factor path. Without a path
+    # shock every design prices each fund at theta_0 given the path (shared
+    # shocks have mean one and are independent of it), so
+    # E[z_v PV_v(theta_0) | path] = 0 (T2) and the target is theta_0. With a
+    # path shock (X) fails: the target is the smallest root of the moment
+    # averaged over the replications (mc.mean.iv.root), as in mc.fit.iv.
+    if (est$criterion == "IV" && is.null(spec$design$path.shock)) return(data.frame(cells[i, ], MKT.target = par[["MKT"]], Coef.target = NA_real_,
                                                  method = "theta_0 (moment)", target.bound = ""))
+    if (est$criterion == "IV") { r <- mc.mean.iv.root(est, fps[[est$level]], m)
+      return(data.frame(cells[i, ], MKT.target = r$root, Coef.target = NA_real_, method = sprintf("averaged moment, smallest of %d root(s)", r$n.roots), target.bound = "")) }
     f <- mc.mean.criterion(est, fps[[est$level]], m)
     con <- mc.domain(first[[est$level]], names(par))
     if (length(par) == 1) {

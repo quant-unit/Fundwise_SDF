@@ -36,8 +36,15 @@ MC.ESTIMATORS <- list(
   # z_v = A_{v,H}(reference) / A_{v,0}(reference) (fast.horizon.scale), a
   # function of the factor path only; z_v = 1 at H = 0 (the unweighted mean
   # pricing moment). Fitted by mc.fit.iv().
-  IV      = list(level = "vyp",  criterion = "IV", reference = c(MKT = 1))
+  IV      = list(level = "vyp",  criterion = "IV", reference = c(MKT = 1)),
+  # fund-size weighting (designs with sizes; log hardening, design B): L2 on
+  # FW vintage portfolios and U with sizes in the pair normalization, as the
+  # pipeline's FW files (use.size)
+  L2.vyp.fw = list(level = "vyp.fw", criterion = "L2"),
+  U.eq.fw   = list(level = "fund.fw", criterion = "U", vintage.weights = "equal", size = TRUE)
 )
+# sizes passed to the U criterion: the units' sizes for FW U, else 1
+mc.u.sizes <- function(est, fp) if (isTRUE(est$size)) fp$size else rep(1, fp$n.units)
 MC.SETTINGS <- list(gross.floor = 0.08, mkt.bounds = c(-1, 4), alpha.bounds = c(-0.02, 0.02),
                     bandwidth = "llsw", delta = 1e-4, wall = 1e10)
 
@@ -53,7 +60,7 @@ mc.criterion <- function(est, fp, max.month) {
     function(p) {
       e <- fast.unit.errors(p, fp, max.month)
       if (any(!is.finite(e))) return(MC.SETTINGS$wall)
-      u <- fast.u.criterion(e, fp, vintage.weights = est$vintage.weights)
+      u <- fast.u.criterion(e, fp, mc.u.sizes(est, fp), vintage.weights = est$vintage.weights)
       if (!is.finite(u)) MC.SETTINGS$wall else u
     }
   }
@@ -70,7 +77,7 @@ mc.sandwich <- function(est, fp, par, max.month) {
     keep <- names(w)[!is.na(w)]
     units <- lapply(keep, function(k) fast.subset(fp, fp$key == k))
     names(units) <- keep
-    loss <- function(p, u) w[[u$key[1]]] * fast.u.criterion(fast.unit.errors(p, u, max.month), u, vintage.weights = est$vintage.weights)
+    loss <- function(p, u) w[[u$key[1]]] * fast.u.criterion(fast.unit.errors(p, u, max.month), u, mc.u.sizes(est, u), vintage.weights = est$vintage.weights)
     vint <- vapply(units, function(u) u$vintage[1], 0)
   }
   sandwich.covariance(units, par, loss, vint, bw = MC.SETTINGS$bandwidth, delta = MC.SETTINGS$delta)
@@ -268,7 +275,9 @@ mc.load.designs <- function(file = "config/mc_designs.yaml", shape.file = "empir
     list(design = mc.design(n, theta0 = unlist(d$theta0), sigma = d$sigma, shared.sd = d$shared_sd, no.deals = d$no_deals,
                             investment.period = d$investment_period, max.holding.period = d$max_holding_period,
                             t.max = as.Date(d$t_max), quarterly = isTRUE(d$quarterly),
-                            shared.rho = if (is.null(d$shared_rho)) 0 else d$shared_rho, path = d$path),
+                            shared.rho = if (is.null(d$shared_rho)) 0 else d$shared_rho, path = d$path,
+                            path.shock = if (is.null(d$path_shock)) NULL else list(a = d$path_shock$a, window.years = d$path_shock$window_years),
+                            sizes = d$sizes),
          estimators = unlist(d$estimators), models = unlist(d$models), horizons = as.numeric(unlist(d$horizons)), reps = d$reps)
   })
 }
