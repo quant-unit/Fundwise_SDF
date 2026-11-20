@@ -13,7 +13,8 @@
 # beyond the bound?; (C) leave-one-vintage-out refits within Theta: which
 # vintages hold alpha at the bound?; (D) each vintage's share of the
 # alpha-derivative of the criterion at the bound estimate; (E) refits without
-# the mid-1990s block that (D) points to.
+# the mid-1990s block that (D) points to; (F) the same comparison at H > 0
+# (2.5-30 years), full-sample fits checked against the G1 tables first.
 source("simulation/mc_driver.R")
 options(width = 200)
 pub <- local({ p <- read.csv("empirical/data_prepared_2026/q_factors.csv"); p$Date <- as.Date(p$Date)
@@ -32,17 +33,17 @@ EST <- list(L2 = MC.ESTIMATORS$L2.vyp, U = MC.ESTIMATORS$U.eq)
 # criterion as the pipeline evaluates it: for FW, U normalizes each fund pair by
 # the funds' sizes (estim_model_optimized.R, use.size); the Step 4 criterion
 # (mc.criterion) assumes size 1, which holds for EW and for simulated funds
-crit <- function(k, fp) {
+crit <- function(k, fp, m = 0) {
   e <- EST[[sub(".* ", "", k)]]; sz <- if (e$criterion == "U" && grepl(" FW ", k)) fp$size else rep(1, fp$n.units)
-  function(p) { u <- fast.unit.errors(p, fp, 0); if (any(!is.finite(u))) return(MC.SETTINGS$wall)
+  function(p) { u <- fast.unit.errors(p, fp, m); if (any(!is.finite(u))) return(MC.SETTINGS$wall)
     v <- if (e$criterion == "L2") sqrt(sum(u^2)) / length(u) else fast.u.criterion(u, fp, sz, e$vintage.weights)
     if (is.finite(v)) v else MC.SETTINGS$wall }
 }
 # (alpha, beta) fit over Theta as mc.fit() does, with that criterion
-fit2 <- function(k, fp, alpha.bounds = MC.SETTINGS$alpha.bounds) {
+fit2 <- function(k, fp, alpha.bounds = MC.SETTINGS$alpha.bounds, m = 0) {
   MC.SETTINGS$alpha.bounds <- alpha.bounds; par <- c(MKT = 1, Alpha = 0)
   con <- mc.domain(fp, names(par)); ps <- optim.parscale(par)
-  r <- fit.admissible(crit(k, fp), admissible.starts(par, con, ps), con, ps, smooth = TRUE)
+  r <- fit.admissible(crit(k, fp, m), admissible.starts(par, con, ps), con, ps, smooth = TRUE)
   act <- active.constraints(r$par, con)
   data.frame(MKT = r$par[["MKT"]], Coef = r$par[["Alpha"]], value = r$value, at.bound = length(act) > 0, active = paste(act, collapse = ","))
 }
@@ -98,3 +99,18 @@ cat("\n(E) VC without the mid-1990s block that pushes alpha up in (D) (1993-1997
 for (k in grep("^VC", names(fps), value = TRUE)) for (blk in list(1993:1997, 1994:1996)) { fp <- fps[[k]]
   x <- fit2(k, fast.subset(fp, !(fp$vintage %in% blk)))
   cat(sprintf("  %-9s without %d-%d: beta %6.3f  alpha %6.3f%%  on bound: %s %s\n", k, min(blk), max(blk), x$MKT, 100 * x$Coef, x$at.bound, x$active)) }
+
+cat("\n(F) VC (alpha, beta) by horizon, full sample (checked against the G1 tables) and without 1993-1997; beta / alpha in %/month, * = on a bound\n")
+g1 <- read.csv("results/figures_bovc_us_g1/empirical_VC_US_Alpha_data.csv", stringsAsFactors = FALSE); g1 <- g1[g1$Factor == "Alpha" & g1$method == "Asymptotic", ]
+gu <- read.csv("results/figures_bovc_us_g1/upair_VC_US_data.csv", stringsAsFactors = FALSE); gu <- gu[gu$model == "Alpha" & gu$vintage.weights == "equal", ]
+HF <- c(0, 30, 60, 120, 180, 240, 360); fmt <- function(x) sprintf("%5.2f/%5.2f%s", x$MKT, 100 * x$Coef, if (x$at.bound) "*" else " ")
+worst <- 0
+cat(sprintf("  %-26s %s\n", "H (years)", paste(sprintf("%13s", HF / 12), collapse = "")))
+for (k in grep("^VC", names(fps), value = TRUE)) { fp <- fps[[k]]; w <- strsplit(k, " ")[[1]][2]
+  full <- lapply(HF, function(m) fit2(k, fp, m = m)); red <- lapply(HF, function(m) fit2(k, fast.subset(fp, !(fp$vintage %in% 1993:1997)), m = m))
+  ref <- vapply(seq_along(HF), function(i) { m <- HF[i]
+    if (grepl(" L2$", k)) { y <- g1[g1$weighting == w & g1$max.month == m, ]; c(y$MKT, y$Coef) } else { y <- gu[gu$weighting == w & gu$max.month == m, ]; c(y$estimate[y$parameter == "MKT"], y$estimate[y$parameter == "Alpha"]) } }, c(0, 0))
+  worst <- max(worst, abs(sapply(full, `[[`, "MKT") - ref[1, ]), abs(sapply(full, `[[`, "Coef") - ref[2, ]) * 100)
+  cat(sprintf("  %-26s %s\n", paste(k, "full"), paste(sprintf("%13s", sapply(full, fmt)), collapse = "")))
+  cat(sprintf("  %-26s %s\n", paste(k, "without 1993-97"), paste(sprintf("%13s", sapply(red, fmt)), collapse = ""))) }
+cat(sprintf("  full-sample fits against the G1 tables: largest difference %.1e (beta; alpha in %%)\n", worst))

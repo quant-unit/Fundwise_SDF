@@ -53,3 +53,15 @@
   VC EW U   without 1994-1996: beta  1.659  alpha -0.268%  on bound: FALSE 
   VC FW U   without 1993-1997: beta  1.591  alpha -0.504%  on bound: FALSE 
   VC FW U   without 1994-1996: beta  1.629  alpha -0.189%  on bound: FALSE 
+
+(F) VC (alpha, beta) by horizon, full sample (checked against the G1 tables) and without 1993-1997; beta / alpha in %/month, * = on a bound
+  H (years)                              0          2.5            5           10           15           20           30
+  VC EW L2 full                0.67/ 2.00*  1.57/ 0.81   1.63/ 0.67   1.96/-0.24   2.23/-0.79   2.35/-1.05   2.34/-1.33 
+  VC EW L2 without 1993-97     1.69/-0.42   1.75/-0.44   1.80/-0.51   1.97/-0.68   1.97/-0.85   2.03/-1.02   2.17/-1.15 
+  VC FW L2 full                0.95/ 2.00*  1.56/ 1.24   1.79/ 0.86   2.14/-0.29   2.41/-0.85   2.51/-1.11   2.48/-1.40 
+  VC FW L2 without 1993-97     1.62/-0.43   1.64/-0.44   1.70/-0.51   1.92/-0.68   1.95/-0.85   2.03/-1.03   2.17/-1.13 
+  VC EW U full                -0.08/ 2.00*  1.18/ 0.50   1.70/ 0.39   1.60/ 0.05   1.81/-0.47   2.00/-0.66   2.17/-1.00 
+  VC EW U without 1993-97      1.67/-0.52   1.71/-0.52   1.79/-0.55   1.84/-0.60   1.85/-0.72   1.83/-0.71   1.96/-0.81 
+  VC FW U full                 0.26/ 2.00*  1.24/ 0.74   1.95/ 0.51   1.86/-0.05   2.07/-0.57   2.22/-0.73   2.33/-1.05 
+  VC FW U without 1993-97      1.59/-0.50   1.62/-0.51   1.70/-0.55   1.85/-0.62   1.92/-0.74   1.85/-0.69   1.88/-0.68 
+  full-sample fits against the G1 tables: largest difference 4.9e-15 (beta; alpha in %)
