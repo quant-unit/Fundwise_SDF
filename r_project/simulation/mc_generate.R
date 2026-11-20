@@ -69,6 +69,15 @@ mc.data.shape <- function(type, max.vintage = 2010,
 #     With i.i.d. resampled months E[R_v^a] = mean(G^a)^K_v exactly, so
 #     E[exp(w_v)] = 1: pricing holds unconditionally (P), not given the path
 #     (X). Needs a resampled path; uses no random numbers.
+#     Caveat (log entry "hardening weak links 1 and 3: results"): the vintage
+#     PV discounts investments to the vintage origin with the same path, so
+#     this shock also breaks the pricing moment at the origin.
+#   path.shock = list(a, level = "deal"): the deal-level version (design A'):
+#     each deal's log multiple gets a log R_ab - k log mean(G^a), R_ab the
+#     benchmark return over the deal's holding period (k months after the
+#     booked investment). With i.i.d. resampled months its mean is one given
+#     the information at the investment date, so pricing holds at the
+#     vintage origin and fails only given the path (the plan's DGP (c)).
 #   sizes = list(sdlog): lognormal fund sizes, drawn after every other draw, so
 #     the equal-weighted structures equal those of the same design without sizes.
 mc.design <- function(n.funds, theta0 = c(MKT = 1), sigma = 0.2, shared.sd = 0,
@@ -77,14 +86,16 @@ mc.design <- function(n.funds, theta0 = c(MKT = 1), sigma = 0.2, shared.sd = 0,
                       path.shock = NULL, sizes = NULL) {
   stopifnot(!is.null(names(n.funds)), all(n.funds >= 1), all(names(theta0) %in% c("MKT", "Alpha", "ME", "IA", "ROE", "EG")),
             abs(shared.rho) < 1, is.null(path) || identical(path$resample, "iid"),
-            is.null(path.shock) || (!is.null(path) && is.finite(path.shock$a) && path.shock$window.years > 0),
+            is.null(path.shock) || (!is.null(path) && is.finite(path.shock$a) &&
+              (identical(path.shock$level, "deal") || (is.null(path.shock$level) && isTRUE(path.shock$window.years > 0)))),
             is.null(sizes) || sizes$sdlog >= 0)
   d <- list(n.funds = n.funds, theta0 = theta0, sigma = sigma, shared.sd = shared.sd, no.deals = no.deals,
        investment.period = investment.period, max.holding.period = max.holding.period,
        t.max = t.max, quarterly = quarterly)
   if (shared.rho != 0) d$shared.rho <- shared.rho
   if (!is.null(path)) d$path <- list(resample = "iid", from = as.Date(path$from), to = as.Date(path$to))
-  if (!is.null(path.shock)) d$path.shock <- list(a = as.numeric(path.shock$a), window.years = as.numeric(path.shock$window.years))
+  if (!is.null(path.shock)) d$path.shock <- if (identical(path.shock$level, "deal")) list(a = as.numeric(path.shock$a), level = "deal") else
+    list(a = as.numeric(path.shock$a), window.years = as.numeric(path.shock$window.years))
   if (!is.null(sizes)) d$sizes <- list(sdlog = as.numeric(sizes$sdlog))
   d
 }
@@ -146,11 +157,14 @@ mc.draw <- function(design, seed, public) {
     for (t in seq_along(span)[-1]) u[t] <- r * u[t - 1] + sqrt(1 - r^2) * u[t]
     -design$shared.sd^2 / 2 + design$shared.sd * u[match(vint, span)]
   }
-  if (!is.null(design$path.shock)) { # w_v = a log R_v - K_v log mean(G^a)
+  wd <- numeric(nd) # deal-level path shock (design A')
+  if (!is.null(design$path.shock) && identical(design$path.shock$level, "deal")) {
+    wd <- design$path.shock$a * (lG[b + 1L] - lG[a + 1L]) - k * mc.path.shock.logmgf(design, public)
+  } else if (!is.null(design$path.shock)) { # w_v = a log R_v - K_v log mean(G^a)
     K <- pmin(as.integer(12 * design$path.shock$window.years), T - first.row + 1L)
     w <- w + design$path.shock$a * (lG[first.row + K] - lG[first.row]) - K * mc.path.shock.logmgf(design, public)
   }
-  mult <- exp(lG[b + 1L] - lG[a + 1L] + z + w[match(fund.vint[deal.fund], vint)])
+  mult <- exp(lG[b + 1L] - lG[a + 1L] + z + w[match(fund.vint[deal.fund], vint)] + wd)
   out <- list(design = design, seed = seed, dates = cal$Date,
        deals = data.frame(vintage = fund.vint[deal.fund], fund = fund.id[deal.fund], start = a, end = b, mult = mult))
   if (!is.null(design$path)) out$public <- cal # the replication's own factor path

@@ -390,6 +390,26 @@ check("T10 (P): the shock's mean over 400 draws is one within 4 Monte Carlo SEs 
   abs(mean(ew) - 1) < 4 * sd(ew) / sqrt(length(ew)), sprintf("mean %.4f, SE %.4f, sd of log shock %.3f", mean(ew), sd(ew) / sqrt(length(ew)), sd(log(ew))))
 check("T10 (X fails): given the path the shock is not one (spread across draws)", sd(log(ew)) > 0.25, sprintf("sd of the log shock %.3f (design target 0.306)", sd(log(ew))))
 
+# T10, deal-level version (design A'): (a) a = 0 equals the control; (b) at
+# sigma = 0 each deal's shock equals a log R_ab - k log mean(G^a), computed
+# independently from the path; (c) the pricing moment at the vintage origin is
+# zero over draws (the vintage-level shock fails this; log entry "hardening
+# weak links 1 and 3: results"), while (d) given the path it is not.
+pd <- function(a, sigma = 0.13) mc.design(cons20, sigma = sigma, max.holding.period = 11.5, path = path, path.shock = list(a = a, level = "deal"))
+check("T10 deal level, a = 0: the draw equals the control's", identical(mc.draw(pd(0), 7, pub)$deals, mc.draw(ctrl, 7, pub)$deals))
+d10d <- mc.draw(pd(0.615, sigma = 0), 3, pub); G10d <- as.numeric(1 + d10d$public$RF + d10d$public$MKT)
+wdl <- with(d10d$deals, log(mult) - vapply(seq_along(start), function(i) sum(log(G10d[seq_len(end[i] - start[i]) + start[i]])), 0))
+wdr <- with(d10d$deals, vapply(seq_along(start), function(i) 0.615 * sum(log(G10d[seq_len(end[i] - start[i]) + start[i]])) - (end[i] - start[i]) * lm10, 0))
+check("T10 deal level, sigma = 0: each deal's shock equals a log R_ab - k log mean(G^a) (independent computation)",
+  max(abs(wdl - wdr)) < 1e-10, sprintf("max difference %.1e over %d deals", max(abs(wdl - wdr)), length(wdl)))
+om <- t(vapply(1:300, function(sd) c(deal = mean(fast.unit.errors(c(MKT = 1), mc.as.fast(mc.draw(pd(0.615, sigma = 0), sd, pub), pub, "vyp"), 0)),
+  vintage = mean(fast.unit.errors(c(MKT = 1), mc.as.fast(mc.draw(ps(0.615, sigma = 0), sd, pub), pub, "vyp"), 0))), numeric(2)))
+se.om <- apply(om, 2, sd) / sqrt(nrow(om))
+check("T10 deal level (P at the origin): mean vintage PV at theta_0 over 300 draws within 3 SE of zero; the vintage-level shock fails it",
+  abs(mean(om[, "deal"])) < 3 * se.om[["deal"]] && abs(mean(om[, "vintage"])) > 3 * se.om[["vintage"]],
+  sprintf("deal level %+.4f (SE %.4f); vintage level %+.4f (SE %.4f)", mean(om[, "deal"]), se.om[["deal"]], mean(om[, "vintage"]), se.om[["vintage"]]))
+check("T10 deal level (X fails): vintage PV at theta_0 varies across draws given the path", sd(om[, "deal"]) > 0.05, sprintf("sd %.3f", sd(om[, "deal"])))
+
 # T11: fund sizes and fund-size weighting (design B). (a) sizes are drawn last:
 # the deals and the EW fast structures equal those of the design without
 # sizes; (b) the FW fast structures equal prepare.fast() on the FW rows and the

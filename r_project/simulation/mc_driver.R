@@ -276,7 +276,7 @@ mc.load.designs <- function(file = "config/mc_designs.yaml", shape.file = "empir
                             investment.period = d$investment_period, max.holding.period = d$max_holding_period,
                             t.max = as.Date(d$t_max), quarterly = isTRUE(d$quarterly),
                             shared.rho = if (is.null(d$shared_rho)) 0 else d$shared_rho, path = d$path,
-                            path.shock = if (is.null(d$path_shock)) NULL else list(a = d$path_shock$a, window.years = d$path_shock$window_years),
+                            path.shock = if (is.null(d$path_shock)) NULL else list(a = d$path_shock$a, window.years = d$path_shock$window_years, level = d$path_shock$level),
                             sizes = d$sizes),
          estimators = unlist(d$estimators), models = unlist(d$models), horizons = as.numeric(unlist(d$horizons)), reps = d$reps)
   })

@@ -112,3 +112,11 @@ designs:
   # estimates equal those of core_BO / core_VC
   s_core_BO: {shape: BO, sizes: {sdlog: 1.19}, estimators: [L2.vyp, U.eq, L2.vyp.fw, U.eq.fw], models: [MKT], horizons: [0, 180], reps: 1000}
   s_core_VC: {shape: VC, sigma: 0.154, sizes: {sdlog: 0.90}, estimators: [L2.vyp, U.eq, L2.vyp.fw, U.eq.fw], models: [MKT], horizons: [0, 180], reps: 1000}
+  # (A') the deal-level version (the plan's DGP (c)): each deal's log multiple
+  # gets a log R_ab - k log mean(G^a) over its holding period, mean one given
+  # the investment date, so pricing holds at the vintage origin and fails only
+  # given the path (log entry "hardening, design A'"). Same exponents as (A).
+  pd_V25_n20_c:   {consecutive: {funds: 20, count: 25, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, path_shock: {a: 0.307, level: deal}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  pd_V25_n20_2c:  {consecutive: {funds: 20, count: 25, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, path_shock: {a: 0.615, level: deal}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  pd_V100_n20_c:  {consecutive: {funds: 20, count: 100, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, path_shock: {a: 0.307, level: deal}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  pd_V100_n20_2c: {consecutive: {funds: 20, count: 100, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, path_shock: {a: 0.615, level: deal}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
