@@ -109,7 +109,7 @@ writeLines(c(hdr(),
   "\\includegraphics[width=0.92\\textwidth]{figure_S5_vintage_residuals.pdf}",
   "\\caption{Vintage-level inception pricing errors $PV_v(\\hat\\beta_{U,0})$ with within-vintage $\\pm1.96\\,\\mathrm{SE}$ bars}",
   "\\label{fig:vintage_residuals}", "\\par\\vspace{2pt}",
-  "{\\scriptsize\\textit{Notes:} North America complete-history sample ($V\\le 2010$). Each point is the constant-composition vintage portfolio inception NPV evaluated at the headline $U_{v,0}$ ($q_v=1$) single-factor estimate $\\hat\\beta_{U,0}$. Vertical bars show $\\pm 1.96$ within-vintage standard errors of the weighted fund mean for vintages with $n_v\\ge 2$ funds; open circles mark singleton vintages ($n_v=1$, entering L2 only). Persistent multi-vintage deviations (notably VC 1993--1997) visually separate vintage-level cohort realizations from within-vintage idiosyncratic dispersion.}",
+  "{\\scriptsize\\textit{Notes:} North America complete-history sample ($V\\le 2010$). Each point is the constant-composition vintage portfolio inception NPV evaluated at the headline $U_{v,0}$ ($q_v=1$) single-factor estimate $\\hat\\beta_{U,0}$. Vertical bars show $\\pm 1.96$ within-vintage standard errors of the weighted fund mean for vintages with $n_v\\ge 2$ funds; open circles mark singleton vintages ($n_v=1$, entering L2 only). Same-sign deviations across neighboring vintages that are large relative to the within-vintage bars (VC 1993--1997 positive, 1999--2000 negative) point to vintage-level components; the plot does not identify their source.}",
   "\\end{figure}"), file.path(out.dir, "figure_S5_vintage_residuals.tex"))
 cat("1. wrote vintage residuals figure & CSV\n")
 
@@ -180,14 +180,14 @@ for (ty in c("BO", "VC")) for (w in c("EW", "FW")) {
 }
 writeLines(c(hdr(),
   "\\begin{table}[htbp]", "\\centering", "\\footnotesize",
-  "\\caption{Horizon profile of L2: Fix-$A$ re-weighting versus the Scale-Jacobian penalty (Theorem~T4)}",
+  "\\caption{Horizon profile of L2: Fix-$A$ re-weighting versus the Scale-Jacobian penalty (Theorem~1, T5)}",
   "\\label{tab:fixA_jacobian}",
   "\\begin{tabular}{l rrr rrr}", "\\toprule",
   " & \\multicolumn{3}{c}{Point estimates} & \\multicolumn{3}{c}{L2 slope $\\partial_\\beta Q_H$ at $\\hat\\beta_{U,0}$} \\\\",
   "\\cmidrule(lr){2-4} \\cmidrule(lr){5-7}",
   "Horizon & L2 $\\hat\\beta_H$ & Fix-$A$ $\\hat\\beta_H^{\\mathrm{Fix}A}$ & $\\hat\\beta_H-\\hat\\beta_H^{\\mathrm{Fix}A}$ & Term~(I) Disc. & Term~(II) Jac. & Total \\\\", "\\midrule",
   lines, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
-  "{\\scriptsize\\textit{Notes:} North America complete-history sample ($V\\le 2010$). Fix-$A$ minimizes $V^{-1}\\sum_v A_{v,H}(\\hat\\beta_{U,0})^2 PV_v(\\beta)^2$, isolating pure vintage re-weighting without the $\\beta$-dependence of $A_{v,H}(\\beta)$. The difference $\\hat\\beta_H - \\hat\\beta_H^{\\mathrm{Fix}A}$ measures the downward pull of the Scale-Jacobian penalty (Theorem~T4). Right panel: exact decomposition of $\\partial_\\beta Q_H(\\beta)$ at $\\hat\\beta_{U,0}$ into Term~(I) Inception Discounting ($2V^{-1}\\sum_v A_{v,H}^2 PV_v \\partial_\\beta PV_v$) and Term~(II) Scale-Jacobian Penalty ($2V^{-1}\\sum_v A_{v,H}(\\partial_\\beta A_{v,H}) PV_v^2$). Positive Term~(II) pushes the L2 minimum downward at long horizons.}",
+  "{\\scriptsize\\textit{Notes:} North America complete-history sample ($V\\le 2010$). Fix-$A$ minimizes $V^{-1}\\sum_v A_{v,H}(\\hat\\beta_{U,0})^2 PV_v(\\beta)^2$, isolating pure vintage re-weighting without the $\\beta$-dependence of $A_{v,H}(\\beta)$. The difference $\\hat\\beta_H - \\hat\\beta_H^{\\mathrm{Fix}A}$ measures the pull of the Scale-Jacobian term (Theorem~1, T5). Right panel: exact decomposition of $\\partial_\\beta Q_H(\\beta)$ at $\\hat\\beta_{U,0}$ into Term~(I) Inception Discounting ($2V^{-1}\\sum_v A_{v,H}^2 PV_v \\partial_\\beta PV_v$) and Term~(II) Scale-Jacobian Penalty ($2V^{-1}\\sum_v A_{v,H}(\\partial_\\beta A_{v,H}) PV_v^2$). Positive Term~(II) pushes the L2 minimum downward at long horizons.}",
   "\\end{table}"), file.path(out.dir, "table_fixA_jacobian.tex"))
 cat("2. wrote Fix-A vs Scale-Jacobian table & CSV\n")
 
@@ -264,7 +264,7 @@ writeLines(c(hdr(),
   "\\cmidrule(lr){2-4} \\cmidrule(lr){5-6} \\cmidrule(lr){7-8}",
   "Series & $\\mathrm{Corr}(\\partial_\\alpha PV_v,\\partial_\\beta PV_v)$ & $[\\nabla^2 Q_0]_{\\alpha\\beta}$ & $H_{\\alpha\\beta}/\\sqrt{H_{\\alpha\\alpha}H_{\\beta\\beta}}$ & $H=0$ & 15 yr & $H=0$ & 15 yr \\\\", "\\midrule",
   lines, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
-  sprintf("{\\scriptsize\\textit{Notes:} North America complete-history sample ($V\\le 2010$). Left block: cross-vintage correlation of inception NPV derivatives $\\partial_\\alpha PV_v$ and $\\partial_\\beta PV_v$, off-diagonal Hessian $[\\nabla^2 Q_0]_{\\alpha\\beta}>0$ (governing the T4 trade-off between upward $\\alpha$ and downward $\\beta$), and normalized Hessian correlation at $(\\alpha=0,\\beta=1)$. Right blocks: estimated sampling correlation $\\widehat{\\mathrm{Corr}}(\\hat\\alpha,\\hat\\beta)$ from the Bartlett sandwich ($S=\\lceil1.3\\sqrt V\\rceil$), kept distinct from gradient collinearity (`bound' denotes VC $H=0$ on the $+2\\%%$ monthly $\\alpha$ cap). Merton (1980) drift-uncertainty benchmark: over the 1985--2021 window ($T=%.0f$ yr, $\\sigma_{MKT}=%.1f\\%%$/yr), estimating a mean return shift at $\\beta=1$ carries an irreducible standard error of $\\sigma_{MKT}/\\sqrt{T}\\approx %.2f\\%%$/yr ($%.2f\\%%$/month) even before private-equity cash-flow noise.}",
+  sprintf("{\\scriptsize\\textit{Notes:} North America complete-history sample ($V\\le 2010$). Left block: cross-vintage correlation of inception NPV derivatives $\\partial_\\alpha PV_v$ and $\\partial_\\beta PV_v$, off-diagonal Hessian $[\\nabla^2 Q_0]_{\\alpha\\beta}>0$ (which governs the trade-off between upward $\\alpha$ and downward $\\beta$ in the proof of T6), and normalized Hessian correlation at $(\\alpha=0,\\beta=1)$. Right blocks: estimated sampling correlation $\\widehat{\\mathrm{Corr}}(\\hat\\alpha,\\hat\\beta)$ from the Bartlett sandwich ($S=\\lceil1.3\\sqrt V\\rceil$), kept distinct from gradient collinearity (`bound' denotes VC $H=0$ on the $+2\\%%$ monthly $\\alpha$ cap). Merton (1980) drift-uncertainty benchmark: over the 1985--2021 window ($T=%.0f$ yr, $\\sigma_{MKT}=%.1f\\%%$/yr), estimating a mean return shift at $\\beta=1$ carries an irreducible standard error of $\\sigma_{MKT}/\\sqrt{T}\\approx %.2f\\%%$/yr ($%.2f\\%%$/month) even before private-equity cash-flow noise.}",
           T.years, 100 * sigma.mkt.m * sqrt(12), 100 * merton.se.annual.1x, 100 * merton.se.monthly.1x),
   "\\end{table}"), file.path(out.dir, "table_alpha_beta_identification.tex"))
 
@@ -338,9 +338,8 @@ boot.sample.vintages <- function(vintages, block.len = 4L) {
   picked
 }
 
-# Build fast-unit bootstrap by weighting each vintage's contribution by its multiplicity!
-# Exact and 20x faster than rebuilding fast structures: for L2, loss is sum_v mult_v * e_v^2;
-# for U_{v,H} (q_v = 1), loss is sum_v mult_v * U_v / sum_v mult_v!
+# Bootstrap by multiplicity weights: a resampled vintage set enters L2 as sum_v mult_v e_v^2 and
+# U_{v,H} (q_v = 1) as sum_v mult_v U_v (same minimizer as the normalized average).
 boot.rows <- list()
 for (i in seq_len(nrow(cells))) {
   ty <- cells$type[i]; w <- cells$w[i]; k <- paste(ty, w)
@@ -361,11 +360,8 @@ for (i in seq_len(nrow(cells))) {
     crit.u <- fixedb.crit.t(0.05, r.u$hac.b)
     crit.l2 <- fixedb.crit.t(0.05, r.l2$hac.b)
 
-    # Pre-evaluate vintage losses on a dense grid of 401 betas and refine? No, evaluate
-    # exact vintage U_v(b) and e_v(b)^2 on a 251-point grid + local Brent refine in 2ms!
-    # Wait: even simpler and 100% exact: precompute V x 401 matrix of per-vintage losses
-    # once per (ty, w, m), find grid minimum for each bootstrap draw, then refine locally
-    # with exact Brent over [grid[idx-1], grid[idx+1]]! Exact to 1e-8 and takes < 1 sec for B=1000!
+    # Per-vintage losses on a 201-point beta grid; each draw takes the grid minimum of its
+    # weighted sum and refines it with Brent on the neighboring grid interval.
     g.u <- seq(br.f[1], br.f[2], length.out = 201L)
     U.mat <- vapply(g.u, function(b) {
       vapply(u.units, function(u) {
@@ -457,7 +453,7 @@ writeLines(c(hdr(),
   "\\cmidrule(lr){3-4} \\cmidrule(lr){5-6}",
   "Estimator, horizon & $\\hat\\beta$ & SE & 95\\% CI & Boot SD & Percentile 95\\% CI \\\\", "\\midrule",
   lines, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
-  sprintf("{\\scriptsize\\textit{Notes:} North America complete-history sample ($V\\le 2010$). Overlapping 4-year contiguous calendar blocks of vintages are resampled with replacement to match the sample calendar span ($B=1{,}000$ replications), preserving short-range cross-vintage dependence without relying on asymptotic linearization. Fixed-$b$ CIs use Bartlett sandwich SEs ($S=\\lceil1.3\\sqrt V\\rceil$) and Kiefer--Vogelsang critical values. In Buyout FW $U_{v,0}$, %.1f\\%% of block-bootstrap draws reach the upper bound of $\\Theta$ (reflecting the unbounded-below $U_{v,H}$ criterion under small resampled early-vintage weights).}", bo.fw.u0.bnd),
+  sprintf("{\\scriptsize\\textit{Notes:} North America complete-history sample ($V\\le 2010$). Overlapping 4-year contiguous calendar blocks of vintages are resampled with replacement to match the sample calendar span ($B=1{,}000$ replications), preserving short-range cross-vintage dependence without relying on asymptotic linearization. Fixed-$b$ CIs use Bartlett sandwich SEs ($S=\\lceil1.3\\sqrt V\\rceil$) and Kiefer--Vogelsang critical values. In Buyout FW $U_{v,0}$, %.1f\\%% of block-bootstrap draws reach the upper bound of $\\Theta$, a sign of weak identification in some resampled vintage sets (not examined further).}", bo.fw.u0.bnd),
   "\\end{table}"), file.path(out.dir, "table_block_bootstrap.tex"))
 cat("4. wrote 4-year block bootstrap table & CSV\n")
 

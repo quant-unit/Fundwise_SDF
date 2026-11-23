@@ -119,3 +119,34 @@ Master action list reconciling the November 20 audit (`4795963..e53326c`, `revis
   - **Algebra:** $W_h = \mathbf{1}\mathbf{1}^\top - B_h$ is indefinite. Assuming a negligible fraction of excluded pairs and suitable convergence, its limit squares the mean horizon error $(\mathbb{E}[\bar\epsilon_{v,H}(\theta)])^2$ (note: at $H>0$, $\bar\epsilon_{v,H}(\theta)$ uses a $\beta$-dependent scale $A_{v,H}(\theta)$, whereas the implemented IV comparator fixes $z_v = A_{v,H}(1)$ at a reference $\beta$).
   - **Numerics (full 1,000 draws of `m4p_shared`, AR(1) $\rho_W=0.6$, $c=0.153$):** At $H=0$, $h \ge 2$ hits the upper bound (`3.994`) in **100%** of all 1,000 draws (empirically: upper bound from $h=1$ for BO EW/FW, $h=2$ for VC EW, $h=3$ for VC FW). At $H=15$, raising $h$ from `0` to `5` increases SD from `0.200 → 1.084` and upper-bound rate from `0% → 14.6%` (`0.226 → 1.211` and `0% → 19%` on seeds `1:100`).
   - **Chosen approach:** Keep within-vintage $U_{v,H}$ as the main estimator (with explicit $c_v=0$ and (X) caveats) and use **centered fixed-$b$ moment-test inversion (AR-style confidence sets)** on the $H=0$ mean moment as an identification-robust, calibrated-by-design diagnostic (explicitly noting persistence over-rejection under finite $V$).
+
+---
+
+## Audit of `4bd0e9c` (23 Nov 2026) — Corrections to the Entries Above
+
+An audit of `4bd0e9c` against the diff, the result files and the cited papers confirmed most entries above. All three test suites pass, about 120 paper numbers match the result files, and EW numbers are unchanged by the imputation switch. The items below were wrong, incomplete or overstated and have been corrected (uncommitted at writing).
+
+- [x] **Theorem numbering (3.2).** The main text's Theorem 1 (T1–T8) and the Online Appendix proofs used different T-lists: the appendix followed the revision plan's numbering. The proofs section was rewritten in the paper's numbering (T3 and T6 restated precisely and proved; T8 proved from the pair-covariance form), and the plan's coercivity, infill and multiple-root results became Lemmas `lem:coercivity`, `lem:infill`, `lem:multiple_roots`. A mapping from the plan's numbering to the paper's is in `revision_plan.tex` (status item of Section L).
+- [x] **Condition (X) in headline $U$ claims.** The abstract, introduction, conclusion and the IV paragraph stated that $U_{v,H}$ targets $\theta_0$ under fund independence and $c_v=0$ alone; (X) is now stated everywhere. T7 no longer claims a global minimum at $\theta_0$ when conditional means differ by fund size.
+- [x] **Admissible domain.** The paper said every loading lies in $[-1,4]$; only $\beta_{\mathrm{MKT}}$ is boxed (`helper/admissible.R`), and the VC FW ROE loading of 7.27 is interior. Text and Equation (`eq:admissible_domain`) corrected.
+- [x] **Published-estimates table (2.5).** The DLP12 "4-factor" betas (0.72 BO, 2.20 VC) are not in DLP12 (FF3: 1.71 / 2.37). The KN16 "VC β ≈ 1.0–2.0" and its "GPME ≈ 0 post-1999" are wrong (no market beta; GPME −0.10, post-1998 −0.14, significant). The KN24 entries were wrong (MSCI-Burgiss, β 0.91 BO / 2.37 VC). RS16 reports no betas, and the VC entries for Boyer et al. and GVN were not in the papers. All rows were rebuilt from the articles (HJK14 and RS16 from abstracts and summaries only, since no local copy exists), and the main-text comparison paragraph was rewritten.
+- [x] **Hand-typed MC numbers (2.2, 2.4).** The AR-set calibration rates and the $V=400$ tail counts had no script. `simulation/mc_inference_checks.R` now computes them (draws regenerated from seeds; rep 1 reproduces the stored IV estimate exactly) into `results/mc_step4/inference_checks.csv`, which the notes of `iv_comparison.tex` and `table_AS1_size.tex` read. The values reproduce exactly. The "21.8% / 9.8% in Design A′" pair is the $2c$ design; $c$ gives 19.2% / 8.8%, and both are now reported.
+- [ ] **Provenance of the reruns (2.1).** Every estimation row and exhibit of `4bd0e9c` was produced at `731ea2f` with uncommitted changes (`git.dirty` TRUE), and `main_exhibits_u.R` had its dirty-tree stop relaxed to a warning. The exhibit headers now say so. EW numbers are identical to the earlier clean-commit runs, and `empirical_iv.R` re-fits L2 and $U$ to the table data (check 2). A clean rerun from a commit (all 44 caches) is still open.
+- [x] **`mc_report.R` target validation (1.2).** None of the seven target files records provenance hashes, so the new check skipped them silently. It now warns and records them as `targets.unvalidated`; only cell completeness is checked for them. The cached targets predate the multi-start upgrade of `mc.targets()`.
+- [x] **`neff` in `summary.csv` (1.2).** Since the coefficient-specific fix, the 359 alpha and second-factor rows show `neff = NA`, because the stored batches predate `neff.Coef`. No exhibit prints these values.
+- [x] **Text errors in the rewrite (3.2).**
+  - Fix-A paragraph: −0.334 / −0.308 are the Scale-Jacobian parts of total declines of −0.351 / −0.427.
+  - BO FW L2 is not monotonic.
+  - Two-factor EW range is 0.931–1.001 for EG/IA/ROE.
+  - Replication counts: path-shock designs have 500 reps.
+  - Margins: M5 2/2 is an RMSE tie.
+  - The threshold-sample rule and the complete-history rule are now stated exactly.
+  - The Buyout FW $H=0$ gap shortfall (+0.028 vs +0.122) is reported.
+  - Causal wording toned down: "solely", "confirmed", "proving", "flat ridge", and the untested studentization mechanism.
+- [x] **Plan numbers (3.1).** The plan's imputation item kept the pre-implementation figures (decline 0.336, gap +0.043); they are now corrected in place to 0.427 and +0.028.
+- [x] **Layout and housekeeping (3.2).**
+  - Notation tables and Assumption 1(3) ran 60–93 pt into the margin; fixed.
+  - `r_project/Rplots.pdf` and `revision_plan.toc` untracked and ignored.
+  - Stream-of-consciousness comments removed from `step5_diagnostics.R`.
+  - The published-estimates table was shrunk to unreadable size by `\resizebox`; it is now a wrapped `tabularx`.
+- **Verification of the corrections.** The affected exhibits were regenerated (`mc_report.R`, `mc_paper.R`, `empirical_iv.R`, `main_exhibits_u.R`, `table_published_estimates.R`, `step5_diagnostics.R`). Every recorded-number file is byte-identical to `4bd0e9c` (`summary.csv`, both `exhibits_data.csv`, the IV CSVs, the Step 5 CSVs); only headers, notes and the literature table changed. Both PDFs build with 0 errors and no undefined references; the remaining overfull boxes are at most 10 pt (pre-existing).

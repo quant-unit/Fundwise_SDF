@@ -63,3 +63,7 @@ r_project/simulation/data_out_2026_g1/*
 # Step 4 Monte Carlo checkpoints (one .rds per design and batch; results are summarized by simulation/mc_analyze.R)
 r_project/simulation/data_out_mc/
 !r_project/simulation/data_out_2026_g1/bias_analysis
+
+# build scratch (R default device, LaTeX toc of the revision plan)
+r_project/Rplots.pdf
+2025 sdf paper/jfinecon_referees/revision_plan.toc

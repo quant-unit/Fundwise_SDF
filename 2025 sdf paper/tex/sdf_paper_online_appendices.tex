@@ -13,7 +13,7 @@ This Online Appendix collects theoretical derivations, econometric proofs, full 
 \begin{itemize}
   \item Appendix~\ref{sec:appendix_notation} summarizes the notation.
   \item Appendix~\ref{sec:appendix_sdf} characterizes when the benchmark deflator constitutes a PE-specific SDF and compares it with public-calibrated pricing kernels.
-  \item Appendix~\ref{sec:appendix_theory} provides full proofs of Theorems~T1--T8 (exact horizon rescaling, signal-plus-noise decomposition, inception score tilt and Scale-Jacobian FOC decomposition, large-$\alpha$ attenuation vs.\ coercivity, infill consistency, cross-fund pair-product $U_{v,H}$ consistency under bounded $n_v \ge 2$, and mean-moment caveats).
+  \item Appendix~\ref{sec:appendix_theory} proves parts T1--T8 of Theorem~\ref{thm:finite_pool} (rescaling identity, mean preservation under (X), inception variance tilt, finite-$n_v$ decomposition, horizon gradient decomposition, the horizon display of the tilt, identification of $U_{v,H}$, and shared vintage shocks) and states three supplementary lemmas (large-$\alpha$ attenuation vs.\ coercivity, infill consistency, and multiple roots of the mean pricing moment).
   \item Appendix~\ref{sec:proofs_asymptotics_H} states the increasing-domain regularity conditions, score-centered and integrated-Hessian consistency and CLT proofs, LLSW/fixed-$b$ SHAC implementation details, and full Step~4 Monte Carlo appendix exhibits.
   \item Appendix~\ref{sec:dlp_results_comparison} compares our repaired estimator against \citet{DLP12} in simulation (Table~1 replication under pipeline r5 and $n_v \times V$ infill grid).
   \item Appendix~\ref{sec:appendix_empirical_extra} collects all-horizon single-factor tables, VC cohort diagnostics (without 1993--1997), fund-size imputation sensitivity, sample robustness, Fix-$A$ vs.\ Scale-Jacobian decomposition, joint $(\alpha,\beta)$ geometry, four-year vintage-block bootstrap intervals, terminal NAV shares, $hv$-block cross-validation fold diagnostics, and a published-estimates comparison table.
@@ -29,7 +29,7 @@ Table~\ref{tab:notation_asset_pricing} summarizes the notation for the deal-leve
 \begin{table}[htbp]
 	\centering
 	\small
-	\begin{tabular}{@{}ll@{}}
+	\begin{tabularx}{\textwidth}{@{}lX@{}}
 		\toprule
 		Symbol & Description \\
 		\midrule
@@ -48,7 +48,7 @@ Table~\ref{tab:notation_asset_pricing} summarizes the notation for the deal-leve
 		$\mathcal{G}_v$ & Conditioning set including $\mathcal{C}_v$, eligibility $n_v\ge 2$, fund sizes $\{s_{v,i}\}$, and origin $t_v^0$ \\
 		$\mu_v(\theta), c_v(\theta), \sigma_v^2(\theta)$ & Conditional mean, common within-vintage covariance, and total conditional variance of $PV_{v,i}(\theta)$ given $\mathcal{G}_v$ \\
 		\bottomrule
-	\end{tabular}
+	\end{tabularx}
 	\caption{Key notation for pooled private-equity cash flows and benchmark discounting.}
 	\label{tab:notation_asset_pricing}
 \end{table}
@@ -56,7 +56,7 @@ Table~\ref{tab:notation_asset_pricing} summarizes the notation for the deal-leve
 \begin{table}[htbp]
 	\centering
 	\small
-	\begin{tabular}{@{}ll@{}}
+	\begin{tabularx}{\textwidth}{@{}lX@{}}
 		\toprule
 		Symbol & Description \\
 		\midrule
@@ -71,7 +71,7 @@ Table~\ref{tab:notation_asset_pricing} summarizes the notation for the deal-leve
 		$\mathcal{H}_H, \Lambda_H, \Sigma_H$ & Population Hessian, long-run score covariance, and sandwich variance $\mathcal{H}_H^{-1}\Lambda_H\mathcal{H}_H^{-1}$ \\
 		$N_{\mathrm{eff}}$ & Effective number of vintages from influence-function share concentration \\
 		\bottomrule
-	\end{tabular}
+	\end{tabularx}
 	\caption{Key notation for the L2, $U_{v,H}$, and IV estimators and fixed-$b$ SHAC inference.}
 	\label{tab:notation_estimator}
 \end{table}
@@ -82,13 +82,13 @@ Table~\ref{tab:notation_asset_pricing} summarizes the notation for the deal-leve
 \input{sdf_paper_appendix_sdf.tex}
 
 % ==============================================================================
-\section{Proofs of Theorems T1--T8: Horizon Rescaling, Noise Tilt, and $U_{v,H}$}
+\section{Proofs of Theorem~\ref{thm:finite_pool} (T1--T8) and Supplementary Lemmas}
 \label{sec:appendix_theory}
 % ==============================================================================
 
-This appendix collects complete proofs of Theorems~T1--T8 stated in Section~\ref{sec:spatial_sdf_methodology} of the main paper. Throughout, $\theta$ lies in the positive-return admissible domain $\Theta$ where $G_u(\theta) = 1 + r_{f,u} + \alpha + \beta^\top F_u > 0$ on the relevant dates, so $\Psi_t(\theta) = \prod_{u=1}^t G_u(\theta)^{-1} > 0$ and $R^b_{a,b}(\theta) = \Psi_a(\theta)/\Psi_b(\theta) > 0$.
+This appendix proves parts T1--T8 of Theorem~\ref{thm:finite_pool} in the numbering of the main text (Subsections~\ref{sec:proof_T1}--\ref{sec:proof_T8}) and then states three supplementary results used in the discussion: large-$\alpha$ attenuation at $H=0$ versus coercivity at $H>0$ (Lemma~\ref{lem:coercivity}), infill consistency (Lemma~\ref{lem:infill}), and multiple roots of the mean pricing moment (Lemma~\ref{lem:multiple_roots}). Throughout, $\theta$ lies in the positive-return admissible domain $\Theta$ where $G_u(\theta) = 1 + r_{f,u} + \alpha + \beta^\top F_u > 0$ on the relevant dates, so $\Psi_t(\theta) = \prod_{u=1}^t G_u(\theta)^{-1} > 0$ and $R^b_{a,b}(\theta) = \Psi_a(\theta)/\Psi_b(\theta) > 0$. We write $\mathcal{G}_v$ for the conditioning information $(\mathcal{F}^{\mathrm{pub}},\mathcal{W}_v)$ of the main text: the public factor-path and window information $\mathcal{C}_v$, the eligibility event $n_v \ge 2$, the fund sizes $\{s_{v,i}\}$, and the vintage origin $t_v^0$. Fund weights $w_{v,i}$ (the $\omega_{v,i}$ of the main text) and the horizon scale $A_{v,H}(\theta)$ are $\mathcal{G}_v$-measurable. Differentiation under the expectation is assumed wherever gradients of population criteria appear.
 
-\subsection{Proof of Theorem T1 (Exact horizon rescaling identity)}
+\subsection{Proof of T1 (Exact horizon rescaling identity)}
 \label{sec:proof_T1}
 
 For any unit (fund or constant-composition vintage portfolio) with common vintage origin $t_v^0$ and cash-flow stream $\{CF_{v,t}\}_{t=t_v^0}^{T_{\max}}$, the time-$\tau$ revalued pricing error at any date $\tau \in \mathcal{T}_{v,H}$ is
@@ -106,115 +106,158 @@ where the factorization holds identically whether $\tau < t_v^0$, $\tau = t_v^0$
 \]
 In particular, $\bar\epsilon_{v,H}(\theta)$ is an exact path- and parameter-dependent scalar multiple of the inception NPV $PV_v(\theta)$. Because all dates $\tau \in \mathcal{T}_{v,H}$ share the common factor $PV_v(\theta)$, averaging across $\tau$ does \emph{not} average imperfectly correlated date-specific pricing errors; conditional on the factor path, all $\epsilon_{v,\tau}(\theta)$ are perfectly collinear with $PV_v(\theta)$. \qed
 
-\subsection{Proof of Theorem T2 (Valid moment weights under (P) vs.\ (X))}
+\subsection{Proof of T2 (Horizon mean preservation under (X); the compounding wedge under (P) alone)}
 \label{sec:proof_T2}
 
-Under inception pricing condition~(P), $\mathbb{E}[PV_v(\theta_0)\mid\mathcal{F}_{t_v^0}] = 0$. Therefore, for any integrable $\mathcal{F}_{t_v^0}$-measurable weight $z_v$ (including any pre-inception discounting factor $\Psi_{t_v^0}(\theta_0)/\Psi_\tau(\theta_0)$ with $\tau \le t_v^0$, or $z_v = 1$), the law of iterated expectations gives
+Under inception pricing condition~(P), $\mathbb{E}[PV_v(\theta_0)\mid\mathcal{F}_{t_v^0}] = 0$ for $\mathcal{F}_{t_v^0}$-measurable fund weights. Therefore, for any integrable $\mathcal{F}_{t_v^0}$-measurable weight $z_v$ (including any pre-inception discounting factor $\Psi_{t_v^0}(\theta_0)/\Psi_\tau(\theta_0)$ with $\tau \le t_v^0$, or $z_v = 1$), the law of iterated expectations gives
 \[
 \mathbb{E}[z_v PV_v(\theta_0)] = \mathbb{E}\!\left[z_v \,\mathbb{E}[PV_v(\theta_0)\mid\mathcal{F}_{t_v^0}]\right] = 0.
 \]
-When $\tau > t_v^0$, the compounding weight $R^b_{t_v^0,\tau}(\theta_0) = \Psi_{t_v^0}(\theta_0)/\Psi_\tau(\theta_0)$ depends on public factor realizations after $t_v^0$ and is generally not $\mathcal{F}_{t_v^0}$-measurable. Taking expectations yields the Compounding-Horizon Wedge (repaired Lemma~1(3)):
+When $\tau > t_v^0$, the compounding weight $R^b_{t_v^0,\tau}(\theta_0) = \Psi_{t_v^0}(\theta_0)/\Psi_\tau(\theta_0)$ depends on public factor realizations after $t_v^0$ and is generally not $\mathcal{F}_{t_v^0}$-measurable. Under~(P) alone, taking expectations yields the compounding-horizon wedge (repaired Lemma~1(3) of the original submission):
 \[
 \mathbb{E}\!\left[\bar\epsilon_{v,H}(\theta_0)\,\middle|\,\mathcal{F}_{t_v^0}\right]
 = \mathrm{Cov}\!\left(A_{v,H}(\theta_0),\, PV_v(\theta_0)\,\middle|\,\mathcal{F}_{t_v^0}\right)
 =: b_{v,H},
 \]
-which is generically nonzero under~(P) alone whenever cash-flow pricing errors covary with realized benchmark returns over $\mathcal{T}_{v,H}$. Under the stronger path-exogeneity condition~(X), $\mathbb{E}[PV_v(\theta_0)\mid\mathcal{C}_v] = 0$, where $A_{v,H}(\theta_0)$ is $\mathcal{C}_v$-measurable; iterated expectations immediately yield $\mathbb{E}[A_{v,H}(\theta_0)PV_v(\theta_0)] = \mathbb{E}[A_{v,H}(\theta_0)\mathbb{E}[PV_v(\theta_0)\mid\mathcal{C}_v]] = 0$ at every horizon $H \ge 0$. \qed
+which is generically nonzero whenever cash-flow pricing errors covary with realized benchmark returns over $\mathcal{T}_{v,H}$. Under the stronger path-exogeneity condition~(X), $\mathbb{E}[PV_{v,i}(\theta_0)\mid\mathcal{G}_v] = 0$ for every fund, hence $\mathbb{E}[PV_v(\theta_0)\mid\mathcal{G}_v] = \sum_i w_{v,i}\,\mathbb{E}[PV_{v,i}(\theta_0)\mid\mathcal{G}_v] = 0$; since $A_{v,H}(\theta_0)$ is $\mathcal{G}_v$-measurable, $\mathbb{E}[\bar\epsilon_{v,H}(\theta_0)\mid\mathcal{G}_v] = A_{v,H}(\theta_0)\,\mathbb{E}[PV_v(\theta_0)\mid\mathcal{G}_v] = 0$, and $\mathbb{E}[\bar\epsilon_{v,H}(\theta_0)] = 0$ at every horizon $H \ge 0$. \qed
 
-\subsection{Proof of Theorem T3 (Signal-plus-noise decomposition of squared loss)}
+\subsection{Proof of T3 (Inception L2 variance tilt)}
 \label{sec:proof_T3}
 
-Let $\mathcal{G}_v$ contain $\mathcal{C}_v$, the vintage fund count $n_v$, and fund weights $\{w_{v,i}\}_{i=1}^{n_v}$ summing to one. Under constant-composition pooling, $PV_v(\theta) = \sum_{i=1}^{n_v} w_{v,i} PV_{v,i}(\theta)$. Suppose funds within vintage $v$ share conditional mean $\mu_v(\theta) = \mathbb{E}[PV_{v,i}(\theta)\mid\mathcal{G}_v]$, common conditional variance $\sigma_v^2(\theta) = \mathrm{Var}(PV_{v,i}(\theta)\mid\mathcal{G}_v)$, and common pairwise conditional covariance $c_v(\theta) = \mathrm{Cov}(PV_{v,i}(\theta), PV_{v,j}(\theta)\mid\mathcal{G}_v)$ for $i \neq j$. For equally weighted funds ($w_{v,i} = 1/n_v$),
+Let $m_v(\theta) := \mathbb{E}[PV_v(\theta)\mid\mathcal{F}_{t_v^0}]$. Under Condition~(P) with $\mathcal{F}_{t_v^0}$-measurable fund weights, $m_v(\theta_0) = 0$. The conditional variance decomposition gives
+\[
+\mathbb{E}\!\left[PV_v(\theta)^2\right] = \mathbb{E}\!\left[\operatorname{Var}\!\left(PV_v(\theta)\,\middle|\,\mathcal{F}_{t_v^0}\right)\right] + \mathbb{E}\!\left[m_v(\theta)^2\right].
+\]
+The gradient of the second term, $2\,\mathbb{E}[m_v(\theta)\nabla_\theta m_v(\theta)]$, vanishes at $\theta_0$ because $m_v(\theta_0) = 0$, which gives the first equality of T3; the second equality is direct differentiation of $\mathbb{E}[PV_v(\theta)^2]$. The gradient is generically nonzero: in the single-deal unit of Section~\ref{sec:fundwise_lmd_estimator} it equals $2\sigma_N^2\nabla_\theta\log\Psi_T(\theta_0)$ (Equation~\eqref{eq:one_deal_gradient} at $H=0$), which is nonzero whenever $\sigma_N^2 > 0$. \qed
+
+\subsection{Proof of T4 (Finite-$n_v$ L2 decomposition)}
+\label{sec:proof_T4}
+
+Under constant-composition pooling, $PV_v(\theta) = \sum_{i=1}^{n_v} w_{v,i} PV_{v,i}(\theta)$. Suppose funds within vintage $v$ share conditional mean $\mu_v(\theta) = \mathbb{E}[PV_{v,i}(\theta)\mid\mathcal{G}_v]$, common conditional variance $\sigma_v^2(\theta) = \mathrm{Var}(PV_{v,i}(\theta)\mid\mathcal{G}_v)$, and common pairwise conditional covariance $c_v(\theta) = \mathrm{Cov}(PV_{v,i}(\theta), PV_{v,j}(\theta)\mid\mathcal{G}_v)$ for $i \neq j$. For equally weighted funds ($w_{v,i} = 1/n_v$),
 \[
 \mathbb{E}[PV_v(\theta)^2\mid\mathcal{G}_v]
 = \mu_v(\theta)^2 + \mathrm{Var}(PV_v(\theta)\mid\mathcal{G}_v)
 = \mu_v(\theta)^2 + c_v(\theta) + \frac{\sigma_v^2(\theta) - c_v(\theta)}{n_v}.
 \]
-(For general normalized fund-size weights $w_{v,i}$ with Herfindahl index $H_v = \sum_{i=1}^{n_v} w_{v,i}^2$, $1/n_v$ is replaced by $H_v$, giving $c_v(\theta) + H_v(\sigma_v^2(\theta) - c_v(\theta))$.) Multiplying by $A_{v,H}(\theta)^2$ (which is $\mathcal{G}_v$-measurable) and taking unconditional expectations yields
+(For general $\mathcal{G}_v$-measurable weights $w_{v,i}$ with Herfindahl index $H_v = \sum_{i=1}^{n_v} w_{v,i}^2$, $1/n_v$ is replaced by $H_v$, giving $c_v(\theta) + H_v(\sigma_v^2(\theta) - c_v(\theta))$.) Multiplying by $A_{v,H}(\theta)^2$ (which is $\mathcal{G}_v$-measurable) and taking unconditional expectations yields
 \[
 Q_H^{\mathrm{L2}}(\theta)
 = \mathbb{E}\!\left[A_{v,H}(\theta)^2 \mu_v(\theta)^2\right]
 + \mathbb{E}\!\left[A_{v,H}(\theta)^2 c_v(\theta)\right]
-+ \mathbb{E}\!\left[A_{v,H}(\theta)^2 \frac{\sigma_v^2(\theta) - c_v(\theta)}{n_v}\right].
++ \mathbb{E}\!\left[A_{v,H}(\theta)^2 \frac{\sigma_v^2(\theta) - c_v(\theta)}{n_v}\right],
 \]
-At $\theta = \theta_0$ under~(X), $\mu_v(\theta_0) = 0$ almost surely, so both the signal term $\mathbb{E}[A_{v,H}(\theta_0)^2\mu_v(\theta_0)^2]$ and its gradient $2\mathbb{E}[A_{v,H}(\theta_0)^2\mu_v(\theta_0)\nabla_\theta\mu_v(\theta_0)]$ vanish. However, the variance terms depend on $\theta$ through both $A_{v,H}(\theta)^2$ and the discounted-payoff dispersion $\sigma_v^2(\theta), c_v(\theta)$, so $\nabla_\theta Q_H^{\mathrm{L2}}(\theta_0) \neq 0$ whenever $n_v < \infty$ or $c_v(\theta) > 0$. \qed
+with $n_v^{-1}$ kept inside the expectation when fund counts vary across vintages. T4 is the case $c_v \equiv 0$ of conditionally independent funds; the general case is used for T8 and Lemma~\ref{lem:infill}. Under~(X), $\mu_v(\theta_0) = 0$ almost surely, so the signal term $\mathbb{E}[A_{v,H}(\theta_0)^2\mu_v(\theta_0)^2]$ and its gradient vanish at $\theta_0$, while the noise terms depend on $\theta$ through $A_{v,H}(\theta)^2$ and the discounted-payoff dispersion; T6 gives their gradient. \qed
 
-\subsection{Proof of Theorem T4 (Inception score tilt and Scale-Jacobian FOC decomposition)}
-\label{sec:proof_T4}
+\subsection{Proof of T5 (Horizon gradient decomposition)}
+\label{sec:proof_T5}
 
-Differentiating the sample L2 objective $Q_{V,H}^{\mathrm{L2}}(\theta) = V^{-1}\sum_{v=1}^V A_{v,H}(\theta)^2 PV_v(\theta)^2$ yields the exact two-term FOC decomposition:
+By T1, $\bar\epsilon_{v,H}(\theta)^2 = A_{v,H}(\theta)^2 PV_v(\theta)^2$ pathwise, so the product rule gives
+\[
+\nabla_\theta \bar\epsilon_{v,H}(\theta)^2 = 2A_{v,H}(\theta)^2 PV_v(\theta)\nabla_\theta PV_v(\theta) + 2A_{v,H}(\theta)\nabla_\theta A_{v,H}(\theta)\,PV_v(\theta)^2;
+\]
+taking expectations yields T5. The same identity holds for the sample criterion,
 \[
 \nabla_\theta Q_{V,H}^{\mathrm{L2}}(\theta)
-= \underbrace{\frac{2}{V}\sum_{v=1}^V A_{v,H}(\theta)^2 PV_v(\theta)\,\nabla_\theta PV_v(\theta)}_{\text{Term~(I): Inception Discounting}}
-+ \underbrace{\frac{2}{V}\sum_{v=1}^V A_{v,H}(\theta)^2 PV_v(\theta)^2\,\nabla_\theta \log A_{v,H}(\theta)}_{\text{Term~(II): Scale-Jacobian Penalty}}.
+= \underbrace{\frac{2}{V}\sum_{v=1}^V A_{v,H}(\theta)^2 PV_v(\theta)\,\nabla_\theta PV_v(\theta)}_{\text{Term~(I): reweighted inception score}}
++ \underbrace{\frac{2}{V}\sum_{v=1}^V A_{v,H}(\theta)^2 PV_v(\theta)^2\,\nabla_\theta \log A_{v,H}(\theta)}_{\text{Term~(II): Scale-Jacobian term}}.
 \]
-Now specialize to the single-exit deal model where fund $i$ in vintage $v$ makes deals $j$ with outlay $c_j > 0$ at $a_j \ge t_v^0$ and exit payoff $c_j R^b_{a_j,b_j}(\theta_0)(1+\varepsilon_{i,j})$ at $b_j > a_j$, with independent mean-zero shocks $\mathrm{Var}(\varepsilon_{i,j}\mid\mathcal{G}_v) = \nu_j > 0$ and $c_v \equiv 0$. At $\theta$, fund $i$'s pricing error is $PV_{v,i}(\theta) = \sum_j c_j \Psi_{t_v^0,a_j}(\theta)[\Psi_{a_j,b_j}(\theta)R^b_{a_j,b_j}(\theta_0)(1+\varepsilon_{i,j}) - 1]$, so its conditional variance at $\theta$ is
+Term~(I) is the gradient of the Fix-$A$ criterion $V^{-1}\sum_v A_{v,H}(\bar\theta)^2 PV_v(\theta)^2$ with the horizon weights held fixed at $\bar\theta = \theta$ (Table~\ref{tab:fixA_jacobian}); Term~(II) comes from the $\theta$-dependence of $A_{v,H}$. \qed
+
+\subsection{Proof of T6 (The horizon displays the tilt; it does not remove it)}
+\label{sec:proof_T6}
+
+Under the conditions of T4 ($c_v \equiv 0$, equal weights),
+\[
+Q_H^{\mathrm{L2}}(\theta) = \mathbb{E}[A_{v,H}(\theta)^2\mu_v(\theta)^2] + \mathbb{E}[n_v^{-1}A_{v,H}(\theta)^2\sigma_v^2(\theta)].
+\]
+The gradient of the first term, $2\,\mathbb{E}[A_{v,H}^2\mu_v\nabla_\theta\mu_v + A_{v,H}\nabla_\theta A_{v,H}\,\mu_v^2]$, vanishes at $\theta_0$ because $\mu_v(\theta_0) = 0$ under~(X). Differentiating the second term gives
+\[
+\nabla_\theta Q_H^{\mathrm{L2}}(\theta_0)
+= \mathbb{E}\!\left[n_v^{-1}A_{v,H}(\theta_0)^2\left(\nabla_\theta\sigma_v^2(\theta_0) + 2\,\sigma_v^2(\theta_0)\,\nabla_\theta\log A_{v,H}(\theta_0)\right)\right]
+\]
+(with $n_v^{-1}$ replaced by $\sum_i w_{v,i}^2$ under general $\mathcal{G}_v$-measurable weights). At $H = 0$, $A_{v,0} \equiv 1$ and only $\mathbb{E}[n_v^{-1}\nabla_\theta\sigma_v^2(\theta_0)]$ remains, the inception tilt of T3; for $H > 0$ the Scale-Jacobian term is added. Whenever $\theta_0$ is interior and $\nabla_\theta Q_H^{\mathrm{L2}}(\theta_0) \neq 0$, the target $\theta_H^\dagger$ differs from $\theta_0$; a horizon with $\theta_H^\dagger = \theta_0$ requires the two terms to cancel.
+
+\emph{Signs in the single-exit deal model.} Let fund $i$ in vintage $v$ make deals $j$ with outlay $c_j > 0$ at $a_j \ge t_v^0$ and exit payoff $c_j R^b_{a_j,b_j}(\theta_0)(1+\varepsilon_{i,j})$ at $b_j > a_j$, with independent mean-zero shocks, $\mathrm{Var}(\varepsilon_{i,j}\mid\mathcal{G}_v) = \nu_j > 0$, deals identically distributed across the funds of a vintage, and $c_v \equiv 0$. At $\theta$, fund $i$'s pricing error is $PV_{v,i}(\theta) = \sum_j c_j \Psi_{t_v^0,a_j}(\theta)[\Psi_{a_j,b_j}(\theta)R^b_{a_j,b_j}(\theta_0)(1+\varepsilon_{i,j}) - 1]$, so
 \[
 \sigma_v^2(\theta) = \sum_j c_j^2 \nu_j \left(\frac{R^b_{a_j,b_j}(\theta_0)}{R^b_{t_v^0,b_j}(\theta)}\right)^2.
 \]
-Using $\nabla_\theta \log R^b_{t_v^0,b_j}(\theta) =: S_{t_v^0,b_j}(\theta)$ and $\nabla_\theta \log A_{v,H}(\theta) =: \bar S_{v,H}(\theta)$, differentiating $A_{v,H}(\theta)^2 \sigma_v^2(\theta) / n_v$ at $\theta = \theta_0$ (where $R^b_{t_v^0,b_j}(\theta_0) = R^b_{t_v^0,a_j}(\theta_0)R^b_{a_j,b_j}(\theta_0)$ cancels) gives
+Write $S_{t_v^0,b_j}(\theta) := \nabla_\theta \log R^b_{t_v^0,b_j}(\theta)$ and $\bar S_{v,H}(\theta) := \nabla_\theta \log A_{v,H}(\theta)$. Using
+\[
+R^b_{t_v^0,b_j}(\theta_0) = R^b_{t_v^0,a_j}(\theta_0)\,R^b_{a_j,b_j}(\theta_0),
+\]
+the gradient display above becomes
 \[
 \nabla_\theta Q_H^{\mathrm{L2}}(\theta_0)
-= 2\,\mathbb{E}\!\left[n_v^{-2}\, A_{v,H}(\theta_0)^2 \sum_{i=1}^{n_v}\sum_j \frac{c_j^2 \nu_j}{R^b_{t_v^0,a_j}(\theta_0)^2}\left(\bar S_{v,H}(\theta_0) - S_{t_v^0,b_j}(\theta_0)\right)\right]
+= 2\,\mathbb{E}\!\left[n_v^{-1}\, A_{v,H}(\theta_0)^2 \sum_j \frac{c_j^2 \nu_j}{R^b_{t_v^0,a_j}(\theta_0)^2}\left(\bar S_{v,H}(\theta_0) - S_{t_v^0,b_j}(\theta_0)\right)\right],
 \]
-(keeping $n_v^{-2}$ inside the expectation when fund counts $n_v$ vary across vintages). When deals start at $t_v^0$ ($R^b_{t_v^0,a_j}=1$), this simplifies to $2\,\mathbb{E}[n_v^{-1} A_{v,H}(\theta_0)^2 \sum_j c_j^2 \nu_j (\bar S_{v,H}(\theta_0) - S_{t_v^0,b_j}(\theta_0))]$.
-At $H=0$, $A_{v,0}(\theta) \equiv 1$ so $\bar S_{v,0}(\theta_0) = 0$. Since $\partial_\alpha \log R^b_{t_v^0,b_j}(\theta_0) = \sum_{u=t_v^0+1}^{b_j} G_u(\theta_0)^{-1} > 0$ strictly, $\partial_\alpha Q_0^{\mathrm{L2}}(\theta_0) < 0$ strictly. For single-factor $\beta$, positive average excess market returns yield $S_{t_v^0,b_j}(\beta_0) > 0$ on average, so $\partial_\beta Q_0^{\mathrm{L2}}(\beta_0) < 0$, tilting $\beta_0^\dagger > \beta_0$ upward. As $H$ rises, $\bar S_{v,H}(\theta_0)$ increases from $0$ and eventually exceeds $S_{t_v^0,b_j}(\theta_0)$, reversing the sign of $\nabla_\theta Q_H^{\mathrm{L2}}(\theta_0)$ and pulling $\beta_H^\dagger$ downward. In the joint $(\alpha,\beta)$ model at $H=0$, first-order linearization around $\theta_0$ gives $\theta_0^\dagger - \theta_0 \approx -[\nabla^2 Q_0^{\mathrm{L2}}(\theta_0)]^{-1}\nabla Q_0^{\mathrm{L2}}(\theta_0)$; because $[\nabla^2 Q_0^{\mathrm{L2}}(\theta_0)]_{\alpha\beta} > 0$, the large negative $\alpha$-score induces an upward shift in $\alpha_0^\dagger$ that attenuates $\beta_0^\dagger$ downward, formalizing the qualitative observation in \citet[p.~522]{DLP12}. \qed
+keeping $n_v^{-1}$ inside the expectation when fund counts vary across vintages. At $H=0$, $\bar S_{v,0}(\theta_0) = 0$. Since $\partial_\alpha \log R^b_{t_v^0,b_j}(\theta_0) = \sum_{u=t_v^0+1}^{b_j} G_u(\theta_0)^{-1} > 0$, $\partial_\alpha Q_0^{\mathrm{L2}}(\theta_0) < 0$ strictly. For single-factor $\beta$, $\partial_\beta \log R^b_{t_v^0,b_j}(\theta_0) = \sum_{u=t_v^0+1}^{b_j} F_u/G_u(\theta_0)$; when these sums are positive over the deal windows (positive realized excess market returns), $\partial_\beta Q_0^{\mathrm{L2}}(\beta_0) < 0$ and the inception tilt of $\beta_0^\dagger$ is upward. As $H$ rises, $\bar S_{v,H}(\theta_0)$ increases from $0$; once it exceeds the deal sensitivities $S_{t_v^0,b_j}(\theta_0)$, the sign of the gradient reverses and the target is pulled downward (for $\alpha$ under $G_u \equiv 1$, at $2T+1$ valuation dates; Section~\ref{sec:fundwise_lmd_estimator}). In the joint $(\alpha,\beta)$ model at $H=0$, first-order linearization gives $\theta_0^\dagger - \theta_0 \approx -[\nabla^2 Q_0^{\mathrm{L2}}(\theta_0)]^{-1}\nabla Q_0^{\mathrm{L2}}(\theta_0)$. If $[\nabla^2 Q_0^{\mathrm{L2}}(\theta_0)]_{\alpha\beta} > 0$ (its sample analog at $(\alpha,\beta) = (0,1)$ is positive in all four of our samples, Table~\ref{tab:alpha_beta_identification}), the off-diagonal element of the inverse Hessian is negative, so the large negative $\alpha$-score shifts $\alpha_0^\dagger$ upward and $\beta_0^\dagger$ downward, formalizing the qualitative observation in \citet[p.~522]{DLP12}. \qed
 
-\subsection{Proof of Theorem T5 (Large-$\alpha$ attenuation at $H=0$ vs.\ coercivity at $H>0$)}
-\label{sec:proof_T5}
-
-Fix $\beta$ on the positive-return domain and let $\alpha \to +\infty$. Then $G_u(\alpha,\beta) \to +\infty$ for every month $u$, so $\Psi_{t_v^0,t}(\alpha,\beta) = \prod_{u=t_v^0+1}^t G_u(\alpha,\beta)^{-1} \to 0$ for every $t > t_v^0$, while $\Psi_{t_v^0,t_v^0}(\alpha,\beta) = 1$. Hence $PV_{v,i}(\alpha,\beta) \to CF_{v,i,t_v^0}$, giving
-\[
-\lim_{\alpha\to\infty} Q_0^{\mathrm{L2}}(\alpha,\beta) = \mathbb{E}[CF_{v,t_v^0}^2]
-\]
-(and under a predetermined origin where $CF_{v,t_v^0} = 0$, both $\lim_{\alpha\to\infty} Q_0^{\mathrm{L2}}(\alpha,\beta) = 0$ and $\lim_{\alpha\to\infty} U_{v,0}(\alpha,\beta) = 0$). Whenever lifetime residual variance $\mathbb{E}[PV_v(\theta_0)^2]$ exceeds $\mathbb{E}[CF_{v,t_v^0}^2]$, an unconstrained $H=0$ minimizer is pulled toward $\alpha \to +\infty$.
-
-Conversely, suppose $H > 0$ so that $\mathcal{T}_{v,H}$ contains a date $\tau^\ast$ strictly after the first nonzero cash flow $t_v^{\mathrm{first}} \ge t_v^0$. Then for $t = t_v^{\mathrm{first}} < \tau^\ast$, the compounding factor $R^b_{t_v^{\mathrm{first}},\tau^\ast}(\alpha,\beta) = \prod_{u=t_v^{\mathrm{first}}+1}^{\tau^\ast} G_u(\alpha,\beta) \sim \alpha^{\tau^\ast - t_v^{\mathrm{first}}} \to +\infty$ dominates every later cash flow $t > t_v^{\mathrm{first}}$ (which grows at strictly lower degree in $\alpha$). Thus $|\bar\epsilon_{v,H}(\alpha,\beta)| \to +\infty$, implying $\lim_{\alpha\to\infty} Q_H^{\mathrm{L2}}(\alpha,\beta) = +\infty$. For $U_{v,H}$, since initial capital calls $CF_{v,i,t_v^{\mathrm{first}}} < 0$ have the same sign across funds active at the earliest date, their dominant pair products $CF_{v,i,t_v^{\mathrm{first}}}CF_{v,j,t_v^{\mathrm{first}}} > 0$ are strictly positive whenever at least two funds invest at $t_v^{\mathrm{first}}$, yielding $\lim_{\alpha\to\infty} U_{v,H}(\alpha,\beta) = +\infty$. \qed
-
-\subsection{Proof of Theorem T6 (Infill consistency, $n_v \to \infty$)}
-\label{sec:proof_T6}
-
-(a) Fix $V$ and let $n_v \to \infty$ for each $v = 1,\dots,V$. Conditional on $\mathcal{G}_v$ and any common vintage shock, the constant-composition pool NPV converges in probability by a within-vintage law of large numbers to the vintage's realized conditional mean $\tilde\mu_v(\theta)$. Hence $V^{-1}\sum_{v=1}^V A_{v,H}(\theta)^2 PV_v(\theta)^2 \xrightarrow{p} V^{-1}\sum_{v=1}^V A_{v,H}(\theta)^2 \tilde\mu_v(\theta)^2$ uniformly on the compact domain $\Theta$. When common vintage shocks are absent ($\tilde\mu_v(\theta_0) = 0$ for all $v$) and $\theta_0$ uniquely sets the limit to zero on $\Theta$, $\hat\theta_H^{\mathrm{L2}} \xrightarrow{p} \theta_0$ at every fixed $H \ge 0$. If unspanned common vintage shocks $\tilde\mu_v(\theta_0) \neq 0$ are present, fixed-$V$ infill converges instead to the random minimizer of $V^{-1}\sum_{v=1}^V A_{v,H}(\theta)^2 \tilde\mu_v(\theta)^2$.
-(b) Letting both $n_v \to \infty$ and $V \to \infty$ under the increasing-domain ULLN of Appendix~\ref{sec:proofs_asymptotics_H} eliminates the $O(1/n_v)$ term in Theorem~T3, yielding limit $\mathbb{E}[A_{v,H}(\theta)^2(\mu_v(\theta)^2 + c_v(\theta))]$. \qed
-
-\subsection{Proof of Theorem T7 (Cross-fund pair-product $U_{v,H}$ consistency under bounded $n_v \ge 2$)}
+\subsection{Proof of T7 (Identification of $U_{v,H}$ under bounded $n_v \ge 2$)}
 \label{sec:proof_T7}
 
-For any vintage $v$ with $n_v \ge 2$ funds and normalized fund weights $w_{v,i} > 0$ ($\sum_{i=1}^{n_v} w_{v,i} = 1$; $w_{v,i} = 1/n_v$ under EW, $w_{v,i} = s_{v,i}/\sum_k s_{v,k}$ under FW), define the cross-fund pair-product statistic
+For any vintage $v$ with $n_v \ge 2$ funds and normalized fund weights $w_{v,i} > 0$ ($\sum_{i=1}^{n_v} w_{v,i} = 1$; $w_{v,i} = 1/n_v$ under EW, $w_{v,i} = s_{v,i}/\sum_k s_{v,k}$ under FW), the cross-fund pair-product statistic is
 \[
 U_{v,H}(\theta)
-:= \frac{\sum_{i \neq j} w_{v,i} w_{v,j}\, \bar\epsilon_{v,i,H}(\theta)\, \bar\epsilon_{v,j,H}(\theta)}{\sum_{i \neq j} w_{v,i} w_{v,j}}
-= A_{v,H}(\theta)^2 \frac{\left(\sum_{i=1}^{n_v} w_{v,i} PV_{v,i}(\theta)\right)^2 - \sum_{i=1}^{n_v} w_{v,i}^2 PV_{v,i}(\theta)^2}{1 - \sum_{i=1}^{n_v} w_{v,i}^2}.
+= \frac{\sum_{i \neq j} w_{v,i} w_{v,j}\, \bar\epsilon_{v,i,H}(\theta)\, \bar\epsilon_{v,j,H}(\theta)}{\sum_{i \neq j} w_{v,i} w_{v,j}}
+= A_{v,H}(\theta)^2 \frac{\left(\sum_{i=1}^{n_v} w_{v,i} PV_{v,i}(\theta)\right)^2 - \sum_{i=1}^{n_v} w_{v,i}^2 PV_{v,i}(\theta)^2}{1 - \sum_{i=1}^{n_v} w_{v,i}^2},
 \]
-Let $\mathcal{G}_v$ include $\mathcal{C}_v$, the eligibility event $n_v \ge 2$, realized fund sizes $\{s_{v,i}\}$, and the realized vintage origin $t_v^0$. Suppose that conditional on $(\mathcal{G}_v, \text{common shock}_v)$, funds $i \neq j$ are independent with conditional mean $\mu_{v,i}(\theta) = \mathbb{E}[PV_{v,i}(\theta)\mid\mathcal{G}_v]$ and pairwise conditional covariance $c_v(\theta) = \mathrm{Cov}(PV_{v,i}(\theta), PV_{v,j}(\theta)\mid\mathcal{G}_v)$. Taking conditional expectations term by term for $i \neq j$:
-\[
-\mathbb{E}\!\left[PV_{v,i}(\theta)PV_{v,j}(\theta)\,\middle|\,\mathcal{G}_v\right]
-= \mu_{v,i}(\theta)\mu_{v,j}(\theta) + c_v(\theta).
-\]
-Hence
+using $\sum_{i\neq j}w_{v,i}w_{v,j} = 1 - \sum_i w_{v,i}^2$. Under the conditions of T7, funds $i \neq j$ are conditionally independent given $\mathcal{G}_v$, so $\mathbb{E}[PV_{v,i}(\theta)PV_{v,j}(\theta)\mid\mathcal{G}_v] = \mu_{v,i}(\theta)\mu_{v,j}(\theta)$ and
 \[
 \mathbb{E}\!\left[U_{v,H}(\theta)\,\middle|\,\mathcal{G}_v\right]
-= A_{v,H}(\theta)^2 \left(
-  \frac{\sum_{i \neq j} w_{v,i} w_{v,j} \mu_{v,i}(\theta)\mu_{v,j}(\theta)}{\sum_{i \neq j} w_{v,i} w_{v,j}}
-  + c_v(\theta)
-\right),
+= A_{v,H}(\theta)^2\,
+  \frac{\sum_{i \neq j} w_{v,i} w_{v,j} \mu_{v,i}(\theta)\mu_{v,j}(\theta)}{\sum_{i \neq j} w_{v,i} w_{v,j}};
 \]
-which reduces to $A_{v,H}(\theta)^2(\mu_v(\theta)^2 + c_v(\theta))$ whenever all funds in vintage $v$ share a common conditional mean $\mu_{v,i}(\theta) = \mu_v(\theta)$. Crucially, all own-fund diagonal variance terms $\sigma_v^2(\theta)$ cancel identically for every finite $n_v \ge 2$. Weighting vintages by $q_v > 0$ (kept inside the expectation when $q_v$ varies with $n_v$) and letting $V \to \infty$ under the uniform law of large numbers of Appendix~\ref{sec:proofs_asymptotics_H} gives
-\[
-Q_{V,H}^U(\theta) = \frac{1}{V}\sum_{v=1}^V q_v U_{v,H}(\theta)
-\xrightarrow{p} \mathbb{E}\!\left[q_v A_{v,H}(\theta)^2 \bigl(\mu_v(\theta)^2 + c_v(\theta)\bigr)\right]
-\]
-uniformly on $\Theta$. Provided the limiting criterion has a unique minimizer $\theta_H^{\dagger,\infty} \in \Theta$, $\hat\theta_H^U \xrightarrow{p} \theta_H^{\dagger,\infty}$. In particular, when $c_v \equiv 0$, $\mu_v(\theta_0) = 0$ conditional on $\mathcal{G}_v$ (implied by (X) together with exogeneity of eligibility, fund sizes, and $t_v^0$), and $\theta_0$ uniquely minimizes $\mathbb{E}[q_v A_{v,H}(\theta)^2 \mu_v(\theta)^2]$ on $\Theta$, $\hat\theta_H^U \xrightarrow{p} \theta_0$ at every fixed horizon $H \ge 0$ with bounded $n_v \ge 2$. \qed
+all own-fund variance terms cancel for every finite $n_v \ge 2$. Multiplying by the $\mathcal{G}_v$-measurable weight $q_v$ and taking expectations gives the display in T7. Under~(X), $\mu_{v,i}(\theta_0) = 0$ for every $i$, so the expectation is $0$ at $\theta_0$ for every $H$. With a common conditional mean, the pair sum equals $\mu_v(\theta)^2\sum_{i\neq j}w_{v,i}w_{v,j}$ and the conditional expectation is $A_{v,H}(\theta)^2\mu_v(\theta)^2 \ge 0$, so $\theta_0$ is a global minimizer. With size-dependent means, $\sum_{i\neq j}w_{v,i}w_{v,j}\mu_{v,i}\mu_{v,j} = (\sum_i w_{v,i}\mu_{v,i})^2 - \sum_i w_{v,i}^2\mu_{v,i}^2$ can be negative away from $\theta_0$, so $\theta_0$ need not minimize the population criterion and identification must be assumed. Letting $V \to \infty$ under the uniform law of large numbers of Appendix~\ref{sec:proofs_asymptotics_H}, $V^{-1}\sum_v q_v U_{v,H}(\theta)$ converges uniformly on $\Theta$ to $\mathbb{E}[q_v U_{v,H}(\theta)]$ (normalizing by $\sum_v q_v$ instead of $V$, as in $\widehat U_H$, rescales the limit by $1/\mathbb{E}[q_v]$ and leaves the minimizer unchanged). If $\theta_0$ is its unique minimizer on the compact $\Theta$, $\hat\theta_H^U \xrightarrow{p} \theta_0$ at every fixed $H \ge 0$ with bounded $n_v \ge 2$ \citep[Theorem~2.1]{NM94}. \qed
 
-\subsection{Proof of Theorem T8 (Mean-moment multiple roots and persistent vintage shocks)}
+\subsection{Proof of T8 (Shared vintage shocks)}
 \label{sec:proof_T8}
 
-In a one-period model with risk-free gross return $R_f$, excess market return $F$, and PE payoff $(R_f + \beta_{\mathrm{PE}} F)N$ with $\mathbb{E}[N\mid F] = 1$, the single-factor mean pricing moment with $\alpha = 0$ is
+Under the conditions of T8, the funds of vintage $v$ have common conditional mean $\mu_v(\theta)$ and pairwise conditional covariance $\tau_v^2(\theta)$ given $\mathcal{G}_v$, so $\mathbb{E}[PV_{v,i}(\theta)PV_{v,j}(\theta)\mid\mathcal{G}_v] = \mu_v(\theta)^2 + \tau_v^2(\theta)$ for $i \neq j$. Substituting into the pair representation of $U_{v,H}$ in the proof of T7 gives $\mathbb{E}[U_{v,H}(\theta)\mid\mathcal{G}_v] = A_{v,H}(\theta)^2(\mu_v(\theta)^2 + \tau_v^2(\theta))$; own-fund variances again cancel. Multiplying by $q_v$ and taking expectations yields T8. Because $\mu_v(\theta_0) = 0$, the gradient at $\theta_0$ is $\mathbb{E}[q_v A_{v,H}(\theta_0)^2(\nabla_\theta\tau_v^2(\theta_0) + 2\tau_v^2(\theta_0)\nabla_\theta\log A_{v,H}(\theta_0))]$, the expression of T6 with $n_v^{-1}\sigma_v^2$ replaced by $\tau_v^2$. \qed
+
+\subsection{Supplementary lemmas}
+\label{sec:supplementary_lemmas}
+
+\begin{lemma}[Large-$\alpha$ attenuation at $H=0$ versus coercivity at $H>0$]
+\label{lem:coercivity}
+Fix $\beta$ and drop the box constraint on $\alpha$.
+(a) As $\alpha \to +\infty$, $PV_{v,i}(\alpha,\beta) \to CF_{v,i,t_v^0}$, so $Q_0^{\mathrm{L2}}(\alpha,\beta) \to \mathbb{E}[CF_{v,t_v^0}^2]$; under a predetermined origin with $CF_{v,t_v^0} = 0$, both $Q_0^{\mathrm{L2}}$ and $U_{v,0}$ tend to $0$. Hence, whenever $\mathbb{E}[PV_v(\theta_0)^2] > \mathbb{E}[CF_{v,t_v^0}^2]$, the $H=0$ squared-loss criterion is lower as $\alpha \to +\infty$ than at $\theta_0$.
+(b) If $H > 0$, so that $\mathcal{T}_{v,H}$ contains a date $\tau^\ast$ after the first nonzero cash flow $t_v^{\mathrm{first}} \ge t_v^0$, then $|\bar\epsilon_{v,H}(\alpha,\beta)| \to +\infty$ and $Q_H^{\mathrm{L2}}(\alpha,\beta) \to +\infty$; $U_{v,H}(\alpha,\beta) \to +\infty$ whenever at least two funds of the vintage have a nonzero cash flow at $t_v^{\mathrm{first}}$.
+\end{lemma}
+
+\begin{proof}
+(a) As $\alpha \to +\infty$, $G_u(\alpha,\beta) \to +\infty$ for every month $u$, so $\Psi_{t_v^0,t}(\alpha,\beta) = \prod_{u=t_v^0+1}^t G_u(\alpha,\beta)^{-1} \to 0$ for every $t > t_v^0$, while $\Psi_{t_v^0,t_v^0} = 1$; hence $PV_{v,i}(\alpha,\beta) \to CF_{v,i,t_v^0}$ and the limits follow.
+(b) For $t = t_v^{\mathrm{first}} < \tau^\ast$, the compounding factor $R^b_{t_v^{\mathrm{first}},\tau^\ast}(\alpha,\beta) = \prod_{u=t_v^{\mathrm{first}}+1}^{\tau^\ast} G_u(\alpha,\beta)$ grows like $\alpha^{\tau^\ast - t_v^{\mathrm{first}}}$ and dominates every later cash flow, which grows at strictly lower degree in $\alpha$. Thus $|\bar\epsilon_{v,H}(\alpha,\beta)| \to +\infty$ and $Q_H^{\mathrm{L2}} \to +\infty$. For $U_{v,H}$, initial capital calls $CF_{v,i,t_v^{\mathrm{first}}} < 0$ have the same sign across funds, so the dominant pair products $CF_{v,i,t_v^{\mathrm{first}}}CF_{v,j,t_v^{\mathrm{first}}} > 0$ are strictly positive when at least two funds invest at $t_v^{\mathrm{first}}$, and $U_{v,H}(\alpha,\beta) \to +\infty$.
+\end{proof}
+
+\begin{lemma}[Infill consistency, $n_v \to \infty$]
+\label{lem:infill}
+(a) Fix $V$ and let $n_v \to \infty$ for each $v$. If common vintage shocks are absent and $\theta_0$ uniquely sets $V^{-1}\sum_v A_{v,H}(\theta)^2\tilde\mu_v(\theta)^2$ to zero on $\Theta$, where $\tilde\mu_v(\theta)$ is the vintage's realized conditional mean, then $\hat\theta_H^{\mathrm{L2}} \xrightarrow{p} \theta_0$ at every fixed $H \ge 0$; with unspanned common vintage shocks, fixed-$V$ infill converges instead to the random minimizer of that limit. (b) Letting both $n_v \to \infty$ and $V \to \infty$ eliminates the $O(1/n_v)$ term of T4, with limit criterion $\mathbb{E}[A_{v,H}(\theta)^2(\mu_v(\theta)^2 + c_v(\theta))]$.
+\end{lemma}
+
+\begin{proof}
+(a) Conditional on $\mathcal{G}_v$ and any common vintage shock, the constant-composition pool NPV converges in probability by a within-vintage law of large numbers to $\tilde\mu_v(\theta)$. Hence
+\[
+V^{-1}\sum_{v=1}^V A_{v,H}(\theta)^2 PV_v(\theta)^2 \xrightarrow{p} V^{-1}\sum_{v=1}^V A_{v,H}(\theta)^2 \tilde\mu_v(\theta)^2
+\]
+uniformly on the compact domain $\Theta$, and the minimizer converges to that of the limit. Without common shocks, $\tilde\mu_v(\theta_0) = 0$ for all $v$. (b) Apply the decomposition in the proof of T4 and the increasing-domain uniform law of large numbers of Appendix~\ref{sec:proofs_asymptotics_H}.
+\end{proof}
+
+\begin{lemma}[Multiple roots of the mean pricing moment]
+\label{lem:multiple_roots}
+In a one-period model with risk-free gross return $R_f$, excess market return $F$ taking finitely many values with $\mathbb{E}[F] > 0$ and $\mathbb{P}(F < 0) > 0$, and PE payoff $(R_f + \beta_{\mathrm{PE}} F)N$ with $\mathbb{E}[N\mid F] = 1$, the single-factor mean pricing moment with $\alpha = 0$,
 \[
 m(\beta) = \mathbb{E}\!\left[\frac{R_f + \beta_{\mathrm{PE}} F}{R_f + \beta F} - 1\right]
-= (\beta_{\mathrm{PE}} - \beta)\,\underbrace{\mathbb{E}\!\left[\frac{F}{R_f + \beta F}\right]}_{g(\beta)}.
+= (\beta_{\mathrm{PE}} - \beta)\,g(\beta),
+\qquad g(\beta) := \mathbb{E}\!\left[\frac{F}{R_f + \beta F}\right],
 \]
-Whenever $\mathbb{E}[F] > 0$ and $\mathbb{P}(F < 0) > 0$, $g(0) = \mathbb{E}[F]/R_f > 0$ while $g(\beta) \to -\infty$ as $\beta$ approaches the upper positivity boundary, so there exists a unique growth-optimal root $\beta^\ast > 0$ solving $g(\beta^\ast) = 0$ in addition to the structural root $\beta_{\mathrm{PE}}$. For example, with $R_f = 1$ and $F \in \{-0.4, +0.6\}$ equally likely, $\beta_{\mathrm{PE}} = 1$ and $\beta^\ast = 5/12$ both satisfy $m(\beta)=0$ on the positive-return domain, so a ``smallest-root'' rule selects $5/12 \neq 1$. Under persistent vintage shocks ($c_v > 0$, $\rho_W > 0$), any instrument $z_v$ constructed from neighboring vintages' cash flows correlates with $PV_v(\theta_0)$; valid IV moments $\mathbb{E}[z_v PV_v(\theta_0)] = 0$ therefore require strictly exogenous path instruments $z_v = h(\mathcal{C}_v)$ (valid under (X), or $z_v = 1$ under (P) alone) or $h$-block neighbor-excluding instruments. \qed
+has, besides the structural root $\beta_{\mathrm{PE}}$, a second root $\beta^\ast > 0$ on the positive-return domain, the growth-optimal exposure solving $g(\beta^\ast) = 0$; the two coincide only if $\beta_{\mathrm{PE}} = \beta^\ast$.
+\end{lemma}
+
+\begin{proof}
+$g(0) = \mathbb{E}[F]/R_f > 0$; $g$ is strictly decreasing because $g'(\beta) = -\mathbb{E}[F^2/(R_f+\beta F)^2] < 0$; and $g(\beta) \to -\infty$ as $\beta$ approaches the upper positivity boundary $R_f/|\min F|$, where the denominator of the term at $\min F < 0$ vanishes. Hence $g$ has exactly one root $\beta^\ast > 0$. For example, with $R_f = 1$ and $F \in \{-0.4, +0.6\}$ equally likely, $\beta_{\mathrm{PE}} = 1$ and $\beta^\ast = 5/12$ both satisfy $m(\beta) = 0$, so a ``smallest-root'' rule selects $5/12 \neq 1$.
+\end{proof}
+
+Under persistent vintage shocks ($c_v > 0$, $\rho_W > 0$), any instrument $z_v$ constructed from neighboring vintages' cash flows correlates with $PV_v(\theta_0)$; valid moments $\mathbb{E}[z_v PV_v(\theta_0)] = 0$ therefore require strictly exogenous path instruments $z_v = h(\mathcal{C}_v)$ (valid under (X)), $z_v = 1$ under (P) alone (T2), or $h$-block neighbor-excluding instruments.
 
 % ==============================================================================
 \section{Increasing-Domain Asymptotics, Fixed-$b$ SHAC Inference, and Full Step 4 Monte Carlo Exhibits}
@@ -230,7 +273,7 @@ Fix a horizon $H \ge 0$, and let $Q_{V,H}(\theta) = V^{-1}\sum_{v=1}^V \ell_{v,H
 \begin{enumerate}
   \item \textbf{Compact admissible domain:} $\Theta \subset \mathbb{R}^p$ is compact with $\min_{t} G_t(\theta) \ge \underline{g} > 0$ for all $\theta \in \Theta$ (in implementation, $\underline{g}=0.08$, $\beta_{\mathrm{MKT}}\in[-1,4]$, $\alpha\in[-2\%,2\%]$/month), and $\theta_H^\dagger$ is the unique global minimizer of $Q_H(\theta)$ on $\Theta$.
   \item \textbf{Smoothness and envelope bounds:} $\ell_{v,H}(\theta)$ is twice continuously differentiable on $\Theta$ with $\sup_{\theta\in\Theta}|\ell_{v,H}(\theta)|$, $\sup_{\theta\in\Theta}\|\nabla_\theta\ell_{v,H}(\theta)\|$, and $\sup_{\theta\in\Theta}\|\nabla_{\theta\theta}^2\ell_{v,H}(\theta)\|$ possessing uniformly bounded $(2+\delta)$ moments ($\delta > 0$).
-  \item \textbf{Increasing-domain vintage mixing:} Vintages lie on an expanding calendar lattice ($V \to \infty$) with bounded per-vintage fund counts and bounded effective lifetimes, such that $\{\ell_{v,H}(\theta), \nabla_\theta\ell_{v,H}(\theta), \nabla_{\theta\theta}^2\ell_{v,H}(\theta)\}$ satisfy the near-epoch dependence / mixing conditions of \citet{JP09,JP12}.
+  \item \textbf{Increasing-domain vintage mixing:} Vintages lie on an expanding calendar lattice ($V \to \infty$) with bounded per-vintage fund counts and bounded effective lifetimes, such that the criterion contributions $\ell_{v,H}(\theta)$, the scores $\nabla_\theta\ell_{v,H}(\theta)$, and the Hessians $\nabla_{\theta\theta}^2\ell_{v,H}(\theta)$ satisfy the near-epoch dependence / mixing conditions of \citet{JP09,JP12}.
   \item \textbf{Interior optimum and nonsingular curvature (for CLT):} $\theta_H^\dagger \in \mathrm{int}(\Theta)$, $\mathcal{H}_H := \mathbb{E}[\nabla_{\theta\theta}^2 \ell_{v,H}(\theta_H^\dagger)]$ is positive definite, and $\Lambda_H := \lim_{V\to\infty}\mathrm{Var}(V^{-1/2}\sum_{v=1}^V s_{v,H}(\theta_H^\dagger))$ is positive definite, where $s_{v,H}(\theta) := \nabla_\theta\ell_{v,H}(\theta)$.
 \end{enumerate}
 \end{assume}
@@ -248,7 +291,7 @@ Under Assumption~\ref{ass:asymptotics_H}(1)--(3), $\hat\theta_H \xrightarrow{p} 
 \begin{proof}
 \emph{Consistency.} By Assumption~\ref{ass:asymptotics_H}(1)--(3) and the random-field uniform law of large numbers \citep{JP09,PP97}, $\sup_{\theta\in\Theta}|Q_{V,H}(\theta) - Q_H(\theta)| \xrightarrow{p} 0$. Compactness of $\Theta$, continuity of $Q_H$, and unique identification of $\theta_H^\dagger$ yield $\hat\theta_H \xrightarrow{p} \theta_H^\dagger$ by \citet[Theorem~2.1]{NM94}.
 
-\emph{Asymptotic normality (score centering and integrated Hessian).} Since $\theta_H^\dagger \in \mathrm{int}(\Theta)$ and $\hat\theta_H \xrightarrow{p} \theta_H^\dagger$, the sample first-order condition $\nabla_\theta Q_{V,H}(\hat\theta_H) = 0$ holds with probability approaching one. Crucially, the population score is centered at the criterion target $\theta_H^\dagger$---i.e., $\mathbb{E}[s_{v,H}(\theta_H^\dagger)] = \nabla_\theta Q_H(\theta_H^\dagger) = 0$---rather than at $\theta_0$ (for L2 with finite $n_v$, $\mathbb{E}[s_{v,H}(\theta_0)] \neq 0$ by Theorem~T4). Applying the fundamental theorem of calculus to each component of $\nabla_\theta Q_{V,H}$ along the line segment $\theta(u) = \theta_H^\dagger + u(\hat\theta_H - \theta_H^\dagger)$, $u\in[0,1]$, yields the exact integrated-Hessian expansion
+\emph{Asymptotic normality (score centering and integrated Hessian).} Since $\theta_H^\dagger \in \mathrm{int}(\Theta)$ and $\hat\theta_H \xrightarrow{p} \theta_H^\dagger$, the sample first-order condition $\nabla_\theta Q_{V,H}(\hat\theta_H) = 0$ holds with probability approaching one. Crucially, the population score is centered at the criterion target $\theta_H^\dagger$---i.e., $\mathbb{E}[s_{v,H}(\theta_H^\dagger)] = \nabla_\theta Q_H(\theta_H^\dagger) = 0$---rather than at $\theta_0$ (for L2 with finite $n_v$, $\mathbb{E}[s_{v,H}(\theta_0)] \neq 0$ in general; Theorem~\ref{thm:finite_pool}, T3 and T6). Applying the fundamental theorem of calculus to each component of $\nabla_\theta Q_{V,H}$ along the line segment $\theta(u) = \theta_H^\dagger + u(\hat\theta_H - \theta_H^\dagger)$, $u\in[0,1]$, yields the exact integrated-Hessian expansion
 \[
 0 = \nabla_\theta Q_{V,H}(\hat\theta_H)
   = \nabla_\theta Q_{V,H}(\theta_H^\dagger)

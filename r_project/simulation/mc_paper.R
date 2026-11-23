@@ -211,11 +211,19 @@ for (g in C.ROWS) {
     a1 <- c(a1, sprintf("\\quad %s & %s & %s & %s \\\\", x[["label"]], format(srow(x[["d"]], "L2.vyp", "MKT", "MKT", 0)$reps, big.mark = "{,}"), paste(vals, collapse = " & "), tstr))
   }
 }
+# V = 400 tails of the U_{v,H} test (simulation/mc_inference_checks.R, stored batches)
+ic <- read.csv("results/mc_step4/inference_checks.csv", stringsAsFactors = FALSE)
+v4 <- ic[ic$check == "v400_tails", ]; v4 <- v4[order(v4$design != "v_V400_n5", v4$H), ]
+stopifnot(nrow(v4) == 4)
+v4.note <- sprintf(paste0("Equal-count and growing-$V$ rows: on resampled paths at $V=400$, equal-vintage $U_{v,H}$ still rejects in %.1f--%.1f\\%% of draws with low median $N_{\\mathrm{eff}}$ (%.0f--%.0f) and a left-tail excess (left/right rejections %s across $n\\in\\{5,20\\}\\times H\\in\\{0,15\\}$); ",
+    "with the test denominator fixed at the Monte Carlo SD they become %s, so the excess comes from the studentization (an estimated SE that co-moves with the estimation error); heavy-tailed compounded weights (cf.\\ Martin 2012 on compounded-return tails) are a candidate mechanism that we have not tested. "),
+  100 * min(v4$reject), 100 * max(v4$reject), min(v4$median.neff), max(v4$median.neff),
+  paste(sprintf("%d/%d", v4$left, v4$right), collapse = ", "), paste(sprintf("%d/%d", v4$left.mcsd, v4$right.mcsd), collapse = ", "))
 a1 <- c(a1, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
   paste0("{\\scriptsize\\textit{Notes:} Panel C: single factor, horizons 0 and 15 years; entries are conditional rejection rates of the structural value $\\beta_{MKT}=1$ among tested interior draws (for L2 VYP and $U_{v,H}$, 100\\% of draws are tested except 99.8\\% in $v\\_{V25\\_n5}$ $H=0$ $U_{v,H}$). ",
     "IV is the smallest root of $V^{-1}\\sum_v z_vPV_v(\\beta)=0$ with $z_v=A_{v,H}(1)/A_{v,0}(1)$ (the mean pricing moment at $H=0$), tested only when a root exists on the interior of $\\Theta$ (Tested column: share of draws with a tested root at $H=0/15$ yr); assigning $\\beta_0=1$ as the IV target without path shocks reflects moment validity rather than general root identification. ",
     "Shared-shock rows: the M4 designs of Figure~\\ref{fig:mc_margins} on the same draws, the shared log shock either independent across vintages or an AR(1) across vintage years with the same marginal law. ",
-    "Equal-count and growing-$V$ rows: on resampled paths at $V=400$, equal-vintage $U_{v,H}$ still rejects in 6.8--10.8\\% of draws with low median $N_{\\mathrm{eff}}$ (13--27) and a left-tail excess (left/right rejections 22/12, 38/16, 27/14, 36/12 across $n\\in\\{5,20\\}\\times H\\in\\{0,15\\}$); holding the test denominator fixed at the Monte Carlo SD removes or reverses that left-tail excess, showing studentization distortion from heavy-tailed compounded weights (cf.\\ Martin 2012 on compounded-return tails) rather than cross-vintage dependence. ",
+    v4.note,
     "Monte Carlo SE 0.7 points (1{,}000 replications) and 1.0 point (500) at a 5\\% rate. Hardening designs (FW sizes, deal-level and vintage-level path shocks): Table~\\ref{tab:mc_hardening}.}"),
   "\\end{table}")
 write.table.tex("table_AS1_size.tex", a1)

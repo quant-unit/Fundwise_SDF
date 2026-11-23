@@ -4,7 +4,9 @@
 #   LANG=en_US.UTF-8 Rscript simulation/mc_report.R [--partial]
 # Without --partial, every design in config/mc_designs.yaml must be present
 # with all requested replications and matching provenance (spec.md5,
-# public.md5, MC.SETTINGS), and every cell must have a matching target.
+# public.md5, MC.SETTINGS), and every cell must have a matching target. Target
+# files are checked against the current specs only if they record provenance
+# (mc_targets.R after 22 November 2026); older files raise a warning.
 # Writes simulation/data_out_mc/summary.rds and results/mc_step4/summary.csv
 # (one row per design, estimator, model, parameter and horizon; simulated
 # results only, no fund-level data).
@@ -27,8 +29,15 @@ if (!length(target.files)) stop("No targets*.rds files found in simulation/data_
 tgs <- lapply(target.files, readRDS)
 names(tgs) <- basename(target.files)
 stopifnot(!anyDuplicated(unlist(lapply(tgs, function(x) unique(x$targets$design)))))
+# Target files written before 22 November 2026 carry no provenance fields; they
+# cannot be checked against the current specifications and are reported as such.
+unvalidated <- character()
 for (fn in names(tgs)) {
   x <- tgs[[fn]]
+  if (is.null(x$public.md5) || is.null(x$settings) || is.null(x$spec.md5)) {
+    unvalidated <- c(unvalidated, fn)
+    warning("Target file ", fn, " has no provenance fields (spec.md5/public.md5/settings): only cell completeness is checked")
+  }
   if (!is.null(x$public.md5) && !identical(x$public.md5, pub.md5)) {
     stop("Target file ", fn, " was computed with different public factors")
   }
@@ -80,7 +89,7 @@ if (nrow(h)) {
     MKT = abs(w$`MKT.target.1-100` - w$`MKT.target.101-200`) / 2, Coef = abs(w$`Coef.target.1-100` - w$`Coef.target.101-200`) / 2)
 }
 attr(s, "provenance") <- list(targets.commit = tg$commit, targets.dirty = tg$dirty,
-  production = prod.commits, partial = partial.ok)
+  production = prod.commits, partial = partial.ok, targets.unvalidated = unvalidated)
 saveRDS(s, "simulation/data_out_mc/summary.rds")
 dir.create("results/mc_step4", showWarnings = FALSE, recursive = TRUE)
 write.csv(s, "results/mc_step4/summary.csv", row.names = FALSE)
