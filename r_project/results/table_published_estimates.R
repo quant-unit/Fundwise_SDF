@@ -44,14 +44,14 @@ tex <- c(
   sprintf("This paper, L2 (FW, benchmark) & Preqin (1982--2010) & Pooled squared NPV ($H=0$) & %s & %s & Noise-tilted upward (T3/T4) \\\\", bo.l2.fw, vc.l2.fw),
   "\\midrule",
   "\\multicolumn{6}{l}{\\textit{Panel B: Selected published cash-flow and secondary-market studies}} \\\\",
-  # Panel B checked on 2026-11-23 against the articles (DLP12 Table 3; FNP12 introduction;
-  # KN16 Table II col. 2; ACGP18 Table III, CAPM/FF3/PS4; GVN21 introduction; Boyer et al.
-  # Section III; KN24 introduction) and, for HJK14 and RS16, against their abstracts/summaries.
+  # Panel B checked on 2026-11-23 directly against all published articles (DLP12 Table 3;
+  # FNP12 introduction; HJK14 Tables I, III--IV; KN16 Table II col. 2; RS16 Tables 1--2 & Fig. A1;
+  # ACGP18 Table III, CAPM/FF3/PS4; GVN21 introduction; Boyer et al. Section III; KN24 introduction).
   "\\cite{DLP12} & TVE (1980--1993) & Pooled NPV GMM ($H=0$) & 1.31 (CAPM); 1.71 (FF3) & 2.73 (CAPM); 2.37 (FF3) & $\\alpha$ (CAPM): BO $-0.41\\%$/mo (insig.); VC $-1.09\\%$/mo \\\\",
   "\\cite{FNP12} & CEPRES buyout deals (1975--2006) & Deal-level, P\\'astor--Stambaugh 4-factor & $\\approx 1.3$ (4-f) & -- & $\\alpha \\approx 0$ with the liquidity factor \\\\",
-  "\\cite{HJK14} & Burgiss (1984--2008) & Kaplan--Schoar PME ($\\beta\\equiv 1$) & 1 (imposed) & 1 (imposed) & BO beats S\\&P~500 by 20--27\\% over fund life; VC above in 1990s, below in 2000s \\\\",
+  "\\cite{HJK14} & Burgiss, 598 BO / 775 VC (1984--2008) & Kaplan--Schoar PME ($\\beta\\equiv 1$; $1.5\\times, 2\\times$ check) & 1 (imposed) & 1 (imposed) & BO S\\&P PME 1.20--1.27 (20--27\\%); VC avg 1.36 (1990s 1.99, 2000s 0.91) \\\\",
   "\\cite{KN16} & Preqin VC (1979--2008) & Public-SDF GPME & -- & -- (SDF loadings) & VC GPME $-0.10$ (CAPM SDF); $+0.11$ pre-1998, $-0.14$ post-1998 \\\\",
-  "\\cite{RS16} & LP cash flows, 837 funds (1984--2010) & PME with varying $\\beta$ & -- & -- & BO PME $\\approx 1.18$; inference changes little for plausible $\\beta$ \\\\",
+  "\\cite{RS16} & LP cash flows, 542 BO / 295 VC (1984--2009) & S\\&P, Tailored, and Levered PME ($\\beta \\in [0,3]$) & -- & -- & S\\&P PME: BO 1.19 (1.18 liq.), VC 1.06 (1.03 liq.); Levered ($\\beta=1.3/2.0$): 1.15/1.01 \\\\",
   "\\cite{ACGP18} & Preqin (1994--2015) & Bayesian LP cash-flow panel & 1.22--1.32 & 1.72--1.80 & BO $\\alpha \\approx 4\\%$/yr (CAPM), $\\approx 0$ with more factors \\\\",
   "\\cite{GN18} & Preqin (1981--2018) & Cash-flow strip replication & -- & -- & Avg.\\ risk-adjusted profit $-6$ (BO) and $-9$ (VC) cents per \\$1 \\\\",
   "\\cite{boyer2023discount} & Secondary transactions (2006--2018) & Transaction-based buyout index & 1.76--1.79 & -- & CAPM $\\alpha \\approx 0$ \\\\",
