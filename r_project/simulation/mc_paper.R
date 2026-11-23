@@ -106,6 +106,7 @@ s1 <- c(s1, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
     "Rej.: rejection of the structural value $\\beta_{MKT}=1$ at 5\\% with the empirical tables' inference (Bartlett sandwich, $S=\\lceil1.3\\sqrt V\\rceil$, fixed-$b$ critical values), among interior tested draws (all 1{,}000 draws interior for L2 VYP and $U_{v,H}$ at $H\\le20$ yr; 999--1{,}000 at 30 yr). ",
     sprintf("We reserve ``size'' for a valid null: at $H=0$, L2 VYP rejects $\\beta_{MKT}=1$ in %s\\%% (Buyout) and %s\\%% (VC) of draws, but rejects its own criterion target $\\theta_0^\\dagger$ in %s\\%% and %s\\%% because positive target shift and negative finite-sample bias partially offset at $\\beta_{MKT}=1$. ",
       pct(l2.bo.0$size), pct(l2.vc.0$size), pct(l2.bo.0$size.target), pct(l2.vc.0$size.target)),
+    "Outer vintage weights for $U_{v,H}$: $q_v=1$ weights each eligible ($n_v\\ge 2$) vintage year equally (main specification), whereas $q_v=n_v$ weights each vintage proportionally to its fund count $n_v$. ",
     "For $U_{v,H}$ with $q_v=n_v$ the rejection rate is in brackets: it shows why the empirical tables report no inference for that weighting. ",
     sprintf("Monte Carlo SE of the bias %s; of rejection rates 0.7 points at a 5\\%% rate with 1{,}000 tested draws (observed-rate MCSE across printed cells: %.2f--%.2f points).}",
       mcse.range(core.mkt$mcse.bias), min(core.obs.mcse, na.rm = TRUE), max(core.obs.mcse, na.rm = TRUE))),
@@ -299,6 +300,8 @@ m4.u0 <- srow("m4_shared2", "U.eq", "Alpha", "Alpha", 0); m4.u15 <- srow("m4_sha
 vc.u0 <- srow("u_vc_shared", "U.eq", "Alpha", "Alpha", 0); vc.u15 <- srow("u_vc_shared", "U.eq", "Alpha", "Alpha", 15)
 a3 <- c(a3, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
   paste0("{\\scriptsize\\textit{Notes:} Joint fit of $(\\alpha,\\beta_{MKT})$ over the admissible domain ($\\alpha\\in[-2\\%,2\\%]$ per month, $\\beta_{MKT}\\in[-1,4]$, monthly gross benchmark return $\\ge 0.08$). ",
+    "Outer vintage weights for $U_{v,H}$: $q_v=1$ weights each eligible ($n_v\\ge 2$) vintage year equally (main specification), whereas $q_v=n_v$ weights each vintage proportionally to its fund count $n_v$. ",
+    "Bias against the true value and SD across replications ($\\mathrm{RMSE}=\\sqrt{\\mathrm{Bias}^2+\\mathrm{SD}^2}$). ",
     "Panel~A: core designs of Table~\\ref{tab:mc_core} ($c_v=0$). Panel~B: shared lognormal vintage shocks $W_v\\sim\\exp(\\mathcal N(-\\sigma_W^2/2,\\sigma_W^2))$ common to all deals of vintage $v$ ($\\sigma_W=0.306$ on Buyout shape, M4 $2c$; $\\sigma_W=0.50$ on VC shape, matching empirical VC cross-vintage PV dispersion of 0.44 EW / 0.54 FW). ",
     "Bound: share of draws on an active constraint of $\\Theta$ (included in bias and SD; in VC $\\sigma_W=0.50$ at $H=0$, nearly all boundary hits are $\\alpha=+2\\%$: 40.0\\% L2 VYP, 24.8\\% $U_{v,0}$ $q_v=1$, 42.8\\% $q_v=n_v$). ",
     sprintf("Joint inference calibration for $U_{v,H}$ ($q_v=1$): in the Panel~A cores at $H=0$, the nominal 5\\%% fixed-$b$ test of $\\alpha=0$ rejects in %s\\%% (Buyout) and %s\\%% (VC) of tested draws; at 30 years conditional rejection collapses to %s\\%%/%s\\%% for $\\alpha$ and %s\\%%/%s\\%% for $\\beta$ (same-sample SE/SD %s/%s vs.\\ %s/%s against all-draw SD). In Panel~B, $H=15$ yr cuts $U_{v,H}$ ($q_v=1$) $\\alpha=0$ rejection from %s\\%% to %s\\%% (Buyout $2c$) and from %s\\%% to %s\\%% (VC $\\sigma_W=0.50$). ",
@@ -322,7 +325,7 @@ for (d in c("core_BO", "core_VC", MARGINS[-1], "u_vc_shared")) {
   a3b <- c(a3b, sprintf("%s & %s \\\\", DESIGN.LABEL[d], paste(vals, collapse = " & ")))
 }
 a3b <- c(a3b, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
-  "{\\scriptsize\\textit{Notes:} Share of Monte Carlo draws in which the joint $(\\alpha,\\beta_{MKT})$ $U_{v,H}$ minimizer lies on an active boundary constraint of $\\Theta$ ($\\alpha\\in[-2\\%,2\\%]$ per month, $\\beta_{MKT}\\in[-1,4]$, monthly gross benchmark return $\\ge 0.08$). Cores: 1{,}000 replications; M5 2/2: 1{,}000; all other margins and VC shared shock ($\\sigma_W=0.50$): 250.}",
+  "{\\scriptsize\\textit{Notes:} Share of Monte Carlo draws in which the joint $(\\alpha,\\beta_{MKT})$ $U_{v,H}$ minimizer lies on an active boundary constraint of $\\Theta$ ($\\alpha\\in[-2\\%,2\\%]$ per month, $\\beta_{MKT}\\in[-1,4]$, monthly gross benchmark return $\\ge 0.08$). Outer vintage weights: $q_v=1$ weights each eligible ($n_v\\ge 2$) vintage year equally; $q_v=n_v$ weights each vintage proportionally to its fund count $n_v$. Cores: 1{,}000 replications; M5 2/2: 1{,}000; all other margins and VC shared shock ($\\sigma_W=0.50$): 250.}",
   "\\end{table}")
 write.table.tex("table_AS3b_alpha_beta_bounds.tex", a3b)
 
