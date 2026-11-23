@@ -161,16 +161,18 @@ run_simulation_study <- function(
             # Note: data_folder will be auto-derived from scenario_id if null or "auto"
 
             # Validate scenario
+            valid <- TRUE
             tryCatch(
                 {
                     validate_scenario(scenario, type = "simulation")
                 },
                 error = function(e) {
                     cat("  -> INVALID:", conditionMessage(e), "\n\n")
-                    results[[id]] <- list(success = FALSE, error = conditionMessage(e))
-                    next
+                    results[[id]] <<- list(success = FALSE, error = conditionMessage(e))
+                    valid <<- FALSE
                 }
             )
+            if (!valid) next
 
             # Convert scenario to estimation parameters
             params <- scenario_to_estimation_params(scenario)

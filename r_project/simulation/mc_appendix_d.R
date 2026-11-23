@@ -126,23 +126,65 @@ ad.summary <- function(res, row) {
     input.md5 = res$provenance$input.md5)
 }
 
+# Validate a cached Appendix D scenario .rds against current inputs, settings,
+# and sample completeness (not merely filename existence).
+ad.cache.valid <- function(res, id, config = yaml::read_yaml(AD.CONFIG)) {
+  if (!is.list(res) || is.null(res$rows) || is.null(res$provenance)) return(list(ok = FALSE, reason = "malformed cache object"))
+  f <- file.path(AD.SIM, id, paste0(id, "_simulated_cashflows_EW_VYP.csv"))
+  if (!file.exists(f)) return(list(ok = FALSE, reason = "input file missing"))
+  ff <- file.path(AD.SIM, id, paste0(id, "_simulated_factors.csv"))
+  exp.md5 <- unname(tools::md5sum(f))
+  exp.fmd5 <- if (file.exists(ff)) unname(tools::md5sum(ff)) else NA_character_
+  exp.settings <- MC.SETTINGS
+  exp.settings$alpha.bounds <- ad.alpha.bounds(id, config)
+  p <- res$provenance
+  if (!identical(p$input.md5, exp.md5)) return(list(ok = FALSE, reason = "input.md5 mismatch"))
+  if (!identical(p$factors.md5, exp.fmd5)) return(list(ok = FALSE, reason = "factors.md5 mismatch"))
+  if (!identical(p$settings, exp.settings)) return(list(ok = FALSE, reason = "MC.SETTINGS mismatch"))
+  r <- res$rows
+  if (!("sample" %in% names(r)) || anyNA(r$sample) || anyDuplicated(r$sample)) return(list(ok = FALSE, reason = "missing or duplicate sample IDs"))
+  if ("error" %in% names(r) && any(!is.na(r$error))) return(list(ok = FALSE, reason = sprintf("%d failed sample(s)", sum(!is.na(r$error)))))
+  # Verify exact sample set against the input file's type column
+  types <- unique(fread(f, select = "type", showProgress = FALSE)$type)
+  exp.samples <- sort(as.integer(sub(".*\\.(\\d+)$", "\\1", types)))
+  if (!identical(sort(as.integer(r$sample)), exp.samples)) return(list(ok = FALSE, reason = "sample IDs do not match input file"))
+  list(ok = TRUE, reason = "")
+}
+
 if (sys.nframe() == 0L) {
   ids <- commandArgs(TRUE)
   if (!length(ids)) ids <- AD.ROWS$scenario
   stopifnot(all(ids %in% AD.ROWS$scenario))
   dir.create(AD.DIR, recursive = TRUE, showWarnings = FALSE)
   public <- ad.public()
+  cfg <- yaml::read_yaml(AD.CONFIG)
   for (id in ids) {
     out <- file.path(AD.DIR, paste0(id, ".rds"))
-    if (file.exists(out)) { cat(format(Sys.time(), "%H:%M:%S"), id, "exists, skipped\n"); next }
+    if (file.exists(out)) {
+      cached <- tryCatch(readRDS(out), error = function(e) NULL)
+      chk <- ad.cache.valid(cached, id, cfg)
+      if (isTRUE(chk$ok)) {
+        cat(format(Sys.time(), "%H:%M:%S"), id, "cache valid, skipped\n")
+        next
+      }
+      warning(id, ": cached ", basename(out), " invalid (", chk$reason, "); recomputing")
+    }
     res <- ad.run(id, public)
+    n.fail <- sum(!is.na(res$rows$error))
+    if (n.fail > 0L) stop(id, ": ", n.fail, " sample(s) failed, refusing to cache incomplete result")
     saveRDS(res, out)
     cat(sprintf("%s %-52s %4d samples, %d failed, %4.0f s, commit %s%s\n", format(Sys.time(), "%H:%M:%S"), id, nrow(res$rows),
-      sum(!is.na(res$rows$error)), res$provenance$seconds, res$provenance$git.commit, if (res$provenance$git.dirty) " (DIRTY)" else ""))
+      n.fail, res$provenance$seconds, res$provenance$git.commit, if (res$provenance$git.dirty) " (DIRTY)" else ""))
   }
-  # the summary of every finished scenario
+  # the summary of every finished scenario (validating each cache)
   done <- AD.ROWS[file.exists(file.path(AD.DIR, paste0(AD.ROWS$scenario, ".rds"))), ]
-  s <- do.call(rbind, lapply(seq_len(nrow(done)), function(i) ad.summary(readRDS(file.path(AD.DIR, paste0(done$scenario[i], ".rds"))), done[i, ])))
+  s <- do.call(rbind, lapply(seq_len(nrow(done)), function(i) {
+    sc <- done$scenario[i]
+    cached <- readRDS(file.path(AD.DIR, paste0(sc, ".rds")))
+    chk <- ad.cache.valid(cached, sc, cfg)
+    if (!isTRUE(chk$ok)) stop("Refusing to summarize invalid Appendix D cache for ", sc, ": ", chk$reason)
+    ad.summary(cached, done[i, ])
+  }))
   dir.create("results/mc_step4", showWarnings = FALSE, recursive = TRUE)
   write.csv(s, "results/mc_step4/appendix_d_summary.csv", row.names = FALSE)
   cat("summary:", nrow(s), "of", nrow(AD.ROWS), "rows\n")

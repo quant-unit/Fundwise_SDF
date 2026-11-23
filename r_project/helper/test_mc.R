@@ -191,11 +191,36 @@ spec.r$reps <- 4
 ext <- mc.run("t4", spec.r, 1:4, pub, out.dir = out4, batch.size = 2, workers = 2, verbose = FALSE)
 check("T4 extending a design to more replications keeps its finished batches",
   identical(file.info(file.path(out4, "t4", "batch_0001.rds"))$mtime, mt) && identical(drop.t(ext), drop.t(first)))
-# failures: a failing replication leaves no finished batch, only a _failed file
+# failures: a failing replication leaves no finished batch, keeps _failed, and errors
 spec.f <- spec; spec.f$models <- "NOT_A_FACTOR"
-res.f <- suppressWarnings(mc.run("t4f", spec.f, 1:2, pub, out.dir = out4, batch.size = 2, workers = 2, verbose = FALSE))
-check("T4 a batch with failed replications is not marked finished (kept as _failed for inspection)",
-  !file.exists(file.path(out4, "t4f", "batch_0001.rds")) && file.exists(file.path(out4, "t4f", "batch_0001_failed.rds")) && nrow(res.f) == 0)
+err.f <- suppressWarnings(tryCatch(mc.run("t4f", spec.f, 1:2, pub, out.dir = out4, batch.size = 2, workers = 2, verbose = FALSE), error = function(e) e))
+check("T4 a batch with failed replications errors and is kept only as _failed for inspection",
+  inherits(err.f, "error") && !file.exists(file.path(out4, "t4f", "batch_0001.rds")) &&
+  file.exists(file.path(out4, "t4f", "batch_0001_failed.rds")) && nrow(mc.read("t4f", out4)) == 0)
+# checkpoint provenance checks on batch reuse and mc.read completeness
+pub.alt <- pub; pub.alt$MKT[1] <- pub.alt$MKT[1] + 1e-6
+check("T4 checkpoint reuse refuses changed public factors",
+  inherits(tryCatch(mc.run("t4", spec.r, 1:4, pub.alt, out.dir = out4, batch.size = 2, workers = 1, verbose = FALSE), error = function(e) e), "error"))
+old.wall <- MC.SETTINGS$wall; MC.SETTINGS$wall <- old.wall + 1
+err.set <- tryCatch(mc.run("t4", spec.r, 1:4, pub, out.dir = out4, batch.size = 2, workers = 1, verbose = FALSE), error = function(e) e)
+MC.SETTINGS$wall <- old.wall
+check("T4 checkpoint reuse refuses changed MC.SETTINGS", inherits(err.set, "error"))
+check("T4 checkpoint reuse refuses changed batch replication IDs",
+  inherits(tryCatch(mc.run("t4", spec.r, c(1L, 3L), pub, out.dir = out4, batch.size = 2, workers = 1, verbose = FALSE), error = function(e) e), "error"))
+check("T4 mc.read refuses missing requested replications",
+  inherits(tryCatch(mc.read("t4", out4, expected.reps = 1:6), error = function(e) e), "error"))
+check("T4 default mc.data.shape() from checked-in funnel equals fund-level CSV counts",
+  identical(mc.data.shape("BO"), mc.data.shape("BO", file = ew)) &&
+  identical(mc.data.shape("VC"), mc.data.shape("VC", file = ew)))
+# coefficient-specific neff and same-sample se.ratio.tested
+source(here("simulation/mc_analyze.R"))
+spec.a <- list(design = mc.design(c("1990" = 4, "1991" = 4, "1993" = 4, "1995" = 4, "1997" = 4), sigma = 0.15),
+               estimators = "L2.vyp", models = "Alpha", horizons = 0)
+r.a <- mc.run("t4a", spec.a, 1:4, pub, out.dir = out4, batch.size = 4, workers = 1, verbose = FALSE)
+s.a <- mc.summary(r.a, spec.a$design$theta0)
+check("T4 mc.fit records neff.Coef and mc.summary reports parameter-specific neff and se.ratio.tested",
+  all(c("neff.Coef") %in% names(r.a)) && all(c("se.ratio.tested", "sd.tested") %in% names(s.a)) &&
+  nrow(s.a) == 2L && !identical(s.a$neff[s.a$parameter == "MKT"], s.a$neff[s.a$parameter == "Alpha"]))
 unlink(out4, recursive = TRUE)
 
 # fast criterion: a gross return <= 0 only before every unit's grid must not

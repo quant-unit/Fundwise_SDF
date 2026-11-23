@@ -152,21 +152,46 @@ North America, vintages <= 2010: 383 Buyout and 432 Venture Capital complete-his
 
 **Provenance and caching (B9).** Each result row carries `git.commit`, `git.dirty`, `config.md5`, `scenario.id`, `data.prepared.folder` and `datetime`. Generated LaTeX tables start with comment lines naming the commits, scenarios and data folders of their input results. Cache files are named `<time with ms>_cv<fold>_m<max.month>_l<lambda>_cached_res.csv`; result folders written before this change may be missing folds or horizons, because same-second files overwrote each other. One-parameter models use Brent's method on beta in [-1, 4]. `at.bound = TRUE` flags estimates on a bound. Cross-validation folds report `validation.error` (estimation horizon) and `validation.error.H0` (common H = 0 loss, comparable across horizons). The table column SR_CV is the full-sample estimate divided by the fold SD.
 
-**Cache identity (review fixes).** `helper/result_cache.R` records the resolved estimator settings and absolute paths/hashes of cash flows, public factors, any simulated-factor override, and the configuration actually used. Resume compares that full identity. Analysis and plot readers recheck the recorded files; changed or missing inputs are rejected, and multiple current estimator settings in one folder require an explicit identity or separate output folders. Criterion, origin and vintage-weight suffixes use the same folder-name builder for estimation, analysis-only runs and every simulation partition. The current pipeline version is `2026-11-16-r2`; older rows and summaries must be regenerated, and are retained on disk rather than deleted.
+**Cache identity (r5 pipeline).** `helper/result_cache.R` records the resolved estimator settings and project-relative paths/hashes of cash flows, public factors, and any simulated-factor override (the YAML file path/hash is stored as provenance only, so editing comments or unrelated scenarios does not invalidate caches). Resume compares that full identity. Analysis and plot readers recheck the recorded files; changed or missing inputs are rejected, and multiple current estimator settings in one folder require an explicit identity or separate output folders. Criterion, origin and vintage-weight suffixes use the same folder-name builder (`result.cache.tag()`) for estimation, analysis-only runs and every simulation partition. The current pipeline version is `2026-11-17-r5` (admissible domain Assumption A7 `GROSS.FLOOR = 0.08`, constrained multi-start `fit.admissible()`, parameter scaling); older rows and summaries must be regenerated and are retained on disk rather than deleted.
 
 **Reporting.** Asymptotic and CV summaries retain their input identities and contributing commits/scenarios. CV `at.bound` means that at least one fold hit a bound (`boundary.folds` gives the count). Horizon tables, vintage-cutoff tables and direct `empirical_tables.tex` exports mark full-sample boundary estimates with a dagger; invalid asymptotic SEs and t-ratios are suppressed. Fold SDs remain descriptive stability diagnostics.
 
-**Standard errors** (`helper/inference.R`). Sandwich covariance H^{-1} Psi H^{-1} / n from numerical derivatives of the unit loss (squared horizon error; U_{v,H} of the vintage for `U_pair`), with a Bartlett kernel in vintage distance (`kernel_bandwidth`, default 12 years) or independent units (`SE.*.indep`). The Wald test of beta_MKT = 1 (other parameters 0) uses V^{-1}. SEs are evaluated at the estimated horizon. They are not valid when a parameter sits at its bound (e.g. alpha at +/-2%/month).
+**Standard errors and fixed-$b$ inference** (`helper/inference.R`, `helper/fixedb.R`). Sandwich covariance $H^{-1}\Psi H^{-1}/n$ from numerical derivatives ($\delta = 10^{-4}$) of the unit loss (squared horizon error for L2; $w_v U_{v,H}$ of the vintage for `U_pair`), with a Bartlett kernel in vintage-year distance (`kernel_bandwidth: "llsw"`, default $S = \lceil 1.3\sqrt{V}\rceil$ per Lazarus, Lewis, Stock, and Watson 2018; or a fixed numeric bandwidth) and Kiefer–Vogelsang fixed-$b$ $p$-values/critical values at $b = S/V$ (`SE.*.indep` gives the independent-unit reference). The Wald test of $\beta_{\mathrm{MKT}} = 1$ (other parameters $0$) uses $V^{-1}$. SEs are evaluated at the estimated horizon and are not valid when a parameter sits on an active boundary of $\Theta$.
 
-**Speed.** The objective works on prepared units (`prepare.units()` in `helper/objective.R`): each unit's cash flows and factor columns are extracted once per data set. `do_parallel: true` (the `run_estimation()` default) estimates the strategies, or the simulation samples, on forked workers; the workers are started once per fold and each receives only its own strategy's or sample's rows. Results are bit-identical to the serial path and to the earlier data-frame code (equivalence tests in `helper/test_code_repairs.R`). For short test runs, `do_parallel = FALSE` can be faster, because forking the workers costs a few seconds.
+**Speed.** The objective works on prepared units (`prepare.units()` and `prepare.fast()` in `helper/objective.R`): each unit's cash flows and factor columns are extracted once per data set. `do_parallel: true` (wired through `helper/config_loader.R` and `run_estimation()`) estimates strategies or simulation samples on forked workers when `n.parallel.workers(length(types)) > 1L` (falling back to serial `%do%` automatically when only 1 worker is needed or allowed). Results are bit-identical to the serial path (equivalence tests in `helper/test_code_repairs.R`).
 
-**Memory.** The number of workers (estimation and simulation-data generation) is the smallest of 10, cores minus 2, and what fits into the memory free at start-up after keeping 6 GB for the system at 1 GB per worker (`helper/parallel_workers.R`). Set `SDF_MAX_WORKERS=4` (environment variable) to cap it further, or `options(sdf.gb.per.worker = 2, sdf.reserve.gb = 8)` for a more cautious budget. The check runs when the workers start, so start large batches one at a time and do not run other memory-heavy jobs alongside. A 1,000-sample simulation scenario needs about 4 GB in the main R process and 4--5 GB for its workers.
+**Memory.** The number of workers (estimation and simulation) is capped at the smallest of `n.tasks`, `max(1, detectCores() - 2)` (falling back to `1L` if `detectCores()` is unknown/non-finite), `10`, `SDF_MAX_WORKERS`, and free-memory capacity (`helper/parallel_workers.R`, keeping 6 GB reserved at 1 GB per worker by default; override via `SDF_MAX_WORKERS` or `options(sdf.gb.per.worker = ..., sdf.reserve.gb = ...)`).
 
-**Horizon convention and U criterion** (`helper/objective.R`). Every unit of a vintage is placed on one monthly grid from the vintage origin t0 to the common data end. `max.month = m` averages the pricing error over the m dates t0, ..., t0 + m - 1; `m = 1` (and its alias `m = 0`) is the inception NPV at t0, with t0 not discounted. `origin_convention` sets t0: `"first.cf"` (first cash-flow date of the vintage, default) or `"predetermined"` (Dec 31 of the year before the vintage). `error_function: "U_pair"` minimizes the cross-fund pair-product criterion on fund-level files (`use_vintage_year_pfs: false`), with vintage weights `vintage_weights: "equal"` or `"n.funds"`; see the `u_*_north_america` scenarios.
+**Horizon convention and U criterion** (`helper/objective.R`). Every unit of a vintage is placed on one monthly grid from the vintage origin $t_0$ to the common data end $T_{\max}$. `max.month = m` averages the pricing error over the $m$ dates $t_0, \dots, t_0 + m - 1$; `m = 1` (and its alias `m = 0`) is the inception NPV at $t_0$, with $t_0$ not discounted. `origin_convention` sets $t_0$: `"first.cf"` (first cash-flow date of the vintage, default) or `"predetermined"` (Dec 31 of vintage year $- 1$). `error_function: "U_pair"` minimizes the cross-fund pair-product criterion on fund-level files (`use_vintage_year_pfs: false`), with vintage weights `vintage_weights: "equal"` ($q_v = 1$) or `"n.funds"` ($q_v = n_v$); see the `u_*_north_america` scenarios.
 
-**Estimation.** `config/empirical_scenarios.yaml` reads `data_prepared_2026_c` and writes to `results/data_out_2026-emp-c` (results on the old `_b` pools stay in `results/data_out_2026-emp`). For the all-funds robustness sample, set `data_prepared_folder: "data_prepared_2026_c_allfunds"` (and a separate `data_out_folder`) in a scenario. Under a non-UTF-8 locale, run `Rscript` with `LANG=en_US.UTF-8` so the YAML file parses.
+**Licensed-data boundary and rebuild order (2026 revision).**
+Run all scripts from `r_project/` with `LANG=en_US.UTF-8`:
+1. **Prepare licensed Preqin data** (requires raw Excel export in `empirical/data_in/`, gitignored):
+   - `LANG=en_US.UTF-8 Rscript empirical/prep_preqin.R` (writes `data_prepared_2026_c/` and `data_prepared_2026_c_allfunds/`, plus checked-in vintage pools and `preqin_sample_funnel_<region>.csv`)
+   - `LANG=en_US.UTF-8 Rscript empirical/prep_nav_threshold.R` (writes `data_prepared_2026_c_navtrim20/`)
+2. **Empirical estimation (YAML runner):**
+   - `LANG=en_US.UTF-8 Rscript run_empirical_study.R` (reads `config/empirical_scenarios.yaml`, writes to `results/data_out_2026-emp-c*`; fund-level `U_pair` scenarios require the gitignored fund-level CSVs from Step 1)
+   - Empirical tables and figures: `results/main_exhibits_u.R`, `results/empirical_iv.R`, `results/robustness_samples.R`, `results/plot_empirical_estimates.R`
+3. **Step 4 Monte Carlo (no licensed fund-level files required — reads counts from checked-in `preqin_sample_funnel_North America.csv`):**
+   - `LANG=en_US.UTF-8 Rscript simulation/mc_production.R [design ...]` (reads `config/mc_designs.yaml`, writes checkpointed batches to `simulation/data_out_mc/`)
+   - `LANG=en_US.UTF-8 Rscript simulation/mc_targets.R [--out=targets_NAME.rds design ...]`
+   - `LANG=en_US.UTF-8 Rscript simulation/mc_d0.R` and `LANG=en_US.UTF-8 Rscript simulation/mc_appendix_d.R`
+   - `LANG=en_US.UTF-8 Rscript simulation/mc_report.R` (validates full provenance/completeness against `config/mc_designs.yaml` and writes `results/mc_step4/summary.csv`)
+   - `LANG=en_US.UTF-8 Rscript simulation/mc_paper.R` (generates Step 4 LaTeX tables and figures in `results/mc_step4/`)
+4. **Tests:**
+   - `LANG=en_US.UTF-8 Rscript helper/test_review_fixes.R` (synthetic integration regressions)
+   - `LANG=en_US.UTF-8 Rscript helper/test_mc.R` (Step 4 Monte Carlo & Appendix D acceptance suite)
+   - `LANG=en_US.UTF-8 Rscript helper/test_code_repairs.R` (real-data pooling, sample-rule, horizon, U-criterion, and inference repairs)
 
-### Running Empirical Analysis
+### Deprecated Legacy Scripts
+
+The following older scripts are retained for historical reference only and are **deprecated** for the 2026 revision:
+- `estim_model_empirical_runner.R` — replaced by `run_empirical_study.R` + `config/empirical_scenarios.yaml`
+- `estim_model_simulation_runner.R` — replaced by `run_simulation_study.R` + `config/simulation_scenarios.yaml` (for G1/Appendix D) and `simulation/mc_production.R` + `config/mc_designs.yaml` (for Step 4 MC)
+- `empirical/prep_preqin.Rmd` — replaced by `empirical/prep_preqin.R`
+- `simulation/simulation_improved.R` — replaced by `simulation/simulation_multifactor.R` (G1/B1) and `simulation/mc_generate.R` (Step 4 MC)
+
+### Running Legacy Empirical / Simulation Runners (Deprecated)
 
 1. **Prepare Data**: Ensure cash flow data is in `empirical/data_prepared/`
 
@@ -234,7 +259,7 @@ This implements the methodology from the published paper, using Component-wise B
 | `sdf.model` | SDF specification | `"linear"`, `"exp.aff"` |
 | `max.months` | Cash flow horizon (months) | `120`, `150`, `180` |
 | `lambda` | Regularization strength | `0` (no regularization) |
-| `kernel.bandwidth` | HAC bandwidth | `12` (months) |
+| `kernel.bandwidth` | HAC bandwidth | `"llsw"` ($S = \lceil 1.3\sqrt{V}\rceil$ vintage years, default) or numeric vintage years |
 
 ---
 

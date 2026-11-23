@@ -173,6 +173,30 @@ check("cutoff tables mark the boundary coefficient cells", sum(grepl("^0.1 yr &"
 direct <- readLines(file.path(report.cache, "empirical_tables.tex"))
 check("direct analysis tables mark boundaries and suppress invalid SEs",
   any(grepl("0.020$^{\\dagger}$", direct, fixed = TRUE) & grepl("--", direct, fixed = TRUE) & !grepl("0.001", direct, fixed = TRUE)))
+
+# Regression checks for Phase 1.2 fixes: parallel worker fallback, do_parallel
+# YAML propagation, and invalid simulation scenario handling without next-in-tryCatch.
+source("helper/parallel_workers.R")
+check("n.parallel.workers falls back to 1L when detectCores() is NA/non-finite",
+  identical(n.parallel.workers(8, cores = NA_integer_, verbose = FALSE), 1L) &&
+  identical(n.parallel.workers(8, cores = Inf, verbose = FALSE), 1L))
+source("helper/config_loader.R")
+sim.p.off <- scenario_to_estimation_params(list(id = "x", data_folder = "x",
+  estimation = list(weighting = "EW", sdf_model = "linear", error_function = "L2_Lasso",
+                    max_months = 0, lambdas = 0, kernel_bandwidth = "llsw", do_parallel = FALSE)))
+emp.p.off <- empirical_scenario_to_params(list(id = "y", weighting = "EW", do_cross_validation = FALSE, do_parallel = FALSE))
+emp.p.def <- empirical_scenario_to_params(list(id = "z", weighting = "EW", do_cross_validation = FALSE))
+check("config_loader propagates do_parallel for simulation and empirical scenarios",
+  identical(sim.p.off$do_parallel, FALSE) && identical(emp.p.off$do_parallel, FALSE) && identical(emp.p.def$do_parallel, TRUE))
+bad.cfg <- list(defaults = list(dgp = list(), estimation = list()),
+  scenarios = list(broken = list(active = TRUE, dgp = list(), estimation = list())))
+bad.yaml <- file.path(stage, "config/bad_sim.yaml")
+yaml::write_yaml(bad.cfg, bad.yaml)
+bad.res <- tryCatch(invisible(capture.output(r.bad <- run_simulation_study(config_path = bad.yaml,
+  generate_data = FALSE, estimate = TRUE, analyze = FALSE, verbose = FALSE))), error = function(e) e)
+check("run_simulation_study skips invalid scenario cleanly without next-in-tryCatch error",
+  !inherits(bad.res, "error") && isFALSE(r.bad$broken$success) && nzchar(r.bad$broken$error))
+
 setwd(repo)
 cat(n.fail, "review-fix regression(s) failed; artifacts:", stage, "\n")
 if (n.fail > 0) quit(status = 1)

@@ -1,4 +1,5 @@
-% Appendix
+% Online Appendix (input by both sdf_paper.tex in working mode and
+% standalone wrapper sdf_paper_appendix.tex).
 \appendix
 
 {
@@ -6,1456 +7,305 @@
 {SUPPLEMENTARY MATERIAL}
 }
 
+\section*{Online Appendix to Identification and Stability of SDF Estimators for Pooled, Non-traded Cash Flows}
 
-\section*{Online Appendix to Identification and Stability of SDF Estimators for Pooled, Non-traded Cash Flow}
+This Online Appendix collects theoretical derivations, econometric proofs, full Monte Carlo robustness tables, and additional empirical diagnostics supporting the main paper:
+\begin{itemize}
+  \item Appendix~\ref{sec:appendix_notation} summarizes the notation.
+  \item Appendix~\ref{sec:appendix_sdf} characterizes when the benchmark deflator constitutes a PE-specific SDF and compares it with public-calibrated pricing kernels.
+  \item Appendix~\ref{sec:appendix_theory} provides full proofs of Theorems~T1--T8 (exact horizon rescaling, signal-plus-noise decomposition, inception score tilt and Scale-Jacobian FOC decomposition, large-$\alpha$ attenuation vs.\ coercivity, infill consistency, cross-fund pair-product $U_{v,H}$ consistency under bounded $n_v \ge 2$, and mean-moment caveats).
+  \item Appendix~\ref{sec:proofs_asymptotics_H} states the increasing-domain regularity conditions, score-centered and integrated-Hessian consistency and CLT proofs, LLSW/fixed-$b$ SHAC implementation details, and full Step~4 Monte Carlo appendix exhibits.
+  \item Appendix~\ref{sec:dlp_results_comparison} compares our repaired estimator against \citet{DLP12} in simulation (Table~1 replication under pipeline r5 and $n_v \times V$ infill grid).
+  \item Appendix~\ref{sec:appendix_empirical_extra} collects all-horizon single-factor tables, VC cohort diagnostics (without 1993--1997), fund-size imputation sensitivity, sample robustness, Fix-$A$ vs.\ Scale-Jacobian decomposition, joint $(\alpha,\beta)$ geometry, four-year vintage-block bootstrap intervals, terminal NAV shares, $hv$-block cross-validation fold diagnostics, and a published-estimates comparison table.
+\end{itemize}
 
-
-Appendix~\ref{sec:appendix_notation} provides a comprehensive summary of the notation.
-Appendix~\ref{sec:appendix_bias_variance} analyzes the target shift and finite-sample stabilization under $\mathcal{T}$-averaging.
-Appendix~\ref{sec:proofs_asymptotics_H} provides the regularity conditions, inference details, and mathematical proofs.
-Appendix~\ref{sec:dlp_results_comparison} compares our simulation and empirical results to their \cite{DLP12} counterparts.
-
-
+% ==============================================================================
 \section{Notation Guide}
 \label{sec:appendix_notation}
+% ==============================================================================
 
-This appendix provides a comprehensive summary of the notation used throughout the paper. Table~\ref{tab:notation_asset_pricing} summarizes the key variables for the deal-level data generation process and the pooled cash-flow pricing framework. Table~\ref{tab:notation_estimator} summarizes the notation for the generalized Least-Mean-Distance estimator and its increasing-domain asymptotic benchmark.
+Table~\ref{tab:notation_asset_pricing} summarizes the notation for the deal-level accounting decomposition, pooled cash flows, and benchmark deflator. Table~\ref{tab:notation_estimator} summarizes the notation for the squared-loss (L2), cross-fund pair-product ($U_{v,H}$), and benchmark-path IV criteria, along with the increasing-domain fixed-$b$ SHAC asymptotic framework.
 
-\begin{table}[H]
+\begin{table}[htbp]
 	\centering
 	\small
 	\begin{tabular}{@{}ll@{}}
 		\toprule
 		Symbol & Description \\
 		\midrule
-		$n$ & Number of cross-sectional units (funds or portfolios) \\
-		$V$ & Number of distinct vintage years \\
-		$n_v$ & Number of portfolios in vintage year $v$ \\
-		$v_i$ & Vintage year of fund/portfolio $i$ \\
-		$t_i^0$ & Inception date of fund $i$ \\
-		$J_i$ & Number of deals for fund $i$ \\
-		$K_{i,j}$ & Number of divestment cash flows for deal $j$ of fund $i$ \\
-		$cf_{i,j,t}$ & Net cash flow of deal $j$ in fund $i$ at time $t$ \\
-		$CF_{i,t}$ & Net cash flow of fund $i$ at time $t$ \\
-		$P_{\tau,t,i}$ & Time-$\tau$ price of a single time-$t$ cash flow \\
-		$PV_i(\theta)$ & Pooled present value \\
-		${LCV}_{i,\tau}$ & Latent continuation value of fund $i$ at date $\tau$ \\
-		$T, T_i^{\max}$ & Final period and maximum fund lifetime \\
-		$\tau$ & Generic discounting or revaluation date \\
-		$\mathcal{F}_{\tau}$ & Information set (filtration) at time $\tau$ \\
-		$\mathrm{Inv}_{i,j}, \mathrm{Div}_{i,j,k}$ & Investment and divestment cash flows \\
-		$t_{i,j}^{\mathrm{Inv}}, t_{i,j,k}^{\mathrm{Div}}$ & Deal investment and divestment dates \\
-		$m_{i,j}^{\mathrm{NFV}}(\cdot)$ & NFV-type theoretical moment \\
-		$\Psi_t$\ , $M_t$ & Multi-period and single-period SDF \\
-		$\Psi_{\tau,t}(\theta)$ & SDF ratio $\Psi_t / \Psi_\tau$, parameterized by $\theta$ \\
-		$\theta \in \mathbb{R}^p$ & SDF parameter vector (e.g., intercept and factor loadings) \\
-		$\theta_0$ & True parameter vector \\
-		$\delta_{i,j}$ & Deal-level pricing error \\
+		$V$ & Number of distinct vintage years ($v = 1,\dots,V$) \\
+		$n_v$ & Number of funds in vintage $v$ (eligible for $U_{v,H}$ when $n_v \ge 2$) \\
+		$t_v^0$ & Common vintage origin date (first observed cash flow of vintage $v$; or predetermined Dec~31 of $v-1$) \\
+		$T_{\max}$ & Common sample end date (2021-12-31 in the main empirical grid) \\
+		$CF_{v,i,t}$ & Net cash flow of fund $i$ in vintage $v$ at month $t$ (per unit commitment in EW; USD~mn in FW) \\
+		$s_{v,i}, w_{v,i}$ & Fund size (USD~mn) and normalized within-vintage fund weight ($w_{v,i}=1/n_v$ EW; $w_{v,i}=s_{v,i}/\sum_k s_{v,k}$ FW) \\
+		$G_u(\theta)$ & One-period gross benchmark return $1 + r_{f,u} + \alpha + \beta^\top F_u$ \\
+		$M_u(\theta), \Psi_t(\theta)$ & One-period deflator $G_u(\theta)^{-1}$ and cumulative deflator $\prod_{u=1}^t M_u(\theta)$ ($\Psi_0=1$) \\
+		$R^b_{a,b}(\theta)$ & Cumulative gross benchmark return $\Psi_a(\theta)/\Psi_b(\theta) = \prod_{u=a+1}^b G_u(\theta)$ \\
+		$PV_{v,i}(\theta), PV_v(\theta)$ & Inception present value of fund $i$ and constant-composition vintage pool $PV_v = \sum_i w_{v,i} PV_{v,i}$ \\
+		$\mathcal{F}_t$ & Filtration generated by public returns and deal information up to date $t$ \\
+		$\mathcal{C}_v$ & Public factor-path and horizon-window information set for vintage $v$ \\
+		$\mathcal{G}_v$ & Conditioning set including $\mathcal{C}_v$, eligibility $n_v\ge 2$, fund sizes $\{s_{v,i}\}$, and origin $t_v^0$ \\
+		$\mu_v(\theta), c_v(\theta), \sigma_v^2(\theta)$ & Conditional mean, common within-vintage covariance, and total conditional variance of $PV_{v,i}(\theta)$ given $\mathcal{G}_v$ \\
 		\bottomrule
 	\end{tabular}
-	\caption{\textbf{Key notation for asset pricing and pooled cash flows.}}
+	\caption{Key notation for pooled private-equity cash flows and benchmark discounting.}
 	\label{tab:notation_asset_pricing}
 \end{table}
 
-\begin{table}[H]
+\begin{table}[htbp]
 	\centering
 	\small
 	\begin{tabular}{@{}ll@{}}
 		\toprule
 		Symbol & Description \\
 		\midrule
-		$\epsilon_{\tau,i}$ & Fund pricing error at discounting date $\tau$ \\
-		$\bar{\epsilon}_i, \bar{\epsilon}^{(H)}_i$ & Weighted average pricing error (generic and horizon-specific) \\
-		$H$ & Horizon parameter \\
-		$\mathcal{T}_i, \mathcal{T}_{i,H}$ & Set of discounting dates (generic and horizon-specific) \\
-		$w_i$ & Weighting factor for fund $i$ \\
-		$L(\cdot)$ & Loss function (e.g., $L(x) = x^2$) \\
-		$Q_H(\theta)$ & Horizon-specific population objective function \\
-		$Q_n(\theta), Q_{n,H}(\theta)$ & Sample objective function (generic and horizon-specific) \\
-		$s_i^{(H)}(\theta)$ & Unit score contribution \\
-		$d_{i,j}$ & Economic distance between units $i$ and $j$ \\
-		$K(\cdot), k_{i,j}$ & Symmetric SHAC kernel function and generic weights \\
-		$b_V$ & SHAC bandwidth parameter \\
-		$\hat{\theta}, \hat{\theta}_H$ & LMD Estimator (generic and horizon-specific targets) \\
-		$\theta_H^\dagger$ & Horizon-specific pseudo-true parameter vector \\
-		$\mathcal{H}_H$ & Hessian of population objective at $\theta_H^\dagger$ \\
-		$\Lambda_H$ & Long-run covariance matrix of the score \\
-		$\Sigma_H$ & Asymptotic covariance matrix of $\hat{\theta}_H$ \\
+		$H, \mathcal{T}_{v,H}$ & Compounding horizon (years) and valuation window $\{t_v^0,\dots,\min(t_v^0+12H, T_{\max})\}$ \\
+		$A_{v,H}(\theta)$ & Horizon-average compounding scale $|\mathcal{T}_{v,H}|^{-1}\sum_{\tau\in\mathcal{T}_{v,H}} R^b_{t_v^0,\tau}(\theta) > 0$ \\
+		$\bar\epsilon_{v,i,H}(\theta), \bar\epsilon_{v,H}(\theta)$ & Horizon-averaged pricing errors $A_{v,H}(\theta) PV_{v,i}(\theta)$ and $A_{v,H}(\theta) PV_v(\theta)$ \\
+		$Q_{V,H}^{\mathrm{L2}}(\theta), Q_H^{\mathrm{L2}}(\theta)$ & Sample and population squared pooled-NPV (L2) criteria \\
+		$U_{v,H}(\theta), q_v$ & Within-vintage cross-fund pair-product statistic and vintage weight ($q_v=1$ main; $q_v=n_v$ robustness) \\
+		$\Theta$ & Admissible parameter domain ($\beta_{\mathrm{MKT}}\in[-1,4]$, $\alpha\in[-2\%,2\%]$/mo, $\min_t G_t(\theta)\ge 0.08$) \\
+		$\theta_0, \theta_H^\dagger$ & Structural pricing parameter and horizon-specific population criterion minimizer \\
+		$S, b$ & Bartlett truncation bandwidth $S = \lceil 1.3\sqrt{V}\rceil$ (LLSW) and fixed-$b$ ratio $b = S/V$ \\
+		$\mathcal{H}_H, \Lambda_H, \Sigma_H$ & Population Hessian, long-run score covariance, and sandwich variance $\mathcal{H}_H^{-1}\Lambda_H\mathcal{H}_H^{-1}$ \\
+		$N_{\mathrm{eff}}$ & Effective number of vintages from influence-function share concentration \\
 		\bottomrule
 	\end{tabular}
-	\caption{\textbf{Key notation for the LMD estimator and asymptotic benchmark.}}
+	\caption{Key notation for the L2, $U_{v,H}$, and IV estimators and fixed-$b$ SHAC inference.}
 	\label{tab:notation_estimator}
 \end{table}
 
+% ==============================================================================
+% Appendix B: Standalone SDF note (wired directly)
+% ==============================================================================
+\input{sdf_paper_appendix_sdf.tex}
 
-\section{Target shift and finite-sample stabilization under $\mathcal{T}$-averaging}
-\label{sec:appendix_bias_variance}
+% ==============================================================================
+\section{Proofs of Theorems T1--T8: Horizon Rescaling, Noise Tilt, and $U_{v,H}$}
+\label{sec:appendix_theory}
+% ==============================================================================
 
-This appendix clarifies why $\mathcal{T}$-averaging can improve finite-sample performance even though, for $H>0$, it generally shifts the population target away from the structural parameter $\theta_0$.
-The key mechanism is a tradeoff between:
-(i) a \emph{population target shift} induced by post-investment timing terms through the Compounding-Horizon Wedge, and
-(ii) a \emph{finite-sample stabilization effect} from averaging imperfectly correlated pricing errors across discounting dates.
+This appendix collects complete proofs of Theorems~T1--T8 stated in Section~\ref{sec:spatial_sdf_methodology} of the main paper. Throughout, $\theta$ lies in the positive-return admissible domain $\Theta$ where $G_u(\theta) = 1 + r_{f,u} + \alpha + \beta^\top F_u > 0$ on the relevant dates, so $\Psi_t(\theta) = \prod_{u=1}^t G_u(\theta)^{-1} > 0$ and $R^b_{a,b}(\theta) = \Psi_a(\theta)/\Psi_b(\theta) > 0$.
 
-Throughout this appendix, we specialize to the quadratic loss $L(x)=x^2$ and set $w_i=1$, so that the population objective reduces to a nonlinear least-squares criterion.
-Because this appendix works directly with squared loss rather than its negative, the horizon-specific population criterion is written in minimization form; this is equivalent to the maximization convention used for the negative-loss objective in Section~\ref{sec:asymptotic_framework}.
-To keep the notation transparent, all moment calculations in this appendix are stated conditional on a fixed fund structure for a generic fund $i$ (that is, conditional on $J_i$, the relevant investment dates, and the horizon set $\mathcal{T}_{i,H}$), while expectations continue to integrate over SDF and pricing-error randomness.
-The corresponding unconditional population statements follow by taking an outer expectation over the distribution of fund structures.
+\subsection{Proof of Theorem T1 (Exact horizon rescaling identity)}
+\label{sec:proof_T1}
 
-To keep the different objects distinct, we proceed in four steps.
-First, we define the horizon-specific population criterion and pseudo-true minimizer.
-Second, we identify the exact source of the averaged population moment shift at $\theta_0$.
-Third, we show how that moment shift enters the gradient of the population criterion and thereby affects the pseudo-true parameter.
-Fourth, we present an exact MSE decomposition and then interpret the simulation evidence through a second-order finite-sample lens.
-In compact form, the mechanism is: post-investment dates create timing-related covariance wedges at the deal level; these generate a nonzero averaged population moment $b_{H,i}$ at $\theta_0$, tilt the gradient of the criterion, shift the pseudo-true target, and then enter the exact MSE tradeoff.
-
-\subsection{Setup and horizon-specific population target}
-\label{sec:appendix_bv_setup}
-
-For a given maximum compounding horizon $H$, let
+For any unit (fund or constant-composition vintage portfolio) with common vintage origin $t_v^0$ and cash-flow stream $\{CF_{v,t}\}_{t=t_v^0}^{T_{\max}}$, the time-$\tau$ revalued pricing error at any date $\tau \in \mathcal{T}_{v,H}$ is
 \[
-\mathcal{T}_{i,H}
-:=
-\left\{
-t_i^0,t_i^0+1,\dots,\min(t_i^0+12H,T_i^{\max})
-\right\},
+\epsilon_{v,\tau}(\theta)
+= \sum_{t=t_v^0}^{T_{\max}} \frac{\Psi_t(\theta)}{\Psi_\tau(\theta)} CF_{v,t}
+= \frac{\Psi_{t_v^0}(\theta)}{\Psi_\tau(\theta)} \sum_{t=t_v^0}^{T_{\max}} \frac{\Psi_t(\theta)}{\Psi_{t_v^0}(\theta)} CF_{v,t}
+= R^b_{t_v^0,\tau}(\theta)\, PV_v(\theta),
 \]
-where $T_i^{\max}$ denotes the largest discounting date available for fund $i$.
-Define the horizon-averaged pricing error by
-\begin{equation}
-	\label{eq:avg_eps_H}
-	\bar{\epsilon}_i^{(H)}(\theta)
-	:=
-	\frac{1}{\mathrm{card}(\mathcal{T}_{i,H})}
-	\sum_{\tau\in\mathcal{T}_{i,H}}
-	\epsilon_{\tau,i}(\theta).
-\end{equation}
-
-The associated population criterion is
-\begin{equation}
-	\label{eq:QH}
-	Q_H(\theta)
-	:=
-	\mathbb{E}\!\left[
-	\bigl(\bar{\epsilon}_i^{(H)}(\theta)\bigr)^2
-	\right],
-\end{equation}
-and the horizon-specific pseudo-true parameter is defined by
-\begin{equation}
-	\label{eq:pseudotrue}
-	\theta_H^\dagger
-	:=
-	\arg\min_{\theta} Q_H(\theta),
-\end{equation}
-whenever the minimizer exists and is unique.
-For notational simplicity, the conditioning on the fixed fund structure is suppressed in $Q_H(\theta)$ and in subsequent expectations.
-Thus, $\theta_H^\dagger$ is the target of the \emph{population nonlinear least-squares criterion}.
-It is not defined as the zero of the averaged population moment, and those two objects need not coincide in general.
-
-When $H=0$, the estimator uses only the benchmark NPV discounting date $\tau=t_i^0$.
-Because no fund has cash flows before inception and every deal satisfies $t_i^0\le t_{i,j}^{\mathrm{Inv}}$, part~(1) of Lemma~\ref{lem:deal_level_timing} implies that, under correct specification,
+where the factorization holds identically whether $\tau < t_v^0$, $\tau = t_v^0$, or $\tau > t_v^0$ because $\Psi_t(\theta)/\Psi_\tau(\theta) = (\Psi_{t_v^0}(\theta)/\Psi_\tau(\theta))\cdot(\Psi_t(\theta)/\Psi_{t_v^0}(\theta))$ pathwise on the positive-return domain. Averaging over $\tau \in \mathcal{T}_{v,H}$ yields
 \[
-\mathbb{E}\!\left[
-\bar{\epsilon}_i^{(0)}(\theta_0)
-\right]
-=
-0.
+\bar\epsilon_{v,H}(\theta)
+= \frac{1}{|\mathcal{T}_{v,H}|} \sum_{\tau \in \mathcal{T}_{v,H}} \epsilon_{v,\tau}(\theta)
+= \underbrace{\left(\frac{1}{|\mathcal{T}_{v,H}|} \sum_{\tau \in \mathcal{T}_{v,H}} R^b_{t_v^0,\tau}(\theta)\right)}_{A_{v,H}(\theta)\,>\,0} PV_v(\theta).
 \]
-If, in addition, the benchmark population criterion $Q_0(\theta)$ is uniquely minimized at $\theta_0$, then
+In particular, $\bar\epsilon_{v,H}(\theta)$ is an exact path- and parameter-dependent scalar multiple of the inception NPV $PV_v(\theta)$. Because all dates $\tau \in \mathcal{T}_{v,H}$ share the common factor $PV_v(\theta)$, averaging across $\tau$ does \emph{not} average imperfectly correlated date-specific pricing errors; conditional on the factor path, all $\epsilon_{v,\tau}(\theta)$ are perfectly collinear with $PV_v(\theta)$. \qed
+
+\subsection{Proof of Theorem T2 (Valid moment weights under (P) vs.\ (X))}
+\label{sec:proof_T2}
+
+Under inception pricing condition~(P), $\mathbb{E}[PV_v(\theta_0)\mid\mathcal{F}_{t_v^0}] = 0$. Therefore, for any integrable $\mathcal{F}_{t_v^0}$-measurable weight $z_v$ (including any pre-inception discounting factor $\Psi_{t_v^0}(\theta_0)/\Psi_\tau(\theta_0)$ with $\tau \le t_v^0$, or $z_v = 1$), the law of iterated expectations gives
 \[
-\theta_0^\dagger=\theta_0.
+\mathbb{E}[z_v PV_v(\theta_0)] = \mathbb{E}\!\left[z_v \,\mathbb{E}[PV_v(\theta_0)\mid\mathcal{F}_{t_v^0}]\right] = 0.
 \]
-For $H>0$, the inclusion of post-investment timing terms generally perturbs the population criterion, so that
+When $\tau > t_v^0$, the compounding weight $R^b_{t_v^0,\tau}(\theta_0) = \Psi_{t_v^0}(\theta_0)/\Psi_\tau(\theta_0)$ depends on public factor realizations after $t_v^0$ and is generally not $\mathcal{F}_{t_v^0}$-measurable. Taking expectations yields the Compounding-Horizon Wedge (repaired Lemma~1(3)):
 \[
-\theta_H^\dagger\neq \theta_0
-\qquad\text{in general.}
+\mathbb{E}\!\left[\bar\epsilon_{v,H}(\theta_0)\,\middle|\,\mathcal{F}_{t_v^0}\right]
+= \mathrm{Cov}\!\left(A_{v,H}(\theta_0),\, PV_v(\theta_0)\,\middle|\,\mathcal{F}_{t_v^0}\right)
+=: b_{v,H},
 \]
+which is generically nonzero under~(P) alone whenever cash-flow pricing errors covary with realized benchmark returns over $\mathcal{T}_{v,H}$. Under the stronger path-exogeneity condition~(X), $\mathbb{E}[PV_v(\theta_0)\mid\mathcal{C}_v] = 0$, where $A_{v,H}(\theta_0)$ is $\mathcal{C}_v$-measurable; iterated expectations immediately yield $\mathbb{E}[A_{v,H}(\theta_0)PV_v(\theta_0)] = \mathbb{E}[A_{v,H}(\theta_0)\mathbb{E}[PV_v(\theta_0)\mid\mathcal{C}_v]] = 0$ at every horizon $H \ge 0$. \qed
 
-It is convenient to define the horizon-specific averaged population moment at the structural parameter, conditional on the fund structure of a generic fund $i$:
-\begin{equation}
-	\label{eq:bH_def}
-	b_{H,i}
-	:=
-	\mathbb{E}\!\left[
-	\bar{\epsilon}_i^{(H)}(\theta_0)
-	\,\middle|\,
-	J_i,\mathcal{T}_{i,H},\{t_{i,j}^{\mathrm{Inv}}\}_{j=1}^{J_i}
-	\right].
-\end{equation}
-The next subsection shows that, under correct specification, $b_{H,i}$ is generated exactly by the post-investment timing-related covariance wedges that aggregate into the Compounding-Horizon Wedge.
-The corresponding unconditional object is $\mathbb{E}[b_{H,i}]$.
-\subsection{Exact source of the averaged population moment at $\theta_0$}
-\label{sec:appendix_bv_moment_bias}
+\subsection{Proof of Theorem T3 (Signal-plus-noise decomposition of squared loss)}
+\label{sec:proof_T3}
 
-Starting from the average pricing error in Equation~\eqref{eq:average_pricing_error} and the deal-level decomposition in Equation~\eqref{eq:deal_pricing_error}, we can write
-\begin{equation}
-	\label{eq:avg_eps_expand}
-	\bar{\epsilon}_i^{(H)}(\theta_0)
-	=
-	\frac{1}{\mathrm{card}(\mathcal{T}_{i,H})}
-	\sum_{\tau\in\mathcal{T}_{i,H}}
-	\epsilon_{\tau,i}(\theta_0)
-	=
-	\frac{1}{\mathrm{card}(\mathcal{T}_{i,H})}
-	\sum_{\tau\in\mathcal{T}_{i,H}}
-	\sum_{j=1}^{J_i}
-	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}\,
-	\delta_{i,j}.
-\end{equation}
-Taking expectations yields
-\begin{equation}
-	\label{eq:avg_eps_expectation}
-	b_{H,i}
-	=
-	\frac{1}{\mathrm{card}(\mathcal{T}_{i,H})}
-	\sum_{\tau\in\mathcal{T}_{i,H}}
-	\sum_{j=1}^{J_i}
-	\mathbb{E}\!\left[
-	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}\,
-	\delta_{i,j}
-	\,\middle|\,
-	J_i,\mathcal{T}_{i,H},\{t_{i,j}^{\mathrm{Inv}}\}_{j=1}^{J_i}
-	\right].
-\end{equation}
-
-For each $(\tau,j)$ term, use the identity
+Let $\mathcal{G}_v$ contain $\mathcal{C}_v$, the vintage fund count $n_v$, and fund weights $\{w_{v,i}\}_{i=1}^{n_v}$ summing to one. Under constant-composition pooling, $PV_v(\theta) = \sum_{i=1}^{n_v} w_{v,i} PV_{v,i}(\theta)$. Suppose funds within vintage $v$ share conditional mean $\mu_v(\theta) = \mathbb{E}[PV_{v,i}(\theta)\mid\mathcal{G}_v]$, common conditional variance $\sigma_v^2(\theta) = \mathrm{Var}(PV_{v,i}(\theta)\mid\mathcal{G}_v)$, and common pairwise conditional covariance $c_v(\theta) = \mathrm{Cov}(PV_{v,i}(\theta), PV_{v,j}(\theta)\mid\mathcal{G}_v)$ for $i \neq j$. For equally weighted funds ($w_{v,i} = 1/n_v$),
 \[
-\mathbb{E}[XY]
-=
-\mathrm{Cov}(X,Y)+\mathbb{E}[X]\mathbb{E}[Y]
+\mathbb{E}[PV_v(\theta)^2\mid\mathcal{G}_v]
+= \mu_v(\theta)^2 + \mathrm{Var}(PV_v(\theta)\mid\mathcal{G}_v)
+= \mu_v(\theta)^2 + c_v(\theta) + \frac{\sigma_v^2(\theta) - c_v(\theta)}{n_v}.
 \]
-with
+(For general normalized fund-size weights $w_{v,i}$ with Herfindahl index $H_v = \sum_{i=1}^{n_v} w_{v,i}^2$, $1/n_v$ is replaced by $H_v$, giving $c_v(\theta) + H_v(\sigma_v^2(\theta) - c_v(\theta))$.) Multiplying by $A_{v,H}(\theta)^2$ (which is $\mathcal{G}_v$-measurable) and taking unconditional expectations yields
 \[
-X=
-\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau},
-\qquad
-Y=\delta_{i,j}.
+Q_H^{\mathrm{L2}}(\theta)
+= \mathbb{E}\!\left[A_{v,H}(\theta)^2 \mu_v(\theta)^2\right]
++ \mathbb{E}\!\left[A_{v,H}(\theta)^2 c_v(\theta)\right]
++ \mathbb{E}\!\left[A_{v,H}(\theta)^2 \frac{\sigma_v^2(\theta) - c_v(\theta)}{n_v}\right].
 \]
-This gives
-\begin{equation}
-	\label{eq:cov_decomp}
-	\mathbb{E}\!\left[
-	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}\,
-	\delta_{i,j}
-	\right]
-	=
-	\mathrm{Cov}\!\left(
-	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau},
-	\delta_{i,j}
-	\right)
-	+
-	\mathbb{E}\!\left[
-	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}
-	\right]
-	\mathbb{E}[\delta_{i,j}].
-\end{equation}
+At $\theta = \theta_0$ under~(X), $\mu_v(\theta_0) = 0$ almost surely, so both the signal term $\mathbb{E}[A_{v,H}(\theta_0)^2\mu_v(\theta_0)^2]$ and its gradient $2\mathbb{E}[A_{v,H}(\theta_0)^2\mu_v(\theta_0)\nabla_\theta\mu_v(\theta_0)]$ vanish. However, the variance terms depend on $\theta$ through both $A_{v,H}(\theta)^2$ and the discounted-payoff dispersion $\sigma_v^2(\theta), c_v(\theta)$, so $\nabla_\theta Q_H^{\mathrm{L2}}(\theta_0) \neq 0$ whenever $n_v < \infty$ or $c_v(\theta) > 0$. \qed
 
-Under correct specification, Equation~\eqref{eq:deal_pricing} implies
+\subsection{Proof of Theorem T4 (Inception score tilt and Scale-Jacobian FOC decomposition)}
+\label{sec:proof_T4}
+
+Differentiating the sample L2 objective $Q_{V,H}^{\mathrm{L2}}(\theta) = V^{-1}\sum_{v=1}^V A_{v,H}(\theta)^2 PV_v(\theta)^2$ yields the exact two-term FOC decomposition:
 \[
-\mathbb{E}[\delta_{i,j}]
-=
-\mathbb{E}\!\left[
-\mathbb{E}[\delta_{i,j}\mid\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}]
-\right]
-=
-0.
+\nabla_\theta Q_{V,H}^{\mathrm{L2}}(\theta)
+= \underbrace{\frac{2}{V}\sum_{v=1}^V A_{v,H}(\theta)^2 PV_v(\theta)\,\nabla_\theta PV_v(\theta)}_{\text{Term~(I): Inception Discounting}}
++ \underbrace{\frac{2}{V}\sum_{v=1}^V A_{v,H}(\theta)^2 PV_v(\theta)^2\,\nabla_\theta \log A_{v,H}(\theta)}_{\text{Term~(II): Scale-Jacobian Penalty}}.
 \]
-Hence only the covariance term remains.
-
-Now consider $\tau\le t_{i,j}^{\mathrm{Inv}}$.
-Because $\Psi_{t_{i,j}^{\mathrm{Inv}}}/\Psi_\tau$ is then $\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$-measurable,
-\begin{align}
-	\mathbb{E}\!\left[
-	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}\,
-	\delta_{i,j}
-	\right]
-	&=
-	\mathbb{E}\!\left[
-	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}\,
-	\mathbb{E}\!\left[
-	\delta_{i,j}\mid\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}
-	\right]
-	\right]
-	\label{eq:iterated_zero_preinv}
-	\\
-	&=
-	0.
-	\nonumber
-\end{align}
-Since $\mathbb{E}[\delta_{i,j}]=0$, Equation~\eqref{eq:iterated_zero_preinv} also implies
+Now specialize to the single-exit deal model where fund $i$ in vintage $v$ makes deals $j$ with outlay $c_j > 0$ at $a_j \ge t_v^0$ and exit payoff $c_j R^b_{a_j,b_j}(\theta_0)(1+\varepsilon_{i,j})$ at $b_j > a_j$, with independent mean-zero shocks $\mathrm{Var}(\varepsilon_{i,j}\mid\mathcal{G}_v) = \nu_j > 0$ and $c_v \equiv 0$. At $\theta$, fund $i$'s pricing error is $PV_{v,i}(\theta) = \sum_j c_j \Psi_{t_v^0,a_j}(\theta)[\Psi_{a_j,b_j}(\theta)R^b_{a_j,b_j}(\theta_0)(1+\varepsilon_{i,j}) - 1]$, so its conditional variance at $\theta$ is
 \[
-\mathrm{Cov}\!\left(
-\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau},
-\delta_{i,j}
-\right)
-=
-0
-\qquad
-\text{for all }\tau\le t_{i,j}^{\mathrm{Inv}}.
+\sigma_v^2(\theta) = \sum_j c_j^2 \nu_j \left(\frac{R^b_{a_j,b_j}(\theta_0)}{R^b_{t_v^0,b_j}(\theta)}\right)^2.
 \]
-
-We therefore obtain the following exact characterization.
-
-\begin{lemma}[Exact source of the averaged population moment at $\theta_0$]
-	\label{lem:bH_horizon_wedge}
-	Under correct specification,
-	\begin{equation}
-		\label{eq:bH_horizon_wedge}
-		b_{H,i}
-		=
-		\frac{1}{\mathrm{card}(\mathcal{T}_{i,H})}
-		\sum_{\tau\in\mathcal{T}_{i,H}}
-		\sum_{j=1}^{J_i}
-		\mathbf{1}\{\tau>t_{i,j}^{\mathrm{Inv}}\}\,
-		\mathrm{Cov}\!\left(
-		\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau},
-		\delta_{i,j}
-		\,\middle|\,
-		J_i,\mathcal{T}_{i,H},\{t_{i,j}^{\mathrm{Inv}}\}_{j=1}^{J_i}
-		\right).
-	\end{equation}
-	In particular, benchmark NPV terms contribute zero to $b_{H,i}$, and the averaged population moment at $\theta_0$ is shifted only by post-investment timing terms.
-\end{lemma}
-
-\begin{proof}
-	The result follows from Equation~\eqref{eq:avg_eps_expectation}, the decomposition in Equation~\eqref{eq:cov_decomp}, the fact that $\mathbb{E}[\delta_{i,j}]=0$ under correct specification, and the iterated-expectations argument in Equation~\eqref{eq:iterated_zero_preinv} for all pairs $(\tau,j)$ satisfying $\tau\le t_{i,j}^{\mathrm{Inv}}$.
-\end{proof}
-
-Lemma~\ref{lem:bH_horizon_wedge} identifies the exact source of the averaged population moment shift at $\theta_0$.
-It does not, by itself, characterize the pseudo-true target shift $\theta_H^\dagger-\theta_0$, because that parameter shift depends on how the moment shift enters both the gradient and the curvature of the population criterion in Equation~\eqref{eq:QH}.
-
-\paragraph{Misspecification.}
-In practice, all parsimonious SDF models are misspecified for observed PE cash flows, so the case $\mathbb{E}[\delta_{i,j}]\neq 0$ is the empirically relevant one.
-Under misspecification, the second term in Equation~\eqref{eq:cov_decomp} no longer vanishes, and the conditional averaged population moment at $\theta_0$ contains both
-(i) the timing-related covariance wedge and
-(ii) an additional mean component
+Using $\nabla_\theta \log R^b_{t_v^0,b_j}(\theta) =: S_{t_v^0,b_j}(\theta)$ and $\nabla_\theta \log A_{v,H}(\theta) =: \bar S_{v,H}(\theta)$, differentiating $A_{v,H}(\theta)^2 \sigma_v^2(\theta) / n_v$ at $\theta = \theta_0$ (where $R^b_{t_v^0,b_j}(\theta_0) = R^b_{t_v^0,a_j}(\theta_0)R^b_{a_j,b_j}(\theta_0)$ cancels) gives
 \[
-\mathbb{E}\!\left[
-\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}
-\right]
-\mathbb{E}[\delta_{i,j}].
+\nabla_\theta Q_H^{\mathrm{L2}}(\theta_0)
+= 2\,\mathbb{E}\!\left[n_v^{-2}\, A_{v,H}(\theta_0)^2 \sum_{i=1}^{n_v}\sum_j \frac{c_j^2 \nu_j}{R^b_{t_v^0,a_j}(\theta_0)^2}\left(\bar S_{v,H}(\theta_0) - S_{t_v^0,b_j}(\theta_0)\right)\right]
 \]
-This mean component reflects systematic deal-level mispricing that the SDF does not span, compounded by the SDF ratio $\Psi_{t_{i,j}^{\mathrm{Inv}}}/\Psi_\tau$ which reweights the mispricing at each discounting date.
-Crucially, horizon averaging need not eliminate this additional component without further sign or decay restrictions: unlike the timing-related covariance wedge, it does not arise from the compounding structure and therefore does not share the same averaging properties.
-Accordingly, the clean correct-specification decomposition of $\mathcal{T}$-averaging into a target shift induced by the Compounding-Horizon Wedge and a variance-reduction benefit no longer applies without qualification.
-Under misspecification, the population target shift reflects both the timing channel characterized by Lemma~\ref{lem:bH_horizon_wedge} and the misspecification channel, and the two channels may reinforce or offset each other depending on the sign and magnitude of $\mathbb{E}[\delta_{i,j}]$.
+(keeping $n_v^{-2}$ inside the expectation when fund counts $n_v$ vary across vintages). When deals start at $t_v^0$ ($R^b_{t_v^0,a_j}=1$), this simplifies to $2\,\mathbb{E}[n_v^{-1} A_{v,H}(\theta_0)^2 \sum_j c_j^2 \nu_j (\bar S_{v,H}(\theta_0) - S_{t_v^0,b_j}(\theta_0))]$.
+At $H=0$, $A_{v,0}(\theta) \equiv 1$ so $\bar S_{v,0}(\theta_0) = 0$. Since $\partial_\alpha \log R^b_{t_v^0,b_j}(\theta_0) = \sum_{u=t_v^0+1}^{b_j} G_u(\theta_0)^{-1} > 0$ strictly, $\partial_\alpha Q_0^{\mathrm{L2}}(\theta_0) < 0$ strictly. For single-factor $\beta$, positive average excess market returns yield $S_{t_v^0,b_j}(\beta_0) > 0$ on average, so $\partial_\beta Q_0^{\mathrm{L2}}(\beta_0) < 0$, tilting $\beta_0^\dagger > \beta_0$ upward. As $H$ rises, $\bar S_{v,H}(\theta_0)$ increases from $0$ and eventually exceeds $S_{t_v^0,b_j}(\theta_0)$, reversing the sign of $\nabla_\theta Q_H^{\mathrm{L2}}(\theta_0)$ and pulling $\beta_H^\dagger$ downward. In the joint $(\alpha,\beta)$ model at $H=0$, first-order linearization around $\theta_0$ gives $\theta_0^\dagger - \theta_0 \approx -[\nabla^2 Q_0^{\mathrm{L2}}(\theta_0)]^{-1}\nabla Q_0^{\mathrm{L2}}(\theta_0)$; because $[\nabla^2 Q_0^{\mathrm{L2}}(\theta_0)]_{\alpha\beta} > 0$, the large negative $\alpha$-score induces an upward shift in $\alpha_0^\dagger$ that attenuates $\beta_0^\dagger$ downward, formalizing the qualitative observation in \citet[p.~522]{DLP12}. \qed
 
-\subsection{From averaged moment shift to pseudo-true target shift}
-\label{sec:appendix_bv_target_shift}
+\subsection{Proof of Theorem T5 (Large-$\alpha$ attenuation at $H=0$ vs.\ coercivity at $H>0$)}
+\label{sec:proof_T5}
 
-Lemma~\ref{lem:bH_horizon_wedge} identifies the exact source of the conditional averaged population moment $b_{H,i}$ at $\theta_0$.
-To connect that result to the parameter target, define
+Fix $\beta$ on the positive-return domain and let $\alpha \to +\infty$. Then $G_u(\alpha,\beta) \to +\infty$ for every month $u$, so $\Psi_{t_v^0,t}(\alpha,\beta) = \prod_{u=t_v^0+1}^t G_u(\alpha,\beta)^{-1} \to 0$ for every $t > t_v^0$, while $\Psi_{t_v^0,t_v^0}(\alpha,\beta) = 1$. Hence $PV_{v,i}(\alpha,\beta) \to CF_{v,i,t_v^0}$, giving
 \[
-g_{i,H}(\theta)
-:=
-\nabla_\theta \bar{\epsilon}_i^{(H)}(\theta),
+\lim_{\alpha\to\infty} Q_0^{\mathrm{L2}}(\alpha,\beta) = \mathbb{E}[CF_{v,t_v^0}^2]
 \]
-and assume that differentiation can be interchanged with expectation, so that the gradient of the population criterion can be expressed as an expectation of the sample-level score contributions.
-Then
-\begin{equation}
-	\label{eq:grad_QH}
-	\nabla_\theta Q_H(\theta)
-	=
-	2\,
-	\mathbb{E}\!\left[
-	\bar{\epsilon}_i^{(H)}(\theta)\,
-	g_{i,H}(\theta)
-	\right].
-\end{equation}
-Evaluating at $\theta_0$ and decomposing the expectation around the conditional mean $b_{H,i}$ yields
-\begin{equation}
-	\label{eq:grad_decomp}
-	\nabla_\theta Q_H(\theta_0)
-	=
-	2\,\mathbb{E}[b_{H,i}\,g_{i,H}(\theta_0)]
-	+
-	2\,\mathbb{E}\!\left[
-	\bigl(\bar{\epsilon}_i^{(H)}(\theta_0)-b_{H,i}\bigr)
-	g_{i,H}(\theta_0)
-	\right].
-\end{equation}
-The second term equals $2\,\mathrm{Cov}\bigl(\bar{\epsilon}_i^{(H)}(\theta_0),\,g_{i,H}(\theta_0)\bigr)$ and captures the residual co-movement between the averaged pricing error and its parameter sensitivity beyond the conditional mean shift.
+(and under a predetermined origin where $CF_{v,t_v^0} = 0$, both $\lim_{\alpha\to\infty} Q_0^{\mathrm{L2}}(\alpha,\beta) = 0$ and $\lim_{\alpha\to\infty} U_{v,0}(\alpha,\beta) = 0$). Whenever lifetime residual variance $\mathbb{E}[PV_v(\theta_0)^2]$ exceeds $\mathbb{E}[CF_{v,t_v^0}^2]$, an unconstrained $H=0$ minimizer is pulled toward $\alpha \to +\infty$.
 
-Equation~\eqref{eq:grad_decomp} makes two points precise.
-First, the conditional moment shift in $b_{H,i}$ induced by the Compounding-Horizon Wedge is one component of the criterion tilt at $\theta_0$.
-Second, the pseudo-true target depends not only on that conditional mean shift, but also on the residual co-movement between the averaged pricing error and its parameter sensitivity.
+Conversely, suppose $H > 0$ so that $\mathcal{T}_{v,H}$ contains a date $\tau^\ast$ strictly after the first nonzero cash flow $t_v^{\mathrm{first}} \ge t_v^0$. Then for $t = t_v^{\mathrm{first}} < \tau^\ast$, the compounding factor $R^b_{t_v^{\mathrm{first}},\tau^\ast}(\alpha,\beta) = \prod_{u=t_v^{\mathrm{first}}+1}^{\tau^\ast} G_u(\alpha,\beta) \sim \alpha^{\tau^\ast - t_v^{\mathrm{first}}} \to +\infty$ dominates every later cash flow $t > t_v^{\mathrm{first}}$ (which grows at strictly lower degree in $\alpha$). Thus $|\bar\epsilon_{v,H}(\alpha,\beta)| \to +\infty$, implying $\lim_{\alpha\to\infty} Q_H^{\mathrm{L2}}(\alpha,\beta) = +\infty$. For $U_{v,H}$, since initial capital calls $CF_{v,i,t_v^{\mathrm{first}}} < 0$ have the same sign across funds active at the earliest date, their dominant pair products $CF_{v,i,t_v^{\mathrm{first}}}CF_{v,j,t_v^{\mathrm{first}}} > 0$ are strictly positive whenever at least two funds invest at $t_v^{\mathrm{first}}$, yielding $\lim_{\alpha\to\infty} U_{v,H}(\alpha,\beta) = +\infty$. \qed
 
-Assume now that $Q_H$ is twice continuously differentiable on an open convex neighborhood containing the line segment between $\theta_0$ and $\theta_H^\dagger$, and that its Hessian is nonsingular throughout that set.
-Since $\theta_H^\dagger$ satisfies
-\begin{equation}
-	\label{eq:FOC_QH}
-	\nabla_\theta Q_H(\theta_H^\dagger)=0,
-\end{equation}
-a first-order Taylor expansion around $\theta_0$ gives
-\begin{equation}
-	\label{eq:FOC_taylor}
-	0
-	=
-	\nabla_\theta Q_H(\theta_0)
-	+
-	\nabla_\theta^2 Q_H(\bar{\theta}_H)\,
-	(\theta_H^\dagger-\theta_0),
-\end{equation}
-for some intermediate point $\bar{\theta}_H$ between $\theta_0$ and $\theta_H^\dagger$.
+\subsection{Proof of Theorem T6 (Infill consistency, $n_v \to \infty$)}
+\label{sec:proof_T6}
+
+(a) Fix $V$ and let $n_v \to \infty$ for each $v = 1,\dots,V$. Conditional on $\mathcal{G}_v$ and any common vintage shock, the constant-composition pool NPV converges in probability by a within-vintage law of large numbers to the vintage's realized conditional mean $\tilde\mu_v(\theta)$. Hence $V^{-1}\sum_{v=1}^V A_{v,H}(\theta)^2 PV_v(\theta)^2 \xrightarrow{p} V^{-1}\sum_{v=1}^V A_{v,H}(\theta)^2 \tilde\mu_v(\theta)^2$ uniformly on the compact domain $\Theta$. When common vintage shocks are absent ($\tilde\mu_v(\theta_0) = 0$ for all $v$) and $\theta_0$ uniquely sets the limit to zero on $\Theta$, $\hat\theta_H^{\mathrm{L2}} \xrightarrow{p} \theta_0$ at every fixed $H \ge 0$. If unspanned common vintage shocks $\tilde\mu_v(\theta_0) \neq 0$ are present, fixed-$V$ infill converges instead to the random minimizer of $V^{-1}\sum_{v=1}^V A_{v,H}(\theta)^2 \tilde\mu_v(\theta)^2$.
+(b) Letting both $n_v \to \infty$ and $V \to \infty$ under the increasing-domain ULLN of Appendix~\ref{sec:proofs_asymptotics_H} eliminates the $O(1/n_v)$ term in Theorem~T3, yielding limit $\mathbb{E}[A_{v,H}(\theta)^2(\mu_v(\theta)^2 + c_v(\theta))]$. \qed
+
+\subsection{Proof of Theorem T7 (Cross-fund pair-product $U_{v,H}$ consistency under bounded $n_v \ge 2$)}
+\label{sec:proof_T7}
+
+For any vintage $v$ with $n_v \ge 2$ funds and normalized fund weights $w_{v,i} > 0$ ($\sum_{i=1}^{n_v} w_{v,i} = 1$; $w_{v,i} = 1/n_v$ under EW, $w_{v,i} = s_{v,i}/\sum_k s_{v,k}$ under FW), define the cross-fund pair-product statistic
+\[
+U_{v,H}(\theta)
+:= \frac{\sum_{i \neq j} w_{v,i} w_{v,j}\, \bar\epsilon_{v,i,H}(\theta)\, \bar\epsilon_{v,j,H}(\theta)}{\sum_{i \neq j} w_{v,i} w_{v,j}}
+= A_{v,H}(\theta)^2 \frac{\left(\sum_{i=1}^{n_v} w_{v,i} PV_{v,i}(\theta)\right)^2 - \sum_{i=1}^{n_v} w_{v,i}^2 PV_{v,i}(\theta)^2}{1 - \sum_{i=1}^{n_v} w_{v,i}^2}.
+\]
+Let $\mathcal{G}_v$ include $\mathcal{C}_v$, the eligibility event $n_v \ge 2$, realized fund sizes $\{s_{v,i}\}$, and the realized vintage origin $t_v^0$. Suppose that conditional on $(\mathcal{G}_v, \text{common shock}_v)$, funds $i \neq j$ are independent with conditional mean $\mu_{v,i}(\theta) = \mathbb{E}[PV_{v,i}(\theta)\mid\mathcal{G}_v]$ and pairwise conditional covariance $c_v(\theta) = \mathrm{Cov}(PV_{v,i}(\theta), PV_{v,j}(\theta)\mid\mathcal{G}_v)$. Taking conditional expectations term by term for $i \neq j$:
+\[
+\mathbb{E}\!\left[PV_{v,i}(\theta)PV_{v,j}(\theta)\,\middle|\,\mathcal{G}_v\right]
+= \mu_{v,i}(\theta)\mu_{v,j}(\theta) + c_v(\theta).
+\]
 Hence
-\begin{equation}
-	\label{eq:theta_shift}
-	\theta_H^\dagger-\theta_0
-	=
-	-
-	\bigl[\nabla_\theta^2 Q_H(\bar{\theta}_H)\bigr]^{-1}
-	\nabla_\theta Q_H(\theta_0).
-\end{equation}
+\[
+\mathbb{E}\!\left[U_{v,H}(\theta)\,\middle|\,\mathcal{G}_v\right]
+= A_{v,H}(\theta)^2 \left(
+  \frac{\sum_{i \neq j} w_{v,i} w_{v,j} \mu_{v,i}(\theta)\mu_{v,j}(\theta)}{\sum_{i \neq j} w_{v,i} w_{v,j}}
+  + c_v(\theta)
+\right),
+\]
+which reduces to $A_{v,H}(\theta)^2(\mu_v(\theta)^2 + c_v(\theta))$ whenever all funds in vintage $v$ share a common conditional mean $\mu_{v,i}(\theta) = \mu_v(\theta)$. Crucially, all own-fund diagonal variance terms $\sigma_v^2(\theta)$ cancel identically for every finite $n_v \ge 2$. Weighting vintages by $q_v > 0$ (kept inside the expectation when $q_v$ varies with $n_v$) and letting $V \to \infty$ under the uniform law of large numbers of Appendix~\ref{sec:proofs_asymptotics_H} gives
+\[
+Q_{V,H}^U(\theta) = \frac{1}{V}\sum_{v=1}^V q_v U_{v,H}(\theta)
+\xrightarrow{p} \mathbb{E}\!\left[q_v A_{v,H}(\theta)^2 \bigl(\mu_v(\theta)^2 + c_v(\theta)\bigr)\right]
+\]
+uniformly on $\Theta$. Provided the limiting criterion has a unique minimizer $\theta_H^{\dagger,\infty} \in \Theta$, $\hat\theta_H^U \xrightarrow{p} \theta_H^{\dagger,\infty}$. In particular, when $c_v \equiv 0$, $\mu_v(\theta_0) = 0$ conditional on $\mathcal{G}_v$ (implied by (X) together with exogeneity of eligibility, fund sizes, and $t_v^0$), and $\theta_0$ uniquely minimizes $\mathbb{E}[q_v A_{v,H}(\theta)^2 \mu_v(\theta)^2]$ on $\Theta$, $\hat\theta_H^U \xrightarrow{p} \theta_0$ at every fixed horizon $H \ge 0$ with bounded $n_v \ge 2$. \qed
 
-Combining Equations~\eqref{eq:grad_decomp} and \eqref{eq:theta_shift}, the pseudo-true target shift is driven by the full gradient tilt of the population criterion at $\theta_0$.
-Lemma~\ref{lem:bH_horizon_wedge} therefore identifies an exact channel through which the Compounding-Horizon Wedge moves the population target, but $b_{H,i}$ alone does not fully characterize $\theta_H^\dagger-\theta_0$ unless additional restrictions are imposed.
+\subsection{Proof of Theorem T8 (Mean-moment multiple roots and persistent vintage shocks)}
+\label{sec:proof_T8}
 
-\begin{remark}[A generic magnitude bound]
-	\label{rem:target_shift_magnitude}
-	For each post-investment term $\tau>t_{i,j}^{\mathrm{Inv}}$, Cauchy--Schwarz yields
-	\[
-	\left|
-	\mathrm{Cov}\!\left(
-	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau},
-	\delta_{i,j}
-	\right)
-	\right|
-	\le
-	\sigma\!\left(
-	\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_\tau}
-	\right)\,
-	\sigma(\delta_{i,j}).
-	\]
-	Moreover, the averaging operator contributes the factor
-	$1/\mathrm{card}(\mathcal{T}_{i,H})$ in Equation~\eqref{eq:bH_horizon_wedge}.
-	Thus, large target shifts require either highly volatile SDF ratios, highly dispersed deal-level pricing errors, or strong alignment between these objects.
-\end{remark}
+In a one-period model with risk-free gross return $R_f$, excess market return $F$, and PE payoff $(R_f + \beta_{\mathrm{PE}} F)N$ with $\mathbb{E}[N\mid F] = 1$, the single-factor mean pricing moment with $\alpha = 0$ is
+\[
+m(\beta) = \mathbb{E}\!\left[\frac{R_f + \beta_{\mathrm{PE}} F}{R_f + \beta F} - 1\right]
+= (\beta_{\mathrm{PE}} - \beta)\,\underbrace{\mathbb{E}\!\left[\frac{F}{R_f + \beta F}\right]}_{g(\beta)}.
+\]
+Whenever $\mathbb{E}[F] > 0$ and $\mathbb{P}(F < 0) > 0$, $g(0) = \mathbb{E}[F]/R_f > 0$ while $g(\beta) \to -\infty$ as $\beta$ approaches the upper positivity boundary, so there exists a unique growth-optimal root $\beta^\ast > 0$ solving $g(\beta^\ast) = 0$ in addition to the structural root $\beta_{\mathrm{PE}}$. For example, with $R_f = 1$ and $F \in \{-0.4, +0.6\}$ equally likely, $\beta_{\mathrm{PE}} = 1$ and $\beta^\ast = 5/12$ both satisfy $m(\beta)=0$ on the positive-return domain, so a ``smallest-root'' rule selects $5/12 \neq 1$. Under persistent vintage shocks ($c_v > 0$, $\rho_W > 0$), any instrument $z_v$ constructed from neighboring vintages' cash flows correlates with $PV_v(\theta_0)$; valid IV moments $\mathbb{E}[z_v PV_v(\theta_0)] = 0$ therefore require strictly exogenous path instruments $z_v = h(\mathcal{C}_v)$ (valid under (X), or $z_v = 1$ under (P) alone) or $h$-block neighbor-excluding instruments. \qed
 
-\subsection{Exact MSE decomposition}
-\label{sec:appendix_bv_mse}
+% ==============================================================================
+\section{Increasing-Domain Asymptotics, Fixed-$b$ SHAC Inference, and Full Step 4 Monte Carlo Exhibits}
+\label{sec:proofs_asymptotics_H}
+% ==============================================================================
 
-Let $\hat{\theta}_H$ denote the sample extremum estimator associated with the sample analogue of $Q_H$.
-For any horizon $H$, the identity
-\begin{equation}
-	\label{eq:exact_decomp_start}
-	\hat{\theta}_H-\theta_0
-	=
-	(\hat{\theta}_H-\theta_H^\dagger)
-	+
-	(\theta_H^\dagger-\theta_0)
-\end{equation}
-holds exactly.
-Here, $\theta_0$ is the structural parameter, $\theta_H^\dagger$ is the pseudo-true minimizer of the population criterion $Q_H$ (Equation~\eqref{eq:pseudotrue}), and $\hat{\theta}_H$ is its sample analogue.
-Taking squared norms and expectations over the sampling distribution gives the following decomposition.
+\subsection{Regularity conditions, consistency, and asymptotic normality}
 
-\begin{proposition}[Exact MSE decomposition around the structural parameter]
-	\label{prop:exact_mse}
-	For any horizon $H$,
-	\begin{align}
-		\label{eq:exact_mse}
-		\mathbb{E}\!\left[
-		\|\hat{\theta}_H-\theta_0\|^2
-		\right]
-		&=
-		\|\theta_H^\dagger-\theta_0\|^2
-		+
-		2(\theta_H^\dagger-\theta_0)^\top
-		\mathbb{E}\!\left[
-		\hat{\theta}_H-\theta_H^\dagger
-		\right]
-		\nonumber\\
-		&\qquad
-		+
-		\left\|
-		\mathbb{E}\!\left[
-		\hat{\theta}_H-\theta_H^\dagger
-		\right]
-		\right\|^2
-		+
-		\mathrm{tr}\!\left(
-		\mathrm{Var}(\hat{\theta}_H)
-		\right).
-	\end{align}
+Fix a horizon $H \ge 0$, and let $Q_{V,H}(\theta) = V^{-1}\sum_{v=1}^V \ell_{v,H}(\theta)$ denote the sample criterion over $V$ vintages, where $\ell_{v,H}(\theta) = \bar\epsilon_{v,H}(\theta)^2$ for L2 on vintage portfolios and $\ell_{v,H}(\theta) = q_v U_{v,H}(\theta)$ for the pair-product estimator (with $v$ ranging over eligible $n_v \ge 2$ vintages). Define the population objective $Q_H(\theta) = \mathbb{E}[\ell_{v,H}(\theta)]$ and target $\theta_H^\dagger = \arg\min_{\theta\in\Theta} Q_H(\theta)$.
+
+\begin{assume}[Increasing-domain regularity conditions]
+\label{ass:asymptotics_H}
+\begin{enumerate}
+  \item \textbf{Compact admissible domain:} $\Theta \subset \mathbb{R}^p$ is compact with $\min_{t} G_t(\theta) \ge \underline{g} > 0$ for all $\theta \in \Theta$ (in implementation, $\underline{g}=0.08$, $\beta_{\mathrm{MKT}}\in[-1,4]$, $\alpha\in[-2\%,2\%]$/month), and $\theta_H^\dagger$ is the unique global minimizer of $Q_H(\theta)$ on $\Theta$.
+  \item \textbf{Smoothness and envelope bounds:} $\ell_{v,H}(\theta)$ is twice continuously differentiable on $\Theta$ with $\sup_{\theta\in\Theta}|\ell_{v,H}(\theta)|$, $\sup_{\theta\in\Theta}\|\nabla_\theta\ell_{v,H}(\theta)\|$, and $\sup_{\theta\in\Theta}\|\nabla_{\theta\theta}^2\ell_{v,H}(\theta)\|$ possessing uniformly bounded $(2+\delta)$ moments ($\delta > 0$).
+  \item \textbf{Increasing-domain vintage mixing:} Vintages lie on an expanding calendar lattice ($V \to \infty$) with bounded per-vintage fund counts and bounded effective lifetimes, such that $\{\ell_{v,H}(\theta), \nabla_\theta\ell_{v,H}(\theta), \nabla_{\theta\theta}^2\ell_{v,H}(\theta)\}$ satisfy the near-epoch dependence / mixing conditions of \citet{JP09,JP12}.
+  \item \textbf{Interior optimum and nonsingular curvature (for CLT):} $\theta_H^\dagger \in \mathrm{int}(\Theta)$, $\mathcal{H}_H := \mathbb{E}[\nabla_{\theta\theta}^2 \ell_{v,H}(\theta_H^\dagger)]$ is positive definite, and $\Lambda_H := \lim_{V\to\infty}\mathrm{Var}(V^{-1/2}\sum_{v=1}^V s_{v,H}(\theta_H^\dagger))$ is positive definite, where $s_{v,H}(\theta) := \nabla_\theta\ell_{v,H}(\theta)$.
+\end{enumerate}
+\end{assume}
+
+\begin{proposition}[Consistency and asymptotic normality around $\theta_H^\dagger$]
+\label{prop:proof_cons_clt}
+Under Assumption~\ref{ass:asymptotics_H}(1)--(3), $\hat\theta_H \xrightarrow{p} \theta_H^\dagger$ as $V \to \infty$. Under Assumption~\ref{ass:asymptotics_H}(1)--(4),
+\[
+\sqrt{V}(\hat\theta_H - \theta_H^\dagger) \xrightarrow{d} \mathcal{N}(0,\Sigma_H),
+\qquad
+\Sigma_H = \mathcal{H}_H^{-1}\Lambda_H \mathcal{H}_H^{-1}.
+\]
 \end{proposition}
 
 \begin{proof}
-	Write
-	\[
-	\hat{\theta}_H-\theta_0
-	=
-	(\hat{\theta}_H-\theta_H^\dagger)
-	+
-	(\theta_H^\dagger-\theta_0),
-	\]
-	and expand the squared norm.
-	Next, since $\theta_H^\dagger$ is nonrandom,
-	\[
-	\mathrm{Var}(\hat{\theta}_H-\theta_H^\dagger)
-	=
-	\mathrm{Var}(\hat{\theta}_H),
-	\]
-	so
-	\[
-	\mathbb{E}\!\left[
-	\|\hat{\theta}_H-\theta_H^\dagger\|^2
-	\right]
-	=
-	\left\|
-	\mathbb{E}[\hat{\theta}_H-\theta_H^\dagger]
-	\right\|^2
-	+
-	\mathrm{tr}\!\left(
-	\mathrm{Var}(\hat{\theta}_H)
-	\right).
-	\qedhere
-	\]
+\emph{Consistency.} By Assumption~\ref{ass:asymptotics_H}(1)--(3) and the random-field uniform law of large numbers \citep{JP09,PP97}, $\sup_{\theta\in\Theta}|Q_{V,H}(\theta) - Q_H(\theta)| \xrightarrow{p} 0$. Compactness of $\Theta$, continuity of $Q_H$, and unique identification of $\theta_H^\dagger$ yield $\hat\theta_H \xrightarrow{p} \theta_H^\dagger$ by \citet[Theorem~2.1]{NM94}.
+
+\emph{Asymptotic normality (score centering and integrated Hessian).} Since $\theta_H^\dagger \in \mathrm{int}(\Theta)$ and $\hat\theta_H \xrightarrow{p} \theta_H^\dagger$, the sample first-order condition $\nabla_\theta Q_{V,H}(\hat\theta_H) = 0$ holds with probability approaching one. Crucially, the population score is centered at the criterion target $\theta_H^\dagger$---i.e., $\mathbb{E}[s_{v,H}(\theta_H^\dagger)] = \nabla_\theta Q_H(\theta_H^\dagger) = 0$---rather than at $\theta_0$ (for L2 with finite $n_v$, $\mathbb{E}[s_{v,H}(\theta_0)] \neq 0$ by Theorem~T4). Applying the fundamental theorem of calculus to each component of $\nabla_\theta Q_{V,H}$ along the line segment $\theta(u) = \theta_H^\dagger + u(\hat\theta_H - \theta_H^\dagger)$, $u\in[0,1]$, yields the exact integrated-Hessian expansion
+\[
+0 = \nabla_\theta Q_{V,H}(\hat\theta_H)
+  = \nabla_\theta Q_{V,H}(\theta_H^\dagger)
+  + \left(\int_0^1 \nabla_{\theta\theta}^2 Q_{V,H}(\theta(u))\,du\right)(\hat\theta_H - \theta_H^\dagger).
+\]
+By Assumption~\ref{ass:asymptotics_H}(2)--(3), $\sup_{\theta\in\Theta}\|\nabla_{\theta\theta}^2 Q_{V,H}(\theta) - \nabla_{\theta\theta}^2 Q_H(\theta)\| \xrightarrow{p} 0$, and continuity of $\nabla_{\theta\theta}^2 Q_H$ at $\theta_H^\dagger$ implies $\bar{\mathcal{H}}_{V,H} := \int_0^1 \nabla_{\theta\theta}^2 Q_{V,H}(\theta(u))\,du \xrightarrow{p} \mathcal{H}_H$. By Assumption~\ref{ass:asymptotics_H}(3)--(4) and the increasing-domain random-field CLT of \citet{JP12}, $\sqrt{V}\nabla_\theta Q_{V,H}(\theta_H^\dagger) = V^{-1/2}\sum_{v=1}^V s_{v,H}(\theta_H^\dagger) \xrightarrow{d} \mathcal{N}(0,\Lambda_H)$. Slutsky's theorem yields $\sqrt{V}(\hat\theta_H - \theta_H^\dagger) = -\bar{\mathcal{H}}_{V,H}^{-1}\sqrt{V}\nabla_\theta Q_{V,H}(\theta_H^\dagger) \xrightarrow{d} \mathcal{N}(0,\mathcal{H}_H^{-1}\Lambda_H\mathcal{H}_H^{-1})$.
 \end{proof}
 
-\noindent Proposition~\ref{prop:exact_mse} separates four conceptually distinct objects:
-\begin{enumerate}
-	\item the \emph{population target shift} $\|\theta_H^\dagger-\theta_0\|^2$,
-	\item the \emph{interaction term}
-	$2(\theta_H^\dagger-\theta_0)^\top \mathbb{E}[\hat{\theta}_H-\theta_H^\dagger]$,
-	which links the target shift to the estimator's finite-sample bias around the pseudo-true parameter and can be either positive or negative,
-	\item the \emph{squared finite-sample bias around the pseudo-true parameter}
-	$\|\mathbb{E}[\hat{\theta}_H-\theta_H^\dagger]\|^2$,
-	\item the \emph{sampling variance} $\mathrm{tr}(\mathrm{Var}(\hat{\theta}_H))$.
-\end{enumerate}
+\subsection{LLSW bandwidth, fixed-$b$ critical values, and boundary conventions}
 
-This decomposition is exact.
-What remains model-dependent is how these terms move with $H$.
-From this point onward, the appendix no longer derives exact comparative statics in $H$; instead, it provides a second-order heuristic for why finite-sample stabilization can dominate over some range of horizons.
+In finite vintage panels ($V = 23$--$27$), classical HAC inference with normal critical values severely over-rejects because the Bartlett estimator $\hat\Lambda_H = V^{-1}\sum_{v,w} K(|v-w|/S)\,\hat s_{v,H}\hat s_{w,H}^\top$ is pulled toward zero by the sample FOC $\sum_v \hat s_{v,H} = 0$. Following \citet{LLSW18} and \citet{KV05}, we set the Bartlett truncation lag to $S = \lceil 1.3\sqrt{V}\rceil$ ($S=7$ for $V\in\{23,25,27\}$) and evaluate $t$- and Wald statistics against the fixed-$b$ limit distribution at $b = S/V$ (two-sided 5\% critical values $2.790$ for $V=25$, $2.867$ for $V=23$, and $2.728$ for $V=27$, computed via the conditional method with $10^6$ draws). Whenever an estimate lies on an active boundary constraint of $\Theta$, interior asymptotic normality does not apply; such cells are marked with $\dagger$ and their standard errors are suppressed. Because L1-loss estimates sit at sample kinks where numerical Hessians shrink with step size and the delete-one jackknife is inconsistent for median-type functionals \citep{Efron79}, L1 estimates are treated as descriptive only with no SEs or tests.
 
-\paragraph{Heuristic link to second-order finite-sample bias.}
-For nonlinear extremum estimators, standard higher-order expansions imply that
-\[
-\mathbb{E}[\hat{\theta}_H-\theta_H^\dagger]
-=
-O(n^{-1}),
-\]
-with a constant that depends on higher-order moments of the score and on local curvature; see, e.g., \citet{nagar1959bias, rilstone1996second, newey2004higher, bao2007finite}.
-In the present setting, those constants are naturally affected by the volatility and dependence structure of the objective contributions.
-This suggests the following heuristic channel:
-if $\mathcal{T}$-averaging reduces the volatility of $\bar{\epsilon}_i^{(H)}(\theta)$ without introducing a large target shift, it can improve finite-sample performance even when $H>0$.
+\subsection{Full Step 4 Monte Carlo appendix exhibits}
 
-A convenient representation is
-\begin{equation}
-	\label{eq:var_matrix}
-	\mathrm{Var}\!\left(
-	\bar{\epsilon}_i^{(H)}(\theta)
-	\right)
-	=
-	a_{i,H}^\top
-	\Sigma_{i,H}(\theta)
-	a_{i,H},
-\end{equation}
-where $a_{i,H}$ is the $\mathrm{card}(\mathcal{T}_{i,H})\times 1$ averaging vector with entries $1/\mathrm{card}(\mathcal{T}_{i,H})$, and $\Sigma_{i,H}(\theta)$ is the covariance matrix of the vector
-\[
-\bigl(
-\epsilon_{\tau,i}(\theta)
-\bigr)_{\tau\in\mathcal{T}_{i,H}}.
-\]
+Tables~\ref{tab:mc_size}--\ref{tab:mc_hardening} and Figure~\ref{fig:mc_growing_v} report the complete Step~4 Monte Carlo results across all 55 designs (1,246 summary rows), including Gaussian location-model size benchmarks (D0), SE-method comparisons (Bartlett $S=7$--$25$, independent, jackknife), joint $(\alpha,\beta)$ boundary and calibration results, the $n_v \times V$ infill grid, growing-$V$ plateau diagnostics, and the hardening designs (Design~B heterogeneous fund sizes; Designs~A$'$ and~A path-correlated shocks).
 
-\begin{remark}[A simple variance-reduction benchmark]
-	\label{rem:equicorr}
-	To build intuition for the stabilization mechanism, consider a stylized case.
-	Suppose that all $m=\mathrm{card}(\mathcal{T}_{i,H})$ date-specific pricing errors have a common variance
-	$\mathrm{Var}(\epsilon_{\tau,i}(\theta))=\sigma^2(\theta)$
-	and that every pair of distinct dates shares the same correlation $\rho(\theta)$, with $\rho(\theta)\ge -1/(m-1)$ so that the covariance matrix is positive semidefinite.
-	The variance of the averaged error then takes the form
-	\[
-	\mathrm{Var}\!\left(
-	\bar{\epsilon}_i^{(H)}(\theta)
-	\right)
-	=
-	\sigma^2(\theta)\;\frac{1+\rho(\theta)(m-1)}{m}.
-	\]
-	Two polar cases anchor the interpretation.
-	If the errors are independent ($\rho=0$), this reduces to $\sigma^2/m$: the classical variance reduction from averaging $m$ i.i.d.\ terms.
-	If the errors are perfectly correlated ($\rho=1$), the variance equals $\sigma^2$: averaging provides no benefit because each date carries exactly the same information.
-	For any intermediate correlation $0<\rho<1$, the variance lies strictly between $\sigma^2/m$ and $\sigma^2$, interpolating smoothly between the two extremes.
-	Mild negative correlation ($\rho<0$) pushes the variance below $\sigma^2/m$, as partial offsetting further stabilizes the average.
+\input{../../r_project/results/mc_step4/paper/table_AS1_size.tex}
+\input{../../r_project/results/mc_step4/paper/table_AS2_se_study.tex}
+\input{../../r_project/results/mc_step4/paper/table_AS3_alpha_beta.tex}
+\input{../../r_project/results/mc_step4/paper/table_AS4_grid.tex}
+\input{../../r_project/results/mc_step4/paper/table_AS5_hardening.tex}
+\input{../../r_project/results/mc_step4/paper/figure_S3_growing_V.tex}
 
-	In summary, the averaged objective contribution has lower variance than a representative single-date moment whenever the date-specific errors are less than perfectly correlated.
-	This is the basic channel through which horizon averaging can stabilize the sample criterion.
-\end{remark}
-
-\subsection{Interpretation and reconciliation with the simulation study}
-\label{sec:appendix_bv_interpretation}
-
-The simulation evidence in Section~\ref{sec:simulation_study} can now be interpreted through Proposition~\ref{prop:exact_mse}.
-
-At short horizons, the estimator relies on a small number of volatile pricing moments.
-This can make the nonlinear criterion unstable and can generate substantial finite-sample bias around the benchmark target.
-As $H$ increases, averaging combines additional pricing moments that are correlated, but not perfectly so, and this can smooth the sample criterion and improve finite-sample behavior.
-
-Against this benefit stands the population target shift characterized above.
-Once $H$ is large enough to include post-investment timing terms, the criterion is generally no longer minimized at $\theta_0$.
-The resulting target shift induced by the Compounding-Horizon Wedge can be economically meaningful, but under the baseline calibration it is modest relative to the large finite-sample distortions observed at very short horizons.
-
-This yields the central interpretation of the simulation results:
-for small to intermediate horizons, the stabilization benefit of $\mathcal{T}$-averaging can dominate the incremental target shift.
-In the reported designs, this dominance reflects not only lower variance of the averaged criterion contributions, but also smaller higher-order finite-sample bias of the nonlinear extremum estimator around its horizon-specific pseudo-true parameter, so that overall error relative to the structural benchmark can initially fall before target shift eventually dominates.
-This entails, for sufficiently long horizons, the marginal gain from additional averaging may weaken while the scope for target shift grows.
-Accordingly, the MSE-minimizing horizon need not be $H=0$ and need not be arbitrarily large.
-Instead, it is generally \emph{interior} and \emph{DGP-dependent}.
-
-We do not claim that each MSE component from Proposition \ref{prop:exact_mse} is globally monotone in $H$ without additional restrictions.
-In particular, the aggregate Compounding-Horizon Wedge may contain offsetting covariance terms, and the effect of averaging on estimator variance depends on the covariance structure of the pricing moments and on the local geometry of the nonlinear criterion.
-For that reason, the appendix establishes the exact decomposition and the exact source of the averaged population moment shift, while the existence and location of the empirically relevant interior optimum are documented in the simulation study rather than asserted as a universal theorem.
-
-The role of $\mathcal{T}$-averaging is also related to two familiar ideas.
-First, from a GMM perspective, averaging combines multiple imperfectly correlated pricing moments, which can improve finite-sample stability when those moments contain useful information.
-Second, from the perspective of misspecified moments, post-investment timing terms can be viewed as informative but potentially biased moment components: they perturb the population target, yet may still lower overall MSE when the induced target shift is small relative to the finite-sample stabilization they provide.
-
-The main message is not that the Compounding-Horizon Wedge ``washes out'' as $H$ grows.
-Rather, $\mathcal{T}$-averaging trades off a population target shift against a potentially large reduction in finite-sample estimation error.
-Under the baseline DGP, the latter effect dominates over an economically relevant range of horizons, which is why the simulation study favors intermediate horizons rather than the NPV-only benchmark.
-
-
-
-
-
-
-
-
-\section{Asymptotic conditions, inference details, and proofs for the horizon-specific results}
-\label{sec:proofs_asymptotics_H}
-
-
-
-\noindent
-This appendix collects the full regularity conditions, the auxiliary uniform law of large numbers, the implementation details for large-sample inference, and the proofs omitted from Section~\ref{sec:asymptotic_framework}. Throughout, fix a horizon $H \ge 0$.
-
-\subsection{Asymptotic setup and assumptions}
-
-The large-sample benchmark is built around the horizon-averaged pricing error
-\[
-\bar{\epsilon}^{(H)}_i(\theta)
-:=
-w_i
-\cdot
-\frac{1}{\mathrm{card}(\mathcal T_{i,H})}
-\sum_{\tau \in \mathcal T_{i,H}}
-\epsilon_{\tau,i}(\theta)
-\]
-with
-\[
-\mathcal T_{i,H}
-=
-\left\{
-t_i^0,t_i^0+1,\dots,\min(t_i^0+12H,T_i^{\max})
-\right\},
-\]
-and the corresponding loss contribution
-\[
-Z_i(\theta)
-:=
-L\!\left(\bar\epsilon_i^{(H)}(\theta)\right),
-\qquad
-Q_{n,H}(\theta)
-=
--
-\frac{1}{n}
-\sum_{i=1}^n Z_i(\theta).
-\]
-
-By the value-additivity principle \citep{HR87}, the SDF restriction can be formulated for pooled cash flows at different aggregation levels. In the empirical implementation, we form vintage-year portfolios as cross-sectional units, because this reduces idiosyncratic fund-level noise while preserving economically meaningful variation across macro environments.
-
-\begin{assume}
-	\label{as:portfolio}
-	For each vintage year \(v\), we pool fund cash flows to form \(n_v\) portfolios, so that
-	\[
-	n = \sum_{v=1}^V n_v.
-	\]
-	The boundary cases are: (i) single-fund portfolios and (ii) one portfolio per vintage year. Both equal-weighted and value-weighted portfolio constructions are admissible.
-\end{assume}
-
-Without loss of generality, we continue to refer to the resulting cross-sectional units as funds. Let \(v_i := \mathrm{YEAR}(t_i^0)\) denote the vintage year of unit \(i\). The pricing error \(\bar{\epsilon}^{(H)}_i(\theta)\) is therefore indexed by both unit identity and vintage year, so the data are naturally represented as an increasing-domain random field rather than as a standard iid cross-section or a conventional long time series. Economically, dependence arises because adjacent vintage years are exposed to overlapping macroeconomic conditions and partially overlapping realized cash-flow windows.
-
-\begin{assume}[Vintage-year increasing-domain asymptotics]
-	\label{as:vya}
-	As \(n \to \infty\):
-	\begin{enumerate}
-		\item The number of distinct vintage years satisfies \(V \to \infty\).
-		\item The number of units per vintage year is uniformly bounded: there exists \(\bar n < \infty\) such that \(n_v \le \bar n\) for all \(v\).
-		\item Fund lifetimes are uniformly bounded: there exists \(\bar T < \infty\) such that \(T_i^{\max} - t_i^0 \le \bar T\) for all \(i\).
-		\item The economic distance between units \(i\) and \(j\) is measured by
-		\[
-		d_{i,j}
-		=
-		|v_i - v_j|
-		+
-		\rho_0 \mathbf{1}_{\{i \neq j\}},
-		\qquad
-		\rho_0 > 0.
-		\]
-	\end{enumerate}
-\end{assume}
-
-Assumption~\ref{as:vya} imposes increasing-domain asymptotics and rules out infill asymptotics in the sense of \citet{JP12}. The role of \(\rho_0>0\) is to prevent the field from becoming asymptotically dense at a fixed location. This is economically natural here: asymptotic information is generated by observing additional vintage years, not by observing an ever denser sample from a fixed macroeconomic environment.
-
-A useful implication of Assumption~\ref{as:vya}(2) is that the total number of observations \(n\) and the number of vintages \(V\) are of the same order. Indeed,
-\[
-V
-\le
-n
-=
-\sum_{v=1}^V n_v
-\le
-\bar n V,
-\]
-so \(n \asymp V\). Consequently, \(\sqrt{n}\)- and \(\sqrt{V}\)-rates are asymptotically equivalent up to a constant factor. Put differently, statistical information grows with the span of vintage years rather than with within-vintage clustering.
-
-Whenever convenient, re-index the observations by vintage year and within-vintage slot. That is, for vintage year $v=1,\dots,V$ and slot $\ell=1,\dots,n_v$, let $Z_{v,\ell}(\theta)$ denote the loss contribution of the $\ell$th unit in vintage year $v$. By Assumption~\ref{as:vya}(2), $n_v \le \bar n < \infty$ uniformly in $v$. Hence the sample can be embedded in the increasing strip
-\[
-\Lambda_V
-:=
-\{(v,\ell): v=1,\dots,V,\ \ell=1,\dots,\bar n\},
-\]
-where empty slots are padded with zeros. Because $\bar n$ is fixed while $V \to \infty$, this embedding preserves the order of the sample size, and Assumption~\ref{as:vya}(2) implies
-\[
-V \le n = \sum_{v=1}^V n_v \le \bar n V,
-\qquad\text{so that}\qquad
-n \asymp V.
-\]
-
-This increasing-domain perspective differs from the infill framework of \citet{DLP12}, who fix the number of portfolios and let the number of underlying funds per portfolio diverge. Their asymptotic device is appropriate for consistency conditional on a fixed macroeconomic environment. By contrast, the present framework is designed for unconditional identification and inference when new vintages generate new realizations of macroeconomic conditions.
-
-\begin{assume}[Parameter space]
-	\label{as:compact_theta}
-	The parameter space $\Theta \subset \mathbb{R}^p$ is compact.
-\end{assume}
-
-\begin{assume}[Primitive regularity conditions for uniform convergence]
-	\label{as:ulln_H}
-	For each fixed \(H\):
-	\begin{enumerate}
-		\item The array
-		\[
-		\left\{
-		\bar{\epsilon}^{(H)}_i(\theta)
-		:
-		i=1,\dots,n
-		\right\}
-		\]
-		is near-epoch dependent (NED) on an \(\alpha\)-mixing vintage-year process \(\{\eta_v\}_{v\ge 1}\), uniformly in \(\theta \in \Theta\) (that is, the NED approximation constants are bounded uniformly over \(\theta \in \Theta\) and \(i\)).
-		\item The loss function \(L(\cdot)\) is continuous and Lipschitz on the relevant support.
-		\item There exists \(p>2\) such that
-		\[
-		\sup_{\theta \in \Theta}
-		\mathbb E
-		\left[
-		\left|
-		L\!\left(\bar{\epsilon}^{(H)}_i(\theta)\right)
-		\right|^p
-		\right]
-		<
-		\infty
-		\]
-		uniformly in \(i\).
-		\item The criterion is stochastically equicontinuous in \(\theta\).
-	\end{enumerate}
-\end{assume}
-
-Assumption~\ref{as:ulln_H} is stated at a deliberately primitive level: dependence is imposed on the underlying horizon-specific pricing errors, and the loss inherits the required regularity through continuity and Lipschitz continuity. This is preferable to assuming a law of large numbers directly for the transformed criterion because it ties the statistical assumptions more closely to the economic structure of the data.
-
-\begin{assume}[Population stabilization across vintages]
-	\label{as:population_limit_H}
-	For each fixed \(H\), the sample-specific mean criterion converges uniformly to the population criterion defined in Equation~\eqref{eq:population_criterion_H}:
-	\[
-	\sup_{\theta \in \Theta}
-	\left|
-	-
-	\frac{1}{n}
-	\sum_{i=1}^n \mathbb E\bigl[Z_i(\theta)\bigr]
-	-
-	Q_H(\theta)
-	\right|
-	\to 0.
-	\]
-\end{assume}
-
-Assumption~\ref{as:population_limit_H} makes explicit the population-stabilization step across expanding vintage spans that was only implicit in the compact main-text notation: as the sample adds vintages, the Ces\`aro average of the expected criterion contributions converges to a single horizon-specific population object.
-
-\begin{assume}[Identification of the horizon-specific target]
-	\label{as:identification_H}
-	For each fixed \(H\), the population criterion \(Q_H(\theta)\) has a unique maximizer
-	\[
-	\theta_H^\dagger
-	:=
-	\arg\max_{\theta \in \Theta} Q_H(\theta).
-	\]
-\end{assume}
-
-\begin{assume}[Local Hessian convergence]
-	\label{as:hessian_lln_H}
-	For each fixed $H$, there exists an open neighborhood $\mathcal N_H$ of $\theta_H^\dagger$ such that
-	\[
-	\sup_{\theta \in \mathcal N_H}
-	\left\|
-	\nabla_{\theta\theta} Q_{n,H}(\theta)
-	-
-	\nabla_{\theta\theta} Q_H(\theta)
-	\right\|
-	\xrightarrow{p}
-	0.
-	\]
-\end{assume}
-
-Assumption~\ref{as:hessian_lln_H} is the standard sample-Hessian convergence condition used in extremum-estimator central limit theorems \citep[e.g.,][]{NM94}. In our increasing-domain framework, it follows from the same random-field LLN argument as Proposition~\ref{prop:ulln_H}, provided that the Hessian contributions inherit the required NED, moment, and stochastic-equicontinuity properties from the pricing errors $\bar\epsilon_i^{(H)}(\theta)$ and the loss function $L(\cdot)$.
-
-Together, these conditions supply the formal underpinning for the compact benchmark stated in Section~\ref{sec:asymptotic_framework}. They pin down the population object associated with each fixed horizon, justify the increasing-domain normalization indexed by vintage years, and provide the regularity needed for the SHAC-based large-sample covariance approximation.
-
-\subsection{Auxiliary uniform law of large numbers}
-
-The first technical step is a uniform law of large numbers for the horizon-specific sample criterion \(Q_{n,H}(\theta)\).
-
-\begin{proposition}[Uniform law of large numbers]
-	\label{prop:ulln_H}
-	Under Assumptions~\ref{as:portfolio}, \ref{as:vya}, \ref{as:ulln_H}, and \ref{as:population_limit_H},
-	\[
-	\sup_{\theta \in \Theta}
-	\left|
-	Q_{n,H}(\theta) - Q_H(\theta)
-	\right|
-	\xrightarrow{p}
-	0.
-	\]
-\end{proposition}
-
-A short route to Proposition~\ref{prop:ulln_H} is to apply a uniform law of large numbers for NED random fields on \(\alpha\)-mixing bases; see, for example, \citet[Theorem~6]{JP09}. The bounded-lifetime and bounded-within-vintage assumptions ensure that cross-sectional overlap remains local in vintage-year distance, while the moment and equicontinuity conditions deliver uniform stochastic control over \(\theta \in \Theta\).
-
-Economically, Proposition~\ref{prop:ulln_H} says that when the sample spans sufficiently many distinct vintages, the empirical criterion stabilizes around its population counterpart. This remains true whether the horizon is structural (\(H=0\)) or regularized (\(H>0\)); what changes across horizons is the population target itself.
-
-\begin{proof}[Proof of Proposition~\ref{prop:ulln_H}]
-	Let
-	\[
-	\bar Q_{n,H}(\theta)
-	:=
-	-
-	\frac{1}{n}
-	\sum_{i=1}^n \mathbb E\bigl[Z_i(\theta)\bigr].
-	\]
-	It suffices to show that
-	\[
-	\sup_{\theta\in\Theta}
-	\left|
-	Q_{n,H}(\theta)-\bar Q_{n,H}(\theta)
-	\right|
-	\xrightarrow{p}0,
-	\qquad
-	\sup_{\theta\in\Theta}
-	\left|
-	\bar Q_{n,H}(\theta)-Q_H(\theta)
-	\right|
-	\to 0,
-	\]
-	because then the triangle inequality yields the claim.
-	
-	We first verify the stochastic part. By Assumption~\ref{as:ulln_H}(1), the array
-	$\{\bar\epsilon_i^{(H)}(\theta): i=1,\dots,n\}$ is uniformly NED on an
-	$\alpha$-mixing vintage-year process $\{\eta_v\}_{v\ge 1}$.
-	Since $L(\cdot)$ is continuous and Lipschitz by Assumption~\ref{as:ulln_H}(2),
-	$Z_i(\theta)=L(\bar\epsilon_i^{(H)}(\theta))$ inherits the same NED structure,
-	uniformly in $\theta \in \Theta$.
-	Moreover, Assumption~\ref{as:ulln_H}(3) gives a uniform $L^p$ envelope for some $p>2$,
-	and Assumption~\ref{as:ulln_H}(4) gives stochastic equicontinuity in $\theta$.
-	Re-indexing by $(v,\ell)$ therefore produces an array of random fields on the strip
-	$\Lambda_V$ satisfying the primitive conditions of
-	\citet[Theorem~6]{JP09}.
-	Assumption~\ref{as:vya}(2)--(4) ensures that the field is observed over an increasing domain,
-	not an infill domain: the width of the strip is fixed, dependence is indexed by the vintage-year distance,
-	and bounded lifetimes prevent the effective dependence neighborhoods induced by overlapping cash-flow windows from expanding with $n$.
-	Hence
-	\[
-	\sup_{\theta\in\Theta}
-	\left|
-	\frac{1}{n}
-	\sum_{i=1}^n
-	\Bigl(Z_i(\theta)-\mathbb E[Z_i(\theta)]\Bigr)
-	\right|
-	\xrightarrow{p}0.
-	\]
-	Equivalently,
-	\[
-	\sup_{\theta\in\Theta}
-	\left|
-	Q_{n,H}(\theta)-\bar Q_{n,H}(\theta)
-	\right|
-	\xrightarrow{p}0.
-	\]
-	
-	It remains to pass from the sample-specific mean criterion $\bar Q_{n,H}(\theta)$ to the population target $Q_H(\theta)$ defined in Equation~\eqref{eq:population_criterion_H}.
-	Assumption~\ref{as:population_limit_H} gives exactly this deterministic uniform convergence. Therefore,
-	\[
-	\sup_{\theta\in\Theta}
-	\left|
-	\bar Q_{n,H}(\theta)-Q_H(\theta)
-	\right|
-	\to 0.
-	\]
-	Combining the last two displays proves
-	\[
-	\sup_{\theta\in\Theta}
-	\left|
-	Q_{n,H}(\theta)-Q_H(\theta)
-	\right|
-	\xrightarrow{p}0.
-	\]
-\end{proof}
-
-\subsection{Proof of consistency}
-
-Proposition~\ref{prop:consistency_H} is the horizon-indexed analogue of the standard extremum-estimator consistency result of \citet[Theorem~2.1]{NM94}. Proposition~\ref{prop:ulln_H} supplies the required uniform convergence, Assumption~\ref{as:identification_H} provides a unique maximizer, and compactness of \(\Theta\) together with continuity of the pricing-error map delivers the remaining regularity.
-
-\begin{proof}[Proof of Proposition~\ref{prop:consistency_H}]
-	We verify the hypotheses of the standard argmax theorem directly.
-	
-	\emph{Step 1: continuity of the population criterion.}
-	For each unit $i$, the map $\theta \mapsto \bar\epsilon_i^{(H)}(\theta)$ is continuous on $\Theta$
-	because $\mathcal T_{i,H}$ is finite and the discount-factor ratios $\Psi_{\tau,t}(\theta)$ are continuous in $\theta$.
-	Since $L(\cdot)$ is continuous, $\theta \mapsto Z_i(\theta)$ is continuous as well.
-	Assumption~\ref{as:ulln_H}(3) supplies an integrable envelope uniformly in $i$ and $\theta$,
-	so dominated convergence implies that
-	\[
-	Q_H(\theta)
-	=
-	-
-	\mathbb E\bigl[ Z_i(\theta) \bigr]
-	\]
-	is continuous on $\Theta$.
-	Because $\Theta$ is compact by Assumption~\ref{as:compact_theta},
-	$Q_H$ attains its maximum on $\Theta$; by Assumption~\ref{as:identification_H},
-	this maximizer is unique and equals $\theta_H^\dagger$.
-	
-	\emph{Step 2: uniform convergence.}
-	Proposition~\ref{prop:ulln_H} yields
-	\[
-	\sup_{\theta\in\Theta}
-	\left|
-	Q_{n,H}(\theta)-Q_H(\theta)
-	\right|
-	\xrightarrow{p}0.
-	\]
-	
-	\emph{Step 3: argmax identification.}
-	Because $\hat\theta_H$ maximizes $Q_{n,H}$ over $\Theta$,
-	for every $\theta\in\Theta$,
-	\[
-	Q_{n,H}(\hat\theta_H) \ge Q_{n,H}(\theta).
-	\]
-	In particular, with $\theta=\theta_H^\dagger$,
-	\[
-	Q_{n,H}(\hat\theta_H) \ge Q_{n,H}(\theta_H^\dagger).
-	\]
-	Subtracting and adding the population criterion gives
-	\begin{align*}
-		0
-		&\le
-		Q_H(\theta_H^\dagger)-Q_H(\hat\theta_H) \\
-		&\le
-		\bigl|Q_H(\theta_H^\dagger)-Q_{n,H}(\theta_H^\dagger)\bigr|
-		+
-		\bigl|Q_{n,H}(\hat\theta_H)-Q_H(\hat\theta_H)\bigr| \\
-		&\le
-		2
-		\sup_{\theta\in\Theta}
-		\left|
-		Q_{n,H}(\theta)-Q_H(\theta)
-		\right|,
-	\end{align*}
-	which converges to zero in probability.
-	Hence
-	\[
-	Q_H(\hat\theta_H)
-	\xrightarrow{p}
-	Q_H(\theta_H^\dagger).
-	\]
-	Now let $\{n_k\}$ be any subsequence. By compactness of $\Theta$, there exists a further subsequence,
-	still denoted $\{n_k\}$ for notational simplicity, such that $\hat\theta_H \to \bar\theta$ almost surely along that subsequence for some random $\bar\theta\in\Theta$.
-	By continuity of $Q_H$,
-	\[
-	Q_H(\hat\theta_H) \to Q_H(\bar\theta)
-	\qquad\text{almost surely along the subsequence.}
-	\]
-	Since the same subsequence satisfies
-	$Q_H(\hat\theta_H) \to Q_H(\theta_H^\dagger)$ in probability, it follows that
-	$Q_H(\bar\theta)=Q_H(\theta_H^\dagger)$ almost surely. By uniqueness of the maximizer,
-	$\bar\theta=\theta_H^\dagger$ almost surely.
-	Therefore every convergent subsequence of $\hat\theta_H$ has the same limit $\theta_H^\dagger$,
-	which proves
-	\[
-	\hat\theta_H \xrightarrow{p} \theta_H^\dagger.
-	\]
-	This is exactly the conclusion of \citet[Theorem~2.1]{NM94} specialized to the present criterion.
-\end{proof}
-
-\begin{corollary}[Structural consistency under inception-only pricing]
-	\label{cor:consistency_structural}
-	Suppose, in addition, that \(H=0\), that the pooled inception-only pricing restriction of Proposition~\ref{theo:inception_value} holds at the structural parameter \(\theta_0\), and that the inception-only population criterion \(Q_0(\theta)\) is uniquely maximized at \(\theta_0\). Then
-	\[
-	\theta_0^\dagger = \theta_0
-	\qquad \text{and hence} \qquad
-	\hat{\theta}_0 \xrightarrow{p} \theta_0.
-	\]
-\end{corollary}
-
-Corollary~\ref{cor:consistency_structural} isolates the special case in which the estimator converges to the structural SDF parameter. This separation is useful empirically because it prevents the reader from conflating consistency of the extremum estimator with structural validity of a horizon-averaged criterion.
-
-\subsection{Proof of asymptotic normality}
-
-Building on Proposition~\ref{prop:consistency_H}, the central limit theorem is centered at the horizon-specific target \(\theta_H^\dagger\). The argument combines the extremum-estimator expansion of \citet[Theorem~3.1]{NM94} with a central limit theorem for NED random fields under increasing-domain asymptotics; see \citet[Theorem~4]{JP12}. The nonstandard feature is the vintage-year dependence of the score contributions.
-
-\begin{proof}[Proof of Proposition~\ref{prop:clt_H}]
-	Define the sample score and sample Hessian by
-	\[
-	S_{n,H}(\theta)
-	:=
-	\nabla_\theta Q_{n,H}(\theta)
-	=
-	-
-	\frac{1}{n}
-	\sum_{i=1}^n s_i^{(H)}(\theta),
-	\qquad
-	\mathcal H_{n,H}(\theta)
-	:=
-	\nabla_{\theta\theta} Q_{n,H}(\theta).
-	\]
-	Because $\theta_H^\dagger$ lies in the interior of $\Theta$ and
-	$\hat\theta_H \xrightarrow{p} \theta_H^\dagger$ by Proposition~\ref{prop:consistency_H},
-	$\hat\theta_H$ is an interior maximizer with probability approaching one.
-	Hence the first-order condition holds with probability approaching one:
-	\[
-	S_{n,H}(\hat\theta_H)=0.
-	\]
-	Applying a mean-value expansion of $S_{n,H}(\cdot)$ around $\theta_H^\dagger$ yields
-	\[
-	0
-	=
-	S_{n,H}(\theta_H^\dagger)
-	+
-	\mathcal H_{n,H}(\tilde\theta_H)
-	\bigl(\hat\theta_H-\theta_H^\dagger\bigr),
-	\]
-	where $\tilde\theta_H$ lies on the line segment joining $\hat\theta_H$ and $\theta_H^\dagger$.
-	Rearranging gives
-	\begin{equation}
-		\label{eq:appendix_asymptotic_linearization_H}
-		\sqrt{n}\,\bigl(\hat\theta_H-\theta_H^\dagger\bigr)
-		=
-		-
-		\mathcal H_{n,H}(\tilde\theta_H)^{-1}
-		\sqrt{n}\,S_{n,H}(\theta_H^\dagger).
-	\end{equation}
-	
-	We now analyze the two factors on the right-hand side.
-	
-	\emph{Step 1: asymptotic distribution of the score.}
-	By definition,
-	\[
-	\sqrt{n}\,S_{n,H}(\theta_H^\dagger)
-	=
-	-
-	\frac{1}{\sqrt{n}}
-	\sum_{i=1}^n s_i^{(H)}(\theta_H^\dagger).
-	\]
-	Under the regularity conditions collected in this appendix, a central limit theorem holds for these score contributions.
-	In the present application, the required weak dependence is generated by the vintage-year random field, and the maintained NED and mixing conditions are exactly those covered by \citet[Theorem~4]{JP12} under increasing-domain asymptotics.
-	Therefore,
-	\[
-	\sqrt{n}\,S_{n,H}(\theta_H^\dagger)
-	\overset{d}{\longrightarrow}
-	\mathcal N(0,\Lambda_H),
-	\]
-	where
-	\[
-	\Lambda_H
-	=
-	\lim_{n\to\infty}
-	n\cdot\mathrm{Var}\!\left[\nabla_\theta Q_{n,H}(\theta_H^\dagger)\right].
-	\]
-	
-	\emph{Step 2: convergence of the sample Hessian.}
-	Because $\hat\theta_H \xrightarrow{p} \theta_H^\dagger$,
-	the intermediate point $\tilde\theta_H$ also satisfies
-	$\tilde\theta_H \xrightarrow{p} \theta_H^\dagger$.
-	Hence, with probability approaching one, $\tilde\theta_H \in \mathcal N_H$.
-	Assumption~\ref{as:hessian_lln_H} then gives
-	\[
-	\mathcal H_{n,H}(\tilde\theta_H)
-	-
-	\nabla_{\theta\theta} Q_H(\tilde\theta_H)
-	\xrightarrow{p}
-	0.
-	\]
-	Since $Q_H$ is twice continuously differentiable in a neighborhood of $\theta_H^\dagger$,
-	continuity of its Hessian and $\tilde\theta_H \xrightarrow{p} \theta_H^\dagger$ imply
-	\[
-	\nabla_{\theta\theta} Q_H(\tilde\theta_H)
-	\xrightarrow{p}
-	\nabla_{\theta\theta} Q_H(\theta_H^\dagger)
-	=
-	\mathcal H_H.
-	\]
-	Therefore,
-	\[
-	\mathcal H_{n,H}(\tilde\theta_H)
-	\xrightarrow{p}
-	\mathcal H_H.
-	\]
-	By assumption, $\mathcal H_H$ is nonsingular, so the continuous mapping theorem yields
-	\[
-	\mathcal H_{n,H}(\tilde\theta_H)^{-1}
-	\xrightarrow{p}
-	\mathcal H_H^{-1}.
-	\]
-	
-	\emph{Step 3: conclusion.}
-	Substituting the previous two steps into
-	Equation~\eqref{eq:appendix_asymptotic_linearization_H} and applying Slutsky's theorem gives
-	\[
-	\sqrt{n}\,\bigl(\hat\theta_H-\theta_H^\dagger\bigr)
-	\overset{d}{\longrightarrow}
-	\mathcal N\bigl(0,\,\mathcal H_H^{-1}\Lambda_H\mathcal H_H^{-1}\bigr).
-	\]
-	This is the extremum-estimator central limit theorem of \citet[Theorem~3.1]{NM94}, with the non-iid score CLT supplied by the increasing-domain NED random-field result of \citet[Theorem~4]{JP12}.
-\end{proof}
-
-\begin{corollary}[Structural asymptotic normality in the inception-only case]
-	\label{cor:clt_structural}
-	Under the additional conditions of Corollary~\ref{cor:consistency_structural},
-	\[
-	\sqrt{n}
-	\left(
-	\hat{\theta}_0 - \theta_0
-	\right)
-	\overset{d}{\longrightarrow}
-	\mathcal N(0,\Sigma_0).
-	\]
-\end{corollary}
-
-\begin{remark}[Interpretation of the asymptotic center]
-	\label{rem:interpretation_center}
-	For \(H>0\), Proposition~\ref{prop:clt_H} is centered at \(\theta_H^\dagger\), not at \(\theta_0\). Therefore, large-sample inference in the horizon-averaged case pertains to the pseudo-true parameter defined by the criterion itself. Structural interpretation relative to \(\theta_0\) requires the target-shift analysis developed later in the paper.
-\end{remark}
-
-\subsection{Inference details for score, Hessian, bandwidth, and SHAC implementation}
-
-This subsection records the implementation details omitted from the compressed main-text discussion in Section~\ref{sec:asymptotic_framework}.
-
-\paragraph{Score contributions.}
-
-It is useful to define the score contribution of unit \(i\) explicitly as
-\begin{equation}
-	\label{eq:score_contribution_H}
-	s_i^{(H)}(\theta)
-	:=
-	\nabla_\theta
-	L\!\left(
-	\bar{\epsilon}^{(H)}_i(\theta)
-	\right)
-	=
-	L'\!\left(
-	\bar{\epsilon}^{(H)}_i(\theta)
-	\right)
-	\cdot
-	\nabla_\theta \bar{\epsilon}^{(H)}_i(\theta).
-\end{equation}
-For the quadratic loss \(L(x)=x^2\), Equation~\eqref{eq:score_contribution_H} simplifies to
-\[
-s_i^{(H)}(\theta)
-=
-2
-\bar{\epsilon}^{(H)}_i(\theta)
-\nabla_\theta \bar{\epsilon}^{(H)}_i(\theta).
-\]
-This explicit definition makes clear that the long-run covariance matrix \(\Lambda_H\) is the covariance of the criterion score, not the covariance of the pricing errors themselves.
-
-\paragraph{Hessian estimator.}
-
-A sample analogue of the Hessian is
-\begin{equation}
-	\label{eq:hessian_estimator_H}
-	\hat{\mathcal{H}}_H
-	:=
-	\nabla_{\theta\theta} Q_{n,H}(\hat\theta_H)
-	=
-	-
-	\frac{1}{n}
-	\sum_{i=1}^n
-	\nabla_{\theta\theta}
-	L\!\left(
-	\bar{\epsilon}^{(H)}_i(\hat\theta_H)
-	\right).
-\end{equation}
-When analytic derivatives are unavailable, the derivatives entering Equation~\eqref{eq:hessian_estimator_H} can be computed numerically. In practice, central finite differences are typically adequate, although automatic differentiation or quasi-Newton approximations may also be used. For a methodological paper, the exact numerical routine is secondary; what matters asymptotically is that \(\hat{\mathcal{H}}_H\) consistently estimates \(\mathcal{H}_H\). In our empirical applications, we use the central difference approximations of \cite[Algorithm 2]{E17}.
-
-\paragraph{SHAC estimator of the long-run covariance matrix.}
-
-Because the score contributions exhibit vintage-year dependence, a heteroskedasticity- and autocorrelation-consistent covariance estimator is required. We use the spatial HAC estimator of \cite[Equation 2]{KS11} adapted to the vintage-year metric in Equation~\eqref{eq:shac_H}, where \(d_{i,j}\) is the vintage-year distance from Assumption~\ref{as:vya} and \(K(\cdot)\) is a symmetric kernel satisfying the standard SHAC regularity conditions.
-
-A convenient choice is the Bartlett kernel
-\[
-K_{BT}(x)
-=
-\max(0,1-|x|).
-\]
-The associated bandwidth sequence \(b_V\) should satisfy
-\begin{equation}
-	\label{eq:bandwidth_conditions}
-	b_V \to \infty,
-	\qquad
-	\frac{b_V}{V} \to 0,
-\end{equation}
-which is the standard condition ensuring consistent long-run covariance estimation under weak dependence. Equation~\eqref{eq:bandwidth_conditions} is a population-theoretic requirement. In empirical work, one may implement a finite truncation rule for \(b_V\) and assess robustness across reasonable bandwidth choices.
-
-This distinction between theory and implementation is important. A fixed bandwidth may be useful in a finite sample and can be justified as an approximation when dependence becomes negligible beyond a small vintage-year lag. However, under generic weak dependence, consistency of SHAC is established under a diverging bandwidth sequence such as Equation~\eqref{eq:bandwidth_conditions}.
-
-\paragraph{Asymptotic covariance matrix, standard errors, and Wald tests.}
-
-Building on Equation~\eqref{eq:avar_H}, the vector of asymptotic standard errors is
-\begin{equation}
-	\label{eq:se_H}
-	\mathrm{SE}(\hat\theta_H)
-	=
-	\sqrt{
-		\mathrm{diag}
-		\left[
-		\widehat{\mathrm{Avar}}(\hat\theta_H)
-		\right]
-	}.
-\end{equation}
-This presentation is algebraically equivalent to the usual sandwich formula, but it is more transparent because the \(1/n\) scaling is stated directly at the covariance-matrix level.
-
-For linear hypotheses of the form
-\[
-\text{Hypothesis}_0: \mathcal{R}\theta = r,
-\qquad
-\text{Hypothesis}_1: \mathcal{R}\theta \neq r,
-\]
-the Wald statistic is
-\begin{equation}
-	\label{eq:wald_H}
-	W_H
-	=
-	(\mathcal{R} \hat\theta_H-r)^\top
-	\left[
-	\mathcal{R}
-	\widehat{\mathrm{Avar}}(\hat\theta_H)
-	\mathcal{R}^\top
-	\right]^{-1}
-	(\mathcal{R} \hat\theta_H-r),
-\end{equation}
-which is asymptotically $\chi_q^2$ under $\text{Hypothesis}_0$, where $q$ is the number of linear restrictions.
-
-
-
-
-
-
-\section{Comparison to \cite{DLP12}}
+% ==============================================================================
+\section{Comparison to \citet{DLP12}}
 \label{sec:dlp_results_comparison}
+% ==============================================================================
 
-This section aligns our simulation and empirical designs with the original methodology of \cite{DLP12} to ensure direct comparability. 
-Accordingly, we focus our analysis on estimates derived from NPV-based discounting (Horizon $H=0$).
-
-\subsection{Comparison to simulation results}
+\subsection{Simulation comparison under pipeline r5}
 \label{sec:dlp_simulation}
 
-\cite[Table 1]{DLP12} report Monte Carlo results for $n=50$ funds per vintage-year portfolio with monthly idiosyncratic standard deviation $\sigma_{\text{monthly}}=0.3$, corresponding to roughly 104\% annualized volatility under $\sqrt{12}$ scaling.
-In our base case (S1), we use only $n=20$ funds per vintage, which is more realistic for older vintages and smaller private capital asset classes beyond Buyout and Venture Capital.
-Scenarios S2--S10 in Table~\ref{tab:driessen_comparison} systematically vary the simulation design to identify which features drive the remaining discrepancy between our results and the \cite{DLP12} benchmark.
+Table~\ref{tab:driessen_comparison} re-estimates all 19 scenarios of the \citet[Table~1]{DLP12} simulation comparison (Panels~A and~B, 1,000 replications per scenario) using the repaired estimator on the admissible domain $\Theta$ (pipeline r5). Within our simulator, Table~\ref{tab:mc_grid} isolates the $n_v \times V$ infill noise effect: at $H=0$, L2 bias falls sharply with funds per vintage $n_v$ and does not fall with the number of vintages $V$. Full cross-paper attribution of the remaining difference between Scenario~(S3) and \citet[Table~1]{DLP12} also reflects differences in the market-return process (simulated i.i.d.\ vs.\ historical path) and the return-linked shifted additive lognormal innovation.
 
-Several structural differences between the two simulation designs should be noted.
-First, \cite{DLP12} use a shifted lognormal distribution for the idiosyncratic error term (cf.\ their online appendix, Equation~9), which ensures that the error addend has a finite lower bound (approximately $-1$) and avoids the non-linear distortions that arise when normally distributed errors occasionally produce extreme negative total returns.
-Second, they employ a ``full Monte Carlo'' approach and simulate the total market return $R_{\text{MKT}}$ from a shifted lognormal distribution calibrated to S\&P~500 moments (1980--2003), rather than conditioning on the historical path.
-Third, their deal investment timing follows a deterministic schedule (three deals per year, evenly spaced across the five-year investment period), rather than random uniform draws.
+\input{../../r_project/results/mc_step4/paper/table_AD_dlp12.tex}
 
-\textit{Interpretation of results.}\quad
-Under our original design with normal errors and $\sigma=30\%$ (S3), the market beta is severely attenuated ($\hat{\beta}=0.62$) and the spurious alpha ($0.68\%$/month) is an order of magnitude larger than the benchmark ($0.05\%$).
-Switching to the shifted lognormal error distribution (S4) modestly improves the beta estimate to $0.71$ and reduces the alpha bias to $0.57\%$.
-Adding simulated market returns (S5) yields no further improvement ($\hat{\beta}=0.66$), and deterministic investment timing (S7) produces a similarly attenuated beta of $0.70$ without substantially reducing alpha variance.
+% ==============================================================================
+\section{Additional Empirical Exhibits and Step 5 Diagnostics}
+\label{sec:appendix_empirical_extra}
+% ==============================================================================
 
-The most effective modification is shortening the maximum deal holding period from 10 years to 5 years (S8), which significantly improves the beta estimate ($\hat{\beta}=0.91$) and reduces the alpha bias to $0.30\%$ without requiring lower idiosyncratic volatility.
-Combining this holding-period restriction with deterministic investment timing (S9) yields a similar beta estimate ($\hat{\beta}=0.88$) and alpha bias ($0.32\%$), with the deterministic timing contributing only a modest additional effect.
-By limiting the compounding duration, both scenarios restrict the geometric growth of idiosyncratic errors, reducing the frequency of degenerate alpha estimates and partially restoring the accuracy of the market beta.
-Tightening the alpha upper bound $\bar{\alpha}$ also dramatically affects results: at $\bar{\alpha}=1\%$ (S6), 32\% of draws hit the bound, and beta is close to the benchmark ($\hat{\beta}=0.87$), but at the cost of artificially constraining the alpha search space.
-Interestingly, \cite{DLP12} report in their footnote 8 that they use a much higher upper limit for $\alpha$: ``In our application, putting an upper bound of 100\% per year suffices to avoid this numerical issue."
-Combining all modifications, i.e., holding-period restrictions, deterministic timing, and a tighter alpha bound of $\bar{\alpha}=1\%$ (S10), produces our closest approximation to the benchmark. 
-Under this configuration, the beta estimate improves to $0.93$ and the alpha bias falls to $0.27\%$, though 10\% of draws still hit the alpha bound.
-However, even under this most favorable scenario (S10), our estimator still exhibits substantially more beta attenuation ($\hat{\beta}=0.93$ vs.\ $0.98$) and alpha bias ($0.27\%$ vs.\ $0.05\%$) than the \cite{DLP12} benchmark.
-This sensitivity reveals a fundamental tension in the two-factor model: the alpha term absorbs residual nonlinearity that the linear SDF cannot capture, and bounding it arbitrarily distorts the beta estimate.
+This appendix collects the complete 12-horizon single-factor table (Table~\ref{tab:u_l2_beta_all}), the VC cohort diagnostic excluding 1993--1997 (Table~\ref{tab:vc_without_1993_1997}), the three-rule fund-size imputation sensitivity (Table~\ref{tab:fw_imputation_sensitivity}), sample robustness across complete histories, all funds, and the 20\% terminal-NAV early-stopper filter for both L2 and $U_{v,H}$ (Table~\ref{tab:robustness_samples}), the Fix-$A$ vs.\ Scale-Jacobian decomposition (Table~\ref{tab:fixA_jacobian}), joint $(\alpha,\beta)$ geometry and contours (Table~\ref{tab:alpha_beta_identification} and Figure~\ref{fig:alpha_beta_contours}), four-year overlapping vintage-block bootstrap intervals (Table~\ref{tab:block_bootstrap}), vintage-level residuals and booked terminal NAV shares (Figure~\ref{fig:vintage_residuals} and Table~\ref{tab:terminal_nav_shares}), $hv$-block cross-validation fold diagnostics (Table~\ref{tab:appendix_e_cv_folds}), and a comparison with published Buyout and VC risk/return estimates (Table~\ref{tab:published_estimates}).
 
-Overall, the large remaining discrepancy between our simulation results and those of \cite{DLP12}, even after adopting their shifted lognormal errors and simulated market returns, implies that we were unable to reproduce the favorable small-sample properties reported in \cite{DLP12}.
-Across all scenarios with $\sigma=30\%$, the beta estimates range from $0.62$ to $0.93$, well below the \cite{DLP12} benchmark of $0.98$, confirming the estimator's sensitivity to the interplay between idiosyncratic noise, compounding Horizon, and alpha bounds.
-
-
-% Table: Small-Sample Bias and Variance (Horizon 0)
-\begin{table}[htbp]
-	\centering
-	\caption{Comparison to simulation \cite[Table 1]{DLP12}}
-	\label{tab:driessen_comparison}
-	\resizebox{\linewidth}{!}{%
-		\begin{tabular}{l ccccc cccccc}
-			\toprule
-			& \multicolumn{5}{c}{Market Beta ($\beta$)} & \multicolumn{6}{c}{Alpha ($\alpha$, monthly \%)} \\
-			\cmidrule(lr){2-6} \cmidrule(lr){7-12}
-			Scenario & True & Mean & SD & 25\% & 75\% & True & Mean & SD & 25\% & 75\% & \% Bound \\
-			\midrule
-			(S1) $n=20$, $\sigma=20\%$, Normal & 1.00 & 0.84 & 0.40 & 0.61 & 1.05 & 0.00 & 0.22 & 0.28 & 0.04 & 0.32 & 0\% \\
-			(S2) $n=50$, $\sigma=20\%$, Normal & 1.00 & 0.89 & 0.29 & 0.74 & 1.03 & 0.00 & 0.13 & 0.16 & 0.03 & 0.19 & 0\% \\
-			(S3) $n=50$, $\sigma=30\%$, Normal & 1.00 & 0.62 & 0.72 & 0.12 & 1.03 & 0.00 & 0.68 & 0.70 & 0.13 & 1.08 & 0\% \\
-			(S4) $n=50$, $\sigma=30\%$, Shifted LN & 1.00 & 0.71 & 0.72 & 0.23 & 1.12 & 0.00 & 0.57 & 0.67 & 0.07 & 0.91 & 0\% \\
-			(S5) $n=50$, $\sigma=30\%$, Shifted LN, Sim.~MKT & 1.00 & 0.66 & 0.79 & 0.11 & 1.06 & 0.00 & 0.71 & 0.79 & 0.03 & 1.34 & 0\% \\
-			(S6) $n=50$, $\sigma=30\%$, Shifted LN, Sim.~MKT, $\bar{\alpha}=1\%$ & 1.00 & 0.87 & 0.69 & 0.41 & 1.24 & 0.00 & 0.48 & 0.50 & 0.06 & 1.00 & 32\% \\
-			(S7) $n=50$, $\sigma=30\%$, Shifted LN, Sim.~MKT, Det.~Timing & 1.00 & 0.70 & 0.79 & 0.19 & 1.12 & 0.00 & 0.65 & 0.80 & -0.01 & 1.20 & 0\% \\
-			(S8) $n=50$, $\sigma=30\%$, Shifted LN, Sim.~MKT, Max.~Hold 5 & 1.00 & 0.91 & 0.54 & 0.64 & 1.19 & 0.00 & 0.30 & 0.52 & -0.03 & 0.47 & 0\% \\
-			(S9) $n=50$, $\sigma=30\%$, Shifted LN, Sim.~MKT, Max.~Hold 5, Det.~Timing & 1.00 & 0.88 & 0.54 & 0.61 & 1.16 & 0.00 & 0.32 & 0.51 & -0.01 & 0.53 & 0\% \\
-			(S10) $n=50$, $\sigma=30\%$, Shifted LN, Sim.~MKT, Max.~Hold 5, Det.~Timing, $\bar{\alpha}=1\%$ & 1.00 & 0.93 & 0.50 & 0.65 & 1.17 & 0.00 & 0.27 & 0.39 & -0.01 & 0.52 & 10\% \\
-			\addlinespace
-			\multicolumn{12}{l}{\textit{Driessen et al. 2012, Table 1}} \\
-			Benchmark Estimates ($n=50$, $\sigma_{\text{monthly}}=30\%$) & 1.00 & 0.98 & 0.32 & 0.80 & 1.15 & 0.00 & 0.05 & 0.2 & -0.06 & 0.15 & n/a \\
-			\bottomrule
-		\end{tabular}%
-	}
-	\begin{minipage}{\linewidth}
-		\vspace{0.2cm}
-		\footnotesize \textit{Notes:} 
-		This table reports the small-sample properties of the generalized estimator for Horizon~0 (i.e., treating funds as held to maturity), mimicking the structure of Table~1 in \cite{DLP12}. We simulate 1,000 Monte Carlo draws. All scenarios use 20 vintage years (1986--2005) with 15 deals per fund; unless stated otherwise, $n=20$ funds per vintage, $\sigma=0.2$ monthly idiosyncratic volatility, and a normal error distribution. The simulation dimensions vary as follows: $n$ = number of funds per vintage-year portfolio; $\sigma$ = monthly idiosyncratic standard deviation; \textit{Normal} = Gaussian error term (default); \textit{Shifted LN} = shifted lognormal error term (cf.\ \cite{DLP12}); \textit{Sim.~MKT} = total market return drawn from a shifted lognormal (S\&P~500 1980--2003 moments) with a constant risk-free rate of 4\% annualized, instead of conditioning on the historical path; \textit{Det.~Timing} = deterministic (evenly spaced) deal investment dates instead of random; \textit{Max.~Hold 5} = maximum holding period of a deal limited to 5 years (default 10 years); $\bar{\alpha}$ = upper bound on the alpha parameter in the optimization (default $\bar{\alpha} = 2\%$/month). The \textit{\%~Bound} column reports the fraction of draws where the alpha estimate reached the upper optimization bound~$\bar{\alpha}$. The final row presents the Benchmark Estimates obtained directly from Table~1 in \cite{DLP12} for comparative purposes. Alpha estimates are monthly and presented in percentages.
-	\end{minipage}
-\end{table}
-
-
-
-
-
-\subsection{Comparison to empirical results}
-
-
-In this section, we evaluate the empirical stability of single- and multi-factor SDF specifications by estimating these models on our dataset (for the US-Dollar North America subsample with maximum vintage 2010) and comparing the results directly with the benchmark estimates published by \cite{DLP12}.
-A key distinction is the underlying private market dataset: we use the Preqin cash flow database, which is also employed by \cite{KN16} and \cite{ACGP18}, whereas \cite{DLP12} rely on the Thomson Venture Economics (TVE) fund-level dataset, which suffers from well-documented data quality issues such as forward-filling of stale KPIs \citep{HJK14}.
-The cash flow summary of \cite[Table~3]{DLP12} indicates fund-value weighted vintage-year portfolios.
-\cite[Table~5]{DLP12} report results for Buyout (BO) and Venture Capital (VC) funds using both a two-factor model (S\&P~500 MKT + $\alpha$) and the \cite{FF93} four-factor model (MKT, SMB, HML, and $\alpha$).
-In their two-factor specification, VC exhibits a market beta of 2.73 and a highly negative annualized alpha of $-12.3\%$, while BO yields a market beta of 1.31 and an annualized alpha of $-4.8\%$.
-These strongly negative alpha estimates can be at least partially attributed to the aforementioned data errors in TVE.
-Indeed, the BO alpha coefficient is statistically insignificant once bootstrap standard errors are taken into account, whereas the VC alpha remains significant.
-In their four-factor specification, the factor loadings are broadly plausible: BO exhibits $\hat{\beta}_{\mathrm{MKT}}=0.72$, $\hat{\beta}_{\mathrm{SMB}}=0.50$, and $\hat{\beta}_{\mathrm{HML}}=0.19$, while VC shows $\hat{\beta}_{\mathrm{MKT}}=2.20$, $\hat{\beta}_{\mathrm{SMB}}=1.83$, and $\hat{\beta}_{\mathrm{HML}}=-0.48$.
-However, \cite{DLP12} note that the four-factor model does not significantly improve upon the two-factor specification and that the SMB and HML loadings are largely insignificant.
-
-Table~\ref{tab:driessen_comparison_bo_vc} and Table~\ref{tab:driessen_comparison_pe} present our empirical results for the single-factor (MKT), two-factor ($\alpha$, MKT), three-factor (MKT, SMB, HML), and four-factor ($\alpha$, MKT, SMB, HML) \cite{FF93} models for BO, VC, and PE at Horizon~0, using the conservatively restricted sample with a maximum vintage-year cutoff of 2010.
-
-We begin with the single-factor MKT model to establish a stable baseline.
-Under this specification, market betas are consistently positive and theoretically plausible: the cross-validation fold averages ($\hat{\beta}_{\mathrm{MKT}}$) are $1.21$ for BO, $1.78$ for VC, and $1.21$ for PE under equal weighting (EW). 
-The CV standard deviations verify that these estimates are highly stable across data subsets (e.g., CV standard deviations of $0.12$ for BO and $0.09$ for PE under EW).
-This result provides stable sample evidence that private equity cash flows co-move with the broader market.
-
-However, when explicitly allowing for an abnormal performance $\alpha$ intercept alongside the market factor, the estimation becomes substantially less stable.
-In the two-factor model ($\alpha$, MKT), the alpha parameter becomes highly sensitive to random, fund-specific noise compounded over a fund's lifetime.
-Even when restricting the sample to mature vintages, private equity datasets contain relatively few funds per year. 
-As a result, the effective cross-section is limited relative to the dimensionality of the nonlinear criterion.
-Consequently, the optimizer often assigns inflated, positive alpha premiums (often hitting or nearing the 2\% monthly bound, e.g., $\hat{\alpha} = 0.020$ for VC under EW and $0.008$ for BO under FW), while the market betas are driven toward zero (e.g., $\hat{\beta}_{\mathrm{MKT}} = 0.14$ for BO and $0.17$ for PE under FW).
-While asymptotic standard errors correspondingly explode or round to zero, the CV standard deviations reveal the actual parameter variation across data subsets. 
-For instance, the cross-validation fold dispersion for the MKT estimate exceeds $0.6$ for both BO and PE under FW, confirming that the point estimates are highly sensitive to the sample and do not support strong interpretation.
-
-This instability pattern extends directly to the multi-factor models.
-When estimating the three-factor model (MKT, SMB, HML) \emph{without} an alpha term, the estimates roughly mirror the MKT-only model (e.g., BO $\hat{\beta}_{\mathrm{MKT}} = 1.33$ under EW), and the CV analysis shows reasonable out-of-sample stability, even though the asymptotic standard errors are vast.
-The SMB loading is consistently positive for BO and PE, but predominantly negative or near zero for VC. 
-Notably, this sign for VC generally \emph{reverses} the pattern reported by \cite{DLP12}, who find a strongly positive VC SMB loading ($\hat{\beta}_{\mathrm{SMB}}=1.83$). 
-The discrepancy likely reflects differences in the underlying datasets (Preqin vs.\ TVE) and sample periods, underscoring the sensitivity of multi-factor estimates in private equity.
-
-But once the alpha term is reintroduced in the four-factor model ($\alpha$, MKT, SMB, HML), the same instability reappears.
-Because the alpha term absorbs the bulk of the remaining variance, the other factor loadings swing erratically: the asymptotic MKT coefficient for BO drops substantially (to $0.15$ under FW), while SMB and HML loadings reach extreme values.
-The pervasive asymptotic standard errors of exactly $(0.000)$ in these models often occur when estimates lie on or very near the imposed parameter bounds.
-In such cases, the usual interior Hessian-based asymptotic approximation is not a reliable measure of uncertainty, so we interpret the SHAC standard errors with caution and place greater weight on the cross-validation stability diagnostics.
-The CV analysis exposes this reality: rather than being estimated with zero standard errors, the parameters swing erratically across hold-out sets, with CV standard deviations for the factor loadings routinely exceeding $0.4$, indicating that the multi-factor models are not stably estimated when alpha is included.
-
-In conclusion, our empirical evaluation is consistent with the simulation-based warning from Section~\ref{sec:simulation_study}: with the limited cross-section of only 20--40 vintage-year portfolios currently available in commercial private equity databases, SDF models that attempt to separately estimate multiple pricing factors alongside an explicit alpha parameter appear too weakly identified in this sample to support stable inference. 
-The inclusion of an unconstrained or loosely constrained abnormal performance term confounds the signal with cross-sectional noise and materially destabilizes the factor model estimates.
-Therefore, until substantially more granular and independent cross-sectional data becomes cleanly available, the single-factor market model remains the most stable specification among those we estimate for private-equity SDF performance evaluation.
-
-
-
-\begin{table}[H]
-	\centering
-	\caption{Estimation Results: 1-, 2-, 3-, and 4-Factor Models for Buyout and Venture Capital}
-	\label{tab:driessen_comparison_bo_vc}
-	\resizebox{\textwidth}{!}{
-		\begin{tabular}{l cccc c cccc}
-			\hline\hline
-			& \multicolumn{4}{c}{Equal-Weighted (EW)} && \multicolumn{4}{c}{Fund-Weighted (FW)} \\ \cline{2-5} \cline{7-10}
-			Model & $\alpha$ & MKT & SMB & HML && $\alpha$ & MKT & SMB & HML \\ \hline
-			\multicolumn{10}{l}{\textbf{Buyout (BO)}} \\
-			1-Factor (Asymp.) &  & 1.246 &  &  &  &  & 1.228 &  &  \\
-			&  & (1.195) &  &  &  &  & (1.169) &  &  \\
-			1-Factor (CV) &  & 1.214 &  &  &  &  & 1.168 &  &  \\
-			&  & (0.118) &  &  &  &  & (0.142) &  &  \\
-			2-Factor (Asymp.) & 0.004 & 1.004 &  &  &  & 0.008 & 0.175 &  &  \\
-			& (0.004) & (0.845) &  &  &  & (0.194) & (26.737) &  &  \\
-			2-Factor (CV) & 0.005 & 0.834 &  &  &  & 0.008 & 0.141 &  &  \\
-			& (0.003) & (0.336) &  &  &  & (0.005) & (0.712) &  &  \\
-			3-Factor (Asymp.) &  & 1.376 & 1.308 & 0.409 &  &  & 1.287 & 1.873 & 0.267 \\
-			&  & (1.958) & (6.093) & (1.368) &  &  & (2.459) & (6.977) & (2.929) \\
-			3-Factor (CV) &  & 1.333 & 1.129 & 0.375 &  &  & 1.224 & 1.521 & 0.161 \\
-			&  & (0.171) & (0.378) & (0.144) &  &  & (0.157) & (0.544) & (0.290) \\
-			4-Factor (Asymp.) & 0.007 & 0.457 & 0.730 & -0.271 &  & 0.008 & 0.150 & 0.545 & -0.008 \\
-			& (0.005) & (0.000) & (0.000) & (0.000) &  & (0.008) & (0.000) & (0.000) & (0.000) \\
-			4-Factor (CV) & 0.003 & 1.007 & 0.064 & 0.078 &  & 0.008 & 0.272 & 0.381 & -0.256 \\
-			& (0.002) & (0.007) & (0.162) & (0.199) &  & (0.008) & (0.855) & (0.481) & (0.760) \\[0.15cm]
-			\multicolumn{10}{l}{\textbf{Venture Capital (VC)}} \\
-			1-Factor (Asymp.) &  & 1.886 &  &  &  &  & 1.591 &  &  \\
-			&  & (1.775) &  &  &  &  & (1.666) &  &  \\
-			1-Factor (CV) &  & 1.779 &  &  &  &  & 1.594 &  &  \\
-			&  & (0.397) &  &  &  &  & (0.357) &  &  \\
-			2-Factor (Asymp.) & 0.020 & 0.466 &  &  &  & -0.001 & 1.745 &  &  \\
-			& (0.121) & (19.898) &  &  &  & (0.003) & (0.835) &  &  \\
-			2-Factor (CV) & 0.014 & 0.731 &  &  &  & 0.004 & 1.416 &  &  \\
-			& (0.009) & (0.187) &  &  &  & (0.010) & (0.590) &  &  \\
-			3-Factor (Asymp.) &  & 2.032 & -0.368 & 1.432 &  &  & 1.968 & -0.454 & 1.406 \\
-			&  & (0.757) & (2.189) & (0.454) &  &  & (0.834) & (1.649) & (1.552) \\
-			3-Factor (CV) &  & 1.928 & -0.343 & 1.218 &  &  & 1.896 & 0.045 & 1.122 \\
-			&  & (0.449) & (0.444) & (0.963) &  &  & (0.668) & (0.727) & (1.468) \\
-			4-Factor (Asymp.) & 0.004 & 1.626 & -0.642 & 1.672 &  & -0.001 & 1.969 & -0.530 & 1.177 \\
-			& (0.001) & (0.000) & (0.000) & (0.000) &  & (0.003) & (0.000) & (0.000) & (0.000) \\
-			4-Factor (CV) & 0.011 & 1.059 & -0.270 & 1.257 &  & 0.004 & 1.770 & -0.058 & 1.340 \\
-			& (0.008) & (0.344) & (0.582) & (1.207) &  & (0.010) & (0.576) & (0.714) & (1.964) \\
-			\hline
-		\end{tabular}
-	}
-	\par
-	\vspace{1ex}
-	\raggedright \footnotesize \textit{Note:} This table presents the estimation results of the single-factor (MKT), 2-factor ($\alpha$, MKT), Fama-French 3-factor (MKT, SMB, HML), and 4-factor ($\alpha$, MKT, SMB, HML) models. Cash flows are discounted to horizon 0. Both asymptotic (Asymp.) full-sample estimates and cross-validation (CV) means across hold-out sets are reported. Standard errors (or standard deviations of the estimates for CV) are reported in parentheses below the estimates. The estimation uses Equal-Weighted (EW) and Fund-Size-Weighted (FW) cash flows. The upper bound for $\alpha$ was constrained to 0.02.
-\end{table}
-
-\begin{table}[H]
-	\centering
-	\caption{Estimation Results: 1-, 2-, 3-, and 4-Factor Models for Private Equity}
-	\label{tab:driessen_comparison_pe}
-	\resizebox{\textwidth}{!}{
-		\begin{tabular}{l cccc c cccc}
-			\hline\hline
-			& \multicolumn{4}{c}{Equal-Weighted (EW)} && \multicolumn{4}{c}{Fund-Weighted (FW)} \\ \cline{2-5} \cline{7-10}
-			Model & $\alpha$ & MKT & SMB & HML && $\alpha$ & MKT & SMB & HML \\ \hline
-			\multicolumn{10}{l}{\textbf{Private Equity (PE)}} \\
-			1-Factor (Asymp.) &  & 1.208 &  &  &  &  & 1.160 &  &  \\
-			&  & (0.770) &  &  &  &  & (1.175) &  &  \\
-			1-Factor (CV) &  & 1.206 &  &  &  &  & 1.104 &  &  \\
-			&  & (0.091) &  &  &  &  & (0.137) &  &  \\
-			2-Factor (Asymp.) & 0.003 & 1.003 &  &  &  & 0.008 & 0.210 &  &  \\
-			& (0.002) & (0.401) &  &  &  & (0.499) & (75.481) &  &  \\
-			2-Factor (CV) & 0.004 & 0.873 &  &  &  & 0.007 & 0.174 &  &  \\
-			& (0.002) & (0.256) &  &  &  & (0.004) & (0.627) &  &  \\
-			3-Factor (Asymp.) &  & 1.246 & 0.790 & 0.458 &  &  & 1.202 & 1.690 & 0.213 \\
-			&  & (2.365) & (1.505) & (1.247) &  &  & (3.696) & (4.854) & (2.065) \\
-			3-Factor (CV) &  & 1.194 & 0.494 & 0.534 &  &  & 1.156 & 1.398 & 0.142 \\
-			&  & (0.205) & (0.310) & (0.193) &  &  & (0.135) & (0.445) & (0.234) \\
-			4-Factor (Asymp.) & 0.003 & 1.003 & 0.003 & 0.005 &  & 0.004 & 0.626 & 0.498 & 0.389 \\
-			& (0.001) & (0.000) & (0.000) & (0.000) &  & (0.007) & (0.000) & (0.000) & (0.000) \\
-			4-Factor (CV) & 0.004 & 0.877 & 0.008 & 0.019 &  & 0.007 & 0.430 & 0.095 & -0.147 \\
-			& (0.002) & (0.261) & (0.048) & (0.121) &  & (0.005) & (0.486) & (1.014) & (0.741) \\
-			\hline
-		\end{tabular}
-	}
-	\par
-	\vspace{1ex}
-	\raggedright \footnotesize \textit{Note:} This table presents the estimation results of the single-factor (MKT), 2-factor ($\alpha$, MKT), Fama-French 3-factor (MKT, SMB, HML), and 4-factor ($\alpha$, MKT, SMB, HML) models. Cash flows are discounted to horizon 0. Both asymptotic (Asymp.) full-sample estimates and cross-validation (CV) means across hold-out sets are reported. Standard errors (or standard deviations of the estimates for CV) are reported in parentheses below the estimates. The estimation uses Equal-Weighted (EW) and Fund-Size-Weighted (FW) cash flows. The upper bound for $\alpha$ was constrained to 0.02.
-\end{table}
+\input{../../r_project/results/figures_bovc_us_g1/main_u/table_E1_beta_all.tex}
+\input{../../r_project/results/figures_bovc_us_g1/main_u/table_OA_vc_without_1993_1997.tex}
+\input{../../r_project/results/figures_bovc_us_g1/fw_imputation_sensitivity.tex}
+\input{../../r_project/results/figures_bovc_us_g1/robustness_samples.tex}
+\input{../../r_project/results/figures_bovc_us_g1/step5/table_fixA_jacobian.tex}
+\input{../../r_project/results/figures_bovc_us_g1/step5/table_alpha_beta_identification.tex}
+\input{../../r_project/results/figures_bovc_us_g1/step5/figure_S5_alpha_beta_contours.tex}
+\input{../../r_project/results/figures_bovc_us_g1/step5/table_block_bootstrap.tex}
+\input{../../r_project/results/figures_bovc_us_g1/step5/figure_S5_vintage_residuals.tex}
+\input{../../r_project/results/figures_bovc_us_g1/step5/table_terminal_nav_shares.tex}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.88\textwidth]{figure_S5_terminal_nav_shares.pdf}
+\caption{Vintage-level booked terminal NAV shares of total value ($V \le 2010$).}
+\label{fig:terminal_nav_shares}
+\end{figure}
+\input{../../r_project/results/figures_bovc_us_g1/step5/table_appendix_e_cv_folds.tex}
+\input{../../r_project/results/figures_bovc_us_g1/step5/table_published_estimates.tex}

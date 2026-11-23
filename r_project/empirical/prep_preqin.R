@@ -164,6 +164,43 @@ make.vintage.summary("Venture Capital", "North America")
 
 
 ## ----core_methodology---------------------------------------------------------
+# Impute missing fund sizes (revision fix, Nov 2026):
+#   - "vintage.median" (baseline): observed same-vintage median across funds;
+#     if a vintage has no observed size (e.g. singleton 1982 VC), expand
+#     symmetrically by calendar distance d = 1, 2, ... until observed sizes
+#     exist and take their median (fallback 1 if a strategy has none).
+#   - "pooled.mean" (sensitivity / legacy): pooled cross-vintage mean over funds.
+#   - "drop" (sensitivity): exclude funds with missing sizes.
+# Always records Size.Imputed (logical) before imputation.
+impute.fund.sizes <- function(df, size.imputation = c("vintage.median", "pooled.mean", "drop")) {
+    size.imputation <- match.arg(size.imputation)
+    df$Size.Imputed <- is.na(df$FUND.SIZE..USD.MN.)
+    if (size.imputation == "drop") {
+        return(df[!df$Size.Imputed, , drop = FALSE])
+    }
+    u <- df[!duplicated(df$FUND.ID), c("FUND.ID", "VINTAGE...INCEPTION.YEAR", "FUND.SIZE..USD.MN."), drop = FALSE]
+    if (size.imputation == "pooled.mean") {
+        fill <- mean(u$FUND.SIZE..USD.MN., na.rm = TRUE)
+        if (!is.finite(fill)) fill <- 1
+        df$FUND.SIZE..USD.MN.[df$Size.Imputed] <- fill
+        return(df)
+    }
+    # vintage.median with expanding nearby-vintage fallback
+    obs <- u[!is.na(u$FUND.SIZE..USD.MN.), , drop = FALSE]
+    miss.v <- unique(df$VINTAGE...INCEPTION.YEAR[df$Size.Imputed])
+    for (v in miss.v) {
+        vals <- obs$FUND.SIZE..USD.MN.[obs$VINTAGE...INCEPTION.YEAR == v]
+        if (!length(vals) && nrow(obs) > 0L) {
+            dists <- abs(obs$VINTAGE...INCEPTION.YEAR - v)
+            vals <- obs$FUND.SIZE..USD.MN.[dists == min(dists)]
+        }
+        fill <- if (length(vals)) stats::median(vals) else 1
+        idx <- df$Size.Imputed & df$VINTAGE...INCEPTION.YEAR == v
+        df$FUND.SIZE..USD.MN.[idx] <- fill
+    }
+    df
+}
+
 make.preqin.df <- function(
     df = df.xl,
     fund.size.weighting = TRUE,
@@ -171,7 +208,8 @@ make.preqin.df <- function(
     out.name = "FOF",
     region.filter = NA,
     vin.year.pfs = FALSE,
-    final.nav.discount = 1) {
+    final.nav.discount = 1,
+    size.imputation = "vintage.median") {
     col.to.keep <- c(
         "FUND.ID", "FUND.SIZE..USD.MN.", "VINTAGE...INCEPTION.YEAR",
         "TRANSACTION.DATE", "TRANSACTION.AMOUNT", "NET.CASHFLOW",
@@ -202,13 +240,7 @@ make.preqin.df <- function(
     for (col in c("FUND.ID")) {
         df[, col] <- as.factor(df[, col])
     }
-    # impute missing fund sizes with the mean over funds (not over rows, which
-    # would overweight funds with long reporting histories)
-    fund.sizes <- df$FUND.SIZE..USD.MN.[!duplicated(df$FUND.ID)]
-    df$FUND.SIZE..USD.MN. <- ifelse(is.na(df$FUND.SIZE..USD.MN.),
-        mean(fund.sizes, na.rm = TRUE),
-        df$FUND.SIZE..USD.MN.
-    )
+    df <- impute.fund.sizes(df, size.imputation = size.imputation)
     df <- df[order(df$FUND.ID, df$TRANSACTION.DATE), ]
 
     list.df <- list()
@@ -275,18 +307,18 @@ make.preqin.df <- function(
         "FUND.ID", "TRANSACTION.DATE", "CF",
         "TRANSACTION.AMOUNT", "CUMULATIVE.CONTRIBUTION", "CUMULATIVE.DISTRIBUTION",
         "VINTAGE...INCEPTION.YEAR", "FUND.SIZE..USD.MN.",
-        "Last.Date", "Age.Last", "Complete"
+        "Last.Date", "Age.Last", "Complete", "Size.Imputed"
     )]
     colnames(df) <- c(
         "Fund.ID", "Date", "CF", "NAV", "CON", "DIS", "Vintage", "Size",
-        "Last.Date", "Age.Last", "Complete"
+        "Last.Date", "Age.Last", "Complete", "Size.Imputed"
     )
     df$Fund.ID <- as.character(df$Fund.ID)
     df$Date <- as.Date(df$Date)
     df$type <- out.name
     df <- df[, c(
         "Fund.ID", "Date", "CF", "NAV", "CON", "DIS", "Vintage", "type", "Size",
-        "Last.Date", "Age.Last", "Complete"
+        "Last.Date", "Age.Last", "Complete", "Size.Imputed"
     )]
 
     # Vintage year portfolio formation: constant composition (B4, B6)
@@ -326,7 +358,10 @@ acs <- list(
 #     fund-level file and (for EW) the sample funnel table if write.fund.level.
 # Fund-level and VYP files of a sample are always mutually consistent (B4 test).
 make.preqin.csv <- function(fund.size.weighting, region.filter, final.nav.discount = 1,
-                            write.fund.level = TRUE) {
+                            write.fund.level = TRUE, size.imputation = "vintage.median",
+                            out.main = data.prepared.folder, out.all = data.allfunds.folder) {
+    if (!dir.exists(out.main)) dir.create(out.main, recursive = TRUE)
+    if (!is.null(out.all) && !dir.exists(out.all)) dir.create(out.all, recursive = TRUE)
     l <- list()
     l.status <- list()
     for (i in names(acs)) {
@@ -337,7 +372,8 @@ make.preqin.csv <- function(fund.size.weighting, region.filter, final.nav.discou
             region.filter = region.filter,
             vin.year.pfs = FALSE,
             out.name = i,
-            final.nav.discount = final.nav.discount
+            final.nav.discount = final.nav.discount,
+            size.imputation = size.imputation
         )
         l.status[[i]] <- attr(l[[i]], "status")
     }
@@ -365,32 +401,35 @@ make.preqin.csv <- function(fund.size.weighting, region.filter, final.nav.discou
 
     # main sample: complete-history funds
     df.main <- df.all[df.all$Complete, ]
-    if (write.fund.level) write.csv(df.main, make.file(data.prepared.folder, FALSE), row.names = FALSE)
-    write.csv(pool(df.main), make.file(data.prepared.folder, TRUE), row.names = FALSE)
+    if (write.fund.level) write.csv(df.main, make.file(out.main, FALSE), row.names = FALSE)
+    write.csv(pool(df.main), make.file(out.main, TRUE), row.names = FALSE)
 
     # robustness sample: all funds (truncated histories flagged Complete = FALSE).
     # VYP files are written for every configuration (incl. NAV haircuts), so
     # every scenario also runs on the all-funds folder.
-    write.csv(pool(df.all), make.file(data.allfunds.folder, TRUE), row.names = FALSE)
-    if (write.fund.level) {
-        write.csv(df.all, make.file(data.allfunds.folder, FALSE), row.names = FALSE)
-        if (!fund.size.weighting) {
-            st <- do.call(rbind, l.status)
-            st$status <- factor(st$status, levels = c("complete", "truncated", "late.start", "missing.nav"))
-            tab <- as.data.frame.matrix(table(paste(st$type, st$Vintage), st$status))
-            funnel <- data.frame(
-                type = sub(" .*", "", rownames(tab)), Vintage = as.integer(sub(".* ", "", rownames(tab))),
-                N.raw = rowSums(tab), N.late.start = tab$late.start, N.missing.nav = tab$missing.nav,
-                N.truncated = tab$truncated, N.complete = tab$complete
-            )
-            funnel <- funnel[order(match(funnel$type, names(acs)), funnel$Vintage), ]
-            write.csv(funnel, paste0(data.prepared.folder, "/preqin_sample_funnel", region.tag, ".csv"), row.names = FALSE)
+    if (!is.null(out.all)) {
+        write.csv(pool(df.all), make.file(out.all, TRUE), row.names = FALSE)
+        if (write.fund.level) {
+            write.csv(df.all, make.file(out.all, FALSE), row.names = FALSE)
+            if (!fund.size.weighting && size.imputation == "vintage.median") {
+                st <- do.call(rbind, l.status)
+                st$status <- factor(st$status, levels = c("complete", "truncated", "late.start", "missing.nav"))
+                tab <- as.data.frame.matrix(table(paste(st$type, st$Vintage), st$status))
+                funnel <- data.frame(
+                    type = sub(" .*", "", rownames(tab)), Vintage = as.integer(sub(".* ", "", rownames(tab))),
+                    N.raw = rowSums(tab), N.late.start = tab$late.start, N.missing.nav = tab$missing.nav,
+                    N.truncated = tab$truncated, N.complete = tab$complete
+                )
+                funnel <- funnel[order(match(funnel$type, names(acs)), funnel$Vintage), ]
+                write.csv(funnel, paste0(out.main, "/preqin_sample_funnel", region.tag, ".csv"), row.names = FALSE)
+            }
         }
     }
     invisible(NULL)
 }
 
 # Execute for various configurations (fund-level files only without NAV haircut)
+# Baseline FW imputation: within-vintage median with nearby-vintage fallback.
 for (fsw in c(TRUE, FALSE)) {
     for (nc in c(1, 0, 0.25, 0.5, 0.75)) {
         make.preqin.csv(fsw, "North America", nc, write.fund.level = (nc == 1))
@@ -400,6 +439,40 @@ for (fsw in c(TRUE, FALSE)) {
     }
     make.preqin.csv(fsw, "Europe")
 }
+
+# FW fund-size imputation sensitivities (North America, main sample, nc = 1):
+# pooled cross-vintage mean (legacy rule) and dropping missing-size funds.
+make.preqin.csv(TRUE, "North America", 1, write.fund.level = TRUE, size.imputation = "pooled.mean",
+                out.main = paste0(data.prepared.folder, "_fwmean"), out.all = NULL)
+make.preqin.csv(TRUE, "North America", 1, write.fund.level = TRUE, size.imputation = "drop",
+                out.main = paste0(data.prepared.folder, "_fwdrop"), out.all = NULL)
+
+# Checked-in aggregate diagnostics of fund-size missingness & imputed vintage shares
+# (North America complete-history sample; aggregate counts/shares only, no fund IDs)
+local({
+    f.med <- read.csv(file.path(data.prepared.folder, "preqin_cashflows_FW_North America_NAV.csv"), stringsAsFactors = FALSE)
+    f.mean <- read.csv(file.path(paste0(data.prepared.folder, "_fwmean"), "preqin_cashflows_FW_North America_NAV.csv"), stringsAsFactors = FALSE)
+    u.med <- f.med[!duplicated(paste(f.med$type, f.med$Fund.ID)), c("type", "Vintage", "Fund.ID", "Size", "Size.Imputed")]
+    u.mean <- f.mean[!duplicated(paste(f.mean$type, f.mean$Fund.ID)), c("type", "Vintage", "Fund.ID", "Size")]
+    u <- merge(u.med, u.mean, by = c("type", "Vintage", "Fund.ID"), suffixes = c(".med", ".mean"))
+    rows <- lapply(split(u, paste(u$type, u$Vintage)), function(x) {
+        tot.med <- sum(x$Size.med); tot.mean <- sum(x$Size.mean)
+        data.frame(
+            type = x$type[1], Vintage = x$Vintage[1],
+            N.complete = nrow(x), N.size.missing = sum(x$Size.Imputed),
+            Observed.Median = if (any(!x$Size.Imputed)) stats::median(x$Size.med[!x$Size.Imputed]) else NA_real_,
+            Imputed.Median.Size = if (any(x$Size.Imputed)) x$Size.med[x$Size.Imputed][1] else NA_real_,
+            Imputed.Mean.Size = if (any(x$Size.Imputed)) x$Size.mean[x$Size.Imputed][1] else NA_real_,
+            Share.Imputed.Median = if (tot.med > 0) sum(x$Size.med[x$Size.Imputed]) / tot.med else NA_real_,
+            Share.Imputed.Mean = if (tot.mean > 0) sum(x$Size.mean[x$Size.Imputed]) / tot.mean else NA_real_,
+            stringsAsFactors = FALSE
+        )
+    })
+    diag <- do.call(rbind, rows)
+    diag <- diag[order(match(diag$type, names(acs)), diag$Vintage), ]
+    rownames(diag) <- NULL
+    write.csv(diag, file.path(data.prepared.folder, "preqin_size_imputation_North America.csv"), row.names = FALSE)
+})
 # all funds (for the cumulative cash-flow plots below)
 df.out.fw <- read.csv(paste0(data.allfunds.folder, "/preqin_cashflows_FW_NAV.csv"))
 df.out.ew <- read.csv(paste0(data.allfunds.folder, "/preqin_cashflows_EW_NAV.csv"))

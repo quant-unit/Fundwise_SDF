@@ -31,8 +31,13 @@ available.memory.gb <- function() {
 }
 
 n.parallel.workers <- function(n.tasks, gb.per.worker = getOption("sdf.gb.per.worker", 1),
-                               reserve.gb = getOption("sdf.reserve.gb", 6), verbose = TRUE) {
-  by.cpu <- min(n.tasks, max(1, parallel::detectCores() - 2), 10)
+                               reserve.gb = getOption("sdf.reserve.gb", 6), verbose = TRUE,
+                               cores = parallel::detectCores()) {
+  by.cpu <- if (length(cores) == 1L && is.finite(cores)) {
+    min(n.tasks, max(1L, as.integer(cores) - 2L), 10L)
+  } else {
+    1L
+  }
   cap <- suppressWarnings(as.integer(Sys.getenv("SDF_MAX_WORKERS", "")))
   n <- if (!is.na(cap)) min(by.cpu, cap) else by.cpu
   avail <- available.memory.gb()

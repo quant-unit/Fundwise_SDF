@@ -94,16 +94,18 @@ run_empirical_study <- function(
         }
 
         # Validate scenario
+        valid <- TRUE
         tryCatch(
             {
                 validate_scenario(scenario, type = "empirical")
             },
             error = function(e) {
                 cat("  -> INVALID:", conditionMessage(e), "\n\n")
-                results[[id]] <- list(success = FALSE, error = conditionMessage(e))
-                next
+                results[[id]] <<- list(success = FALSE, error = conditionMessage(e))
+                valid <<- FALSE
             }
         )
+        if (!valid) next
 
         # Convert scenario to estimation parameters
         params <- empirical_scenario_to_params(scenario)
@@ -255,64 +257,18 @@ run_two_factor_study <- function(factor = "ME", data_out_folder = NULL, verbose 
 # ============================================================================
 
 if (sys.nframe() == 0L) {
-    cat("\n=== run_empirical_study.R ===\n\n")
-    cat("Available functions:\n")
-    cat("  run_empirical_study()          - Main runner with YAML config\n")
-    cat("  list_empirical_scenarios()     - List available scenarios\n")
-    cat("  run_default_empirical_study()  - Quick run (FW/EW x CV/noCV)\n")
-    cat("  run_two_factor_study()         - Run with a specific second factor\n")
-    cat("\n")
-
-    cat("Available scenarios:\n\n")
-    list_empirical_scenarios(active_only = TRUE)
-
+    args <- commandArgs(TRUE)
+    if (length(args) > 0L) {
+        results <- run_empirical_study(scenario_ids = args)
+    } else {
+        cat("\n=== run_empirical_study.R ===\n\n")
+        cat("Available functions:\n")
+        cat("  run_empirical_study()          - Main runner with YAML config\n")
+        cat("  list_empirical_scenarios()     - List available scenarios\n")
+        cat("  run_default_empirical_study()  - Quick run (FW/EW x CV/noCV)\n")
+        cat("  run_two_factor_study()         - Run with a specific second factor\n")
+        cat("CLI usage: LANG=en_US.UTF-8 Rscript run_empirical_study.R <scenario_id> [...]\n\n")
+        cat("Available scenarios:\n\n")
+        list_empirical_scenarios(active_only = TRUE)
+    }
 }
-
-scenarios <- c(
-    "fw_no_cv", "fw_cv", "ew_no_cv", "ew_cv",
-    "fw_vintage_sweep", "ew_vintage_sweep",
-    "fw_vintage_sweep_NC50", "ew_vintage_sweep_NC50",
-    # Fama French
-    "ff3_fw_no_cv_alpha", "ff3_ew_no_cv_alpha",
-    "ff3_fw_cv_alpha", "ff3_ew_cv_alpha",
-    "ff3_fw_no_cv_ALL", "ff3_ew_no_cv_ALL",
-    "ff3_fw_cv_ALL", "ff3_ew_cv_ALL",
-    "ff3_fw_cv_ALL_3f", "ff3_ew_cv_ALL_3f",
-    "ff3_fw_no_cv_ALL_3f", "ff3_ew_no_cv_ALL_3f",
-    "ff3_fw_no_cv", "ff3_ew_no_cv",
-    "ff3_fw_cv", "ff3_ew_cv"
-)
-# scenarios <- c("pitchbook_fw_vintage_sweep_NC50", "pitchbook_ew_vintage_sweep_NC50", "pitchbook_fw_vintage_sweep", "pitchbook_ew_vintage_sweep")
-scenarios <- c(
-    # "fw_no_cv", "fw_cv", "ew_no_cv", "ew_cv",
-    "fw_no_cv_north_america", "fw_cv_north_america", "ew_no_cv_north_america", "ew_cv_north_america",
-    "fw_vintage_sweep_north_america", "ew_vintage_sweep_north_america", 
-    "fw_vintage_sweep_north_america_NC50", "ew_vintage_sweep_north_america_NC50",
-      "fw_no_cv_north_america_NC0" , "ew_no_cv_north_america_NC0",
-      "fw_no_cv_north_america_NC25", "ew_no_cv_north_america_NC25",
-      "fw_no_cv_north_america_NC50", "ew_no_cv_north_america_NC50", 
-      "fw_no_cv_north_america_NC75", "ew_no_cv_north_america_NC75",
-  # Fama French
-  "ff3_fw_no_cv_alpha", "ff3_ew_no_cv_alpha",
-  "ff3_fw_cv_alpha", "ff3_ew_cv_alpha",
-  "ff3_fw_no_cv_ALL", "ff3_ew_no_cv_ALL",
-  "ff3_fw_cv_ALL", "ff3_ew_cv_ALL",
-  "ff3_fw_cv_ALL_3f", "ff3_ew_cv_ALL_3f",
-  "ff3_fw_no_cv_ALL_3f", "ff3_ew_no_cv_ALL_3f",
-  "ff3_fw_no_cv", "ff3_ew_no_cv",
-  "ff3_fw_cv", "ff3_ew_cv",
-  # L1 Loss
-  "fw_no_cv_north_america_l1", "fw_cv_north_america_l1", "ew_no_cv_north_america_l1", "ew_cv_north_america_l1"
-)
-# scenarios <- c("fw_no_cv_north_america_l1", "fw_cv_north_america_l1", "ew_no_cv_north_america_l1", "ew_cv_north_america_l1")
-# Output folder comes from config/empirical_scenarios.yaml (data_out_folder).
-# Override only for a deliberate separate experiment, never with a folder that
-# holds results from other input data (cached results in a folder are merged).
-# data.out.folder <- "results/data_out_2026_02_27_pitchbook"
-# data.out.folder <- "results/data_out_2026_03_27"
-data.out.folder <- NULL
-
-results <- run_empirical_study(
-    scenario_ids = scenarios,
-    data_out_folder = data.out.folder
-)

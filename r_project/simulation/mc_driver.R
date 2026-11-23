@@ -131,7 +131,7 @@ mc.fit.iv <- function(est, fp, model, max.month) {
   data.frame(model = model, max.month = max.month, MKT = b.hat, Coef = NA_real_, SE.MKT = se, SE.Coef = NA_real_,
     cov.MKT.Coef = NA_real_, value = gbar(b.hat), convergence = 0L, fit.method = if (length(ch)) "root" else "min.square",
     n.endpoints = 1L, at.bound = length(act) > 0, active = paste(act, collapse = ","), min.G = min.gross.return(par, con)$value,
-    hac.S = S, hac.V = V, hac.b = b, Wald.stat = NA_real_, q = 1L, neff.MKT = NA_real_, se.singular = NA,
+    hac.S = S, hac.V = V, hac.b = b, Wald.stat = NA_real_, q = 1L, neff.MKT = NA_real_, neff.Coef = NA_real_, se.singular = NA,
     n.roots = length(ch), seconds = proc.time()[["elapsed"]] - t0, stringsAsFactors = FALSE)
 }
 
@@ -164,6 +164,7 @@ mc.fit <- function(est, fp, model, max.month) {
     hac.S = if (is.null(cov)) NA_real_ else cov$hac.S, hac.V = if (is.null(cov)) NA_real_ else cov$hac.V,
     hac.b = if (is.null(cov)) NA_real_ else cov$hac.b, Wald.stat = if (is.null(cov)) NA_real_ else cov$Wald.stat,
     q = length(par), neff.MKT = if (is.null(cov)) NA_real_ else cov$neff[["MKT"]],
+    neff.Coef = if (is.null(cov) || is.na(second)) NA_real_ else cov$neff[[second]],
     se.singular = if (is.null(cov)) NA else isTRUE(cov$se.singular),
     seconds = proc.time()[["elapsed"]] - t0, stringsAsFactors = FALSE)
 }
@@ -189,17 +190,33 @@ mc.replication <- function(design, seed, public, estimators = c("L2.vyp", "L2.fu
 # design (mc.design()), estimators, models, horizons. Returns all rows.
 mc.run <- function(name, spec, reps, public, out.dir = "simulation/data_out_mc", batch.size = 50,
                    workers = if (exists("n.parallel.workers")) n.parallel.workers(length(reps)) else 1, verbose = TRUE) {
+  reps <- as.integer(reps)
+  if (!length(reps) || anyNA(reps) || any(reps < 1L) || anyDuplicated(reps)) {
+    stop("Design ", name, ": reps must be unique positive integers")
+  }
   dir <- file.path(out.dir, name)
   dir.create(dir, recursive = TRUE, showWarnings = FALSE)
   batches <- split(reps, ceiling(reps / batch.size))
   prov <- list(git.commit = tryCatch(system("git rev-parse --short HEAD", intern = TRUE, ignore.stderr = TRUE)[1], error = function(e) NA),
                git.dirty = tryCatch(length(system("git status --porcelain --untracked-files=no", intern = TRUE, ignore.stderr = TRUE)) > 0, error = function(e) NA),
                spec.md5 = mc.spec.md5(spec), public.md5 = value.md5(public), settings = MC.SETTINGS)
+  failed.batches <- character()
   for (k in names(batches)) {
     file <- file.path(dir, sprintf("batch_%04d.rds", as.integer(k)))
     if (file.exists(file)) {
       old <- readRDS(file)
       if (!identical(old$provenance$spec.md5, prov$spec.md5)) stop("Checkpoint ", file, " was written for another design specification")
+      if (!identical(old$provenance$public.md5, prov$public.md5)) stop("Checkpoint ", file, " was written for different public factors")
+      if (!identical(old$provenance$settings, prov$settings)) stop("Checkpoint ", file, " was written with different MC.SETTINGS")
+      if (!identical(as.integer(old$reps), as.integer(batches[[k]]))) {
+        stop("Checkpoint ", file, " has different replication IDs than requested")
+      }
+      if ("error" %in% names(old$rows) && any(!is.na(old$rows$error))) {
+        stop("Checkpoint ", file, " contains failed replication rows")
+      }
+      if (!identical(sort(unique(as.integer(old$rows$rep))), sort(as.integer(batches[[k]])))) {
+        stop("Checkpoint ", file, " rows do not match its recorded replication IDs")
+      }
       if (verbose) cat("skip", basename(file), "\n")
       next
     }
@@ -221,6 +238,7 @@ mc.run <- function(name, spec, reps, public, out.dir = "simulation/data_out_mc",
     if (length(failed)) {
       # not a finished batch: kept for inspection, recomputed by a restart
       saveRDS(out, sub("\\.rds$", "_failed.rds", file))
+      failed.batches <- c(failed.batches, k)
       warning(name, " batch ", k, ": ", length(failed), " replication(s) failed, e.g. ", rows$error[!is.na(rows$error)][1], "; batch not marked finished")
     } else {
       saveRDS(out, file)
@@ -229,7 +247,11 @@ mc.run <- function(name, spec, reps, public, out.dir = "simulation/data_out_mc",
     if (verbose) cat(sprintf("%s batch %s: %d replications in %.0f s%s\n", name, k, length(batches[[k]]), as.numeric(difftime(Sys.time(), t0, units = "secs")),
                              if (length(failed)) sprintf(", %d FAILED", length(failed)) else ""))
   }
-  mc.read(name, out.dir)
+  if (length(failed.batches)) {
+    stop("Design ", name, ": failed replications in batch(es) ", paste(failed.batches, collapse = ", "))
+  }
+  mc.read(name, out.dir, expected.spec = spec, expected.public = public,
+          expected.settings = MC.SETTINGS, expected.reps = reps, allow.extra.reps = TRUE)
 }
 
 # Hash of what determines the rows: the design, estimators, models and
@@ -244,21 +266,71 @@ rbind.all.columns.mc <- function(...) {
 }
 
 # All rows of a design, with each file's provenance checked for consistency
-mc.read <- function(name, out.dir = "simulation/data_out_mc") {
+mc.read <- function(name, out.dir = "simulation/data_out_mc",
+                    expected.spec = NULL, expected.public = NULL, expected.settings = NULL,
+                    expected.reps = NULL, allow.extra.reps = FALSE) {
   files <- sort(list.files(file.path(out.dir, name), "^batch_\\d+\\.rds$", full.names = TRUE))
-  if (!length(files)) return(data.frame())
+  if (!length(files)) {
+    if (!is.null(expected.reps) && length(expected.reps) > 0L) {
+      stop("Design ", name, ": no finished batches found (expected ", length(expected.reps), " replications)")
+    }
+    return(data.frame())
+  }
   b <- lapply(files, readRDS)
   md5 <- unique(vapply(b, function(x) x$provenance$spec.md5, ""))
-  if (length(md5) > 1) stop("Design ", name, ": batches from different specifications")
+  if (length(md5) > 1L) stop("Design ", name, ": batches from different specifications")
+  pub.md5 <- unique(vapply(b, function(x) x$provenance$public.md5, ""))
+  if (length(pub.md5) > 1L) stop("Design ", name, ": batches from different public factors")
+  st0 <- b[[1]]$provenance$settings
+  if (!all(vapply(b, function(x) identical(x$provenance$settings, st0), TRUE))) {
+    stop("Design ", name, ": batches from different MC.SETTINGS")
+  }
+  if (!is.null(expected.spec) && !identical(md5, mc.spec.md5(expected.spec))) {
+    stop("Design ", name, ": batch specification hash does not match current spec")
+  }
+  if (!is.null(expected.public)) {
+    exp.pub.md5 <- if (is.character(expected.public) && length(expected.public) == 1L) expected.public else value.md5(expected.public)
+    if (!identical(pub.md5, exp.pub.md5)) {
+      stop("Design ", name, ": batch public-factor hash does not match current public factors")
+    }
+  }
+  if (!is.null(expected.settings) && !identical(st0, expected.settings)) {
+    stop("Design ", name, ": batch MC.SETTINGS do not match current settings")
+  }
+  batch.reps <- lapply(b, function(x) as.integer(x$reps))
+  all.reps <- unlist(batch.reps, use.names = FALSE)
+  if (anyNA(all.reps) || anyDuplicated(all.reps)) {
+    stop("Design ", name, ": duplicate or missing replication IDs across batches")
+  }
   rows <- do.call(rbind.all.columns.mc, lapply(b, `[[`, "rows"))
+  if ("error" %in% names(rows) && any(!is.na(rows$error))) {
+    stop("Design ", name, ": finished batch contains failed replication rows")
+  }
+  row.reps <- sort(unique(as.integer(rows$rep)))
+  if (!identical(row.reps, sort(all.reps))) {
+    stop("Design ", name, ": row replication IDs do not match batch metadata")
+  }
+  if (!is.null(expected.reps)) {
+    exp.reps <- sort(as.integer(expected.reps))
+    if (allow.extra.reps) {
+      missing.reps <- setdiff(exp.reps, row.reps)
+      if (length(missing.reps)) {
+        stop("Design ", name, ": missing ", length(missing.reps), " requested replication(s), e.g. ", missing.reps[1])
+      }
+    } else if (!identical(row.reps, exp.reps)) {
+      missing.reps <- setdiff(exp.reps, row.reps)
+      extra.reps <- setdiff(row.reps, exp.reps)
+      stop(sprintf("Design %s: replication mismatch (missing %d, extra %d)", name, length(missing.reps), length(extra.reps)))
+    }
+  }
   attr(rows, "provenance") <- lapply(b, `[[`, "provenance")
   rows
 }
 
 # Designs from config/mc_designs.yaml: one spec per design (design, estimators,
 # models, horizons, reps), defaults merged in. Empirical fund counts are read
-# once per shape from the local fund file (aggregates only).
-mc.load.designs <- function(file = "config/mc_designs.yaml", shape.file = "empirical/data_prepared_2026_c/preqin_cashflows_EW_North America_NAV.csv") {
+# once per shape from the checked-in sample funnel table (aggregates only).
+mc.load.designs <- function(file = "config/mc_designs.yaml", shape.file = "empirical/data_prepared_2026_c/preqin_sample_funnel_North America.csv") {
   cfg <- yaml::read_yaml(file)
   shapes <- list()
   lapply(setNames(names(cfg$designs), names(cfg$designs)), function(id) {

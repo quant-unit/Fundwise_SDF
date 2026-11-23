@@ -33,6 +33,8 @@ for (id in ids) {
   cat(format(Sys.time(), "%H:%M:%S"), id, nrow(tg), "cells,", round(as.numeric(difftime(Sys.time(), t0, units = "secs"))), "s\n")
 }
 targets <- do.call(rbind, out); rownames(targets) <- NULL
-saveRDS(list(targets = targets, commit = system("git rev-parse --short HEAD", intern = TRUE),
+spec.md5 <- setNames(vapply(ids, function(id) mc.spec.md5(D[[id]]), ""), ids)
+saveRDS(list(targets = targets, spec.md5 = spec.md5, public.md5 = value.md5(pub), settings = MC.SETTINGS,
+             commit = system("git rev-parse --short HEAD", intern = TRUE),
              dirty = length(system("git status --porcelain --untracked-files=no", intern = TRUE)) > 0), out.file)
 cat("done\n")

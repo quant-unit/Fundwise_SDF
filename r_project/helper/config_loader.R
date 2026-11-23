@@ -286,7 +286,8 @@ scenario_to_estimation_params <- function(scenario, base_path = "simulation") {
         cache_folder_tag = cache_folder_tag, # Pass the correctly constructed cache folder tag
         alpha_lower = alpha_bound(est$alpha_lower, -Inf),
         alpha_upper = alpha_bound(est$alpha_upper, Inf),
-        # review fix: pass the B5 estimator options in simulations too
+        # review fix: pass the B5 estimator options and do_parallel in simulations too
+        do_parallel = if (!is.null(est$do_parallel)) isTRUE(est$do_parallel) else TRUE,
         origin_convention = if (!is.null(est$origin_convention)) est$origin_convention else "first.cf",
         vintage_weights = if (!is.null(est$vintage_weights)) est$vintage_weights else "equal"
     )
@@ -323,6 +324,7 @@ empirical_scenario_to_params <- function(scenario) {
         lambdas = scenario$lambdas,
         kernel_bandwidth = scenario$kernel_bandwidth,
         do_cross_validation = isTRUE(scenario$do_cross_validation),
+        do_parallel = if (!is.null(scenario$do_parallel)) isTRUE(scenario$do_parallel) else TRUE,
         part_to_keep = scenario$part_to_keep,
         no_partitions = scenario$no_partitions,
         data_out_folder = scenario$data_out_folder,

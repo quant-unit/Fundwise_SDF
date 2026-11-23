@@ -510,7 +510,8 @@ if (length(df.cv.best) > 0) {
 
   # Determine output columns based on available factor columns
   if ("Alpha" %in% colnames(df.best)) {
-    df.best$Alpha.p.a. <- (1 + df.best$Alpha)^4 - 1
+    # Alpha is a monthly rate; annualize with ^12 (not ^4)
+    df.best$Alpha.p.a. <- (1 + df.best$Alpha)^12 - 1
   }
   if (grepl("^ff3_factors", prefix)) {
     # FF3 factors: MKT, SMB, HML (+ Alpha if present)
@@ -560,10 +561,7 @@ plot.log.return <- function(type, df.f) {
     return(invisible(NULL))
   }
 
-  if ("Alpha" %in% cols) {
-    df.f["Alpha"] <- (1 + df.f["Alpha"])^(1 / 3) - 1 # quarterly to monthly
-  }
-
+  # Alpha is already a monthly rate matching df.q's monthly frequency (no quarterly-to-monthly conversion)
   df.f[is.na(df.f)] <- 0
   # Use drop = FALSE to ensure matrix result even with single row
   df <- data.frame((as.matrix(df.q[, cols])) %*% t(as.matrix(

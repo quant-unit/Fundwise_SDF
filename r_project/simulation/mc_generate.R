@@ -49,12 +49,19 @@ mc.public.factors <- function(file = "empirical/data_prepared_2026/q_factors.csv
   p
 }
 
-# Fund counts per vintage of the empirical sample (aggregate counts from the
-# local fund file; the licensed file itself never leaves the machine)
+# Fund counts per vintage of the empirical sample: by default read from the
+# checked-in sample funnel table (no licensed fund-level file required); also
+# accepts a fund-level CSV for backwards compatibility.
 mc.data.shape <- function(type, max.vintage = 2010,
-                          file = "empirical/data_prepared_2026_c/preqin_cashflows_EW_North America_NAV.csv") {
-  d <- unique(read.csv(file)[, c("Fund.ID", "type", "Vintage")])
-  d <- d[d$type == type & d$Vintage <= max.vintage, ]
+                          file = "empirical/data_prepared_2026_c/preqin_sample_funnel_North America.csv") {
+  d <- read.csv(file, stringsAsFactors = FALSE)
+  if ("N.complete" %in% names(d)) {
+    d <- d[d$type == type & d$Vintage <= max.vintage & d$N.complete > 0, , drop = FALSE]
+    d <- d[order(d$Vintage), , drop = FALSE]
+    return(setNames(as.integer(d$N.complete), as.character(d$Vintage)))
+  }
+  d <- unique(d[, c("Fund.ID", "type", "Vintage")])
+  d <- d[d$type == type & d$Vintage <= max.vintage, , drop = FALSE]
   n <- table(d$Vintage)
   setNames(as.integer(n), names(n))
 }

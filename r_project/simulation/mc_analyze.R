@@ -95,7 +95,8 @@ mc.targets <- function(spec, public, reps = 1:200, workers = 1, check.u = FALSE)
       out <- setNames(o$minimum, "MKT")
     } else {
       if (!is.null(spec$design$path)) stop("targets of two-parameter models with resampled paths are not implemented")
-      fit <- fit.admissible(f, list(par), con, optim.parscale(par), smooth = TRUE, reltol = 1e-12)
+      ps <- optim.parscale(par)
+      fit <- fit.admissible(f, admissible.starts(par, con, ps), con, ps, smooth = TRUE, reltol = 1e-12)
       out <- fit$par
     }
     data.frame(cells[i, ], MKT.target = unname(out[1]), Coef.target = if (length(out) > 1) unname(out[2]) else NA_real_,
@@ -125,18 +126,24 @@ mc.summary <- function(rows, theta0, targets = NULL, level = 0.05) {
     do.call(rbind, lapply(pars, function(p) {
       est <- if (p == "MKT") d$MKT else d$Coef
       se <- if (p == "MKT") d$SE.MKT else d$SE.Coef
+      neff.vec <- if (p == "MKT") d$neff.MKT else if ("neff.Coef" %in% names(d)) d$neff.Coef else rep(NA_real_, nrow(d))
       truth <- if (p %in% names(theta0)) theta0[[p]] else 0
       pv <- p.of(est, se, truth, d$hac.b)
       tested <- is.finite(pv)
       target <- if (is.null(tg) || !nrow(tg)) NA_real_ else if (p == "MKT") tg$MKT.target[1] else tg$Coef.target[1]
       pv.t <- if (is.finite(target)) p.of(est, se, target, d$hac.b) else rep(NA_real_, nrow(d))
+      sd.tested <- if (sum(tested) > 1L) sd(est[tested]) else NA_real_
+      mean.se.tested <- if (any(tested)) mean(se[tested]) else NA_real_
       data.frame(estimator = d$estimator[1], model = d$model[1], parameter = p, H = d$max.month[1] / 12, reps = nrow(d),
         truth = truth, target = target, mean = mean(est), bias = mean(est) - truth, mcse.bias = sd(est) / sqrt(nrow(d)),
-        shift = target - truth, fs.bias = mean(est) - target, sd = sd(est), rmse = sqrt(mean((est - truth)^2)),
+        shift = target - truth, fs.bias = mean(est) - target, sd = sd(est), sd.tested = sd.tested,
+        rmse = sqrt(mean((est - truth)^2)),
         on.bound = mean(d$at.bound), size = if (any(tested)) mean(pv[tested] < level) else NA_real_,
         size.target = if (any(is.finite(pv.t))) mean(pv.t[is.finite(pv.t)] < level) else NA_real_,
         mcse.size = if (any(tested)) sqrt(level * (1 - level) / sum(tested)) else NA_real_, tested = sum(tested),
-        mean.se = mean(se, na.rm = TRUE), se.ratio = mean(se, na.rm = TRUE) / sd(est), neff = mean(d$neff.MKT, na.rm = TRUE),
+        mean.se = mean(se, na.rm = TRUE), se.ratio = mean(se, na.rm = TRUE) / sd(est),
+        se.ratio.tested = if (is.finite(sd.tested) && sd.tested > 0) mean.se.tested / sd.tested else NA_real_,
+        neff = if (any(is.finite(neff.vec))) mean(neff.vec, na.rm = TRUE) else NA_real_,
         stringsAsFactors = FALSE)
     }))
   })

@@ -10,6 +10,7 @@
 \usepackage{newtxmath}
 \usepackage{natbib}
 \usepackage{graphicx}
+\graphicspath{{./}{figure/}{empirical_bovc_us/}{../../r_project/results/mc_step4/paper/}{../../r_project/results/figures_bovc_us_g1/}{../../r_project/results/figures_bovc_us_g1/main_u/}{../../r_project/results/figures_bovc_us_g1/step5/}}
 % Margin for JFEC
 \usepackage[letterpaper, margin=1in]{geometry}
 \usepackage[margin=1.1cm]{caption}
@@ -22,7 +23,7 @@
 % Toggle this boolean to easily switch between visually nice working mode (false) and JFEC submission formatting (true)
 \newif\ifSubmissionMode
 \SubmissionModefalse % Set to \SubmissionModetrue before submitting
-\SubmissionModetrue
+%\SubmissionModetrue
 
 \ifSubmissionMode
 \usepackage{endnotes}
@@ -64,7 +65,7 @@
 \ifSubmissionMode
 \setcounter{page}{2}
 \doublespacing
-\renewcommand{\arraystretch}{2}
+\renewcommand{\arraystretch}{1.15}
 \fi
 
 \input{sdf_paper_online_appendices.tex}

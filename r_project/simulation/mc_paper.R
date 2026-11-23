@@ -9,8 +9,9 @@
 #                     figure_S2_margins.pdf, table_S2_two_factor.tex
 #   online appendix:  table_AS1_size.tex (Panel C: the additions of 19 November),
 #                     table_AS2_se_study.tex, table_AS3_alpha_beta.tex,
-#                     table_AS4_grid.tex, figure_S3_growing_V.pdf (growing V,
-#                     the reply to R2-3.1)
+#                     table_AS4_grid.tex, table_AS5_hardening.tex (Nov 20
+#                     hardening designs B, A', A), figure_S3_growing_V.pdf
+#                     (growing V, the reply to R2-3.1)
 #   online appendix D: table_AD_dlp12.tex (the DLP12 comparison, S1-S10 under r5,
 #                     from results/mc_step4/appendix_d_summary.csv)
 #   exhibits_data.csv: every printed number with its source key (one row per
@@ -68,8 +69,8 @@ cell <- function(exhibit, r, column, fmt = f3, wrap = function(x) x) {
   v <- r[[column]]
   rec(exhibit, list(design = r$design, estimator = r$estimator, model = r$model, parameter = r$parameter, H = r$H), column, v, wrap(fmt(v)))
 }
-write.table.tex <- function(file, body) {
-  writeLines(c(provenance, "", body), file.path(out.dir, file))
+write.table.tex <- function(file, body, prov = provenance) {
+  writeLines(c(prov, "", body), file.path(out.dir, file))
   message("wrote ", file.path(out.dir, file))
 }
 mcse.range <- function(x) sprintf("%s--%s", f3(min(x)), f3(max(x)))
@@ -95,13 +96,18 @@ for (k in seq_along(EST.LABEL)) {
   }
 }
 core.mkt <- s[s$design %in% c("core_BO", "core_VC") & s$model == "MKT", ]
+core.obs.mcse <- 100 * sqrt(core.mkt$size * (1 - core.mkt$size) / core.mkt$tested)
+l2.bo.0 <- srow("core_BO", "L2.vyp", "MKT", "MKT", 0); l2.vc.0 <- srow("core_VC", "L2.vyp", "MKT", "MKT", 0)
 s1 <- c(s1, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
   paste0("{\\scriptsize\\textit{Notes:} 1{,}000 replications per design on common draws (the same deals feed every estimator and horizon). ",
     "Data-shaped designs: the actual Buyout (25 vintages, 383 funds) and VC (27 vintages, 432 funds) vintage calendars and fund counts up to 2010, the historical factor path, exact pricing at $\\beta_{MKT}=1$ with mean-one lognormal deal shocks (monthly $\\sigma$ 0.130 Buyout, 0.154 VC), 15 deals per fund, quarterly cash flows. ",
     "Estimates minimize the criterion over the admissible domain (as in the empirical tables). Bias and RMSE against the true value; SD across replications. ",
-    "Rej.: rejection of the true value at 5\\% with the empirical tables' inference (Bartlett sandwich, $S=\\lceil1.3\\sqrt V\\rceil$, fixed-$b$ critical values), among replications with an interior estimate. ",
+    "Rej.: rejection of the structural value $\\beta_{MKT}=1$ at 5\\% with the empirical tables' inference (Bartlett sandwich, $S=\\lceil1.3\\sqrt V\\rceil$, fixed-$b$ critical values), among interior tested draws (all 1{,}000 draws interior for L2 VYP and $U_{v,H}$ at $H\\le20$ yr; 999--1{,}000 at 30 yr). ",
+    sprintf("We reserve ``size'' for a valid null: at $H=0$, L2 VYP rejects $\\beta_{MKT}=1$ in %s\\%% (Buyout) and %s\\%% (VC) of draws, but rejects its own criterion target $\\theta_0^\\dagger$ in %s\\%% and %s\\%% because positive target shift and negative finite-sample bias partially offset at $\\beta_{MKT}=1$. ",
+      pct(l2.bo.0$size), pct(l2.vc.0$size), pct(l2.bo.0$size.target), pct(l2.vc.0$size.target)),
     "For $U_{v,H}$ with $q_v=n_v$ the rejection rate is in brackets: it shows why the empirical tables report no inference for that weighting. ",
-    sprintf("Monte Carlo SE of the bias %s, of rejection rates 0.7 points.}", mcse.range(core.mkt$mcse.bias))),
+    sprintf("Monte Carlo SE of the bias %s; of rejection rates 0.7 points at a 5\\%% rate with 1{,}000 tested draws (observed-rate MCSE across printed cells: %.2f--%.2f points).}",
+      mcse.range(core.mkt$mcse.bias), min(core.obs.mcse, na.rm = TRUE), max(core.obs.mcse, na.rm = TRUE))),
   "\\end{table}")
 write.table.tex("table_S1_core.tex", s1)
 
@@ -128,6 +134,7 @@ for (k in seq_along(m6)) {
 m6r <- s[s$design %in% m6, ]
 s2 <- c(s2, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
   paste0("{\\scriptsize\\textit{Notes:} Buyout-shaped core design with a second $q^5$ factor priced at loading 0.5; L2 on vintage portfolios and $U_{v,H}$ with $q_v=1$. ",
+    "Unlike single-factor $\\beta$ and $(\\alpha,\\beta)$ (where $H=0$ minimizes $U_{v,H}$ RMSE), in two-factor models $H=15$ years lowers $U_{v,H}$'s second-loading RMSE for ME, IA, and ROE, while market-beta RMSE rises in ROE (0.083 to 0.152). ",
     "Bound: share of replications with the estimate on a bound of the admissible domain (included in the means). ",
     sprintf("Monte Carlo SE of the means %s.}", mcse.range(m6r$mcse.bias))),
   "\\end{table}")
@@ -184,27 +191,32 @@ a1 <- c(a1, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
     "Panel B: designs as in Table~\\ref{tab:mc_core} and the margins of Figure~\\ref{fig:mc_margins}; test as in the empirical tables, among replications with an interior estimate; Monte Carlo SE 0.7 points (1{,}000 replications) and 1.4 points (250). Panel C: Table~\\ref{tab:mc_size_additions}.}"),
   "\\end{table}", "",
   "\\begin{table}[htbp]", "\\centering", "\\footnotesize",
-  "\\caption{Monte Carlo: size of the 5\\% test of the true value (continued)}", "\\label{tab:mc_size_additions}",
-  "\\begin{tabular}{l r rr rr rr}", "\\toprule",
-  "\\multicolumn{8}{l}{\\textit{Panel C: additions, single-factor $\\hat\\beta_{MKT}$, rejection in \\%}} \\\\", "\\addlinespace[2pt]",
-  paste0(" & & ", paste(sprintf("\\multicolumn{2}{c}{%s}", C.EST), collapse = " & "), " \\\\"),
-  "\\cmidrule(lr){3-4} \\cmidrule(lr){5-6} \\cmidrule(lr){7-8}",
-  "Design & Repl. & 0 yr & 15 yr & 0 yr & 15 yr & 0 yr & 15 yr \\\\", "\\midrule")
+  "\\caption{Monte Carlo: rejection rates of the 5\\% test of the structural value $\\beta_{MKT}=1$ (continued)}", "\\label{tab:mc_size_additions}",
+  "\\begin{tabular}{l r rr rr rrr}", "\\toprule",
+  "\\multicolumn{9}{l}{\\textit{Panel C: additions, single-factor $\\hat\\beta_{MKT}$, rejection of $\\beta_{MKT}=1$ in \\% (IV tested share in \\%)}} \\\\", "\\addlinespace[2pt]",
+  " & & \\multicolumn{2}{c}{L2, VYP} & \\multicolumn{2}{c}{$U$, $q_v=1$} & \\multicolumn{3}{c}{IV} \\\\",
+  "\\cmidrule(lr){3-4} \\cmidrule(lr){5-6} \\cmidrule(lr){7-9}",
+  "Design & Repl. & 0 yr & 15 yr & 0 yr & 15 yr & 0 yr & 15 yr & Tested (0/15) \\\\", "\\midrule")
 for (g in C.ROWS) {
-  a1 <- c(a1, sprintf("\\multicolumn{8}{l}{\\textit{%s}} \\\\", g$head))
+  a1 <- c(a1, sprintf("\\multicolumn{9}{l}{\\textit{%s}} \\\\", g$head))
   for (x in g$rows) {
     vals <- unlist(lapply(names(C.EST), function(e) vapply(c(0, 15), function(h) {
       d <- if (e == "IV" && !is.na(x["iv"])) x[["iv"]] else x[["d"]]
       cell("AS1", srow(d, e, "MKT", "MKT", h), "size", pct) }, "")))
-    a1 <- c(a1, sprintf("\\quad %s & %s & %s \\\\", x[["label"]], format(srow(x[["d"]], "L2.vyp", "MKT", "MKT", 0)$reps, big.mark = "{,}"), paste(vals, collapse = " & ")))
+    iv.d <- if (!is.na(x["iv"])) x[["iv"]] else x[["d"]]
+    r.iv0 <- srow(iv.d, "IV", "MKT", "MKT", 0); r.iv15 <- srow(iv.d, "IV", "MKT", "MKT", 15)
+    tstr <- sprintf("%s/%s",
+      rec("AS1", list(design = iv.d, estimator = "IV", model = "MKT", parameter = "MKT", H = 0), "tested.share", r.iv0$tested / r.iv0$reps, pct(r.iv0$tested / r.iv0$reps)),
+      rec("AS1", list(design = iv.d, estimator = "IV", model = "MKT", parameter = "MKT", H = 15), "tested.share", r.iv15$tested / r.iv15$reps, pct(r.iv15$tested / r.iv15$reps)))
+    a1 <- c(a1, sprintf("\\quad %s & %s & %s & %s \\\\", x[["label"]], format(srow(x[["d"]], "L2.vyp", "MKT", "MKT", 0)$reps, big.mark = "{,}"), paste(vals, collapse = " & "), tstr))
   }
 }
 a1 <- c(a1, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
-  paste0("{\\scriptsize\\textit{Notes:} Panel C: single factor, horizons 0 and 15 years; IV is the root of $V^{-1}\\sum_v z_vPV_v(\\beta)=0$ with $z_v=A_{v,H}(1)/A_{v,0}(1)$ (the mean pricing moment at $H=0$), tested among fits with a root. ",
+  paste0("{\\scriptsize\\textit{Notes:} Panel C: single factor, horizons 0 and 15 years; entries are conditional rejection rates of the structural value $\\beta_{MKT}=1$ among tested interior draws (for L2 VYP and $U_{v,H}$, 100\\% of draws are tested except 99.8\\% in $v\\_{V25\\_n5}$ $H=0$ $U_{v,H}$). ",
+    "IV is the smallest root of $V^{-1}\\sum_v z_vPV_v(\\beta)=0$ with $z_v=A_{v,H}(1)/A_{v,0}(1)$ (the mean pricing moment at $H=0$), tested only when a root exists on the interior of $\\Theta$ (Tested column: share of draws with a tested root at $H=0/15$ yr); assigning $\\beta_0=1$ as the IV target without path shocks reflects moment validity rather than general root identification. ",
     "Shared-shock rows: the M4 designs of Figure~\\ref{fig:mc_margins} on the same draws, the shared log shock either independent across vintages or an AR(1) across vintage years with the same marginal law. ",
-    "Equal-count rows: the deal model of the cores with the same number of funds in each of $V$ consecutive vintages. On the historical path they over-reject at $V=25$ where the data-shaped core does not; the excess comes from the sandwich evaluated at the estimate, not from dependence across vintages or from the resampled paths. ",
-    "Resampled rows: consecutive vintages ending 2005; each replication draws its own factor path, whole months of 1967--2021 resampled i.i.d.\\ on a calendar from the first vintage to 2021 (Figure~\\ref{fig:mc_growing_v}). ",
-    "Monte Carlo SE 0.7 points (1{,}000 replications) and 1.0 point (500) at a 5\\% rate.}"),
+    "Equal-count and growing-$V$ rows: on resampled paths at $V=400$, equal-vintage $U_{v,H}$ still rejects in 6.8--10.8\\% of draws with low median $N_{\\mathrm{eff}}$ (13--27) and a left-tail excess (left/right rejections 22/12, 38/16, 27/14, 36/12 across $n\\in\\{5,20\\}\\times H\\in\\{0,15\\}$); holding the test denominator fixed at the Monte Carlo SD removes or reverses that left-tail excess, showing studentization distortion from heavy-tailed compounded weights (cf.\\ Martin 2012 on compounded-return tails) rather than cross-vintage dependence. ",
+    "Monte Carlo SE 0.7 points (1{,}000 replications) and 1.0 point (500) at a 5\\% rate. Hardening designs (FW sizes, deal-level and vintage-level path shocks): Table~\\ref{tab:mc_hardening}.}"),
   "\\end{table}")
 write.table.tex("table_AS1_size.tex", a1)
 
@@ -264,9 +276,15 @@ for (d in c("core_BO", "core_VC", MARGINS[-1])) {
   vals <- unlist(lapply(c("U.eq", "U.n"), function(e) vapply(H3, function(h) cell("AS3", srow(d, e, "Alpha", "MKT", h), "on.bound", pct), "")))
   a3 <- c(a3, sprintf("%s & %s \\\\", DESIGN.LABEL[d], paste(vals, collapse = " & ")))
 }
+bo.a0 <- srow("core_BO", "U.eq", "Alpha", "Alpha", 0); vc.a0 <- srow("core_VC", "U.eq", "Alpha", "Alpha", 0)
+bo.a30 <- srow("core_BO", "U.eq", "Alpha", "Alpha", 30); vc.a30 <- srow("core_VC", "U.eq", "Alpha", "Alpha", 30)
+bo.b30 <- srow("core_BO", "U.eq", "Alpha", "MKT", 30); vc.b30 <- srow("core_VC", "U.eq", "Alpha", "MKT", 30)
 a3 <- c(a3, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
   paste0("{\\scriptsize\\textit{Notes:} Designs as in Table~\\ref{tab:mc_core} and Figure~\\ref{fig:mc_margins}; joint fit of $(\\alpha,\\beta_{MKT})$ over the admissible domain ($\\alpha\\in[-2\\%,2\\%]$ per month, $\\beta_{MKT}\\in[-1,4]$, monthly gross benchmark return at least 0.08). ",
     "Bound: estimate on a bound of the domain (included in bias and SD). ",
+    sprintf("Joint inference calibration for $U_{v,H}$ ($q_v=1$) in the EW cores: at $H=0$, the nominal 5\\%% fixed-$b$ test of $\\alpha=0$ rejects in %s\\%% (Buyout) and %s\\%% (VC) of tested draws (so single-factor near-nominal size does not carry over to joint $\\alpha$); at 30 years, conditional rejection falls to %s\\%%/%s\\%% for $\\alpha$ and %s\\%%/%s\\%% for $\\beta$ with %s\\%%/%s\\%% on the boundary and same-sample SE/SD ratios of %s/%s for $\\beta$ (vs.\\ %s/%s against all-draw SD). ",
+      pct(bo.a0$size), pct(vc.a0$size), pct(bo.a30$size), pct(vc.a30$size), pct(bo.b30$size), pct(vc.b30$size),
+      pct(bo.b30$on.bound), pct(vc.b30$on.bound), f3(bo.b30$se.ratio.tested), f3(vc.b30$se.ratio.tested), f3(bo.b30$se.ratio), f3(vc.b30$se.ratio)),
     sprintf("Monte Carlo SE of the $\\hat\\beta$ bias in Panel~A %s.}", mcse.range(s$mcse.bias[s$design %in% c("core_BO", "core_VC") & s$model == "Alpha" & s$parameter == "MKT"]))),
   "\\end{table}")
 write.table.tex("table_AS3_alpha_beta.tex", a3)
@@ -292,9 +310,77 @@ g <- s[grepl("^g_", s$design) & s$parameter == "MKT", ]
 a4 <- c(a4, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
   paste0("{\\scriptsize\\textit{Notes:} 500 replications per cell. Stylized design after \\cite{DLP12}: $V$ consecutive vintages ending 2005, the same number of funds in each, 15 deals per fund, 5-year investment period, holding up to 10 years, monthly $\\sigma=0.3$, exact pricing; L2 on vintage portfolios, $(\\alpha,\\beta)$ fit over the admissible domain. ",
     "$V=80$ is not possible: 80 consecutive vintages do not fit the 1967--2021 factor history. ",
-    sprintf("Monte Carlo SE of the bias %s. At $H=0$ the bias falls with the number of funds per vintage in each column, not with $V$.}", mcse.range(g$mcse.bias))),
+    sprintf("Monte Carlo SE of the bias %s. At $H=0$ the bias falls with the number of funds per vintage in each column, not with $V$; this isolates the within-simulator infill noise effect, whereas full attribution of the cross-paper gap between Table~\\ref{tab:driessen_comparison} (S3) and \\cite[Table~1]{DLP12} also involves DLP12's simulated market and return-linked shifted additive lognormal innovation.}", mcse.range(g$mcse.bias))),
   "\\end{table}")
 write.table.tex("table_AS4_grid.tex", a4)
+
+# ---- Table A-S5: Nov 20 hardening designs (Design B FW; Design A' & A path shocks) ----
+a5 <- c("\\begin{table}[htbp]", "\\centering", "\\footnotesize",
+  "\\caption{Monte Carlo, hardening designs: heterogeneous fund sizes (Design~B) and path-correlated shocks (Designs~A$'$ and~A)}", "\\label{tab:mc_hardening}",
+  "\\resizebox{\\linewidth}{!}{%",
+  "\\begin{tabular}{ll rrrrrr rrrrrr}", "\\toprule",
+  " & & \\multicolumn{6}{c}{$H=0$} & \\multicolumn{6}{c}{$H=15$ years} \\\\",
+  "\\cmidrule(lr){3-8} \\cmidrule(lr){9-14}",
+  "Design & Estimator & Bias & SD & RMSE & Rej.$_0$ & Rej.$_\\dagger$ & Test\\,\\% & Bias & SD & RMSE & Rej.$_0$ & Rej.$_\\dagger$ & Test\\,\\% \\\\", "\\midrule",
+  "\\multicolumn{14}{l}{\\textit{Panel A: Design B --- heterogeneous lognormal fund sizes (1{,}000 replications; EW vs.\\ FW)}} \\\\", "\\addlinespace[2pt]")
+B.EST <- c(L2.vyp = "L2, VYP (EW)", L2.vyp.fw = "L2, VYP (FW)", U.eq = "$U_{v,H}$ (EW)", U.eq.fw = "$U_{v,H}$ (FW)")
+for (d in c("s_core_BO", "s_core_VC")) {
+  dlab <- if (d == "s_core_BO") "Buyout ($\\sigma_{\\log s}=1.19$)" else "VC ($\\sigma_{\\log s}=0.90$)"
+  for (k in seq_along(B.EST)) {
+    e <- names(B.EST)[k]
+    vals <- unlist(lapply(c(0, 15), function(h) {
+      r <- srow(d, e, "MKT", "MKT", h)
+      c(cell("AS5", r, "bias"), cell("AS5", r, "sd"), cell("AS5", r, "rmse"),
+        cell("AS5", r, "size", pct), cell("AS5", r, "size.target", pct),
+        rec("AS5", list(design = d, estimator = e, model = "MKT", parameter = "MKT", H = h), "tested.share", r$tested / r$reps, pct(r$tested / r$reps)))
+    }))
+    a5 <- c(a5, sprintf("%s & %s & %s \\\\", if (k == 1) dlab else "", B.EST[[e]], paste(vals, collapse = " & ")))
+  }
+  if (d == "s_core_BO") a5 <- c(a5, "\\addlinespace[3pt]")
+}
+a5 <- c(a5, "\\midrule",
+  "\\multicolumn{14}{l}{\\textit{Panel B: Design A$'$ (DGP (c)) --- deal-level path-correlated shocks, (P) holds at $H=0$, (X) fails (500 replications)}} \\\\", "\\addlinespace[2pt]")
+AP.DES <- c(pd_V25_n20_c = "$V=25$, $c$", pd_V25_n20_2c = "$V=25$, $2c$", pd_V100_n20_c = "$V=100$, $c$", pd_V100_n20_2c = "$V=100$, $2c$")
+PA.EST <- c(L2.vyp = "L2, VYP", U.eq = "$U_{v,H}$, $q_v=1$", IV = "IV")
+for (d in names(AP.DES)) {
+  for (k in seq_along(PA.EST)) {
+    e <- names(PA.EST)[k]
+    vals <- unlist(lapply(c(0, 15), function(h) {
+      r <- srow(d, e, "MKT", "MKT", h)
+      c(cell("AS5", r, "bias"), cell("AS5", r, "sd"), cell("AS5", r, "rmse"),
+        cell("AS5", r, "size", pct), cell("AS5", r, "size.target", pct),
+        rec("AS5", list(design = d, estimator = e, model = "MKT", parameter = "MKT", H = h), "tested.share", r$tested / r$reps, pct(r$tested / r$reps)))
+    }))
+    a5 <- c(a5, sprintf("%s & %s & %s \\\\", if (k == 1) AP.DES[[d]] else "", PA.EST[[e]], paste(vals, collapse = " & ")))
+  }
+  if (d != "pd_V100_n20_2c") a5 <- c(a5, "\\addlinespace[2pt]")
+}
+a5 <- c(a5, "\\midrule",
+  "\\multicolumn{14}{l}{\\textit{Panel C: Design A --- vintage-level path-correlated shocks, breaks origin pricing (500 replications)}} \\\\", "\\addlinespace[2pt]")
+A.DES <- c(pc_V25_n20_c = "$V=25$, $c$", pc_V25_n20_2c = "$V=25$, $2c$", pc_V100_n20_c = "$V=100$, $c$", pc_V100_n20_2c = "$V=100$, $2c$")
+for (d in names(A.DES)) {
+  for (k in seq_along(PA.EST)) {
+    e <- names(PA.EST)[k]
+    vals <- unlist(lapply(c(0, 15), function(h) {
+      r <- srow(d, e, "MKT", "MKT", h)
+      c(cell("AS5", r, "bias"), cell("AS5", r, "sd"), cell("AS5", r, "rmse"),
+        cell("AS5", r, "size", pct), cell("AS5", r, "size.target", pct),
+        rec("AS5", list(design = d, estimator = e, model = "MKT", parameter = "MKT", H = h), "tested.share", r$tested / r$reps, pct(r$tested / r$reps)))
+    }))
+    a5 <- c(a5, sprintf("%s & %s & %s \\\\", if (k == 1) A.DES[[d]] else "", PA.EST[[e]], paste(vals, collapse = " & ")))
+  }
+  if (d != "pc_V100_n20_2c") a5 <- c(a5, "\\addlinespace[2pt]")
+}
+a5 <- c(a5, "\\bottomrule", "\\end{tabular}%", "}", "\\par\\vspace{2pt}",
+  paste0("{\\scriptsize\\textit{Notes:} Single-factor $\\hat\\beta_{MKT}$ (true $\\beta_0=1$). ",
+    "Rej.$_0$: conditional 5\\% fixed-$b$ rejection of the structural value $\\beta_0=1$ among tested interior draws; ",
+    "Rej.$_\\dagger$: conditional 5\\% rejection of each estimator's own criterion target $\\theta_H^\\dagger$ (computed over draws 1--200); ",
+    "Test\\,\\%: share of draws with a tested interior estimate (and a detected root for IV). ",
+    "Panel~A: data-shaped cores with lognormal fund sizes drawn after deals so EW cells reproduce Table~\\ref{tab:mc_core}; FW $U_{v,H}$ remains nearly unbiased but rejects in 8.1\\%/8.5\\% at $H=0$. ",
+    "Panel~B (Design~A$'$, DGP~(c)): deal multiples multiply by $\\exp(a\\log R_{a,b}-k\\log\\mathbb{E}[G^a])$ on i.i.d.\\ resampled factor paths, preserving inception pricing (P) while violating (X); $U_{v,H}$ and L2 stay biased as $V$ grows, whereas $H=0$ IV approaches $\\beta_0=1$ (Wald rejection 9.0\\%/10.6\\% at $V=100$; at $H=15$ yr the path-dependent instrument fails (X) and rejects $\\beta_0=1$ in 32.2\\%/33.8\\%). ",
+    "Panel~C (Design~A): vintage-level shock over the first 10 vintage years, which also breaks inception pricing at the origin.}"),
+  "\\end{table}")
+write.table.tex("table_AS5_hardening.tex", a5)
 
 # ---- Table A-D: the DLP12 comparison (Online Appendix D) under r5 -------------
 # results/mc_step4/appendix_d_summary.csv (simulation/mc_appendix_d.R): the G1
@@ -343,9 +429,16 @@ td <- c(td, "\\addlinespace", "\\multicolumn{12}{l}{\\textit{Driessen et al. 201
     "Panel~B: the former additive shocks $G_u+\\varepsilon_u$ with default truncation (a deal path below zero pays nothing), which raises the expected payoff above the benchmark. ",
     "$n$: funds per vintage; $\\sigma$: monthly deal volatility; \\textit{Shifted LN}: shifted lognormal shock (cf.\\ \\cite{DLP12}); \\textit{Sim.~MKT}: total market return i.i.d.\\ shifted lognormal (S\\&P~500 1980--2003 moments), risk-free rate 4\\% per year; ",
     "\\textit{Det.~Timing}: evenly spaced deal investment dates; \\textit{Max.~Hold 5}: holding periods up to 5 years; $\\bar\\alpha$: upper bound on $\\alpha$. ",
-    "\\textit{\\% Bound}: share of samples whose estimate lies on the boundary of the domain (an active constraint): almost always $\\alpha=\\bar\\alpha$; $\\beta$ at $-1$ or 4 in at most 1.7\\% of samples, the gross floor never. Alpha in monthly percent. The last row: the benchmark estimates of \\cite[Table~1]{DLP12}.}"),
+    "\\textit{\\% Bound}: share of samples whose estimate lies on the boundary of the domain (an active constraint): almost always $\\alpha=\\bar\\alpha$; $\\beta$ at $-1$ or 4 in at most 1.7\\% of samples, the gross floor never. Alpha in monthly percent. The last row: the benchmark estimates of \\cite[Table~1]{DLP12}. ",
+    "Within our simulator, Table~\\ref{tab:mc_grid} isolates the $n_v\\times V$ infill noise effect; full cross-paper attribution of the gap between (S3) and \\cite[Table~1]{DLP12} also reflects DLP12's simulated market and return-linked shifted additive lognormal innovation.}"),
   "\\end{table}")
-write.table.tex("table_AD_dlp12.tex", td)
+ad.prov <- c(
+  "% Auto-generated by r_project/simulation/mc_paper.R",
+  sprintf("%% Generated %s at commit %s%s", format(Sys.time(), "%Y-%m-%d %H:%M"), git("rev-parse --short HEAD"),
+          if (length(git("status --porcelain --untracked-files=no"))) " (uncommitted changes)" else ""),
+  sprintf("%% Source: results/mc_step4/appendix_d_summary.csv (simulation/mc_appendix_d.R, commit(s) %s)",
+          paste(unique(ad$git.commit), collapse = ", ")))
+write.table.tex("table_AD_dlp12.tex", td, prov = ad.prov)
 
 # ---- figures --------------------------------------------------------------------
 # palette: the paper's teal and purple (validated with an orange third colour:

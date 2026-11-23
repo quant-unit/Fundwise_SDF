@@ -98,9 +98,11 @@ if (source.internally) {
 
 # Horizon origin and U-criterion settings (B2/B5, see helper/objective.R).
 # run_estimation() always assigns them; these defaults apply when the script
-# is sourced directly.
+# is sourced directly or from a legacy runner with source.internally = FALSE.
 if (!exists("origin.convention")) origin.convention <- "first.cf" # or "predetermined"
 if (!exists("vintage.weights")) vintage.weights <- "equal" # or "n.funds" (U_pair only)
+if (!exists("config.path")) config.path <- NULL
+if (!exists("scenario.id")) scenario.id <- NULL
 source("helper/objective.R")
 source("helper/parallel_workers.R")
 # Admissible parameter domain (Assumption A7) and constrained multi-start fit
@@ -641,14 +643,17 @@ if (source.internally) {
 vintage.blocks <- list()
 
 if (do.cross.validation) {
-  for (year in seq(1988, 2015, by = 3)) {
-    validate <- year:(year + 2)
-    block <- (year - 3):(year - 1)
-    block <- c(block, (year + 3):(year + 5))
+  # hv-block folds: 3-year validation windows buffered by 3-year blocks on each side.
+  # For max_vintage <= 2017 (including the main max_vintage = 2010 sample), active
+  # folds and training sets match the 1988..2015 / 1980:2020 schedule identically;
+  # using df0's actual vintages avoids dropping post-2020 vintages if max_vintage > 2020.
+  all.vintages <- sort(unique(df0$Vintage))
+  cv.max.year <- max(2015L, max(all.vintages) - 2L)
+  for (year in seq(1988L, cv.max.year, by = 3L)) {
+    validate <- year:(year + 2L)
+    block <- c((year - 3L):(year - 1L), (year + 3L):(year + 5L))
 
-    estimate <- 1980:2020
-    estimate <- estimate[!(estimate %in% validate)]
-    estimate <- estimate[!(estimate %in% block)]
+    estimate <- setdiff(all.vintages, c(validate, block))
 
     vintage.blocks[[paste(year)]] <- list(validate = validate, block = block, estimate = estimate)
   }
@@ -743,12 +748,14 @@ iter.run <- function(input.list) {
   est.by.type <- split.types(df.estimate)
   # full-sample fit: validation data = estimation data, split only once
   val.by.type <- if (identical(df.validate, df.estimate)) est.by.type else split.types(df.validate)
-  if (do.parallel) {
-    cl <- parallel::makeForkCluster(n.parallel.workers(length(types)))
+  n.workers <- if (isTRUE(do.parallel)) n.parallel.workers(length(types)) else 1L
+  use.parallel <- isTRUE(do.parallel) && n.workers > 1L
+  if (use.parallel) {
+    cl <- parallel::makeForkCluster(n.workers)
     on.exit(parallel::stopCluster(cl), add = TRUE) # also after an error
     doParallel::registerDoParallel(cl)
   }
-  `%op%` <- if (do.parallel) foreach::`%dopar%` else foreach::`%do%`
+  `%op%` <- if (use.parallel) foreach::`%dopar%` else foreach::`%do%`
 
   l <- list()
   for (lambda in lambdas) {

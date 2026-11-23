@@ -1756,7 +1756,7 @@ plot_max_vintage_cutoff_combined_mkt <- function(
         for (i in seq_along(nc_tags)) {
             nt <- nc_tags[i]
             nl <- nc_labels[i]
-            for (w in c("EW", "FW")) {
+            for (w in intersect(c("EW", "FW"), weighting_filter)) {
                 folder <- file.path(data_dir, paste0("cache_q_factors_", data_source, "_", w, "_VYP", region_tag, nt, "_max_vin_", v))
                 csv_path <- file.path(folder, "0_asymptotic_inference_summary.csv")
                 if (!file.exists(csv_path)) {
@@ -1989,7 +1989,7 @@ plot_max_vintage_cutoff_combined_alpha_mkt <- function(
         for (i in seq_along(nc_tags)) {
             nt <- nc_tags[i]
             nl <- nc_labels[i]
-            for (w in c("EW", "FW")) {
+            for (w in intersect(c("EW", "FW"), weighting_filter)) {
                 folder <- file.path(data_dir, paste0(
                     "cache_q_factors_", data_source, "_", w,
                     "_VYP", region_tag, nt, "_max_vin_", v
