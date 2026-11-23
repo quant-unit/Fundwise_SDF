@@ -229,6 +229,14 @@ Fix $\beta$ and drop the box constraint on $\alpha$.
 (b) For $t = t_v^{\mathrm{first}} < \tau^\ast$, the compounding factor $R^b_{t_v^{\mathrm{first}},\tau^\ast}(\alpha,\beta) = \prod_{u=t_v^{\mathrm{first}}+1}^{\tau^\ast} G_u(\alpha,\beta)$ grows like $\alpha^{\tau^\ast - t_v^{\mathrm{first}}}$ and dominates every later cash flow, which grows at strictly lower degree in $\alpha$. Thus $|\bar\epsilon_{v,H}(\alpha,\beta)| \to +\infty$ and $Q_H^{\mathrm{L2}} \to +\infty$. For $U_{v,H}$, initial capital calls $CF_{v,i,t_v^{\mathrm{first}}} < 0$ have the same sign across funds, so the dominant pair products $CF_{v,i,t_v^{\mathrm{first}}}CF_{v,j,t_v^{\mathrm{first}}} > 0$ are strictly positive when at least two funds invest at $t_v^{\mathrm{first}}$, and $U_{v,H}(\alpha,\beta) \to +\infty$.
 \end{proof}
 
+\begin{remark}[Large-$\alpha$ behavior of linear mean-moment (IV) estimators]
+\label{rem:iv_alpha}
+Consider a linear mean-moment vector $\bar{g}_0(\alpha,\beta) = V^{-1}\sum_{v=1}^V z_v PV_v(\alpha,\beta)$ for joint $(\alpha,\beta)$ estimation. Because the moment is linear in $PV_v$, neither idiosyncratic fund noise nor zero-mean shared vintage shocks generate a population variance tilt at $\theta_0$. However, large-$\alpha$ boundary behavior depends critically on the origin convention:
+(i) under a predetermined origin with $CF_{v,t_v^0} = 0$, $PV_v(\alpha,\beta) \to 0$ for every vintage as $\alpha \to +\infty$, so $\bar{g}_0(\alpha,\beta) \to 0$ for \emph{any} instrument vector $z_v$---making $\alpha = +\infty$ a spurious global zero of un-studentized GMM (and in a studentized or continuously-updated AR statistic, both $\bar{g}_0$ and its standard error vanish at the same rate $O(\alpha^{-\Delta})$ determined by the earliest nonzero cash flow, so the test statistic approaches a finite limit rather than $+\infty$);
+(ii) under the first-cash-flow origin ($CF_{v,t_v^0} < 0$), $\bar{g}_0(\alpha,\beta) \to V^{-1}\sum_v z_v CF_{v,t_v^0} \neq 0$ (strictly negative for $z_{1,v} \equiv 1$), ruling out the $+\infty$ root, though strong positive cohort realizations can still push finite-sample roots above the $+2\%$ bound and two-parameter IV faces severe weak-instrument collinearity on $V \approx 25$ vintages;
+(iii) compounding by $A_{v,H}(\alpha,\beta)$ ($H>0$) sends the moment to $-\infty$ as $\alpha \to +\infty$ under either origin, eliminating the predetermined-origin $+\infty$ root at the cost of requiring Condition~(X) rather than (P) alone.
+\end{remark}
+
 \begin{lemma}[Infill consistency, $n_v \to \infty$]
 \label{lem:infill}
 (a) Fix $V$ and let $n_v \to \infty$ for each $v$. If common vintage shocks are absent and $\theta_0$ uniquely sets $V^{-1}\sum_v A_{v,H}(\theta)^2\tilde\mu_v(\theta)^2$ to zero on $\Theta$, where $\tilde\mu_v(\theta)$ is the vintage's realized conditional mean, then $\hat\theta_H^{\mathrm{L2}} \xrightarrow{p} \theta_0$ at every fixed $H \ge 0$; with unspanned common vintage shocks, fixed-$V$ infill converges instead to the random minimizer of that limit. (b) Letting both $n_v \to \infty$ and $V \to \infty$ eliminates the $O(1/n_v)$ term of T4, with limit criterion $\mathbb{E}[A_{v,H}(\theta)^2(\mu_v(\theta)^2 + c_v(\theta))]$.
@@ -306,11 +314,12 @@ In finite vintage panels ($V = 23$--$27$), classical HAC inference with normal c
 
 \subsection{Full Step 4 Monte Carlo appendix exhibits}
 
-Tables~\ref{tab:mc_size}--\ref{tab:mc_hardening} and Figure~\ref{fig:mc_growing_v} report the complete Step~4 Monte Carlo appendix exhibits across all 55 designs (1,246 summary rows), including Gaussian location-model size benchmarks (D0), SE-method comparisons (Bartlett $S=7$--$25$, independent, jackknife), two-factor $q^5$ models (Table~\ref{tab:mc_two_factor}), the $n_v \times V$ infill grid, growing-$V$ plateau diagnostics, and the hardening designs (Design~B heterogeneous fund sizes; Designs~A$'$ and~A path-correlated shocks).
+Tables~\ref{tab:mc_size}--\ref{tab:mc_hardening} and Figure~\ref{fig:mc_growing_v} report the complete Step~4 Monte Carlo appendix exhibits across all 56 designs (1,270 summary rows), including Gaussian location-model size benchmarks (D0), SE-method comparisons (Bartlett $S=7$--$25$, independent, jackknife), two-factor $q^5$ models (Table~\ref{tab:mc_two_factor}), $U_{v,H}$ joint $(\alpha,\beta)$ boundary-hit shares across all 13 designs (Table~\ref{tab:mc_alpha_beta_bounds}), the $n_v \times V$ infill grid, growing-$V$ plateau diagnostics, and the hardening designs (Design~B heterogeneous fund sizes; Designs~A$'$ and~A path-correlated shocks).
 
 \input{../../r_project/results/mc_step4/paper/table_AS1_size.tex}
 \input{../../r_project/results/mc_step4/paper/table_AS2_se_study.tex}
 \input{../../r_project/results/mc_step4/paper/table_S2_two_factor.tex}
+\input{../../r_project/results/mc_step4/paper/table_AS3b_alpha_beta_bounds.tex}
 \input{../../r_project/results/mc_step4/paper/table_AS4_grid.tex}
 \input{../../r_project/results/mc_step4/paper/table_AS5_hardening.tex}
 \input{../../r_project/results/mc_step4/paper/figure_S3_growing_V.tex}

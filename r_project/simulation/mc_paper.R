@@ -34,6 +34,7 @@ DESIGN.LABEL <- c(core_BO = "Core, Buyout", core_VC = "Core, VC",
   m1_thin = "M1 fund counts x 0.25", m1_wide = "M1 fund counts x 4",
   m2_early = "M2 vintages 1985-97", m2_late = "M2 vintages 1998-2010",
   m3_sigma = "M3 sigma x 1.5", m4_shared = "M4 shared shock c", m4_shared2 = "M4 shared shock 2c",
+  u_vc_shared = "VC shared shock (sd 0.50)",
   m5_life_2_2 = "M5 lives 2/2 years", m5_life_3_10 = "M5 lives 3/10 years", m7_beta2 = "M7 beta = 2")
 MARGINS <- c("core_BO", "m1_thin", "m1_wide", "m2_early", "m2_late", "m3_sigma", "m4_shared", "m4_shared2",
              "m5_life_2_2", "m5_life_3_10", "m7_beta2")
@@ -257,12 +258,13 @@ a2 <- c(a2, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
   "\\end{table}")
 write.table.tex("table_AS2_se_study.tex", a2)
 
-# ---- Table A-S3: (alpha, beta) model -------------------------------------------------
+# ---- Table A-S3 (main text Table 3): (alpha, beta) model -----------------------------
+H4 <- c(0, 5, 15, 30)
 a3 <- c("\\begin{table}[htbp]", "\\centering", "\\footnotesize",
   "\\caption{Monte Carlo, $(\\alpha,\\beta)$ model: true $\\alpha=0$, $\\beta_{MKT}=1$}", "\\label{tab:mc_alpha_beta}",
   "\\setlength{\\tabcolsep}{4pt}",
   "\\begin{tabular}{ll rrrrr rrrrr}", "\\toprule",
-  "\\multicolumn{12}{l}{\\textit{Panel A: core designs}} \\\\", "\\addlinespace[2pt]",
+  "\\multicolumn{12}{l}{\\textit{Panel A: core designs ($c_v=0$, 1{,}000 replications)}} \\\\", "\\addlinespace[2pt]",
   " & & \\multicolumn{5}{c}{Buyout shape} & \\multicolumn{5}{c}{VC shape} \\\\",
   "\\cmidrule(lr){3-7} \\cmidrule(lr){8-12}",
   " & & \\multicolumn{2}{c}{$\\hat\\beta_{MKT}$} & \\multicolumn{2}{c}{$\\hat\\alpha$, \\%/month} & & \\multicolumn{2}{c}{$\\hat\\beta_{MKT}$} & \\multicolumn{2}{c}{$\\hat\\alpha$, \\%/month} & \\\\",
@@ -276,26 +278,53 @@ for (e in names(EST.LABEL)) for (h in H3) {
   }))
   a3 <- c(a3, paste0(if (h == 0) EST.LABEL[e] else "", " & ", h, " yr & ", paste(vals, collapse = " & "), " \\\\"))
 }
-a3 <- c(a3, "\\end{tabular}", "", "\\vspace{6pt}", "\\begin{tabular}{l rrr rrr}", "\\toprule",
-  "\\multicolumn{7}{l}{\\textit{Panel B: share of $U_{v,H}$ estimates on a bound of the admissible domain, \\%}} \\\\", "\\addlinespace[2pt]",
-  " & \\multicolumn{3}{c}{$q_v=1$} & \\multicolumn{3}{c}{$q_v=n_v$} \\\\", "\\cmidrule(lr){2-4} \\cmidrule(lr){5-7}",
-  "Design & 0 yr & 15 yr & 30 yr & 0 yr & 15 yr & 30 yr \\\\", "\\midrule")
-for (d in c("core_BO", "core_VC", MARGINS[-1])) {
-  vals <- unlist(lapply(c("U.eq", "U.n"), function(e) vapply(H3, function(h) cell("AS3", srow(d, e, "Alpha", "MKT", h), "on.bound", pct), "")))
-  a3 <- c(a3, sprintf("%s & %s \\\\", DESIGN.LABEL[d], paste(vals, collapse = " & ")))
+a3 <- c(a3, "\\midrule",
+  "\\multicolumn{12}{l}{\\textit{Panel B: shared vintage shocks ($c_v>0$, 250 replications)}} \\\\", "\\addlinespace[2pt]",
+  " & & \\multicolumn{5}{c}{Buyout shape ($\\sigma_W=0.306$, M4 $2c$)} & \\multicolumn{5}{c}{VC shape ($\\sigma_W=0.50$, VC-scale)} \\\\",
+  "\\cmidrule(lr){3-7} \\cmidrule(lr){8-12}",
+  " & & \\multicolumn{2}{c}{$\\hat\\beta_{MKT}$} & \\multicolumn{2}{c}{$\\hat\\alpha$, \\%/month} & & \\multicolumn{2}{c}{$\\hat\\beta_{MKT}$} & \\multicolumn{2}{c}{$\\hat\\alpha$, \\%/month} & \\\\",
+  "\\cmidrule(lr){3-4} \\cmidrule(lr){5-6} \\cmidrule(lr){8-9} \\cmidrule(lr){10-11}",
+  "Estimator & $H$ & Bias & SD & Bias & SD & Bound\\,\\% & Bias & SD & Bias & SD & Bound\\,\\% \\\\", "\\midrule")
+for (e in c("L2.vyp", "U.eq", "U.n")) for (h in H4) {
+  vals <- unlist(lapply(c("m4_shared2", "u_vc_shared"), function(d) {
+    b <- srow(d, e, "Alpha", "MKT", h); a <- srow(d, e, "Alpha", "Alpha", h)
+    c(cell("AS3", b, "bias"), cell("AS3", b, "sd"), cell("AS3", a, "bias", f3p), cell("AS3", a, "sd", f3p), cell("AS3", b, "on.bound", pct))
+  }))
+  a3 <- c(a3, paste0(if (h == 0) EST.LABEL[e] else "", " & ", h, " yr & ", paste(vals, collapse = " & "), " \\\\"))
 }
 bo.a0 <- srow("core_BO", "U.eq", "Alpha", "Alpha", 0); vc.a0 <- srow("core_VC", "U.eq", "Alpha", "Alpha", 0)
 bo.a30 <- srow("core_BO", "U.eq", "Alpha", "Alpha", 30); vc.a30 <- srow("core_VC", "U.eq", "Alpha", "Alpha", 30)
 bo.b30 <- srow("core_BO", "U.eq", "Alpha", "MKT", 30); vc.b30 <- srow("core_VC", "U.eq", "Alpha", "MKT", 30)
+m4.u0 <- srow("m4_shared2", "U.eq", "Alpha", "Alpha", 0); m4.u15 <- srow("m4_shared2", "U.eq", "Alpha", "Alpha", 15)
+vc.u0 <- srow("u_vc_shared", "U.eq", "Alpha", "Alpha", 0); vc.u15 <- srow("u_vc_shared", "U.eq", "Alpha", "Alpha", 15)
 a3 <- c(a3, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
-  paste0("{\\scriptsize\\textit{Notes:} Designs as in Table~\\ref{tab:mc_core} and Figure~\\ref{fig:mc_margins}; joint fit of $(\\alpha,\\beta_{MKT})$ over the admissible domain ($\\alpha\\in[-2\\%,2\\%]$ per month, $\\beta_{MKT}\\in[-1,4]$, monthly gross benchmark return at least 0.08). ",
-    "Bound: estimate on a bound of the domain (included in bias and SD). ",
-    sprintf("Joint inference calibration for $U_{v,H}$ ($q_v=1$) in the EW cores: at $H=0$, the nominal 5\\%% fixed-$b$ test of $\\alpha=0$ rejects in %s\\%% (Buyout) and %s\\%% (VC) of tested draws (so single-factor near-nominal size does not carry over to joint $\\alpha$); at 30 years, conditional rejection falls to %s\\%%/%s\\%% for $\\alpha$ and %s\\%%/%s\\%% for $\\beta$ with %s\\%%/%s\\%% on the boundary and same-sample SE/SD ratios of %s/%s for $\\beta$ (vs.\\ %s/%s against all-draw SD). ",
+  paste0("{\\scriptsize\\textit{Notes:} Joint fit of $(\\alpha,\\beta_{MKT})$ over the admissible domain ($\\alpha\\in[-2\\%,2\\%]$ per month, $\\beta_{MKT}\\in[-1,4]$, monthly gross benchmark return $\\ge 0.08$). ",
+    "Panel~A: core designs of Table~\\ref{tab:mc_core} ($c_v=0$). Panel~B: shared lognormal vintage shocks $W_v\\sim\\exp(\\mathcal N(-\\sigma_W^2/2,\\sigma_W^2))$ common to all deals of vintage $v$ ($\\sigma_W=0.306$ on Buyout shape, M4 $2c$; $\\sigma_W=0.50$ on VC shape, matching empirical VC cross-vintage PV dispersion of 0.44 EW / 0.54 FW). ",
+    "Bound: share of draws on an active constraint of $\\Theta$ (included in bias and SD; in VC $\\sigma_W=0.50$ at $H=0$, nearly all boundary hits are $\\alpha=+2\\%$: 40.0\\% L2 VYP, 24.8\\% $U_{v,0}$ $q_v=1$, 42.8\\% $q_v=n_v$). ",
+    sprintf("Joint inference calibration for $U_{v,H}$ ($q_v=1$): in the Panel~A cores at $H=0$, the nominal 5\\%% fixed-$b$ test of $\\alpha=0$ rejects in %s\\%% (Buyout) and %s\\%% (VC) of tested draws; at 30 years conditional rejection collapses to %s\\%%/%s\\%% for $\\alpha$ and %s\\%%/%s\\%% for $\\beta$ (same-sample SE/SD %s/%s vs.\\ %s/%s against all-draw SD). In Panel~B, $H=15$ yr cuts $U_{v,H}$ ($q_v=1$) $\\alpha=0$ rejection from %s\\%% to %s\\%% (Buyout $2c$) and from %s\\%% to %s\\%% (VC $\\sigma_W=0.50$). ",
       pct(bo.a0$size), pct(vc.a0$size), pct(bo.a30$size), pct(vc.a30$size), pct(bo.b30$size), pct(vc.b30$size),
-      pct(bo.b30$on.bound), pct(vc.b30$on.bound), f3(bo.b30$se.ratio.tested), f3(vc.b30$se.ratio.tested), f3(bo.b30$se.ratio), f3(vc.b30$se.ratio)),
-    sprintf("Monte Carlo SE of the $\\hat\\beta$ bias in Panel~A %s.}", mcse.range(s$mcse.bias[s$design %in% c("core_BO", "core_VC") & s$model == "Alpha" & s$parameter == "MKT"]))),
+      f3(bo.b30$se.ratio.tested), f3(vc.b30$se.ratio.tested), f3(bo.b30$se.ratio), f3(vc.b30$se.ratio),
+      pct(m4.u0$size), pct(m4.u15$size), pct(vc.u0$size), pct(vc.u15$size)),
+    sprintf("Boundary rates across all 13 core and margin designs appear in Appendix Table~\\ref{tab:mc_alpha_beta_bounds}. Monte Carlo SE of $\\hat\\beta$ bias: %s (Panel~A), %s (Panel~B).}",
+      mcse.range(s$mcse.bias[s$design %in% c("core_BO", "core_VC") & s$model == "Alpha" & s$parameter == "MKT"]),
+      mcse.range(s$mcse.bias[s$design %in% c("m4_shared2", "u_vc_shared") & s$model == "Alpha" & s$parameter == "MKT"]))),
   "\\end{table}")
 write.table.tex("table_AS3_alpha_beta.tex", a3)
+
+# ---- Table A-S3b (Online Appendix): U_{v,H} (alpha, beta) boundary hits across all designs ----
+a3b <- c("\\begin{table}[htbp]", "\\centering", "\\footnotesize",
+  "\\caption{Monte Carlo, $(\\alpha,\\beta)$ model: share of $U_{v,H}$ estimates on a bound of $\\Theta$ (\\%)}", "\\label{tab:mc_alpha_beta_bounds}",
+  "\\begin{tabular}{l rrr rrr}", "\\toprule",
+  " & \\multicolumn{3}{c}{$q_v=1$} & \\multicolumn{3}{c}{$q_v=n_v$} \\\\", "\\cmidrule(lr){2-4} \\cmidrule(lr){5-7}",
+  "Design & 0 yr & 15 yr & 30 yr & 0 yr & 15 yr & 30 yr \\\\", "\\midrule")
+for (d in c("core_BO", "core_VC", MARGINS[-1], "u_vc_shared")) {
+  vals <- unlist(lapply(c("U.eq", "U.n"), function(e) vapply(H3, function(h) cell("AS3b", srow(d, e, "Alpha", "MKT", h), "on.bound", pct), "")))
+  a3b <- c(a3b, sprintf("%s & %s \\\\", DESIGN.LABEL[d], paste(vals, collapse = " & ")))
+}
+a3b <- c(a3b, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
+  "{\\scriptsize\\textit{Notes:} Share of Monte Carlo draws in which the joint $(\\alpha,\\beta_{MKT})$ $U_{v,H}$ minimizer lies on an active boundary constraint of $\\Theta$ ($\\alpha\\in[-2\\%,2\\%]$ per month, $\\beta_{MKT}\\in[-1,4]$, monthly gross benchmark return $\\ge 0.08$). Cores: 1{,}000 replications; M5 2/2: 1{,}000; all other margins and VC shared shock ($\\sigma_W=0.50$): 250.}",
+  "\\end{table}")
+write.table.tex("table_AS3b_alpha_beta_bounds.tex", a3b)
 
 # ---- Table A-S4: DLP12 grid -------------------------------------------------------
 a4 <- c("\\begin{table}[htbp]", "\\centering", "\\footnotesize",

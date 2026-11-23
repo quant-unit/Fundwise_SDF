@@ -120,3 +120,10 @@ designs:
   pd_V25_n20_2c:  {consecutive: {funds: 20, count: 25, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, path_shock: {a: 0.615, level: deal}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
   pd_V100_n20_c:  {consecutive: {funds: 20, count: 100, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, path_shock: {a: 0.307, level: deal}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
   pd_V100_n20_2c: {consecutive: {funds: 20, count: 100, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, path_shock: {a: 0.615, level: deal}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  # Shared-vintage-shock exploding-alpha stress test for U_{v,H} (23 Nov 2026):
+  # VC shape with shared vintage shock sd = 0.50 (matching empirical VC vintage
+  # PV dispersion: 0.44 EW, 0.54 FW), joint (alpha, beta), horizons 0, 5, 15, 30 yr.
+  # Demonstrates Lemma lem:coercivity & Theorem 1(T8): under c_v > 0, U_{v,0}
+  # inherits shared-shock exploding alpha at H = 0, and moderate H > 0 restores
+  # coercivity and lowers RMSE.
+  u_vc_shared: {shape: VC, sigma: 0.154, shared_sd: 0.50, estimators: [L2.vyp, U.eq, U.n], models: [Alpha], horizons: [0, 60, 180, 360], reps: 250}
