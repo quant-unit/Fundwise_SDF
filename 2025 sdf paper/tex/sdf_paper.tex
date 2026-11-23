@@ -108,9 +108,11 @@ Only in the \citet{DLP12} infill limit ($n_v \to \infty$ inside fixed vintages, 
 
 A natural modification is to average pricing errors over additional compounding dates $\mathcal{T}_{v,H}$ beyond fund inception, spanning a horizon $H \ge 0$ years.
 We establish an exact algebraic rescaling identity: for any vintage portfolio sharing a common origin $t_v^0$, the horizon-averaged pricing error equals $\bar\epsilon_{v,H}(\theta) = A_{v,H}(\theta)\,PV_v(\theta)$, where $A_{v,H}(\theta)$ is the average compounding factor over $\mathcal{T}_{v,H}$.
-This identity transforms how horizon variation must be interpreted.
-When deal-level pricing errors have zero conditional mean given the factor path, the horizon-averaged pricing error preserves exact mean zero at $\theta_0$ for every $H \ge 0$; yet squared loss still embeds the finite-pool variance term, now multiplied by $A_{v,H}(\theta)^2$.
-Because $A_{v,H}(\theta)$ increases in $\theta$ at longer horizons, differentiating $A_{v,H}(\theta)^2$ introduces a downward \emph{Scale-Jacobian pull} that pushes the squared-loss target below $\theta_0$ as $H$ grows.
+This identity shows that horizon averaging adds no independent cash-flow observations, yet it is \emph{not} statistically neutral because $A_{v,H}(\theta)$ is both random (depending on post-inception factor realizations) and parameter-dependent.
+Two distinct channels follow.
+First, under inception pricing~(P) alone (without strict factor-path exogeneity~(X)), multiplying by $A_{v,H}(\theta_0)$ introduces the first-moment \emph{compounding-horizon covariance wedge} $b_{v,H} := \mathrm{Cov}(A_{v,H}(\theta_0),\,PV_v(\theta_0) \mid \mathcal{F}_{t_v^0})$, which can shift the mean pricing condition away from zero at $H > 0$.
+Second, even under strict exogeneity~(X)---where $b_{v,H} = 0$ identically and $\mathbb{E}[\bar\epsilon_{v,H}(\theta_0)] = 0$ for every $H \ge 0$---squared loss multiplies the finite-pool variance term by $A_{v,H}(\theta)^2$.
+Because $A_{v,H}(\theta)$ increases in $\theta$ at longer horizons, differentiating $A_{v,H}(\theta)^2$ introduces a separate second-moment \emph{Scale-Jacobian pull} that pushes the squared-loss target below $\theta_0$ as $H$ grows.
 Consequently, the horizon profile of a squared-loss estimator \emph{displays} finite-pool noise distortion rather than curing it: any intermediate horizon where squared-loss bias crosses zero is a data-generating-process-specific accident where positive inception variance tilt cancels negative long-horizon scale pull.
 
 To solve the finite-pool variance tilt directly, we propose the cross-fund pair-product criterion $U_{v,H}$, which drops the own-fund diagonal squares within each vintage and averages distinct-fund cross-products $\bar\epsilon_{i,H}(\theta)\bar\epsilon_{j,H}(\theta)$ ($i \neq j$) across vintages with equal vintage weights ($q_v = 1$).
@@ -353,7 +355,13 @@ Suppose all funds in vintage $v$ share origin $t_v^0$ and evaluation set $\mathc
   \qquad
   A_{v,H}(\theta) := \frac{1}{|\mathcal{T}_{v,H}|}\sum_{\tau \in \mathcal{T}_{v,H}} \frac{\Psi_{t_v^0}(\theta)}{\Psi_\tau(\theta)}.
   \]
-  \item[\textbf{T2}] \emph{(Horizon mean preservation under (X).)} Under Condition~(X), $\mathbb{E}[\bar\epsilon_{v,H}(\theta_0) \mid \mathcal{F}^{\mathrm{pub}}, \mathcal{W}_v] = 0$ and hence $\mathbb{E}[\bar\epsilon_{v,H}(\theta_0)] = 0$ for every $H \ge 0$.
+  \item[\textbf{T2}] \emph{(Horizon mean preservation under (X) vs.\ compounding wedge under (P) alone.)} Under Condition~(X), $\mathbb{E}[\bar\epsilon_{v,H}(\theta_0) \mid \mathcal{F}^{\mathrm{pub}}, \mathcal{W}_v] = 0$ and hence $\mathbb{E}[\bar\epsilon_{v,H}(\theta_0)] = 0$ for every $H \ge 0$. Under Condition~(P) alone, however, $A_{v,H}(\theta_0)$ depends on post-inception factor realizations, so
+  \[
+  \mathbb{E}\!\left[\bar\epsilon_{v,H}(\theta_0) \,\middle|\, \mathcal{F}_{t_v^0}\right]
+  = \mathrm{Cov}\!\left(A_{v,H}(\theta_0),\,PV_v(\theta_0) \,\middle|\, \mathcal{F}_{t_v^0}\right)
+  =: b_{v,H},
+  \]
+  preserving the first-moment compounding-horizon covariance wedge of Lemma~\ref{lem:deal_level_timing}(3) whenever pricing errors covary with the realized factor path (distinct from the second-moment Scale-Jacobian shift of T5--T6, which arises even when (X) holds and $b_{v,H} = 0$).
   \item[\textbf{T3}] \emph{(Inception L2 variance tilt.)} Under Condition~(P) with $\mathcal{F}_{t_v^0}$-measurable fund weights, at $H = 0$ the population L2 gradient at $\theta_0$ equals
   \[
   \nabla_\theta\,\mathbb{E}\!\left[PV_v(\theta)^2\right]\Big|_{\theta=\theta_0}
