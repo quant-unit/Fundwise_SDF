@@ -176,29 +176,110 @@ Although the linear inception moment $\bar g_0(\theta) = V^{-1}\sum_{v=1}^V PV_v
 \end{enumerate}
 
 %----------------------------------------------------------------------
-\section{The Heuristic for $H^\ast \approx 2 \times \text{Deal Holding Period}$ ($2T$)}
+\section{The Heuristic for $H^\ast \approx 2T$ — and the Effect of Positive Returns ($G > 1$)}
 %----------------------------------------------------------------------
 
-Consider a single deal investing $\$1$ at $t=0$ and paying $R^b_{0,T}(\theta_0)(1+\varepsilon)$ at exit date $T$ ($\E[\varepsilon\mid\F^{\mathrm{pub}}]=0$, $\Var(\varepsilon\mid\F^{\mathrm{pub}})=\sigma^2$). Under both L2 (with $\sigma^2/n$) and $U_{v,H}$ with shared shocks ($c_v$), the first-order noise-tilt gradient at $\theta_0$ is proportional to
+\subsection*{6.1 Step-by-step intuition: why two opposite forces balance}
+
+Take a single deal invested at date $a \ge 0$ (after vintage origin $t_v^0 = 0$) and exiting at date $b > a$ with random payoff $CF_b = R^b_{a,b}(\theta_0)(1+\varepsilon)$, where $\E[\varepsilon\mid\F^{\mathrm{pub}}]=0$ and $\Var(\varepsilon\mid\F^{\mathrm{pub}})=\sigma^2>0$. (When the deal starts at inception $a=0$, the exit date $b$ equals the holding period $T$.)
+
+At a candidate parameter $\theta$, the deal's inception NPV is
 \[
-\underbrace{\bar S_H(\theta_0)}_{\text{horizon compounding}} \;-\; \underbrace{S_{0,T}(\theta_0)}_{\text{deal discounting}},
-\qquad
-\bar S_H(\theta_0) := \frac{\partial \log A_H(\theta_0)}{\partial \theta},
-\qquad
-S_{0,T}(\theta_0) := \frac{\partial \log R^b_{0,T}(\theta_0)}{\partial \theta}.
+PV(\theta) \;=\; -\frac{1}{R^b_{0,a}(\theta)} + \frac{R^b_{a,b}(\theta_0)}{R^b_{0,b}(\theta)}\,(1+\varepsilon).
 \]
-Under flat (or small) per-period benchmark returns ($G_u\approx 1$), differentiating with respect to $\alpha$:
+Conditional on the factor path, the initial outlay term is deterministic, so \textbf{all} residual variance comes from the discounted exit payout at date $b$:
+\[
+\E\!\left[PV(\theta)^2 \,\middle|\, \F^{\mathrm{pub}}\right]
+\;=\; \underbrace{\left(\frac{R^b_{a,b}(\theta_0)}{R^b_{0,b}(\theta)} - \frac{1}{R^b_{0,a}(\theta)}\right)^2}_{\text{squared mean signal }(=0\text{ at }\theta_0)}
+\;+\; \underbrace{\left(\frac{R^b_{a,b}(\theta_0)}{R^b_{0,b}(\theta)}\right)^2 \sigma^2}_{\text{discounted payout noise variance}}.
+\]
+Under horizon averaging over dates $\tau \in \{0,1,\dots,H\}$, the expected squared criterion is $Q_H(\theta) = A_H(\theta)^2\,\E[PV(\theta)^2\mid\F^{\mathrm{pub}}]$. Now differentiate $Q_H(\theta)$ and evaluate at the true parameter $\theta=\theta_0$:
 \begin{itemize}
-  \item The deal's discounting sensitivity over holding period $T$ is $S_{0,T} \approx T$.
-  \item Because $A_H = \frac{1}{H+1}\sum_{\tau=0}^{H} R^b_{0,\tau}$ \textbf{averages} cumulative growth over every date from $0$ to $H$ (rather than evaluating at $\tau=H$ alone), its average compounding length is the midpoint of $[0,H]$:
+  \item Because the mean-signal term is quadratic around zero at $\theta_0$, \textbf{both its value and its first derivative vanish at $\theta_0$}.
+  \item Only the noise-variance term $A_H(\theta)^2 R^b_{0,b}(\theta)^{-2} R^b_{a,b}(\theta_0)^2\sigma^2$ survives differentiation. Applying $\partial_\theta(u^2) = 2u^2\,\partial_\theta\log u$ to $u(\theta)=A_H(\theta)/R^b_{0,b}(\theta)$ gives:
   \[
-  \bar S_H \;\approx\; \frac{1}{H+1}\sum_{\tau=0}^{H} \tau \;=\; \frac{H}{2}.
-  \]
-  \item Setting the gradient to zero ($\bar S_H = S_{0,T}$) immediately yields the rule of thumb:
-  \[
-  \frac{H}{2} \;\approx\; T \quad\Longrightarrow\quad H^\ast \;\approx\; 2T.
+  \left.\frac{\partial Q_H(\theta)}{\partial\theta}\right|_{\theta=\theta_0}
+  \;=\; 2\,\sigma^2\,\frac{A_H(\theta_0)^2}{R^b_{0,a}(\theta_0)^2}\!\left[\underbrace{\frac{\partial\log A_H(\theta_0)}{\partial\theta}}_{\bar S_H(\theta_0)\;>\;0\text{ (compounding forward)}} \;-\; \underbrace{\frac{\partial\log R^b_{0,b}(\theta_0)}{\partial\theta}}_{S_{0,b}(\theta_0)\;>\;0\text{ (discounting backward)}}\right].
   \]
 \end{itemize}
-With positive average benchmark returns, later dates $\tau$ receive slightly larger $R^b_{0,\tau}$ weights inside $A_H$, pulling the crossing slightly below $2T$. For PE funds whose cash-flow-weighted exit timing averages $T\approx 6$--$8$\,years after vintage start, $2T\approx 12$--$16$\,years---explaining why L2 bias (Panel~A) and $U_{v,H}$ shared-shock bias (Panel~B) both cross near $H=15$\,years, and why shortening deal lives to 2/2\,years (\texttt{M5 2/2}) shifts the crossing down to $H\approx 5$\,years. Because $H^\ast$ depends on the unknown deal-duration and factor-path geometry, it is a useful diagnostic rule of thumb rather than a universal optimal horizon.
+\textbf{Economic intuition:} Raising the discount rate ($\alpha$ or $\beta$) triggers \emph{two opposing forces} on squared noise:
+\begin{enumerate}
+  \item \emph{Discounting backward ($-S_{0,b}$):} shrinks the noisy exit payout at date $b$ back to date $0$, lowering variance and tilting $\hat\theta$ \textbf{upward}.
+  \item \emph{Compounding forward ($+\bar S_H$):} compounds the inception error forward across $\tau\in[0,H]$, amplifying variance and pulling $\hat\theta$ \textbf{downward}.
+\end{enumerate}
+The first-order bias vanishes precisely where the two forces cancel: $\bar S_H(\theta_0) = S_{0,b}(\theta_0)$. (Under shared vintage shocks $c_v>0$, the exact same balance governs $U_{v,H}$ with $c_v$ replacing $\sigma^2$.)
+
+\subsection*{6.2 Flat returns ($G = 1$): why $H^\ast = 2T$}
+
+Suppose the per-period gross benchmark return is constant: $G_u(\theta_0)\equiv G = 1+g > 0$, so $R^b_{0,\tau}(\theta_0)=G^\tau$. Differentiating $G^\tau$ with respect to $\alpha$ gives $\partial_\alpha G^\tau = \tau G^{\tau-1} = (\tau/G)\,G^\tau$. Hence:
+\[
+S_{0,b} = \frac{b}{G},
+\qquad
+\bar S_H = \frac{\sum_{\tau=0}^H \partial_\alpha G^\tau}{\sum_{\tau=0}^H G^\tau}
+= \frac{1}{G}\,\underbrace{\frac{\sum_{\tau=0}^H \tau\,G^\tau}{\sum_{\tau=0}^H G^\tau}}_{=:\,\bar\tau(H;\,G)}.
+\]
+The $1/G$ factor cancels on both sides! Thus the zero-bias condition $\bar S_H = S_{0,b}$ reduces to a single \textbf{duration-matching equation}:
+\begin{keybox}[title={Exact Zero-Bias Duration Condition (constant gross return $G = 1+g$)}]
+\[
+\bar\tau(H^\ast;\,G) \;:=\; \frac{\sum_{\tau=0}^{H^\ast} \tau\,G^\tau}{\sum_{\tau=0}^{H^\ast} G^\tau} \;=\; T \qquad (\text{where } T = b\text{ is the exit date from vintage origin }t_v^0).
+\]
+\end{keybox}
+When $G = 1$ ($g = 0$), every valuation date $\tau\in\{0,\dots,H\}$ carries equal weight $G^\tau = 1$, so the average valuation date is simply the unweighted midpoint:
+\[
+\bar\tau(H;\,1) \;=\; \frac{1}{H+1}\sum_{\tau=0}^{H}\tau \;=\; \frac{H}{2}
+\quad\Longrightarrow\quad
+\frac{H^\ast}{2} \;=\; T
+\quad\Longrightarrow\quad
+H^\ast \;=\; 2T.
+\]
+\emph{Why $2T$ instead of $T$?} Because $A_H$ does not compound solely to the single endpoint $\tau=H$ (which would balance at $H=T$); it \emph{averages} cumulative compounding over all dates from $0$ to $H$. To make the \emph{average} compounding date match $T$, the window must extend twice as far, to $2T$.
+
+\subsection*{6.3 Positive benchmark returns ($G = 1 + g > 1$): $H^\ast$ shrinks strictly below $2T$}
+
+When $G = 1+g > 1$ (continuous-time rate $r = \log G > 0$), later dates $\tau$ near $H$ carry exponentially larger weight $G^\tau = e^{r\tau}$ inside $A_H$. Therefore the return-weighted mean valuation date $\bar\tau(H;G)$ lies strictly \emph{above} the midpoint $H/2$, so $\bar\tau(H;G)$ reaches $T$ at a \textbf{strictly shorter horizon $H^\ast < 2T$}.
+
+In continuous time (matching exact monthly discrete sums to $<0.07$\,yr across all cells below):
+\[
+\bar\tau(H;\,r)
+\;=\; \frac{\int_0^H \tau\,e^{r\tau}\,d\tau}{\int_0^H e^{r\tau}\,d\tau}
+\;=\; H - \frac{1}{r} + \frac{H}{e^{rH} - 1}
+\;=\; T.
+\]
+Two illuminating limiting formulas follow immediately:
+\begin{itemize}
+  \item \textbf{Small-$rT$ expansion} (expanding $\frac{x}{e^x-1}=1-\frac{x}{2}+\frac{x^2}{12}-\cdots$): $\bar\tau(H;r)\approx \frac{H}{2} + \frac{rH^2}{12}$, which solves to
+  \[
+  H^\ast \;\approx\; 2T - \frac{2}{3}\,r\,T^2 \;<\; 2T.
+  \]
+  \item \textbf{Large-$rT$ (high-return / long-horizon) asymptote} ($e^{rH}\gg 1$): $\bar\tau(H;r)\approx H - \frac{1}{r}$, so
+  \[
+  H^\ast \;\approx\; T + \frac{1}{r}.
+  \]
+\end{itemize}
+For market beta ($\beta$), $\partial_\beta \log R^b_{0,\tau} = \sum_{u=1}^\tau F_u/G_u$; under a constant mean excess return $\bar F>0$, the factor $\bar F/G$ cancels on both sides as well, giving the \emph{exact same} duration-matching equation $\bar\tau(H^\ast; G) = T$ (on a realized noisy path, historical bull/bear timing adds path-specific variation).
+
+{\small
+\begin{center}
+\begin{tabular}{@{}r rrrrrr@{}}
+\toprule
+& \multicolumn{6}{c}{Exact zero-bias horizon $H^\ast$ (years) by annual benchmark return $g$} \\
+\cmidrule(lr){2-7}
+Exit timing $T$ (yr) & $g = 0\%$ ($2T$) & $g = 8\%$ & $g = 10\%$ & $g = 12\%$ & $g = 15\%$ & $g = 20\%$ \\
+\midrule
+3 yr  &  6.00 &  5.60 &  5.52 &  5.44 &  5.34 &  5.19 \\
+5 yr  & 10.00 &  8.97 &  8.79 &  8.62 &  8.39 &  8.08 \\
+7 yr  & 14.00 & 12.14 & 11.82 & 11.55 & 11.19 & 10.71 \\
+10 yr & 20.00 & 16.57 & 16.06 & 15.62 & 15.07 & 14.35 \\
+\bottomrule
+\end{tabular}
+\end{center}
+}
+
+\textbf{Quantitative match to our Monte Carlo:}
+\begin{itemize}
+  \item In our core deal calibration (5-yr investment period, 11.5-yr max holding period), mean exit timing from vintage origin is $T = 2.5 + 5.75 = 8.25$\,yr (variance-weighted effective $T_{\mathrm{eff}}\approx 9$--$10$\,yr since deal variance grows with holding length).
+  \item Over 1985--2021 in our $q^5$ factor file, the historical annualized mean benchmark return is $g = 13.3\%$ at $\beta=1$ (and $24.5\%$ at $\beta=2$). Plugging $T=8.25$--$9.5$\,yr and $g=13.3\%$ into $\bar\tau(H^\ast;G)=T$ lowers $H^\ast$ from $16.5$--$19.0$\,yr (at $g=0\%$) to \textbf{13.1--14.7\,yr}---matching the 12.5--15\,yr zero-crossing in our core and shared-shock Monte Carlo designs. At $\beta=2$ (\texttt{M7}, $g=24.5\%$), $H^\ast$ drops further to $11.9$--$13.2$\,yr; in \texttt{M5 2/2} (2-yr investment, 2-yr max hold, $T_{\mathrm{eff}}\approx 2.5$\,yr), $H^\ast\approx 4.5$--$5$\,yr.
+  \item Because $H^\ast$ depends directly on exit timing $T$, benchmark return $g$ (hence true $\beta_0$), and the realized factor path, it is a transparent \emph{diagnostic rule of thumb} rather than a universal optimal horizon.
+\end{itemize}
 
 \end{document}

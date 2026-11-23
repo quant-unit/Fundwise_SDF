@@ -200,7 +200,8 @@ satisfies the conditional zero-moment restriction
 \label{eq:deal_pricing}
 \mathbb{E}\!\left[\delta_{i,j} \,\middle|\, \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}\right] = 0 \qquad \forall\, i,j.
 \end{equation}
-Appendix~\ref{sec:appendix_sdf} extends \eqref{eq:deal_pricing} to random $\mathcal{F}_u$-stopping-time entry and exit dates, characterizes when a reciprocal benchmark deflator constitutes a PE-specific SDF, and contrasts PE-estimated benchmark deflators with public-calibrated kernels \citep{HR87,HJ91,KN16,KN24}.
+In our reciprocal benchmark specification $M_u(\theta) = (1 + r_{f,u} + \alpha + \beta^\top F_u)^{-1}$, the cumulative deflator $\Psi_t(\theta)$ is an \emph{asset-class-specific reciprocal benchmark deflator}: a valid strictly positive SDF on the PE cash-flow space in incomplete markets \citep{HR87}, rather than a public-calibrated pricing kernel imposing equity and Treasury pricing moments as in \citet{KN16,KN24}.
+Estimating distinct factor loadings $\beta_0$ for Buyout and Venture Capital is nevertheless fully compatible with a single economy-wide public SDF $M_u^\ast$: whenever $M_u^\ast$ conditionally prices the traded benchmark $R_u^0 = 1 + r_{f,u} + \beta_0^\top F_u$ each period and idiosyncratic payoff noise has conditional mean one given the factor/SDF paths and random exit stopping time $b$, optional stopping implies that $M_u^\ast$ also prices the PE deal when $\alpha_0 = 0$, while $\alpha_0 > 0$ ($\alpha_0 < 0$) maps strictly to positive (negative) public-SDF NPV (Appendix~\ref{sec:appendix_sdf}, which also extends \eqref{eq:deal_pricing} to random $\mathcal{F}_u$-stopping times and contrasts PE-estimated deflators with public-calibrated kernels \citealp{HJ91,KN16,KN24}).
 
 \begin{lemma}[Deal-level timing]
 \label{lem:deal_level_timing}
