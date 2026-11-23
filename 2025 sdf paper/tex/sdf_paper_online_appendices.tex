@@ -306,11 +306,11 @@ In finite vintage panels ($V = 23$--$27$), classical HAC inference with normal c
 
 \subsection{Full Step 4 Monte Carlo appendix exhibits}
 
-Tables~\ref{tab:mc_size}--\ref{tab:mc_hardening} and Figure~\ref{fig:mc_growing_v} report the complete Step~4 Monte Carlo results across all 55 designs (1,246 summary rows), including Gaussian location-model size benchmarks (D0), SE-method comparisons (Bartlett $S=7$--$25$, independent, jackknife), joint $(\alpha,\beta)$ boundary and calibration results, the $n_v \times V$ infill grid, growing-$V$ plateau diagnostics, and the hardening designs (Design~B heterogeneous fund sizes; Designs~A$'$ and~A path-correlated shocks).
+Tables~\ref{tab:mc_size}--\ref{tab:mc_hardening} and Figure~\ref{fig:mc_growing_v} report the complete Step~4 Monte Carlo appendix exhibits across all 55 designs (1,246 summary rows), including Gaussian location-model size benchmarks (D0), SE-method comparisons (Bartlett $S=7$--$25$, independent, jackknife), two-factor $q^5$ models (Table~\ref{tab:mc_two_factor}), the $n_v \times V$ infill grid, growing-$V$ plateau diagnostics, and the hardening designs (Design~B heterogeneous fund sizes; Designs~A$'$ and~A path-correlated shocks).
 
 \input{../../r_project/results/mc_step4/paper/table_AS1_size.tex}
 \input{../../r_project/results/mc_step4/paper/table_AS2_se_study.tex}
-\input{../../r_project/results/mc_step4/paper/table_AS3_alpha_beta.tex}
+\input{../../r_project/results/mc_step4/paper/table_S2_two_factor.tex}
 \input{../../r_project/results/mc_step4/paper/table_AS4_grid.tex}
 \input{../../r_project/results/mc_step4/paper/table_AS5_hardening.tex}
 \input{../../r_project/results/mc_step4/paper/figure_S3_growing_V.tex}
@@ -332,7 +332,7 @@ Table~\ref{tab:driessen_comparison} re-estimates all 19 scenarios of the \citet[
 \label{sec:appendix_empirical_extra}
 % ==============================================================================
 
-This appendix collects the complete 12-horizon single-factor table (Table~\ref{tab:u_l2_beta_all}), the VC cohort diagnostic excluding 1993--1997 (Table~\ref{tab:vc_without_1993_1997}), the three-rule fund-size imputation sensitivity (Table~\ref{tab:fw_imputation_sensitivity}), sample robustness across complete histories, all funds, and the 20\% terminal-NAV early-stopper filter for both L2 and $U_{v,H}$ (Table~\ref{tab:robustness_samples}), the Fix-$A$ vs.\ Scale-Jacobian decomposition (Table~\ref{tab:fixA_jacobian}), joint $(\alpha,\beta)$ geometry and contours (Table~\ref{tab:alpha_beta_identification} and Figure~\ref{fig:alpha_beta_contours}), four-year overlapping vintage-block bootstrap intervals (Table~\ref{tab:block_bootstrap}), vintage-level residuals and booked terminal NAV shares (Figure~\ref{fig:vintage_residuals} and Table~\ref{tab:terminal_nav_shares}), $hv$-block cross-validation fold diagnostics (Table~\ref{tab:appendix_e_cv_folds}), and a comparison with published Buyout and VC risk/return estimates (Table~\ref{tab:published_estimates}).
+This appendix collects the complete 12-horizon single-factor table (Table~\ref{tab:u_l2_beta_all}), the VC cohort diagnostic excluding 1993--1997 (Table~\ref{tab:vc_without_1993_1997}), the three-rule fund-size imputation sensitivity (Table~\ref{tab:fw_imputation_sensitivity}), sample robustness across complete histories, all funds, and the 20\% terminal-NAV early-stopper filter for both L2 and $U_{v,H}$ (Table~\ref{tab:robustness_samples}), the Fix-$A$ vs.\ Scale-Jacobian decomposition (Table~\ref{tab:fixA_jacobian}), joint $(\alpha,\beta)$ geometry and contours (Table~\ref{tab:alpha_beta_identification} and Figure~\ref{fig:alpha_beta_contours}), four-year overlapping vintage-block bootstrap intervals (Table~\ref{tab:block_bootstrap}), vintage-level residuals and booked terminal NAV shares (Figure~\ref{fig:vintage_residuals} and Table~\ref{tab:terminal_nav_shares}), $hv$-block cross-validation fold diagnostics (Table~\ref{tab:appendix_e_cv_folds}), two-factor $q^5$ empirical horizon profiles (Figures~\ref{fig:empirical_BO_q_factors} and~\ref{fig:empirical_VC_q_factors}), and a comparison with published Buyout and VC risk/return estimates (Table~\ref{tab:published_estimates}).
 
 \input{../../r_project/results/figures_bovc_us_g1/main_u/table_E1_beta_all.tex}
 \input{../../r_project/results/figures_bovc_us_g1/main_u/table_OA_vc_without_1993_1997.tex}
@@ -351,4 +351,16 @@ This appendix collects the complete 12-horizon single-factor table (Table~\ref{t
 \label{fig:terminal_nav_shares}
 \end{figure}
 \input{../../r_project/results/figures_bovc_us_g1/step5/table_appendix_e_cv_folds.tex}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.99\textwidth]{empirical_BO_US_Multi.pdf}
+\caption{\textbf{Two-factor $q^5$ L2 estimates for Buyout ($V \le 2010$).} Market loading (top row) and second-factor loading (bottom row) across horizons for MKT paired with EG, IA, ME, and ROE under EW and FW.}
+\label{fig:empirical_BO_q_factors}
+\end{figure}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.99\textwidth]{empirical_VC_US_Multi.pdf}
+\caption{\textbf{Two-factor $q^5$ L2 estimates for Venture Capital ($V \le 2010$).} Market loading (top row) and second-factor loading (bottom row) across horizons for MKT paired with EG, IA, ME, and ROE under EW and FW.}
+\label{fig:empirical_VC_q_factors}
+\end{figure}
 \input{../../r_project/results/figures_bovc_us_g1/step5/table_published_estimates.tex}
