@@ -127,3 +127,28 @@ designs:
   # inherits shared-shock exploding alpha at H = 0, and moderate H > 0 restores
   # coercivity and lowers RMSE.
   u_vc_shared: {shape: VC, sigma: 0.154, shared_sd: 0.50, estimators: [L2.vyp, U.eq, U.n], models: [Alpha], horizons: [0, 60, 180, 360], reps: 250}
+  # Optimal-H theory & Regime 1-3b cross-vintage dependence verification (26 Nov 2026;
+  # Proposition 2, Figure 3 Panel C, Appendix Table 12).
+  # Panel A: Preqin Buyout calendar (25 vintages 1985-2010, 383 funds), historical
+  # 1985-2021 q5 factors, sigma = 0.130/mo, variance-matched shared shock sigma_W = 0.306
+  # (M4 2c scale), 1-parameter Alpha.only (beta_MKT = 1 fixed) on 2.5-yr horizon grid.
+  optH_R1_BO:      {shape: BO, estimators: [L2.vyp, U.eq], models: [Alpha.only], horizons: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360], reps: 500}
+  optH_R2_BO:      {shape: BO, shared_sd: 0.306, estimators: [U.eq], models: [Alpha.only], horizons: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360], reps: 500}
+  optH_R3a06_BO:   {shape: BO, shared_sd: 0.306, shared_rho: 0.6, estimators: [U.eq], models: [Alpha.only], horizons: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360], reps: 500}
+  optH_R3a08_BO:   {shape: BO, shared_sd: 0.306, shared_rho: 0.8, estimators: [U.eq], models: [Alpha.only], horizons: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360], reps: 500}
+  optH_R3b_iid_BO: {shape: BO, cal_shock: {sigma_W: 0.306, phi_m: 0}, estimators: [U.eq], models: [Alpha.only], horizons: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360], reps: 500}
+  optH_R3b_ar_BO:  {shape: BO, cal_shock: {sigma_W: 0.306, phi_m: 0.947}, estimators: [U.eq], models: [Alpha.only], horizons: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360], reps: 500}
+  # Panel B: Large-V asymptotic check (V = 100 uncensored consecutive vintages ending 1991,
+  # n_v = 15 funds, resampled 1985-2021 q5 monthly returns matching g = 13.3%, sigma_m = 15.4%).
+  optH_V100_R1:      {consecutive: {funds: 15, count: 100, last: 1991}, path: {resample: iid, from: "1985-01-31", to: "2021-12-31"}, estimators: [L2.vyp, U.eq], models: [Alpha.only], horizons: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360], reps: 250}
+  optH_V100_R2:      {consecutive: {funds: 15, count: 100, last: 1991}, path: {resample: iid, from: "1985-01-31", to: "2021-12-31"}, shared_sd: 0.306, estimators: [U.eq], models: [Alpha.only], horizons: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360], reps: 250}
+  optH_V100_R3a06:   {consecutive: {funds: 15, count: 100, last: 1991}, path: {resample: iid, from: "1985-01-31", to: "2021-12-31"}, shared_sd: 0.306, shared_rho: 0.6, estimators: [U.eq], models: [Alpha.only], horizons: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360], reps: 250}
+  optH_V100_R3a08:   {consecutive: {funds: 15, count: 100, last: 1991}, path: {resample: iid, from: "1985-01-31", to: "2021-12-31"}, shared_sd: 0.306, shared_rho: 0.8, estimators: [U.eq], models: [Alpha.only], horizons: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360], reps: 250}
+  optH_V100_R3b_iid: {consecutive: {funds: 15, count: 100, last: 1991}, path: {resample: iid, from: "1985-01-31", to: "2021-12-31"}, cal_shock: {sigma_W: 0.306, phi_m: 0}, estimators: [U.eq], models: [Alpha.only], horizons: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360], reps: 250}
+  optH_V100_R3b_ar:  {consecutive: {funds: 15, count: 100, last: 1991}, path: {resample: iid, from: "1985-01-31", to: "2021-12-31"}, cal_shock: {sigma_W: 0.306, phi_m: 0.947}, estimators: [U.eq], models: [Alpha.only], horizons: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360], reps: 250}
+  # Panel C: Single-factor beta comparison on Preqin Buyout calendar (U_{v,0}, U_{v,15}
+  # vs leave-band-out cross-vintage pair products U.cross.m0/m5/m7, Proposition 2(iv)).
+  optH_cross_R1_BO:      {shape: BO, estimators: [U.eq, U.cross.m0, U.cross.m5, U.cross.m7], models: [MKT], horizons: [0, 180], reps: 500}
+  optH_cross_R2_BO:      {shape: BO, shared_sd: 0.306, estimators: [U.eq, U.cross.m0, U.cross.m5, U.cross.m7], models: [MKT], horizons: [0, 180], reps: 500}
+  optH_cross_R3a06_BO:   {shape: BO, shared_sd: 0.306, shared_rho: 0.6, estimators: [U.eq, U.cross.m0, U.cross.m5, U.cross.m7], models: [MKT], horizons: [0, 180], reps: 500}
+  optH_cross_R3b_iid_BO: {shape: BO, cal_shock: {sigma_W: 0.306, phi_m: 0}, estimators: [U.eq, U.cross.m0, U.cross.m5, U.cross.m7], models: [MKT], horizons: [0, 180], reps: 500}

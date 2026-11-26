@@ -287,6 +287,17 @@ fast.u.criterion <- function(e, fp, s = rep(1, length(e)), vintage.weights = "eq
   mean(w[ok] * u[ok])
 }
 
+# Leave-band-out cross-vintage pair-product criterion \tilde{U}_{H,m}^{cross}
+# (Proposition 2(iv)): averages bar_eps_{v,H} * bar_eps_{w,H} over vintage pairs
+# with |y_v - y_w| > m. Takes vintage-portfolio errors `e` (level = "vyp").
+fast.u.cross.criterion <- function(e, fp, m = 0L) {
+  dist.mat <- abs(outer(fp$vintage, fp$vintage, "-"))
+  mask <- dist.mat > m
+  n.pairs <- sum(mask)
+  if (n.pairs == 0L) return(NA_real_)
+  as.numeric(crossprod(e, (mask * 1.0) %*% e)) / n.pairs
+}
+
 # Units of selected vintage keys (CV folds, jackknife, per-vintage SE units)
 fast.subset <- function(fp, keep) {
   j <- which(keep)

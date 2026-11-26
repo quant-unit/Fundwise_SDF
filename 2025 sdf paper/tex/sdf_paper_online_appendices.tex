@@ -47,6 +47,7 @@ Table~\ref{tab:notation_asset_pricing} summarizes the notation for the deal-leve
 		$\mathcal{C}_v$ & Public factor-path and horizon-window information set for vintage $v$ \\
 		$\mathcal{G}_v$ & Conditioning set including $\mathcal{C}_v$, eligibility $n_v\ge 2$, fund sizes $\{s_{v,i}\}$, and origin $t_v^0$ \\
 		$\mu_v(\theta), c_v(\theta), \sigma_v^2(\theta)$ & Conditional mean, common within-vintage covariance, and total conditional variance of $PV_{v,i}(\theta)$ given $\mathcal{G}_v$ \\
+		$\sigma_{\nu,v}^2(\theta), \sigma_{\mathrm{eff},v}^2(\theta)$ & Fund-idiosyncratic conditional variance $\operatorname{Var}(\nu_i(\theta)\mid\mathcal{G}_v)$ and effective criterion noise variance ($c_v + (\sum_i \omega_{v,i}^2)\sigma_{\nu,v}^2$ for L2; $c_v$ for $U_{v,H}$) \\
 		$c_{v,w}(\theta)$ & Cross-vintage conditional shock covariance $\operatorname{Cov}(\eta_v(\theta), \eta_w(\theta) \mid \mathcal{F}^{\mathrm{pub}}, \mathcal{W})$ (with $c_{v,v} = c_v$) \\
 		\bottomrule
 	\end{tabularx}
@@ -280,11 +281,11 @@ We prove Parts~(i)--(iv) in sequence.
 
 \paragraph{Part (i): Exact multi-deal duration matching, uniqueness, global bounds, and volatility shrinkage.}
 Under Condition~(X), $\mu_v(\theta_0) = \mathbb{E}[PV_i(\theta_0) \mid \mathcal{G}_v] = 0$, so both $\mu_v(\theta)^2$ and its gradient $2\mu_v(\theta)\nabla_\theta\mu_v(\theta)$ vanish at $\theta = \theta_0$.
-Differentiating $\mathbb{E}[\mathcal{L}_{v,H}(\theta) \mid \mathcal{G}_v] = q_v A_{v,H}(\theta)^2(\mu_v(\theta)^2 + \omega_v(\theta))$ under the expectation and evaluating at $\theta_0$ gives
+Differentiating $\mathbb{E}[\mathcal{L}_{v,H}(\theta) \mid \mathcal{G}_v] = q_v A_{v,H}(\theta)^2(\mu_v(\theta)^2 + \sigma_{\mathrm{eff},v}^2(\theta))$ under the expectation and evaluating at $\theta_0$ gives
 \begin{equation}
 \label{eq:app_score_general}
 \nabla_\theta\,\mathbb{E}\!\left[\mathcal{L}_{v,H}(\theta) \,\middle|\, \mathcal{G}_v\right]\Big|_{\theta=\theta_0}
-= q_v A_{v,H}(\theta_0)^2\Big(2\,\omega_v(\theta_0)\,\nabla_\theta\log A_{v,H}(\theta_0) + \nabla_\theta\omega_v(\theta_0)\Big).
+= q_v A_{v,H}(\theta_0)^2\Big(2\,\sigma_{\mathrm{eff},v}^2(\theta_0)\,\nabla_\theta\log A_{v,H}(\theta_0) + \nabla_\theta\sigma_{\mathrm{eff},v}^2(\theta_0)\Big).
 \end{equation}
 First, since $A_{v,H}(\theta) = |\mathcal{T}_{v,H}|^{-1}\sum_{\tau\in\mathcal{T}_{v,H}} R^b_{t_v^0,\tau}(\theta)$ and $\nabla_\theta R^b_{t_v^0,\tau}(\theta) = R^b_{t_v^0,\tau}(\theta)\,S_{v,\tau}(\theta)$, we have
 \[
@@ -292,12 +293,12 @@ First, since $A_{v,H}(\theta) = |\mathcal{T}_{v,H}|^{-1}\sum_{\tau\in\mathcal{T}
 = \frac{\sum_{\tau\in\mathcal{T}_{v,H}} R^b_{t_v^0,\tau}(\theta_0)\,S_{v,\tau}(\theta_0)}{\sum_{\tau\in\mathcal{T}_{v,H}} R^b_{t_v^0,\tau}(\theta_0)}
 = \bar{S}_{v,H}^{\mathrm{comp}}(\theta_0).
 \]
-Second, write $\omega_v(\theta) = \sum_{s,t \ge t_v^0} D_{v,s}(\theta) D_{v,t}(\theta)\,\Sigma_v^{(s,t)}$ where $D_{v,t}(\theta) = R^b_{t_v^0,t}(\theta)^{-1}$ satisfies $\nabla_\theta D_{v,t}(\theta) = -D_{v,t}(\theta)\,S_{v,t}(\theta)$ and $\Sigma_v^{(s,t)} = \Sigma_v^{(t,s)}$ does not depend on $\theta$.
+Second, write $\sigma_{\mathrm{eff},v}^2(\theta) = \sum_{s,t \ge t_v^0} D_{v,s}(\theta) D_{v,t}(\theta)\,\Sigma_v^{(s,t)}$ where $D_{v,t}(\theta) = R^b_{t_v^0,t}(\theta)^{-1}$ satisfies $\nabla_\theta D_{v,t}(\theta) = -D_{v,t}(\theta)\,S_{v,t}(\theta)$ and $\Sigma_v^{(s,t)} = \Sigma_v^{(t,s)}$ does not depend on $\theta$.
 Differentiating yields
 \[
-\nabla_\theta\omega_v(\theta_0)
+\nabla_\theta\sigma_{\mathrm{eff},v}^2(\theta_0)
 = -\sum_{s,t\ge t_v^0} D_{v,s}(\theta_0)D_{v,t}(\theta_0)\,\Sigma_v^{(s,t)}\bigl(S_{v,s}(\theta_0) + S_{v,t}(\theta_0)\bigr)
-= -2\,\omega_v(\theta_0)\,\bar{S}_v^{\mathrm{eff}}(\theta_0),
+= -2\,\sigma_{\mathrm{eff},v}^2(\theta_0)\,\bar{S}_v^{\mathrm{eff}}(\theta_0),
 \]
 by symmetry of $\Sigma_v^{(s,t)}$. Substituting both expressions into \eqref{eq:app_score_general}, taking unconditional expectations, and averaging across $v = 1,\dots,V$ yields \eqref{eq:duration_matching_score}.
 
@@ -343,7 +344,7 @@ For the global sandwich bounds \eqref{eq:H_star_bounds} when $r > 0$:
 Combining (a)--(c) establishes \eqref{eq:H_star_bounds}.
 Furthermore, expanding $\frac{x}{e^x-1} = 1 - \frac{x}{2} + \frac{x^2}{12} + O(x^4)$ gives $\bar\tau(H;r) = \frac{H}{2} + \frac{rH^2}{12} + O(r^3 H^4)$, solving to $H_0^\ast = 2T_{\mathrm{eff}} - \frac{2}{3}rT_{\mathrm{eff}}^2 + O(r^2 T_{\mathrm{eff}}^3)$ for $rT_{\mathrm{eff}} \ll 1$, while $e^{rH}\gg 1$ yields the large-$rT_{\mathrm{eff}}$ asymptote $H_0^\ast \approx T_{\mathrm{eff}} + \frac{1}{r}$.
 
-Finally, consider stochastic i.i.d.\ lognormal returns $r_u \sim \mathcal{N}(\mu_r,\sigma_r^2)$ with arithmetic drift $r_{\mathrm{arith}} = \mu_r + \frac{1}{2}\sigma_r^2$ and cumulative gross return $R_t = \exp(\int_0^t dX_u)$, where $X_t = \mu_r t + \sigma_r B_t$ is Brownian motion.
+Finally, consider stochastic i.i.d.\ lognormal returns $r_u \sim \mathcal{N}(\mu_r,\sigma_r^2)$ with arithmetic drift $r_{\mathrm{arith}} = \mu_r + \frac{1}{2}\sigma_r^2$ and continuous-time log-rate parameterization $R_t(\alpha) = \exp(\alpha t + X_t)$, where $X_t = \mu_r t + \sigma_r B_t$ is Brownian motion (so $R_t := R_t(0) = \exp(X_t)$ and $\partial_\alpha R_t(0) = t R_t$).
 For constant-duration $\alpha$ with deterministic $T_{\mathrm{eff}}$, the zero-bias condition $\mathbb{E}[A_H(\theta_0)^2(\bar{S}_H^{\mathrm{comp}}(\theta_0) - T_{\mathrm{eff}})] = 0$ rewrites (using $A_H \partial_\alpha A_H = H^{-2}\int_0^H\int_0^H t\,R_s R_t\,ds\,dt$) as
 \[
 \bar\tau_{\mathrm{stoch}}(H;\,r_{\mathrm{arith}},\sigma_r)
@@ -370,10 +371,10 @@ Hence $\bar\tau_{\mathrm{stoch}}(H; r_{\mathrm{arith}}, \sigma_r) > \bar\tau(H; 
 \]
 independently of $c_{v,w}(\theta)$ ($v \neq w$). By linearity of expectation,
 \[
-\mathbb{E}\!\left[\widehat{U}_{V,H}(\theta)\right]
+\mathbb{E}\!\left[\widehat{U}_H(\theta)\right]
 = \frac{1}{\sum_v q_v}\sum_{v=1}^V q_v\,\mathbb{E}\!\left[A_{v,H}(\theta)^2\bigl(\mu_v(\theta)^2 + c_v(\theta)\bigr)\right],
 \]
-and under the increasing-domain mixing/local-dependence conditions of Proposition~\ref{prop:consistency_clt}, the ULLN ensures $\widehat{U}_{V,H}(\theta) \xrightarrow{p} \mathcal{Q}_H(\theta)$ uniformly on $\Theta$. Thus off-diagonal covariances $c_{v,w}$ ($v \neq w$) do not enter $\mathcal{Q}_H(\theta)$ or $H_0^\ast$. However, because the cross-vintage covariance matrix $[c_{v,w}(\theta_0)]_{v,w=1}^V$ is positive semidefinite, any pair with $c_{v,w}(\theta_0) \neq 0$ must satisfy $c_v(\theta_0) c_w(\theta_0) \ge c_{v,w}(\theta_0)^2 > 0$, so $c_v(\theta_0) > 0$ and $U_{v,0}$ inherits the inception variance tilt $\nabla_\theta c_v(\theta_0) \neq 0$.
+and under the increasing-domain mixing/local-dependence conditions of Proposition~\ref{prop:consistency_clt}, the ULLN ensures $\widehat{U}_H(\theta) \xrightarrow{p} Q_H(\theta)$ uniformly on $\Theta$. Thus off-diagonal covariances $c_{v,w}$ ($v \neq w$) do not enter $Q_H(\theta)$ or $H_0^\ast$. However, because the cross-vintage covariance matrix $[c_{v,w}(\theta_0)]_{v,w=1}^V$ is positive semidefinite, any pair with $c_{v,w}(\theta_0) \neq 0$ must satisfy $c_v(\theta_0) c_w(\theta_0) \ge c_{v,w}(\theta_0)^2 > 0$, so $c_v(\theta_0) > 0$ and $U_{v,0}$ inherits the inception variance tilt $\nabla_\theta c_v(\theta_0) \neq 0$.
 
 (b) Under a stationary vintage shock $W_v$ with $\operatorname{Var}(W_v) = \sigma_W^2$ and $\operatorname{Cov}(W_v, W_w) = \sigma_W^2 \rho_W^{|y_v-y_w|}$, the within-vintage cross-fund cash-flow covariance $\Sigma_{v,U}^{(s,t)} = \sigma_W^2 \mu_{v,s}^{\mathrm{exit}}\mu_{v,t}^{\mathrm{exit}}$ is independent of $\rho_W$, so $T_{\mathrm{eff}}$ and $H_0^\ast$ are invariant to $\rho_W$.
 By contrast, under a zero-mean calendar-time private shock $e_u \perp \mathcal{F}^{\mathrm{pub}}$ accumulated over each deal's active period $[a,b]$ (linearized multiplicative shock $\sum_{u=a+1}^b e_u$ with $\operatorname{Cov}(e_u,e_{u'}) = \gamma_e(|u-u'|)$), the cross-fund covariance between deals $(a_1,b_1)$ and $(a_2,b_2)$ in vintage $v$ is
@@ -418,16 +419,16 @@ s_{v,H}^{\mathrm{quad}}(\theta_0) = 2\,q_v A_{v,H}(\theta_0)^2\,\eta_v(\theta_0)
 For Gaussian $(\eta_v,\eta_w)$, $\operatorname{Cov}(\eta_v^2,\eta_w^2) = 2\,c_{v,w}^2$, so both $\operatorname{Var}(s_{v,H}^{\mathrm{quad}})$ and $\operatorname{Cov}(s_{v,H}^{\mathrm{quad}}, s_{w,H}^{\mathrm{quad}})$ carry the factor $(\bar{S}_{v,H}^{\mathrm{comp}} - \bar{S}_v^{\mathrm{eff}})(\bar{S}_{w,H}^{\mathrm{comp}} - \bar{S}_w^{\mathrm{eff}})$ and collapse to zero near $H_0^\ast$.
 
 \paragraph{Part (iii): Multi-parameter trade-off and MSE-optimal horizon.}
-In dimension $p \ge 2$, $\nabla_\theta \mathcal{Q}_H(\theta_0) = 0$ imposes $p$ nonlinear equations on one scalar $H \ge 0$, which admit no common solution in general unless the coordinate sensitivity vectors $S_{v,\tau}^{(1)}, \dots, S_{v,\tau}^{(p)}$ are collinear across $\tau$ (which holds approximately for $(\alpha,\beta)$ when excess returns have positive drift, but fails across non-market $q^5$ factors).
-For the asymptotic MSE criterion $\mathrm{MSE}_V(H) = B_0(H)^2 + V^{-1}\mathcal{V}(H)$:
-when $\omega_v \equiv 0$, $B_0(H) \equiv 0$ for all $H \ge 0$. Under homoscedastic independent vintages with $q_v = 1$, $s_{v,H}(\theta_0) = A_{v,H}^2 s_{v,0}(\theta_0)$ and $\mathcal{H}_H = \mathbb{E}[A_{v,H}^2]\,\mathcal{H}_0$, so Cauchy--Schwarz gives
+In dimension $p \ge 2$, $\nabla_\theta Q_H(\theta_0) = 0$ imposes $p$ nonlinear equations on one scalar $H \ge 0$, which admit no common solution in general unless the coordinate sensitivity vectors $S_{v,\tau}^{(1)}, \dots, S_{v,\tau}^{(p)}$ are collinear across $\tau$ (which holds approximately for $(\alpha,\beta)$ when excess returns have positive drift, but fails across non-market $q^5$ factors).
+For the asymptotic MSE criterion $\mathrm{MSE}_V(H) = B_0(H)^2 + V^{-1}\mathcal{V}(H)$ with $B_0(H) := \theta_H^\dagger - \theta_0$:
+when $\sigma_{\mathrm{eff},v}^2 \equiv 0$, $B_0(H) \equiv 0$ for all $H \ge 0$. Under homoscedastic independent vintages with $q_v = 1$, $s_{v,H}(\theta_0) = A_{v,H}^2 s_{v,0}(\theta_0)$ and $\mathcal{H}_H = \mathbb{E}[A_{v,H}^2]\,\mathcal{H}_0$, so Cauchy--Schwarz gives
 \[
 \frac{\mathcal{V}(H)}{\mathcal{V}(0)}
 = \frac{\mathbb{E}[A_{v,H}^4]}{(\mathbb{E}[A_{v,H}^2])^2}
 = 1 + \frac{\operatorname{Var}(A_{v,H}^2)}{(\mathbb{E}[A_{v,H}^2])^2} \ge 1,
 \]
 with strict inequality whenever $A_{v,H}$ varies across vintages ($H > 0$), proving $H_{\mathrm{MSE}}^\ast(V) = 0$.
-When $\omega_v > 0$ for scalar $\theta$ and $H_0^\ast > 0$ is a simple zero of $B_0(H)$ ($B_0(H_0^\ast) = 0$, $B_0'(H_0^\ast) \neq 0$), expand the first-order condition
+When $\sigma_{\mathrm{eff},v}^2 > 0$ for scalar $\theta$ and $H_0^\ast > 0$ is a simple zero of $B_0(H)$ ($B_0(H_0^\ast) = 0$, $B_0'(H_0^\ast) \neq 0$), expand the first-order condition
 \[
 0 = \frac{d}{dH}\mathrm{MSE}_V(H)
 = 2\,B_0(H)\,B_0'(H) + \frac{1}{V}\,\mathcal{V}'(H)
@@ -520,60 +521,9 @@ Idiosyncratic deal shocks (L2 VYP, $c_v=0$)       & 9.76 & 19.53 & 15.06 & 14.77
 \label{tab:T_eff_mechanisms}
 \end{table}
 
-\begin{table}[htbp]
-\centering
-\footnotesize
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{@{}ll rrrrrrr rr@{}}
-\toprule
-& & \multicolumn{7}{c}{Horizon $H$ (years)} & & \\
-\cmidrule(lr){3-9}
-Regime & Metric & $0$ & $5$ & $10$ & $12.5$ & $15$ & $20$ & $30$ & $H_{\mathrm{zb}}$ & $H_{\mathrm{RMSE}}^\ast$ \\
-\midrule
-\multicolumn{11}{@{}l}{\textbf{Panel A: Finite-$V$ nonlinear cash-flow panel ($V=25$, $n_v=15$, $J=15$, 600 reps; $\hat\alpha$ in \%/yr, true $\alpha_0=0$)}} \\
-\addlinespace[2pt]
-1.\ i.i.d.\ ($c_v=0$, $U_{v,H}$) & Bias & $-0.04$ & $-0.04$ & $-0.03$ & $-0.02$ & $-0.02$ & $-0.01$ & $+0.01$ & --- & 5.0 \\
- & RMSE & 0.43 & 0.40 & 0.41 & 0.41 & 0.41 & 0.41 & 0.78 & & \\
-1.\ i.i.d.\ ($c_v=0$, L2 VYP) & Bias & $+0.38$ & $+0.28$ & $+0.16$ & $+0.10$ & $+0.03$ & $-0.11$ & $-0.96$ & 16.1 & 20.0 \\
- & RMSE & 0.65 & 0.55 & 0.49 & 0.45 & 0.42 & 0.41 & 2.49 & & \\
-2.\ Static $W_v$ ($\rho_W=0$, $U_{v,H}$) & Bias & $+3.05$ & $+1.72$ & $+0.69$ & $+0.16$ & $-0.41$ & $-1.87$ & $-12.16$ & 13.2 & 15.0 \\
- & SD / RMSE & 2.45 / 3.91 & 1.66 / 2.39 & 1.43 / 1.59 & 1.32 / 1.33 & 1.21 / \textbf{1.28} & 1.10 / 2.17 & 2.40 / 12.39 & & \\
-3a.\ AR(1) $W_v$ ($\rho_W=0.6$, $U_{v,H}$) & Bias & $+2.55$ & $+1.42$ & $+0.51$ & $+0.04$ & $-0.47$ & $-1.78$ & $-11.34$ & 12.7 & 15.0 \\
- & SD / RMSE & 3.38 / 4.23 & 2.66 / 3.02 & 2.46 / 2.51 & 2.34 / 2.34 & 2.22 / \textbf{2.27} & 1.94 / 2.63 & 3.20 / 11.78 & & \\
-3a.\ AR(1) $W_v$ ($\rho_W=0.8$, $U_{v,H}$) & Bias & $+1.86$ & $+0.98$ & $+0.25$ & $-0.14$ & $-0.56$ & $-1.68$ & $-10.29$ & 11.6 & 17.5 \\
- & SD / RMSE & 4.12 / 4.53 & 3.59 / 3.72 & 3.40 / 3.40 & 3.28 / 3.28 & 3.15 / 3.20 & 2.78 / 3.25 & 4.05 / 11.06 & & \\
-3b.\ Calendar $e_u$ (i.i.d., $U_{v,H}$) & Bias & $+1.46$ & $+0.74$ & $+0.13$ & $-0.18$ & $-0.51$ & $-1.38$ & $-8.75$ & 11.0 & 17.5 \\
- & SD / RMSE & 4.45 / 4.68 & 4.01 / 4.07 & 3.84 / 3.85 & 3.78 / 3.78 & 3.70 / 3.74 & 3.47 / 3.74 & 5.06 / 10.11 & & \\
-3b.\ Calendar $e_u$ (AR(1), $U_{v,H}$) & Bias & $+1.27$ & $+0.63$ & $+0.07$ & $-0.22$ & $-0.54$ & $-1.35$ & $-8.48$ & 10.6 & 17.5 \\
- & SD / RMSE & 4.38 / 4.57 & 4.07 / 4.12 & 3.94 / 3.94 & 3.89 / 3.90 & 3.82 / 3.86 & 3.60 / 3.84 & 5.22 / 9.96 & & \\
-\midrule
-\multicolumn{11}{@{}l}{\textbf{Panel B: Large-$V$ asymptotic check ($V=100$, $n_v=15$, $J=15$, 250 reps; $\hat\alpha$ bias in \%/yr)}} \\
-\addlinespace[2pt]
-1.\ i.i.d.\ ($c_v=0$, $U_{v,H}$) & Bias & $-0.01$ & $-0.01$ & $-0.01$ & $-0.01$ & $0.00$ & $0.00$ & $0.00$ & --- & 5.0 \\
-1.\ i.i.d.\ ($c_v=0$, L2 VYP) & Bias & $+0.43$ & $+0.31$ & $+0.17$ & $+0.10$ & $+0.03$ & $-0.13$ & $-0.70$ & 15.92 & --- \\
-2.\ Static $W_v$ ($\rho_W=0$, $U_{v,H}$) & Bias & $+3.22$ & $+1.87$ & $+0.66$ & $+0.05$ & $-0.60$ & $-2.24$ & $-13.12$ & \textbf{12.70} & 12.5 \\
-3a.\ AR(1) $W_v$ ($\rho_W=0.6$, $U_{v,H}$) & Bias & $+3.08$ & $+1.77$ & $+0.61$ & $+0.03$ & $-0.58$ & $-2.17$ & $-12.82$ & \textbf{12.63} & 12.5 \\
-3a.\ AR(1) $W_v$ ($\rho_W=0.8$, $U_{v,H}$) & Bias & $+2.88$ & $+1.64$ & $+0.56$ & $+0.01$ & $-0.57$ & $-2.10$ & $-12.25$ & \textbf{12.55} & 12.5 \\
-3b.\ Calendar $e_u$ (i.i.d., $U_{v,H}$) & Bias & $+2.73$ & $+1.73$ & $+0.79$ & $+0.31$ & $-0.20$ & $-1.57$ & $-11.57$ & \textbf{14.04} & 15.0 \\
-3b.\ Calendar $e_u$ (AR(1), $U_{v,H}$) & Bias & $+2.66$ & $+1.69$ & $+0.77$ & $+0.31$ & $-0.19$ & $-1.53$ & $-11.44$ & \textbf{14.04} & 15.0 \\
-\midrule
-\multicolumn{11}{@{}l}{\textbf{Panel C: Single-factor $\beta$ comparison ($V=25$, true $\beta_0=1$): $U_{v,H}$ vs.\ cross-vintage leave-band-out $\widetilde{U}_{0,m}^{\mathrm{cross}}$}} \\
-\addlinespace[2pt]
-& & \multicolumn{2}{c}{$U_{v,0}$} & \multicolumn{2}{c}{$U_{v,15}$} & \multicolumn{2}{c}{$\widetilde{U}_{0,0}^{\mathrm{cross}}$ ($m=0$)} & \multicolumn{2}{c}{$\widetilde{U}_{0,5}^{\mathrm{cross}}$ ($m=5$)} & $\widetilde{U}_{0,7}^{\mathrm{cross}}$ ($m=7$) \\
-\cmidrule(lr){3-4}\cmidrule(lr){5-6}\cmidrule(lr){7-8}\cmidrule(lr){9-10}\cmidrule(l){11-11}
-Regime & & Bias & RMSE & Bias & RMSE & Bnd\,\% & RMSE & Bnd\,\% & RMSE & Bnd\,\% / RMSE \\
-\midrule
-1.\ i.i.d.\ ($c_v=0$) & & $-0.005$ & \textbf{0.079} & $-0.002$ & 0.076 & 0.0 & 0.080 & 0.0 & 0.083 & 0.0 / 0.083 \\
-2.\ Static $W_v$ ($\rho_W=0$) & & $+0.356$ & 0.492 & $-0.077$ & \textbf{0.232} & 12.7 & 1.107 & 16.8 & 1.260 & 3.7 / 0.672 \\
-3a.\ AR(1) $W_v$ ($\rho_W=0.6$) & & $+0.302$ & 0.575 & $-0.074$ & \textbf{0.391} & 16.5 & 1.390 & 24.0 & 1.559 & 10.5 / 1.135 \\
-3b.\ Calendar $e_u$ (i.i.d.) & & $+0.177$ & 0.669 & $-0.079$ & \textbf{0.593} & 16.3 & 1.528 & 27.7 & 1.737 & 15.0 / 1.382 \\
-\bottomrule
-\end{tabular}%
-}
-\caption{\textbf{Dedicated nonlinear cash-flow Monte Carlo verification of Proposition~\ref{prop:optimal_H} across dependence regimes.} Quarterly deal panels calibrated to the Preqin core timing and return parameters ($a\sim U[0,5]$, $h\sim U[0.25,11.5]$~yr, $g=13.3\%$, $\sigma_m=15.4\%$, $\sigma_{\mathrm{idio}}=0.45/\text{yr}$, matched shared-shock scale $\sigma_W=0.35$; separate from the 56-design Step~4 suite in Appendix~\ref{sec:proofs_asymptotics_H}, with replication code in \texttt{r\_project/simulation/optimal\_H\_theory/}). Panel~B confirms asymptotic invariance of $H_{\mathrm{zb}}$ across $\rho_W \in \{0, 0.6, 0.8\}$ ($12.55\text{--}12.70$~yr, matching the $12.65$~yr analytical prediction of Table~\ref{tab:T_eff_mechanisms}) and the rightward duration shift under overlapping calendar-time shocks $e_u$ ($14.04$~yr, RMSE minimum at $15.0$~yr). Panel~A exhibits the finite-$V$ cross-vintage SD inflation and the $O(1/V_{\mathrm{eff}})$ negative Jensen offset of Remark~\ref{rem:jensen_finite_V}, while confirming that $H=15$~yr sharply lowers RMSE across all shared-shock regimes. Panel~C confirms the boundary failure and $3\times$--$5\times$ higher RMSE of leave-band-out cross-vintage pair products $\widetilde{U}_{0,m}^{\mathrm{cross}}$ (Proposition~\ref{prop:optimal_H}(iv)).}
-\label{tab:mc_regimes_verification}
-\end{table}
+\input{../../r_project/results/mc_step4/paper/table_AS6_optimal_H_regimes.tex}
 
+\clearpage
 % ==============================================================================
 \section{Increasing-Domain Asymptotics, Fixed-$b$ SHAC Inference, and Full Step 4 Monte Carlo Exhibits}
 \label{sec:proofs_asymptotics_H}
@@ -621,7 +571,7 @@ In finite vintage panels ($V = 23$--$27$), classical HAC inference with normal c
 
 \subsection{Full Step 4 Monte Carlo appendix exhibits}
 
-Tables~\ref{tab:mc_size}--\ref{tab:mc_hardening} and Figure~\ref{fig:mc_growing_v} report the complete Step~4 Monte Carlo appendix exhibits across all 56 designs (1,270 summary rows), including Gaussian location-model size benchmarks (D0), SE-method comparisons (Bartlett $S=7$--$25$, independent, jackknife), two-factor $q^5$ models (Table~\ref{tab:mc_two_factor}), $U_{v,H}$ joint $(\alpha,\beta)$ boundary-hit shares across all 13 designs (Table~\ref{tab:mc_alpha_beta_bounds}), the $n_v \times V$ infill grid, growing-$V$ plateau diagnostics, and the hardening designs (Design~B heterogeneous fund sizes; Designs~A$'$ and~A path-correlated shocks).
+Tables~\ref{tab:mc_size}--\ref{tab:mc_hardening} and Figure~\ref{fig:mc_growing_v} (together with the 16 Optimal-$H$ Regime~1--3b designs in Appendix~\ref{sec:appendix_optimal_H}, Table~\ref{tab:mc_regimes_verification}) report the complete Step~4 Monte Carlo appendix exhibits across all 72 designs (1,456 summary rows), including Gaussian location-model size benchmarks (D0), SE-method comparisons (Bartlett $S=7$--$25$, independent, jackknife), two-factor $q^5$ models (Table~\ref{tab:mc_two_factor}), $U_{v,H}$ joint $(\alpha,\beta)$ boundary-hit shares across all 13 designs (Table~\ref{tab:mc_alpha_beta_bounds}), the $n_v \times V$ infill grid, growing-$V$ plateau diagnostics, and the hardening designs (Design~B heterogeneous fund sizes; Designs~A$'$ and~A path-correlated shocks).
 
 \input{../../r_project/results/mc_step4/paper/table_AS1_size.tex}
 \input{../../r_project/results/mc_step4/paper/table_AS2_se_study.tex}

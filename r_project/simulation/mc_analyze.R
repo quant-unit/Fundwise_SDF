@@ -33,12 +33,15 @@ if (!exists("fixedb.pvalue")) source("helper/fixedb.R")
 `%||%` <- function(a, b) if (is.null(a)) b else a
 
 # Average criterion of an estimator over prepared replications (fast structures)
-mc.mean.criterion <- function(est, fps, max.month) {
+mc.mean.criterion <- function(est, fps, max.month, fixed = NULL) {
+  full.par <- if (length(fixed)) function(p) c(fixed, p) else identity
   function(p) {
     v <- vapply(fps, function(fp) {
-      e <- fast.unit.errors(p, fp, max.month)
+      e <- fast.unit.errors(full.par(p), fp, max.month)
       if (any(!is.finite(e))) return(Inf)
-      if (est$criterion == "L2") mean(e^2) else fast.u.criterion(e, fp, mc.u.sizes(est, fp), vintage.weights = est$vintage.weights)
+      if (est$criterion == "L2") mean(e^2)
+      else if (est$criterion == "U.cross") fast.u.cross.criterion(e, fp, est$band)
+      else fast.u.criterion(e, fp, mc.u.sizes(est, fp), vintage.weights = est$vintage.weights)
     }, 0)
     mean(v)
   }
@@ -67,10 +70,15 @@ mc.targets <- function(spec, public, reps = 1:200, workers = 1, check.u = FALSE)
   cells <- expand.grid(estimator = spec$estimators, model = spec$models, max.month = spec$horizons, stringsAsFactors = FALSE)
   one <- function(i) {
     est <- MC.ESTIMATORS[[cells$estimator[i]]]; model <- cells$model[i]; m <- cells$max.month[i]
-    par <- if (model == "MKT") c(MKT = unname(th0["MKT"])) else setNames(c(th0[["MKT"]], if (model %in% names(th0)) th0[[model]] else 0), c("MKT", model))
-    # U: theta_0 by T7 only without vintage-level effects (no shared shock, no path shock)
-    exact <- est$criterion == "U" && spec$design$shared.sd == 0 && is.null(spec$design$path.shock) && !check.u
-    if (exact) return(data.frame(cells[i, ], MKT.target = par[["MKT"]], Coef.target = if (length(par) > 1) par[[2]] else NA_real_,
+    fixed <- if (model == "Alpha.only") c(MKT = unname(th0["MKT"])) else NULL
+    par <- if (model == "MKT") c(MKT = unname(th0["MKT"]))
+           else if (model == "Alpha.only") c(Alpha = if ("Alpha" %in% names(th0)) unname(th0["Alpha"]) else 0)
+           else setNames(c(th0[["MKT"]], if (model %in% names(th0)) th0[[model]] else 0), c("MKT", model))
+    # U: theta_0 by T7 only without vintage-level effects (no shared shock, no path shock, no calendar shock)
+    exact <- est$criterion == "U" && spec$design$shared.sd == 0 && is.null(spec$design$path.shock) && is.null(spec$design$cal.shock) && !check.u
+    if (exact) return(data.frame(cells[i, ],
+                                 MKT.target = if (model == "Alpha.only") unname(th0["MKT"]) else par[["MKT"]],
+                                 Coef.target = if (model == "Alpha.only") par[["Alpha"]] else if (length(par) > 1) par[[2]] else NA_real_,
                                  method = "theta_0 (T7)", target.bound = ""))
     # IV: the instrument is a function of the factor path. Without a path
     # shock every design prices each fund at theta_0 given the path (shared
@@ -82,24 +90,31 @@ mc.targets <- function(spec, public, reps = 1:200, workers = 1, check.u = FALSE)
                                                  method = "theta_0 (moment)", target.bound = ""))
     if (est$criterion == "IV") { r <- mc.mean.iv.root(est, fps[[est$level]], m)
       return(data.frame(cells[i, ], MKT.target = r$root, Coef.target = NA_real_, method = sprintf("averaged moment, smallest of %d root(s)", r$n.roots), target.bound = "")) }
-    f <- mc.mean.criterion(est, fps[[est$level]], m)
-    con <- mc.domain(first[[est$level]], names(par))
+    f <- mc.mean.criterion(est, fps[[est$level]], m, fixed = fixed)
+    con <- mc.domain(first[[est$level]], names(par), fixed = fixed)
     if (length(par) == 1) {
       # with resampled paths each replication has its own domain: the target
       # is searched where every replication's criterion is finite
       br <- if (is.null(spec$design$path)) feasible.interval(con) else {
-        iv <- vapply(fps[[est$level]], function(fp) feasible.interval(mc.domain(fp, "MKT")), numeric(2))
+        iv <- vapply(fps[[est$level]], function(fp) feasible.interval(mc.domain(fp, names(par), fixed = fixed)), numeric(2))
         c(max(iv[1, ]), min(iv[2, ]))
       }
-      o <- optimize(function(b) f(c(MKT = b)), br, tol = 1e-6)
-      out <- setNames(o$minimum, "MKT")
+      if (est$criterion == "U.cross") {
+        o <- mc.opt.1d.global(f, br, names(par))
+        out <- setNames(o$par, names(par))
+      } else {
+        o <- optimize(function(x) f(setNames(x, names(par))), br, tol = 1e-6)
+        out <- setNames(o$minimum, names(par))
+      }
     } else {
       if (!is.null(spec$design$path)) stop("targets of two-parameter models with resampled paths are not implemented")
       ps <- optim.parscale(par)
       fit <- fit.admissible(f, admissible.starts(par, con, ps), con, ps, smooth = TRUE, reltol = 1e-12)
       out <- fit$par
     }
-    data.frame(cells[i, ], MKT.target = unname(out[1]), Coef.target = if (length(out) > 1) unname(out[2]) else NA_real_,
+    data.frame(cells[i, ],
+               MKT.target = if (model == "Alpha.only") unname(th0["MKT"]) else unname(out[1]),
+               Coef.target = if (model == "Alpha.only") unname(out[1]) else if (length(out) > 1) unname(out[2]) else NA_real_,
                method = "averaged criterion", target.bound = paste(active.constraints(out, con), collapse = ","))
   }
   res <- if (workers > 1) parallel::mclapply(seq_len(nrow(cells)), one, mc.cores = workers) else lapply(seq_len(nrow(cells)), one)
@@ -121,7 +136,7 @@ mc.summary <- function(rows, theta0, targets = NULL, level = 0.05) {
     p
   }
   out <- lapply(split(rows, key), function(d) {
-    pars <- if (d$model[1] == "MKT") "MKT" else c("MKT", d$model[1])
+    pars <- if (d$model[1] == "MKT") "MKT" else if (d$model[1] == "Alpha.only") "Alpha" else c("MKT", d$model[1])
     tg <- if (is.null(targets)) NULL else targets[targets$estimator == d$estimator[1] & targets$model == d$model[1] & targets$max.month == d$max.month[1], ]
     do.call(rbind, lapply(pars, function(p) {
       est <- if (p == "MKT") d$MKT else d$Coef

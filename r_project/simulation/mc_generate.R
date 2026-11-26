@@ -87,15 +87,23 @@ mc.data.shape <- function(type, max.vintage = 2010,
 #     vintage origin and fails only given the path (the plan's DGP (c)).
 #   sizes = list(sdlog): lognormal fund sizes, drawn after every other draw, so
 #     the equal-weighted structures equal those of the same design without sizes.
+#   cal.shock = list(sigma_W, phi_m): overlapping calendar-time latent PE shock
+#     e_u orthogonal to F^pub (Regime 3b, Proposition 2(ii)(b)). Each deal active
+#     over booked months (a, b] accumulates sum_{u=a+1}^b e_u - 0.5 Var(...),
+#     so Condition (X) holds identically (E[N | F^pub] = 1). Marginal SD sigma_e
+#     is calibrated deterministically (exact p' K p overlap) so within-vintage
+#     cross-fund log-payoff covariance matches sigma_W^2.
 mc.design <- function(n.funds, theta0 = c(MKT = 1), sigma = 0.2, shared.sd = 0,
                       no.deals = 15, investment.period = 5, max.holding.period = 10,
                       t.max = as.Date("2021-12-31"), quarterly = TRUE, shared.rho = 0, path = NULL,
-                      path.shock = NULL, sizes = NULL) {
+                      path.shock = NULL, sizes = NULL, cal.shock = NULL) {
   stopifnot(!is.null(names(n.funds)), all(n.funds >= 1), all(names(theta0) %in% c("MKT", "Alpha", "ME", "IA", "ROE", "EG")),
             abs(shared.rho) < 1, is.null(path) || identical(path$resample, "iid"),
             is.null(path.shock) || (!is.null(path) && is.finite(path.shock$a) &&
               (identical(path.shock$level, "deal") || (is.null(path.shock$level) && isTRUE(path.shock$window.years > 0)))),
-            is.null(sizes) || sizes$sdlog >= 0)
+            is.null(sizes) || sizes$sdlog >= 0,
+            is.null(cal.shock) || (is.finite(cal.shock$sigma_W) && cal.shock$sigma_W > 0 &&
+              abs(if (is.null(cal.shock$phi_m)) 0 else cal.shock$phi_m) < 1))
   d <- list(n.funds = n.funds, theta0 = theta0, sigma = sigma, shared.sd = shared.sd, no.deals = no.deals,
        investment.period = investment.period, max.holding.period = max.holding.period,
        t.max = t.max, quarterly = quarterly)
@@ -104,7 +112,51 @@ mc.design <- function(n.funds, theta0 = c(MKT = 1), sigma = 0.2, shared.sd = 0,
   if (!is.null(path.shock)) d$path.shock <- if (identical(path.shock$level, "deal")) list(a = as.numeric(path.shock$a), level = "deal") else
     list(a = as.numeric(path.shock$a), window.years = as.numeric(path.shock$window.years))
   if (!is.null(sizes)) d$sizes <- list(sdlog = as.numeric(sizes$sdlog))
+  if (!is.null(cal.shock)) d$cal.shock <- list(sigma_W = as.numeric(cal.shock$sigma_W),
+                                               phi_m = as.numeric(if (is.null(cal.shock$phi_m)) 0 else cal.shock$phi_m))
   d
+}
+
+# Exact deterministic calibration of monthly calendar-time shock e_u (Regime 3b):
+# enumerates all (s, h) deal timings on the monthly grid, applies booking,
+# computes exact active-month probabilities p_u = P(a < u <= b), and sets
+# sigma_e = sigma_W / sqrt(p' K p) where K_{u,u'} = phi_m^|u - u'|.
+mc.cal.shock.spec <- function(sigma.w, investment.period, max.holding.period,
+                              quarterly = TRUE, phi.m = 0) {
+  inv <- max(1L, as.integer(12 * investment.period))
+  hmax <- max(1L, as.integer(12 * max.holding.period))
+  s <- rep(seq_len(inv), times = hmax)
+  e <- s + rep(seq_len(hmax), each = inv)
+  if (quarterly) {
+    a <- s + (3L - (s %% 3L)) %% 3L
+    b <- e + (3L - (e %% 3L)) %% 3L
+  } else {
+    a <- s; b <- e
+  }
+  M <- max(b)
+  # active months of a deal are (a+1)..b; count via prefix differences
+  diff.cnt <- tabulate(a + 1L, nbins = M + 1L) - tabulate(b + 1L, nbins = M + 1L)
+  p <- cumsum(diff.cnt)[seq_len(M)] / length(a)
+  if (abs(phi.m) < 1e-12) {
+    mean.ov <- sum(p^2)
+  } else {
+    K <- phi.m ^ abs(outer(seq_len(M), seq_len(M), "-"))
+    mean.ov <- as.numeric(crossprod(p, K %*% p))
+  }
+  sigma.e <- sigma.w / sqrt(mean.ov)
+  var.sum <- function(k) {
+    out <- numeric(length(k))
+    pos <- k > 0L
+    if (!any(pos)) return(out)
+    kp <- k[pos]
+    if (abs(phi.m) < 1e-12) {
+      out[pos] <- (sigma.e^2) * kp
+    } else {
+      out[pos] <- (sigma.e^2) * (kp * (1 - phi.m^2) - 2 * phi.m * (1 - phi.m^kp)) / ((1 - phi.m)^2)
+    }
+    out
+  }
+  list(sigma.e = sigma.e, phi.m = phi.m, mean.overlap = mean.ov, var.sum = var.sum)
 }
 
 # log E[R^a] per month for the path shock: log mean of G^a over the source
@@ -171,7 +223,23 @@ mc.draw <- function(design, seed, public) {
     K <- pmin(as.integer(12 * design$path.shock$window.years), T - first.row + 1L)
     w <- w + design$path.shock$a * (lG[first.row + K] - lG[first.row]) - K * mc.path.shock.logmgf(design, public)
   }
-  mult <- exp(lG[b + 1L] - lG[a + 1L] + z + w[match(fund.vint[deal.fund], vint)] + wd)
+  wc <- numeric(nd) # calendar-time latent PE shock e_u (Regime 3b)
+  if (!is.null(design$cal.shock)) {
+    cs <- mc.cal.shock.spec(design$cal.shock$sigma_W, design$investment.period, design$max.holding.period,
+                            design$quarterly, design$cal.shock$phi_m)
+    eps.c <- rnorm(T)
+    if (abs(cs$phi.m) < 1e-12) {
+      e.c <- cs$sigma.e * eps.c
+    } else {
+      e.c <- numeric(T)
+      e.c[1L] <- cs$sigma.e * eps.c[1L]
+      s.inn <- cs$sigma.e * sqrt(1 - cs$phi.m^2)
+      for (t in 2:T) e.c[t] <- cs$phi.m * e.c[t - 1L] + s.inn * eps.c[t]
+    }
+    cum.e <- c(0, cumsum(e.c))
+    wc <- (cum.e[b + 1L] - cum.e[a + 1L]) - 0.5 * cs$var.sum(k)
+  }
+  mult <- exp(lG[b + 1L] - lG[a + 1L] + z + w[match(fund.vint[deal.fund], vint)] + wd + wc)
   out <- list(design = design, seed = seed, dates = cal$Date,
        deals = data.frame(vintage = fund.vint[deal.fund], fund = fund.id[deal.fund], start = a, end = b, mult = mult))
   if (!is.null(design$path)) out$public <- cal # the replication's own factor path

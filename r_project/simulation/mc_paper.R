@@ -617,6 +617,163 @@ write.table.tex("figure_S3_growing_V.tex", c("\\begin{figure}[htbp]", "\\centeri
     "Bars: $\\pm2$ Monte Carlo SE. 500 replications per design.}"),
   "\\end{figure}"))
 
+# ---- Table AS6: Optimal-H theory & Regime 1-3b verification (Proposition 2) --
+# Reads the 16 optH_* designs integrated into Step 4 (Preqin Buyout calendar
+# Panel A & C; V = 100 resampled 1985-2021 Panel B) and writes both
+# table_AS6_optimal_H_regimes.tex (Table 12) and panelC_mc_regimes.csv (Figure 3 Panel C).
+if (all(c("optH_R1_BO", "optH_V100_R1", "optH_cross_R1_BO") %in% unique(s$design))) {
+  H.opt <- c(0, 5, 10, 12.5, 15, 20, 30)
+  f2p <- function(x) if (is.na(x)) "--" else sprintf("%+.2f", round(x, 2) + 0)
+  f2  <- function(x) if (is.na(x)) "--" else formatC(round(x, 2) + 0, format = "f", digits = 2)
+  f1  <- function(x) if (is.na(x)) "--" else formatC(round(x, 1) + 0, format = "f", digits = 1)
+  f3p <- function(x) if (is.na(x)) "--" else sprintf("%+.3f", round(x, 3) + 0)
+  interp.zb <- function(df, col = "bias") {
+    df <- df[order(df$H), ]
+    x <- df$H; y <- df[[col]]
+    for (i in seq_len(length(y) - 1L)) {
+      if (is.finite(y[i]) && is.finite(y[i + 1L]) && y[i] > 0 && y[i + 1L] <= 0) {
+        return(x[i] + (x[i + 1L] - x[i]) * y[i] / (y[i] - y[i + 1L]))
+      }
+    }
+    NA_real_
+  }
+  opt.rows <- function(des, est) {
+    d <- s[s$design == des & s$estimator == est & s$model == "Alpha.only" & s$parameter == "Alpha", ]
+    d[order(d$H), ]
+  }
+  # Export Figure 3 Panel C CSV directly from R Preqin Buyout Panel A
+  h.grid <- opt.rows("optH_R1_BO", "U.eq")$H
+  get.col <- function(des, est, col) {
+    d <- opt.rows(des, est); 1200 * d[[col]][match(h.grid, d$H)]
+  }
+  panelC.df <- data.frame(
+    H = h.grid,
+    R1_U_bias = get.col("optH_R1_BO", "U.eq", "bias"),
+    R1_U_rmse = get.col("optH_R1_BO", "U.eq", "rmse"),
+    R1_L2_bias = get.col("optH_R1_BO", "L2.vyp", "bias"),
+    R1_L2_rmse = get.col("optH_R1_BO", "L2.vyp", "rmse"),
+    R2_U_bias = get.col("optH_R2_BO", "U.eq", "bias"),
+    R2_U_rmse = get.col("optH_R2_BO", "U.eq", "rmse"),
+    R3a06_U_bias = get.col("optH_R3a06_BO", "U.eq", "bias"),
+    R3a06_U_rmse = get.col("optH_R3a06_BO", "U.eq", "rmse"),
+    R3a08_U_bias = get.col("optH_R3a08_BO", "U.eq", "bias"),
+    R3a08_U_rmse = get.col("optH_R3a08_BO", "U.eq", "rmse"),
+    R3b_iid_U_bias = get.col("optH_R3b_iid_BO", "U.eq", "bias"),
+    R3b_iid_U_rmse = get.col("optH_R3b_iid_BO", "U.eq", "rmse"),
+    R3b_ar_U_bias = get.col("optH_R3b_ar_BO", "U.eq", "bias"),
+    R3b_ar_U_rmse = get.col("optH_R3b_ar_BO", "U.eq", "rmse")
+  )
+  write.csv(panelC.df, "simulation/optimal_H_theory/data/panelC_mc_regimes.csv", row.names = FALSE, quote = FALSE)
+  message("wrote simulation/optimal_H_theory/data/panelC_mc_regimes.csv")
+
+  as6 <- c("\\begin{table}[htbp]", "\\centering", "\\footnotesize", "\\resizebox{\\linewidth}{!}{%",
+    "\\begin{tabular}{@{}ll rrrrrrr rr@{}}", "\\toprule",
+    " & & \\multicolumn{7}{c}{Horizon $H$ (years)} & & \\\\", "\\cmidrule(lr){3-9}",
+    "Regime & Metric & $0$ & $5$ & $10$ & $12.5$ & $15$ & $20$ & $30$ & $H_{\\mathrm{zb}}$ & $H_{\\mathrm{RMSE}}^\\ast / H_{\\mathrm{tg}}$ \\\\",
+    "\\midrule",
+    "\\multicolumn{11}{@{}l}{\\textbf{Panel A: Finite-$V$ Preqin Buyout calendar ($V=25$, 383 funds, $\\sigma_W=0.306$, 500 reps; $\\hat\\alpha$ in \\%/yr, $\\beta_{\\mathrm{MKT}}=1$ fixed; last col.\\ $H_{\\mathrm{RMSE}}^\\ast$)}} \\\\",
+    "\\addlinespace[2pt]")
+  pa.specs <- list(
+    list(d = "optH_R1_BO",      e = "U.eq",   lab = "1.\\ i.i.d.\\ ($c_v=0$, $U_{v,H}$)",         sd.rmse = FALSE, bold.min = TRUE),
+    list(d = "optH_R1_BO",      e = "L2.vyp", lab = "1.\\ i.i.d.\\ ($c_v=0$, L2 VYP)",            sd.rmse = FALSE, bold.min = TRUE),
+    list(d = "optH_R2_BO",      e = "U.eq",   lab = "2.\\ Static $W_v$ ($\\rho_W=0$, $U_{v,H}$)", sd.rmse = TRUE,  bold.min = TRUE),
+    list(d = "optH_R3a06_BO",   e = "U.eq",   lab = "3a.\\ AR(1) $W_v$ ($\\rho_W=0.6$, $U_{v,H}$)", sd.rmse = TRUE, bold.min = TRUE),
+    list(d = "optH_R3a08_BO",   e = "U.eq",   lab = "3a.\\ AR(1) $W_v$ ($\\rho_W=0.8$, $U_{v,H}$)", sd.rmse = TRUE, bold.min = TRUE),
+    list(d = "optH_R3b_iid_BO", e = "U.eq",   lab = "3b.\\ Calendar $e_u$ (i.i.d., $U_{v,H}$)",   sd.rmse = TRUE,  bold.min = TRUE),
+    list(d = "optH_R3b_ar_BO",  e = "U.eq",   lab = "3b.\\ Calendar $e_u$ (AR(1), $U_{v,H}$)",    sd.rmse = TRUE,  bold.min = TRUE)
+  )
+  for (sp in pa.specs) {
+    d <- opt.rows(sp$d, sp$e)
+    sub <- d[match(H.opt, d$H), ]
+    hzb <- interp.zb(d, "bias")
+    hrm <- d$H[which.min(d$rmse)]
+    min.disp <- min(sub$rmse)
+    b.cells <- vapply(seq_along(H.opt), function(j) {
+      v <- 1200 * sub$bias[j]
+      rec("AS6", list(design = sp$d, estimator = sp$e, model = "Alpha.only", parameter = "Alpha", H = H.opt[j]), "bias.yr", v, f2p(v))
+    }, "")
+    hzb.str <- if (is.na(hzb)) "---" else f1(hzb)
+    rec("AS6", list(design = sp$d, estimator = sp$e, model = "Alpha.only", parameter = "Alpha"), "H.zb", hzb, hzb.str)
+    rec("AS6", list(design = sp$d, estimator = sp$e, model = "Alpha.only", parameter = "Alpha"), "H.rmse", hrm, f1(hrm))
+    as6 <- c(as6, paste0(sp$lab, " & Bias & ", paste(b.cells, collapse = " & "), " & ", hzb.str, " & ", f1(hrm), " \\\\"))
+    r.cells <- vapply(seq_along(H.opt), function(j) {
+      rs <- 1200 * sub$rmse[j]; sd.v <- 1200 * sub$sd[j]
+      is.best <- isTRUE(sp$bold.min) && abs(sub$rmse[j] - min.disp) < 1e-12
+      rs.str <- if (is.best) paste0("\\textbf{", f2(rs), "}") else f2(rs)
+      rec("AS6", list(design = sp$d, estimator = sp$e, model = "Alpha.only", parameter = "Alpha", H = H.opt[j]), "rmse.yr", rs, f2(rs))
+      if (sp$sd.rmse) {
+        rec("AS6", list(design = sp$d, estimator = sp$e, model = "Alpha.only", parameter = "Alpha", H = H.opt[j]), "sd.yr", sd.v, f2(sd.v))
+        paste0(f2(sd.v), " / ", rs.str)
+      } else rs.str
+    }, "")
+    as6 <- c(as6, paste0(" & ", if (sp$sd.rmse) "SD / RMSE" else "RMSE", " & ", paste(r.cells, collapse = " & "), " & & \\\\"))
+  }
+
+  as6 <- c(as6, "\\midrule",
+    "\\multicolumn{11}{@{}l}{\\textbf{Panel B: Large-$V$ asymptotic check ($V=100$ uncensored vintages, $n_v=15$, resampled 1985--2021 factors, 250 reps; $\\hat\\alpha$ bias in \\%/yr; last col.\\ $H_{\\mathrm{tg}}$)}} \\\\",
+    "\\addlinespace[2pt]")
+  pb.specs <- list(
+    list(d = "optH_V100_R1",      e = "U.eq",   lab = "1.\\ i.i.d.\\ ($c_v=0$, $U_{v,H}$)",           bold.zb = FALSE),
+    list(d = "optH_V100_R1",      e = "L2.vyp", lab = "1.\\ i.i.d.\\ ($c_v=0$, L2 VYP)",              bold.zb = FALSE),
+    list(d = "optH_V100_R2",      e = "U.eq",   lab = "2.\\ Static $W_v$ ($\\rho_W=0$, $U_{v,H}$)",   bold.zb = TRUE),
+    list(d = "optH_V100_R3a06",   e = "U.eq",   lab = "3a.\\ AR(1) $W_v$ ($\\rho_W=0.6$, $U_{v,H}$)", bold.zb = TRUE),
+    list(d = "optH_V100_R3a08",   e = "U.eq",   lab = "3a.\\ AR(1) $W_v$ ($\\rho_W=0.8$, $U_{v,H}$)", bold.zb = TRUE),
+    list(d = "optH_V100_R3b_iid", e = "U.eq",   lab = "3b.\\ Calendar $e_u$ (i.i.d., $U_{v,H}$)",     bold.zb = TRUE),
+    list(d = "optH_V100_R3b_ar",  e = "U.eq",   lab = "3b.\\ Calendar $e_u$ (AR(1), $U_{v,H}$)",      bold.zb = TRUE)
+  )
+  for (sp in pb.specs) {
+    d <- opt.rows(sp$d, sp$e)
+    sub <- d[match(H.opt, d$H), ]
+    hzb <- interp.zb(d, "bias")
+    htg <- interp.zb(d, "shift")
+    b.cells <- vapply(seq_along(H.opt), function(j) {
+      v <- 1200 * sub$bias[j]
+      rec("AS6", list(design = sp$d, estimator = sp$e, model = "Alpha.only", parameter = "Alpha", H = H.opt[j]), "bias.yr", v, f2p(v))
+    }, "")
+    hzb.str <- if (is.na(hzb)) "---" else if (sp$bold.zb) paste0("\\textbf{", f2(hzb), "}") else f2(hzb)
+    htg.str <- if (is.na(htg)) "---" else f2(htg)
+    rec("AS6", list(design = sp$d, estimator = sp$e, model = "Alpha.only", parameter = "Alpha"), "H.zb", hzb, if (is.na(hzb)) "---" else f2(hzb))
+    rec("AS6", list(design = sp$d, estimator = sp$e, model = "Alpha.only", parameter = "Alpha"), "H.tg", htg, htg.str)
+    # In Panel B, show H_tg in the last column (headed below or noted) -> keep column count identical, label last col $H_{\mathrm{tg}}$ in Panel B subheader
+    as6 <- c(as6, paste0(sp$lab, " & Bias & ", paste(b.cells, collapse = " & "), " & ", hzb.str, " & ", htg.str, " \\\\"))
+  }
+
+  as6 <- c(as6, "\\midrule",
+    "\\multicolumn{11}{@{}l}{\\textbf{Panel C: Single-factor $\\beta$ comparison on Preqin Buyout calendar ($V=25$, true $\\beta_0=1$, 500 reps): $U_{v,H}$ vs.\\ $\\widetilde{U}_{0,m}^{\\mathrm{cross}}$}} \\\\",
+    "\\addlinespace[2pt]",
+    " & & \\multicolumn{2}{c}{$U_{v,0}$} & \\multicolumn{2}{c}{$U_{v,15}$} & \\multicolumn{2}{c}{$\\widetilde{U}_{0,0}^{\\mathrm{cross}}$ ($m=0$)} & \\multicolumn{2}{c}{$\\widetilde{U}_{0,5}^{\\mathrm{cross}}$ ($m=5$)} & $\\widetilde{U}_{0,7}^{\\mathrm{cross}}$ ($m=7$) \\\\",
+    "\\cmidrule(lr){3-4}\\cmidrule(lr){5-6}\\cmidrule(lr){7-8}\\cmidrule(lr){9-10}\\cmidrule(l){11-11}",
+    "Regime & & Bias & RMSE & Bias & RMSE & Bnd\\,\\% & RMSE & Bnd\\,\\% & RMSE & Bnd\\,\\% / RMSE \\\\",
+    "\\midrule")
+  pc.specs <- list(
+    list(d = "optH_cross_R1_BO",      lab = "1.\\ i.i.d.\\ ($c_v=0$)"),
+    list(d = "optH_cross_R2_BO",      lab = "2.\\ Static $W_v$ ($\\rho_W=0$)"),
+    list(d = "optH_cross_R3a06_BO",   lab = "3a.\\ AR(1) $W_v$ ($\\rho_W=0.6$)"),
+    list(d = "optH_cross_R3b_iid_BO", lab = "3b.\\ Calendar $e_u$ (i.i.d.)")
+  )
+  for (sp in pc.specs) {
+    u0  <- srow(sp$d, "U.eq", "MKT", "MKT", 0)
+    u15 <- srow(sp$d, "U.eq", "MKT", "MKT", 15)
+    m0  <- srow(sp$d, "U.cross.m0", "MKT", "MKT", 0)
+    m5  <- srow(sp$d, "U.cross.m5", "MKT", "MKT", 0)
+    m7  <- srow(sp$d, "U.cross.m7", "MKT", "MKT", 0)
+    best.r <- min(u0$rmse, u15$rmse, m0$rmse, m5$rmse, m7$rmse)
+    wbest <- function(r) if (abs(r$rmse - best.r) < 1e-12) function(x) paste0("\\textbf{", x, "}") else identity
+    as6 <- c(as6, sprintf("%s & & %s & %s & %s & %s & %s & %s & %s & %s & %s / %s \\\\",
+      sp$lab,
+      cell("AS6", u0,  "bias", f3p), cell("AS6", u0,  "rmse", f3, wbest(u0)),
+      cell("AS6", u15, "bias", f3p), cell("AS6", u15, "rmse", f3, wbest(u15)),
+      cell("AS6", m0,  "on.bound", pct), cell("AS6", m0, "rmse", f3),
+      cell("AS6", m5,  "on.bound", pct), cell("AS6", m5, "rmse", f3),
+      cell("AS6", m7,  "on.bound", pct), cell("AS6", m7, "rmse", f3)))
+  }
+  as6 <- c(as6, "\\bottomrule", "\\end{tabular}%", "}",
+    "\\caption{\\textbf{Step~4 R Monte Carlo verification of Proposition~\\ref{prop:optimal_H} across dependence regimes.} Generated directly by the main Preqin-calendar Step~4 simulator (\\texttt{r\\_project/simulation/mc\\_generate.R}, 16 Optimal-$H$ designs integrated into the 72-design suite): monthly deal timing ($I=5$, $h\\in[0.25,11.5]$~yr, 15 deals/fund, quarterly booking), Buyout-calibrated idiosyncratic shock ($\\sigma=0.130$/mo), and variance-matched shared-shock scale $\\sigma_W=0.306$ (Buyout M4~$2c$; monthly AR(1) $\\phi_m=0.947$ in Regime~3b AR(1), corresponding to $0.52$/yr). In Panel~A, $H_{\\mathrm{RMSE}}^\\ast$ is the RMSE-minimizing horizon on the 2.5-year grid $\\{0,2.5,\\dots,20,25,30\\}$ (bold marks the lowest displayed RMSE per row; Regime~1 $U_{v,H}$ achieves its strict global minimum at $H=0$, confirming Proposition~\\ref{prop:optimal_H}(iii)). In Panel~B ($V=100$ uncensored vintages on i.i.d.\\ resampled 1985--2021 $q^5$ monthly factors with $g=13.3\\%$, $\\sigma_m=15.4\\%$), the final column reports the averaged-criterion population target zero-crossing $H_{\\mathrm{tg}}$ (200 replications): $H_{\\mathrm{tg}}$ is invariant across $\\rho_W\\in\\{0,0.6,0.8\\}$ ($12.19\\text{--}12.32$~yr, matching the $12.65$~yr analytical prediction of Table~\\ref{tab:T_eff_mechanisms}) and shifts rightward by $2.0$~yr under overlapping calendar-time shocks $e_u$ ($14.24\\text{--}14.26$~yr); at $H=30$~yr ($H\\gg 2T_{\\mathrm{eff}}$), extreme compounding dispersion pulls even $c_v=0$ draws toward negative $\\alpha$. Panel~C (bold marks lowest RMSE per row) confirms that $U_{v,0}$ wins under Regime~1 ($0.085$ vs.\\ $0.111$) while $U_{v,15}$ beats $U_{v,0}$ across Regimes~2--3b, whereas leave-band-out cross-vintage pair products $\\widetilde{U}_{0,m}^{\\mathrm{cross}}$ collapse to the gross-return boundary ($\\beta\\approx 3.99$) in $42\\%$--$100\\%$ of draws ($86\\%$--$100\\%$ for $m\\ge 5$) on the historical 1985--2021 market path due to finite-$V$ indefiniteness (Proposition~\\ref{prop:optimal_H}(iv)).}",
+    "\\label{tab:mc_regimes_verification}",
+    "\\end{table}")
+  write.table.tex("table_AS6_optimal_H_regimes.tex", as6)
+}
+
 # ---- every printed number -------------------------------------------------------
 cells <- do.call(rbind, cells)
 write.csv(cells, file.path(out.dir, "exhibits_data.csv"), row.names = FALSE)

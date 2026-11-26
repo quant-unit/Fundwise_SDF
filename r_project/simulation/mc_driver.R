@@ -41,7 +41,11 @@ MC.ESTIMATORS <- list(
   # FW vintage portfolios and U with sizes in the pair normalization, as the
   # pipeline's FW files (use.size)
   L2.vyp.fw = list(level = "vyp.fw", criterion = "L2"),
-  U.eq.fw   = list(level = "fund.fw", criterion = "U", vintage.weights = "equal", size = TRUE)
+  U.eq.fw   = list(level = "fund.fw", criterion = "U", vintage.weights = "equal", size = TRUE),
+  # leave-band-out cross-vintage pair-product diagnostics (Proposition 2(iv))
+  U.cross.m0 = list(level = "vyp", criterion = "U.cross", band = 0L),
+  U.cross.m5 = list(level = "vyp", criterion = "U.cross", band = 5L),
+  U.cross.m7 = list(level = "vyp", criterion = "U.cross", band = 7L)
 )
 # sizes passed to the U criterion: the units' sizes for FW U, else 1
 mc.u.sizes <- function(est, fp) if (isTRUE(est$size)) fp$size else rep(1, fp$n.units)
@@ -49,16 +53,24 @@ MC.SETTINGS <- list(gross.floor = 0.08, mkt.bounds = c(-1, 4), alpha.bounds = c(
                     bandwidth = "llsw", delta = 1e-4, wall = 1e10)
 
 # Criterion of one estimator on a fast structure (same values as err.sqr.calc)
-mc.criterion <- function(est, fp, max.month) {
+mc.criterion <- function(est, fp, max.month, fixed = NULL) {
+  full.par <- if (length(fixed)) function(p) c(fixed, p) else identity
   if (est$criterion == "L2") {
     function(p) {
-      e <- fast.unit.errors(p, fp, max.month)
+      e <- fast.unit.errors(full.par(p), fp, max.month)
       if (any(!is.finite(e))) return(MC.SETTINGS$wall)
       sqrt(sum(e^2)) / length(e)
     }
+  } else if (est$criterion == "U.cross") {
+    function(p) {
+      e <- fast.unit.errors(full.par(p), fp, max.month)
+      if (any(!is.finite(e))) return(MC.SETTINGS$wall)
+      u <- fast.u.cross.criterion(e, fp, est$band)
+      if (!is.finite(u)) MC.SETTINGS$wall else u
+    }
   } else {
     function(p) {
-      e <- fast.unit.errors(p, fp, max.month)
+      e <- fast.unit.errors(full.par(p), fp, max.month)
       if (any(!is.finite(e))) return(MC.SETTINGS$wall)
       u <- fast.u.criterion(e, fp, mc.u.sizes(est, fp), vintage.weights = est$vintage.weights)
       if (!is.finite(u)) MC.SETTINGS$wall else u
@@ -67,17 +79,18 @@ mc.criterion <- function(est, fp, max.month) {
 }
 
 # Sandwich SEs with the pipeline's units and unit losses (estim.CoVM)
-mc.sandwich <- function(est, fp, par, max.month) {
+mc.sandwich <- function(est, fp, par, max.month, fixed = NULL) {
+  full.par <- if (length(fixed)) function(p) c(fixed, p) else identity
   if (est$criterion == "L2") {
     units <- lapply(seq_len(fp$n.units), function(j) fast.subset(fp, seq_len(fp$n.units) == j))
-    loss <- function(p, u) fast.unit.errors(p, u, max.month)^2
+    loss <- function(p, u) fast.unit.errors(full.par(p), u, max.month)^2
     vint <- fp$vintage
   } else {
     w <- u.unit.weights(fp$group.n, est$vintage.weights)
     keep <- names(w)[!is.na(w)]
     units <- lapply(keep, function(k) fast.subset(fp, fp$key == k))
     names(units) <- keep
-    loss <- function(p, u) w[[u$key[1]]] * fast.u.criterion(fast.unit.errors(p, u, max.month), u, mc.u.sizes(est, u), vintage.weights = est$vintage.weights)
+    loss <- function(p, u) w[[u$key[1]]] * fast.u.criterion(fast.unit.errors(full.par(p), u, max.month), u, mc.u.sizes(est, u), vintage.weights = est$vintage.weights)
     vint <- vapply(units, function(u) u$vintage[1], 0)
   }
   sandwich.covariance(units, par, loss, vint, bw = MC.SETTINGS$bandwidth, delta = MC.SETTINGS$delta)
@@ -85,10 +98,33 @@ mc.sandwich <- function(est, fp, par, max.month) {
 
 # Domain months of a replication: every calendar month from the earliest
 # vintage origin to T.max (the pipeline's admissible.months of the type)
-mc.domain <- function(fp, par.names) {
+mc.domain <- function(fp, par.names, fixed = NULL) {
   rows <- min(fp$grids$k0):nrow(fp$X)
   months <- data.frame(Date = rows, fp$X[rows, , drop = FALSE])
+  if (length(fixed)) {
+    for (nm in names(fixed)) months$RF <- months$RF + fixed[[nm]] * months[[nm]]
+  }
   admissible.constraints(months, par.names, MC.SETTINGS$gross.floor, MC.SETTINGS$mkt.bounds, MC.SETTINGS$alpha.bounds)
+}
+
+# Global 1D minimizer on [br[1], br[2]] for potentially non-convex / indefinite
+# criteria (U.cross): evaluates a 101-point grid including both endpoints and
+# refines up to 5 lowest interior local brackets with optimize().
+mc.opt.1d.global <- function(f, br, par.name) {
+  grid <- seq(br[1], br[2], length.out = 101L)
+  vals <- vapply(grid, function(x) f(setNames(x, par.name)), 0)
+  best.x <- br[1]; best.v <- vals[1]
+  if (vals[length(vals)] < best.v) { best.x <- br[2]; best.v <- vals[length(vals)] }
+  n <- length(vals)
+  loc <- which(vals[2:(n - 1L)] <= vals[1:(n - 2L)] & vals[2:(n - 1L)] <= vals[3:n]) + 1L
+  idx <- unique(c(which.min(vals), loc))
+  idx <- idx[idx > 1L & idx < n]
+  if (length(idx) > 5L) idx <- idx[order(vals[idx])[1:5]]
+  for (i in idx) {
+    o <- stats::optimize(function(x) f(setNames(x, par.name)), c(grid[i - 1L], grid[i + 1L]), tol = 1e-10)
+    if (is.finite(o$objective) && o$objective < best.v) { best.x <- o$minimum; best.v <- o$objective }
+  }
+  list(par = best.x, value = best.v, convergence = 0L)
 }
 
 # IV comparator, single factor: the root of gbar(beta) = V^-1 sum_v z_v PV_v(beta)
@@ -135,25 +171,42 @@ mc.fit.iv <- function(est, fp, model, max.month) {
     n.roots = length(ch), seconds = proc.time()[["elapsed"]] - t0, stringsAsFactors = FALSE)
 }
 
-# One fit: estimator est, model ("MKT" or a second parameter), horizon (months)
+# One fit: estimator est, model ("MKT", "Alpha.only", or a second parameter), horizon (months)
 mc.fit <- function(est, fp, model, max.month) {
   if (est$criterion == "IV") return(mc.fit.iv(est, fp, model, max.month))
   t0 <- proc.time()[["elapsed"]]
-  par <- if (model == "MKT") c(MKT = 1) else setNames(c(1, 0), c("MKT", model))
-  con <- mc.domain(fp, names(par))
-  f <- mc.criterion(est, fp, max.month)
+  fixed <- if (model == "Alpha.only") c(MKT = 1) else NULL
+  par <- if (model == "MKT") c(MKT = 1) else if (model == "Alpha.only") c(Alpha = 0) else setNames(c(1, 0), c("MKT", model))
+  con <- mc.domain(fp, names(par), fixed = fixed)
+  f <- mc.criterion(est, fp, max.month, fixed = fixed)
   if (length(par) == 1) {
     br <- feasible.interval(con)
-    ans <- stats::optim(par, function(p) f(setNames(p, "MKT")), method = "Brent", lower = br[1], upper = br[2])
-    par[] <- ans$par; value <- ans$value; conv <- ans$convergence; method <- "Brent"; n.end <- 1L
+    if (est$criterion == "U.cross") {
+      ans <- mc.opt.1d.global(f, br, names(par))
+      par[] <- ans$par; value <- ans$value; conv <- ans$convergence; method <- "grid+opt"; n.end <- 1L
+    } else {
+      ans <- stats::optim(par, function(p) f(setNames(p, names(par))), method = "Brent", lower = br[1], upper = br[2])
+      par[] <- ans$par; value <- ans$value; conv <- ans$convergence; method <- "Brent"; n.end <- 1L
+    }
   } else {
     ps <- optim.parscale(par)
     fit <- fit.admissible(f, admissible.starts(par, con, ps), con, ps, smooth = TRUE)
     par <- fit$par; value <- fit$value; conv <- fit$convergence; method <- fit$method; n.end <- length(fit$endpoints)
   }
   act <- active.constraints(par, con)
-  cov <- if (length(act) == 0) mc.sandwich(est, fp, par, max.month) else NULL # SEs not valid on a bound
+  cov <- if (length(act) == 0 && est$criterion != "U.cross") mc.sandwich(est, fp, par, max.month, fixed = fixed) else NULL # SEs not valid on a bound or indefinite U.cross
   se <- function(v) if (is.null(cov)) NA_real_ else unname(cov$SE[paste0("SE.", v)])
+  if (model == "Alpha.only") {
+    return(data.frame(model = model, max.month = max.month, MKT = 1, Coef = unname(par["Alpha"]),
+      SE.MKT = NA_real_, SE.Coef = se("Alpha"), cov.MKT.Coef = NA_real_,
+      value = value, convergence = conv, fit.method = method, n.endpoints = n.end,
+      at.bound = length(act) > 0, active = paste(act, collapse = ","), min.G = min.gross.return(par, con)$value,
+      hac.S = if (is.null(cov)) NA_real_ else cov$hac.S, hac.V = if (is.null(cov)) NA_real_ else cov$hac.V,
+      hac.b = if (is.null(cov)) NA_real_ else cov$hac.b, Wald.stat = if (is.null(cov)) NA_real_ else cov$Wald.stat,
+      q = 1L, neff.MKT = NA_real_, neff.Coef = if (is.null(cov)) NA_real_ else cov$neff[["Alpha"]],
+      se.singular = if (is.null(cov)) NA else isTRUE(cov$se.singular),
+      seconds = proc.time()[["elapsed"]] - t0, stringsAsFactors = FALSE))
+  }
   second <- if (length(par) > 1) names(par)[2] else NA_character_
   data.frame(model = model, max.month = max.month, MKT = unname(par["MKT"]),
     Coef = if (is.na(second)) NA_real_ else unname(par[second]),
@@ -349,7 +402,8 @@ mc.load.designs <- function(file = "config/mc_designs.yaml", shape.file = "empir
                             t.max = as.Date(d$t_max), quarterly = isTRUE(d$quarterly),
                             shared.rho = if (is.null(d$shared_rho)) 0 else d$shared_rho, path = d$path,
                             path.shock = if (is.null(d$path_shock)) NULL else list(a = d$path_shock$a, window.years = d$path_shock$window_years, level = d$path_shock$level),
-                            sizes = d$sizes),
+                            sizes = d$sizes,
+                            cal.shock = if (is.null(d$cal_shock)) NULL else list(sigma_W = d$cal_shock$sigma_W, phi_m = if (is.null(d$cal_shock$phi_m)) 0 else d$cal_shock$phi_m)),
          estimators = unlist(d$estimators), models = unlist(d$models), horizons = as.numeric(unlist(d$horizons)), reps = d$reps)
   })
 }

@@ -476,6 +476,65 @@ check("T11 sigma = 0: every FW fund and FW vintage portfolio is priced exactly a
 r11 <- mc.replication(szd(), 3, pub, c("L2.vyp.fw", "U.eq.fw"), "MKT", c(0, 180))
 check("T11 the driver fits FW L2 and FW U (interior, with SEs)", nrow(r11) == 4 && all(is.finite(r11$MKT)) && all(is.finite(r11$SE.MKT[!r11$at.bound])))
 
+# ---------------------------------------------------------------------------
+# T12: Regime 3b calendar-time latent PE shock (cal.shock), leave-band-out
+# cross-vintage pair products (U.cross.m0/m5/m7), and 1-parameter Alpha.only
+# (Proposition 2 integration into mc_step4).
+# ---------------------------------------------------------------------------
+check("T12 cal.shock = NULL leaves mc.design identical to baseline",
+  identical(mc.design(shape, sigma = 0.13), mc.design(shape, sigma = 0.13, cal.shock = NULL)))
+# Exact mean-one Condition (X) pricing under cal.shock (i.i.d. and monthly AR(1))
+for (phi in c(0, 0.947)) {
+  dc <- mc.design(cons(10, 25), sigma = 0, max.holding.period = 11.5, cal.shock = list(sigma_W = 0.306, phi_m = phi))
+  # Check exact mean-one PV across 250 draws at theta_0 = (MKT = 1)
+  pvs <- vapply(1:250, function(s) mean(fast.unit.errors(c(MKT = 1), mc.as.fast(mc.draw(dc, s, pub), pub, "vyp"), 0)), 0)
+  se.pv <- sd(pvs) / sqrt(length(pvs))
+  check(sprintf("T12 cal.shock (phi_m = %.3f): exact Condition (X) mean-zero PV at theta_0 within 4 SEs", phi),
+    abs(mean(pvs)) < 4 * se.pv && sd(pvs) > 0.05,
+    sprintf("mean %+.4f (SE %.4f, sd %.3f)", mean(pvs), se.pv, sd(pvs)))
+}
+# Check cross-fund log-payoff covariance calibration (~ sigma_W^2) across draws
+# and positive adjacent-vintage correlation (vintages 1990 vs 1991, uncensored)
+dc.iid <- mc.design(cons(4, 25), sigma = 0, max.holding.period = 11.5, cal.shock = list(sigma_W = 0.306, phi_m = 0))
+G12 <- as.numeric(1 + pub$RF[pub$Date <= as.Date("2021-12-31")] + pub$MKT[pub$Date <= as.Date("2021-12-31")])
+lG12 <- c(0, cumsum(log(G12)))
+cov.draws <- t(vapply(1:300, function(s) {
+  d <- mc.draw(dc.iid, s, pub)$deals
+  d90 <- d[d$vintage == 1990, ]; ln90 <- log(d90$mult) - (lG12[d90$end + 1L] - lG12[d90$start + 1L])
+  d91 <- d[d$vintage == 1991, ]; ln91 <- log(d91$mult) - (lG12[d91$end + 1L] - lG12[d91$start + 1L])
+  c(f1 = mean(ln90[d90$fund == 1]), f2 = mean(ln90[d90$fund == 2]), v90 = mean(ln90), v91 = mean(ln91))
+}, numeric(4)))
+imp.sd <- sqrt(max(0, cov(cov.draws[, "f1"], cov.draws[, "f2"])))
+adj.cor <- cor(cov.draws[, "v90"], cov.draws[, "v91"])
+check("T12 cal.shock i.i.d.: calibrated within-vintage cross-fund log covariance near sigma_W^2 and positive adjacent-vintage correlation",
+  abs(imp.sd - 0.306) < 0.04 && adj.cor > 0.7,
+  sprintf("implied SD %.3f (target 0.306), adj-vintage cor %.3f", imp.sd, adj.cor))
+# Check fast.u.cross.criterion vs explicit double sum and mc_regime3_design_spec.R
+source(here("simulation/optimal_H_theory/mc_regime3_design_spec.R"))
+fpv12 <- mc.as.fast(dr, pub, "vyp")
+e12 <- fast.unit.errors(c(MKT = 1.25), fpv12, 0)
+for (m in c(0L, 5L, 7L)) {
+  v.fast <- fast.u.cross.criterion(e12, fpv12, m)
+  v.ref <- u_cross_leave_band_out(unname(e12), fpv12$vintage, m)
+  check(sprintf("T12 fast.u.cross.criterion (m = %d) equals u_cross_leave_band_out within 1e-12", m),
+    abs(v.fast - v.ref) <= 1e-12 * max(1, abs(v.ref)), sprintf("diff %.1e", abs(v.fast - v.ref)))
+}
+# Check Alpha.only model: exact alpha_0 = 0 at sigma = 0, equals 2D criterion at MKT = 1, valid SEs
+f0.a <- mc.as.fast(dr0, pub, "fund")
+fit.a0 <- mc.fit(MC.ESTIMATORS$U.eq, f0.a, "Alpha.only", 0)
+fit.a15 <- mc.fit(MC.ESTIMATORS$U.eq, f0.a, "Alpha.only", 180)
+check("T12 Alpha.only at sigma = 0 recovers alpha_0 = 0 within 1e-8 (H = 0, 15 yr)",
+  abs(fit.a0$Coef) < 1e-8 && abs(fit.a15$Coef) < 1e-8 && fit.a0$MKT == 1 && fit.a0$q == 1L,
+  sprintf("H=0 %.1e, H=15 %.1e", fit.a0$Coef, fit.a15$Coef))
+r12 <- mc.replication(mc.design(shape, sigma = 0.13, cal.shock = list(sigma_W = 0.306, phi_m = 0)), 2, pub,
+                      c("L2.vyp", "U.eq", "U.cross.m5"), c("Alpha.only", "MKT"), c(0, 180))
+s12 <- mc.summary(r12, c(MKT = 1))
+check("T12 driver & summary handle cal.shock + Alpha.only + U.cross cleanly",
+  nrow(r12) == 12L && all(is.finite(r12$MKT)) && all(is.finite(r12$Coef[r12$model == "Alpha.only"])) &&
+  all(is.na(r12$SE.MKT[r12$estimator == "U.cross.m5"])) &&
+  all(is.finite(r12$SE.Coef[r12$model == "Alpha.only" & r12$estimator != "U.cross.m5" & !r12$at.bound])) &&
+  nrow(s12) == 12L && all(s12$parameter[s12$model == "Alpha.only"] == "Alpha"))
+
 t.gen <- system.time(for (s in 1:20) { x <- mc.draw(mc.design(shape), s, pub); mc.as.fast(x, pub, "fund"); mc.as.fast(x, pub, "vyp") })[["elapsed"]] / 20
 cat(sprintf("Generator, Buyout shape (%d funds, %d deals): %.2f s per replication incl. both fast structures; %.1f MB in memory\n",
   sum(shape), sum(shape) * 15, t.gen, as.numeric(object.size(list(dr, mc.as.fast(dr, pub, "fund")))) / 2^20))
