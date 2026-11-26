@@ -132,31 +132,98 @@ table.e1 <- function(H, file, label, caption, ex) {
 table.e1(H.MAIN, "table_E1_beta.tex", "tab:u_l2_beta", "Single-factor $\\hat\\beta_{MKT}$: $U_{v,H}$ and L2", "E1")
 table.e1(H.ALL, "table_E1_beta_all.tex", "tab:u_l2_beta_all", "Single-factor $\\hat\\beta_{MKT}$: $U_{v,H}$ and L2, all horizons", "E1.all")
 
-# ---- Table E2: (alpha, beta) model (stars suppressed per calibration audit) -------------
-lines <- character(0)
+# ---- Table E1 (JBES main): single-factor beta + compact Panel B inception diagnostics ---
+shac.cmp <- if (file.exists(file.path(src.dir, "calendar_vs_index_shac.csv"))) rd("calendar_vs_index_shac.csv") else NULL
+panel.b.lines <- character(0)
 for (ty in names(TYPES)) for (w in names(WTS)) {
-  lines <- c(lines, sprintf("\\multicolumn{5}{l}{\\textit{%s, %s}} \\\\", TYPES[[ty]], WTS[[w]]))
-  for (m in H.E2) { k <- data.frame(type = ty, weighting = w, H = m / 12)
-    cu.b <- est.cell("E2", k, cell.u(ty, w, m, "Alpha", "MKT"), "U.beta", marks = FALSE)
-    cu.a <- est.cell("E2", k, cell.u(ty, w, m, "Alpha", "Alpha"), "U.alpha", scale = 100, marks = FALSE)
-    cl.b <- est.cell("E2", k, cell.l2(ty, w, m, "Alpha", "MKT"), "L2.beta", marks = FALSE)
-    cl.a <- est.cell("E2", k, cell.l2(ty, w, m, "Alpha", "Alpha"), "L2.alpha", scale = 100, marks = FALSE)
-    v <- vapply(list(cu.b, cu.a, cl.b, cl.a), function(x) sprintf("%s (%s)", x[1], x[2]), "")
-    lines <- c(lines, sprintf("\\quad %s & %s \\\\", hlab(m), paste(v, collapse = " & "))) }
-  if (!(ty == "VC" && w == "FW")) lines <- c(lines, "\\addlinespace")
+  r0 <- pred[pred$type == ty & pred$weighting == w & pred$max.month == 0, ]
+  stopifnot(nrow(r0) == 1)
+  gap.s <- if (r0$V.full == r0$V.matched) sprintf("%s (%s)", f3(r0$gap.l2u), f3(r0$gap.l2u.jse)) else sprintf("%s [%s]", f3(r0$gap.l2u), f3(r0$gap.l2u.matched))
+  pred.s <- sprintf("%s (%s)", f3(r0$pred.l2u), f3(r0$pred.l2u.mcse))
+  neff.s <- if (!is.null(shac.cmp)) {
+    nx <- shac.cmp$neff[shac.cmp$type == ty & shac.cmp$weighting == w & shac.cmp$estimator == "U.eq" & shac.cmp$H == 0]
+    sprintf("%.1f", nx[1])
+  } else "--"
+  panel.b.lines <- c(panel.b.lines, sprintf("\\quad %s, %s & %s & %s & %s & %d/%d & %s & %s \\\\",
+    TYPES[[ty]], w, gap.s, pred.s, r0$iv.root.list, r0$iv.loo.no.root, r0$V.full, neff.s, r0$ar.set))
 }
-write.tex("table_E2_alpha_beta.tex", c("\\begin{table}[htbp]", "\\centering", "\\footnotesize",
-  "\\caption{The $(\\alpha,\\beta)$ model: $U_{v,H}$ and L2}", "\\label{tab:u_l2_alpha_beta}",
-  "\\begin{tabular}{l rr rr}", "\\toprule",
-  " & \\multicolumn{2}{c}{$U_{v,H}$ (main)} & \\multicolumn{2}{c}{L2} \\\\", "\\cmidrule(lr){2-3} \\cmidrule(lr){4-5}",
-  "Horizon & $\\hat\\beta$ (SE) & $\\hat\\alpha$ (SE) & $\\hat\\beta$ (SE) & $\\hat\\alpha$ (SE) \\\\", "\\midrule",
-  lines, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
-  paste0("{\\scriptsize\\textit{Notes:} $\\hat\\alpha$ in percent per month. ", NOTE.COMMON,
-    "Significance stars are omitted in this table: in the EW core Monte Carlo at $H=0$, the nominal 5\\% fixed-$b$ test of $\\alpha=0$ for $U_{v,H}$ rejects 12.1\\% (Buyout) and 10.9\\% (VC) of draws (Table~\\ref{tab:mc_alpha_beta}); FW joint calibration is not separately simulated; and at 30 years conditional rejection collapses to 0.4--0.5\\% for $\\alpha$ and 0.3--1.1\\% for $\\beta$ with 6.4--8.0\\% on the boundary. ",
-    "SEs are therefore reported as approximate precision measures only. $^{\\dagger}$: estimate on a bound of the admissible domain, no SE. ",
-    "In VC the estimate at $H=0$ sits on the $+2\\%$ monthly $\\alpha$ bound under both criteria because the criterion keeps falling in $\\alpha$; that comes from the 1993--1997 vintages as a group, and without them $\\hat\\alpha$ is negative at every horizon (Table~\\ref{tab:vc_without_1993_1997}). ",
-    "The horizon then imposes a minimum in $\\alpha$ without identifying it.}"),
+e1.lines <- character(0)
+for (ty in names(TYPES)) {
+  e1.lines <- c(e1.lines, sprintf("\\multicolumn{11}{l}{\\textit{%s}} \\\\", TYPES[[ty]]))
+  for (m in H.MAIN) { key <- data.frame(type = ty, H = m / 12)
+    v <- character(0)
+    for (w in names(WTS)) { k <- cbind(key, weighting = w)
+      cu <- cell.u(ty, w, m, "MKT", "MKT"); cl <- cell.l2(ty, w, m, "MKT", "MKT")
+      p1.str <- if (cu$bound) "--" else fp(cu$p1)
+      u.c <- c(paste0(f3(cu$est), if (cu$bound) "$^{\\dagger}$" else stars(cu$p)), if (cu$bound) "--" else f3(cu$se))
+      l.c <- c(paste0(f3(cl$est), if (cl$bound) "$^{\\dagger}$" else ""), if (cl$bound) "--" else f3(cl$se))
+      v <- c(v, u.c, p1.str, l.c) }
+    e1.lines <- c(e1.lines, sprintf("\\quad %s & %s \\\\", hlab(m), paste(v, collapse = " & "))) }
+  if (ty == "BO") e1.lines <- c(e1.lines, "\\addlinespace")
+}
+write.tex("table_E1_beta_jbes.tex", c("\\begin{table}[htbp]", "\\centering", "\\footnotesize",
+  "\\caption{Single-factor $\\hat\\beta_{\\mathrm{MKT}}$: $U_{v,H}$, L2, and inception ($H=0$) identification diagnostics}",
+  "\\label{tab:u_l2_beta}",
+  "\\resizebox{\\linewidth}{!}{%",
+  "\\begin{tabular}{l rrr rr rrr rr}", "\\toprule",
+  "\\multicolumn{11}{l}{\\textit{Panel A: Single-factor $\\hat\\beta_{\\mathrm{MKT}}$ across horizons}} \\\\",
+  "\\addlinespace[2pt]",
+  " & \\multicolumn{5}{c}{Equally weighted funds (EW)} & \\multicolumn{5}{c}{Fund-size weighted funds (FW)} \\\\",
+  "\\cmidrule(lr){2-6} \\cmidrule(lr){7-11}",
+  " & \\multicolumn{3}{c}{$U_{v,H}$ (main)} & \\multicolumn{2}{c}{L2} & \\multicolumn{3}{c}{$U_{v,H}$ (main)} & \\multicolumn{2}{c}{L2} \\\\",
+  "\\cmidrule(lr){2-4} \\cmidrule(lr){5-6} \\cmidrule(lr){7-9} \\cmidrule(lr){10-11}",
+  "Horizon & $\\hat\\beta$ & SE & $p_1$ & $\\hat\\beta$ & SE & $\\hat\\beta$ & SE & $p_1$ & $\\hat\\beta$ & SE \\\\", "\\midrule",
+  e1.lines, "\\bottomrule", "\\end{tabular}%", "}",
+  "\\par\\vspace{4pt}",
+  "\\resizebox{\\linewidth}{!}{%",
+  "\\begin{tabular}{l r r r c r c}", "\\toprule",
+  "\\multicolumn{7}{l}{\\textit{Panel B: Inception ($H=0$) estimator gaps, IV root fragility, $N_{\\mathrm{eff}}$, and nominal 95\\% AR sets}} \\\\",
+  "\\addlinespace[2pt]",
+  "Series & L2$-U_{v,0}$ & Expected core gap & IV roots & LOO no-root & $N_{\\mathrm{eff}}(U_{v,0})$ & Nominal 95\\% AR set \\\\", "\\midrule",
+  panel.b.lines, "\\bottomrule", "\\end{tabular}%", "}",
+  "\\par\\vspace{2pt}",
+  paste0("{\\scriptsize\\textit{Notes:} Single-factor $\\hat\\beta_{\\mathrm{MKT}}$. ", NOTE.COMMON, NOTE.STARS.E1,
+    "Panel~B reports inception ($H=0$) L2$-U_{v,0}$ gaps (Buyout: LOO jackknife SE in parentheses; VC: full-sample followed in brackets by matched 23-vintage difference), paired expected core MC gaps (MC SE), all roots of the inception mean pricing moment $V^{-1}\\sum_v PV_v(\\beta)=0$ on $\\Theta$, delete-one-vintage refits losing all roots, $U_{v,0}$ effective vintage count $N_{\\mathrm{eff}}$, and centered Bartlett fixed-$b$ nominal 95\\% AR confidence sets \\eqref{eq:ar_set}. Full 12-horizon estimates and four-horizon IV/AR diagnostics: Online Supplement Tables~\\ref{tab:u_l2_beta_all} and~\\ref{tab:iv_comparison}.}"),
   "\\end{table}"))
+
+# ---- Table E2: (alpha, beta) model (stars suppressed per calibration audit) -------------
+make.e2 <- function(H.vec, file, label, caption, record = FALSE) {
+  lines <- character(0)
+  for (ty in names(TYPES)) for (w in names(WTS)) {
+    lines <- c(lines, sprintf("\\multicolumn{5}{l}{\\textit{%s, %s}} \\\\", TYPES[[ty]], WTS[[w]]))
+    for (m in H.vec) { k <- data.frame(type = ty, weighting = w, H = m / 12)
+      if (record) {
+        cu.b <- est.cell("E2", k, cell.u(ty, w, m, "Alpha", "MKT"), "U.beta", marks = FALSE)
+        cu.a <- est.cell("E2", k, cell.u(ty, w, m, "Alpha", "Alpha"), "U.alpha", scale = 100, marks = FALSE)
+        cl.b <- est.cell("E2", k, cell.l2(ty, w, m, "Alpha", "MKT"), "L2.beta", marks = FALSE)
+        cl.a <- est.cell("E2", k, cell.l2(ty, w, m, "Alpha", "Alpha"), "L2.alpha", scale = 100, marks = FALSE)
+      } else {
+        fmt.c <- function(c, scale = 1) c(paste0(f3(c$est * scale), if (c$bound) "$^{\\dagger}$" else ""), if (c$bound) "--" else f3(c$se * scale))
+        cu.b <- fmt.c(cell.u(ty, w, m, "Alpha", "MKT"))
+        cu.a <- fmt.c(cell.u(ty, w, m, "Alpha", "Alpha"), 100)
+        cl.b <- fmt.c(cell.l2(ty, w, m, "Alpha", "MKT"))
+        cl.a <- fmt.c(cell.l2(ty, w, m, "Alpha", "Alpha"), 100)
+      }
+      v <- vapply(list(cu.b, cu.a, cl.b, cl.a), function(x) sprintf("%s (%s)", x[1], x[2]), "")
+      lines <- c(lines, sprintf("\\quad %s & %s \\\\", hlab(m), paste(v, collapse = " & "))) }
+    if (!(ty == "VC" && w == "FW")) lines <- c(lines, "\\addlinespace")
+  }
+  write.tex(file, c("\\begin{table}[htbp]", "\\centering", "\\footnotesize",
+    sprintf("\\caption{%s}", caption), sprintf("\\label{%s}", label),
+    "\\begin{tabular}{l rr rr}", "\\toprule",
+    " & \\multicolumn{2}{c}{$U_{v,H}$ (main)} & \\multicolumn{2}{c}{L2} \\\\", "\\cmidrule(lr){2-3} \\cmidrule(lr){4-5}",
+    "Horizon & $\\hat\\beta$ (SE) & $\\hat\\alpha$ (SE) & $\\hat\\beta$ (SE) & $\\hat\\alpha$ (SE) \\\\", "\\midrule",
+    lines, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
+    paste0("{\\scriptsize\\textit{Notes:} $\\hat\\alpha$ in percent per month. ", NOTE.COMMON,
+      "Significance stars are omitted in this table: in the EW core Monte Carlo at $H=0$, the nominal 5\\% fixed-$b$ test of $\\alpha=0$ for $U_{v,H}$ rejects 12.1\\% (Buyout) and 10.9\\% (VC) of draws (Table~\\ref{tab:mc_alpha_beta}); FW joint calibration is not separately simulated; and at 30 years conditional rejection collapses to 0.4--0.5\\% for $\\alpha$ and 0.3--1.1\\% for $\\beta$ with 6.4--8.0\\% on the boundary. ",
+      "SEs are therefore reported as approximate precision measures only. $^{\\dagger}$: estimate on a bound of the admissible domain, no SE. ",
+      "In VC the estimate at $H=0$ sits on the $+2\\%$ monthly $\\alpha$ bound under both criteria because the criterion keeps falling in $\\alpha$; that comes from the 1993--1997 vintages as a group, and without them $\\hat\\alpha$ is negative at every horizon (Online Supplement Table~\\ref{tab:vc_without_1993_1997}). ",
+      if (length(H.vec) < length(H.E2)) "Complete 7-horizon estimates: Online Supplement Table~\\ref{tab:u_l2_alpha_beta_all}.}" else "The horizon then imposes a minimum in $\\alpha$ without identifying it.}"),
+    "\\end{table}"))
+}
+make.e2(H.E2, "table_E2_alpha_beta.tex", "tab:u_l2_alpha_beta_legacy", "The $(\\alpha,\\beta)$ model: $U_{v,H}$ and L2", record = TRUE)
+make.e2(H.E2, "table_E2_alpha_beta_all.tex", "tab:u_l2_alpha_beta_all", "The $(\\alpha,\\beta)$ model: $U_{v,H}$ and L2 (all seven horizons)", record = FALSE)
+make.e2(c(0, 60, 180, 360), "table_E2_alpha_beta_jbes.tex", "tab:u_l2_alpha_beta", "The $(\\alpha,\\beta)$ model: $U_{v,H}$ and L2", record = FALSE)
 
 # ---- Online Appendix: VC (alpha, beta) without 1993-1997 -----------------------------------
 chk.full <- 0

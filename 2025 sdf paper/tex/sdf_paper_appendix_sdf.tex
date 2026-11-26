@@ -64,4 +64,33 @@ Finally, contrast how public-calibrated affine kernels and benchmark deflators h
              (R_M-\mathbb E[R_M])
  \right],\qquad \lambda_M=\mathbb E[R_M]-R_f.
 \end{equation}
-This $m_F$ is the $L^2$ projection of any square-integrable kernel $m^\ast$ pricing both public assets onto $\mathcal P_F=\operatorname{span}\{1,R_M\}$---and attains the minimum variance for those two moments, though it can take negative values \citep{HJ91}---with orthogonal residual $e=m^\ast-m_F\in\mathcal P_F^\perp$. For a square-integrable private payoff $Y$ with projection $Y^F$ onto $\mathcal P_F$, the public kernel assigns the price of $Y^F$, which matches a joint kernel $m^\ast$ precisely when $\mathbb E[e(Y-Y^F)]=0$. By contrast, rather than projecting payoffs onto $\mathcal P_F$ and relying on unspanned-risk orthogonality, the compounded reciprocal deflator cancels systematic benchmark exposure pathwise and, provided the PE cash-flow moment or pair-product restrictions uniquely identify $\theta_0$ on the admissible domain, targets $(\alpha,\beta)$ directly from the PE cash-flow data.
+This $m_F$ is the $L^2$ projection of any square-integrable kernel $m^\ast$ pricing both public assets onto $\mathcal P_F=\operatorname{span}\{1,R_M\}$---and attains the minimum variance for those two moments, though it can take negative values \citep{HJ91}---with orthogonal residual $e=m^\ast-m_F\in\mathcal P_F^\perp$. For a square-integrable private payoff $Y$ with projection $Y^F$ onto $\mathcal P_F$, the public kernel assigns the price of $Y^F$, which matches a joint kernel $m^\ast$ precisely when $\mathbb E[e(Y-Y^F)]=0$. By contrast, rather than projecting payoffs onto $\mathcal P_F$ and relying on unspanned-risk orthogonality, the compounded reciprocal deflator cancels systematic benchmark exposure pathwise and, provided the PE cash-flow moment or pair-product restrictions uniquely identify $\theta_0$ on the admissible domain, targets $(\alpha,\beta)$ directly from the PE cash-flow data. Table~\ref{tab:comparison} summarizes the structural distinctions across the four semiparametric cash-flow discounting paradigms.
+
+\begin{table}[htbp]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{2.35cm} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X@{}}
+\toprule
+ & \citet{DLP12} & \citet{KN16} & \citet{KN24} & This paper ($U_{v,H}$ \& L2) \\
+\midrule
+\textbf{Object estimated} & PE-specific reciprocal benchmark deflator $1/G_u(\alpha,\beta)$ & Economy-wide exponential-affine SDF $M_t(\gamma)$ & Asset-specific benchmark deflator anchored to a public SDF & PE-specific reciprocal benchmark deflator $1/G_u(\alpha,\beta)$ \\
+\addlinespace
+\textbf{Identifying moments} & PE vintage-portfolio cash flows only & Traded public equity \& T-bill returns only (PE evaluated ex post) & Public-market SDF moments plus PE cash flows (lognormal return structure) & PE fund / vintage-portfolio cash flows only \\
+\addlinespace
+\textbf{Role of $\alpha$ and $\beta$} & Both estimated from PE cash flows ($\alpha$ = return wedge) & Public risk-price loadings $\gamma$; no PE $\beta$; GPME = ex-post PV error & PE $\beta$ strips realized factor-path noise; $\alpha$ anchored to public SDF & Both estimated from PE cash flows ($\alpha$ = return wedge; $\beta$ = benchmark loading) \\
+\addlinespace
+\textbf{Criterion \& dates} & Squared pooled NPV at inception ($H=0$) & Public-market GMM; ex-post PE GPME at $H=0$ & Public-SDF GMM plus benchmark-adjusted PE valuation at $H=0$ & Cross-fund pair-product $U_{v,H}$ ($H=0$ main; $H\in[0,30]$ \& AR diagnostic) \\
+\addlinespace
+\textbf{Asymptotic device} & Infill ($n_v \to \infty$ in fixed vintages) & Growing calendar span (nonoverlapping windows) & Growing calendar span & Increasing-domain vintages ($V \to \infty$, bounded $n_v \ge 2$) \\
+\addlinespace
+\textbf{Finite-$n_v$ noise tilt} & Present in squared loss (T3/T4) & Absent (linear mean PE evaluation moment) & Absent in linear PE pricing moments (uses return structure) & Eliminated by $U_{v,H}$ (T7) when $c_v=0$; checked via $H>0$ (Prop.~\ref{prop:optimal_H}) \& AR set \\
+\addlinespace
+\textbf{Inference} & Bootstrap & Spatial HAC \citep{C99} & Spatial HAC & 1D Bartlett HAC ($S=\lceil 1.3\sqrt{V}\rceil$) with \citet{KV05} fixed-$b$ critical values \\
+\bottomrule
+\end{tabularx}
+\par\vspace{3pt}
+\parbox{\linewidth}{\scriptsize\textit{Notes:} \citet{DLP12} and this paper estimate a PE-specific reciprocal benchmark deflator (a valid SDF on the PE cash-flow space in incomplete markets) solely from PE cash flows, whereas \citet{KN16} calibrate an economy-wide public SDF strictly from traded public returns and treat PE cash flows as an ex-post valuation readout; \citet{KN24} bridge both under parametric return-distribution structure.}
+\caption{\textbf{Taxonomy of semiparametric cash-flow discounting frameworks for private equity.}}
+\label{tab:comparison}
+\end{table}

@@ -1,0 +1,524 @@
+# estim_model_core.R
+# ==================
+# Clean wrapper around estim_model_optimized.R with explicit parameters.
+# Provides a function-based interface instead of relying on global variables.
+#
+# Usage:
+#   source("helper/estim_model_core.R")
+#   result <- run_estimation(
+#     simulation_file = "20250808_222540/20250808_222540_simulated_cashflows_EW_VYP.csv",
+#     sdf_model = "linear",
+#     factors_to_use = "ME",
+#     weighting = "EW_VYP",
+#     max_months = c(1, 60, 120, 180)
+#   )
+
+# ============================================================================
+# Horizon Resume Helpers
+# ============================================================================
+
+#' Get completed (max.month, lambda) pairs from cache folder
+#'
+#' Scans the cache folder for existing *_cached_res.csv files and extracts
+#' the unique (max.month, lambda) combinations that have already been computed.
+#'
+#' @param cache_folder_path Full path to the cache folder
+#' @return data.frame with columns max.month and lambda (empty if none found)
+source(file.path(if (file.exists("helper/result_cache.R")) "." else "..", "helper/result_cache.R"))
+source(file.path(if (file.exists("helper/admissible.R")) "." else "..", "helper/admissible.R"))
+
+get_completed_horizons <- function(cache_folder_path, do_cross_validation = FALSE, input_md5 = NULL,
+                                   cache_identity = NULL) {
+    empty <- data.frame(max.month = integer(0), lambda = numeric(0))
+    if (!dir.exists(cache_folder_path)) {
+        return(empty)
+    }
+
+    # Only rows of the current pipeline version computed from the current
+    # input file count as completed (review fix: stale or pre-repair caches
+    # and results from regenerated data are never reused)
+    df <- read.result.cache(cache_folder_path, expected.input.md5 = input_md5,
+                           expected.identity = cache_identity, verbose = TRUE)
+    if (nrow(df) == 0 || !all(c("max.month", "lambda") %in% colnames(df))) {
+        return(empty)
+    }
+    # When CV is requested, a horizon is complete only if the whole CV run
+    # finished (before, any fold row counted as complete, so a CV run that
+    # stopped in a fold was skipped on rerun)
+    if (do_cross_validation) {
+        # complete only with the marker written after all folds and the
+        # full-sample fit (fold rows alone may stem from a run that stopped)
+        if (is.null(cache_identity)) return(empty)
+        done <- file.exists(cv.marker.path(cache_folder_path, cache_identity, df$max.month, df$lambda))
+        df <- df[done & df$CV.key != "ALL", , drop = FALSE]
+    }
+    if (nrow(df) == 0) {
+        return(empty)
+    }
+    unique(df[, c("max.month", "lambda")])
+}
+
+#' Filter out completed horizon/lambda combinations
+#'
+#' Compares requested (max_months, lambdas) against completed pairs and
+#' returns only the combinations that still need to be estimated.
+#'
+#' @param max_months Vector of requested max months
+#' @param lambdas Vector of requested lambdas
+#' @param completed data.frame with columns max.month, lambda (from get_completed_horizons)
+#' @return list(max_months, lambdas) with only remaining work, or NULL if all done
+filter_remaining_horizons <- function(max_months, lambdas, completed) {
+    if (nrow(completed) == 0) {
+        return(list(
+            max_months = max_months, lambdas = lambdas,
+            skipped = integer(0), remaining = max_months
+        ))
+    }
+
+    # Build all requested combinations
+    requested <- expand.grid(max.month = max_months, lambda = lambdas)
+
+    # Find which are already done
+    completed$key <- paste(completed$max.month, completed$lambda, sep = "_")
+    requested$key <- paste(requested$max.month, requested$lambda, sep = "_")
+
+    remaining <- requested[!requested$key %in% completed$key, ]
+    skipped <- requested[requested$key %in% completed$key, ]
+
+    if (nrow(remaining) == 0) {
+        return(list(
+            max_months = integer(0), lambdas = numeric(0),
+            skipped = skipped$max.month, remaining = integer(0)
+        ))
+    }
+
+    # Return unique remaining values
+    return(list(
+        max_months = unique(remaining$max.month),
+        lambdas = unique(remaining$lambda),
+        skipped = skipped$max.month,
+        remaining = remaining$max.month
+    ))
+}
+
+# ============================================================================
+# run_estimation() - Main Entry Point
+# ============================================================================
+
+#' Run SDF estimation with explicit parameters
+#'
+#' This function provides a clean interface to the estimation engine by
+#' setting up the required global variables and sourcing estim_model_optimized.R.
+#' It wraps the legacy interface while providing a modern function-based API.
+#'
+#' @param simulation_file Path to simulated data CSV (relative to simulation/),
+#'   or NULL for empirical data
+#' @param private_source Data source for empirical runs: "preqin" or "pitchbook"
+#' @param public_filename Public factors file name (default: "q_factors")
+#' @param data_prepared_folder Folder containing prepared data
+#' @param cutoff Date cutoff string (e.g., "_cutoff_2021")
+#' @param sdf_model SDF specification: "linear", "exp.aff", "linear.duration",
+#'   "linear.single.date"
+#' @param factors_to_use Second factor: "" for MKT-only, or "Alpha", "ME",
+#'   "IA", "ROE", "EG"
+#' @param error_function Error function: "L2_Lasso", "L1_Ridge", etc.
+#' @param include_alpha_term Include alpha term in model (legacy parameter)
+#' @param weighting Weighting scheme: "EW", "FW", "EW_VYP", "FW_VYP"
+#' @param max_months Vector of maximum compounding months
+#' @param lambdas Regularization parameter(s)
+#' @param kernel_bandwidth HAC bandwidth: "llsw" (default, S = ceil(1.3 sqrt(V)), fixed-b tests) or a number of vintage years
+#' @param do_cross_validation Enable cross-validation
+#' @param part_to_keep Partition index to keep (for partitioned runs)
+#' @param no_partitions Number of partitions
+#' @param data_out_folder Output folder for results
+#' @param cache_folder_tag Cache folder name (auto-generated if NULL)
+#' @param do_cache Enable caching
+#' @param do_parallel Enable parallel processing
+#' @param verbose Print progress messages
+#' @param scenario_id Optional scenario identifier for result tracking
+#'
+#' @return List with estimation results (or NULL on error)
+run_estimation <- function(
+    # Data paths
+    simulation_file = NULL,
+    private_source = "preqin",
+    public_filename = "q_factors",
+    data_prepared_folder = "data_prepared_2026",
+    cutoff = "",
+    max_vintage = 2021,
+    # Model specification
+    sdf_model = "linear",
+    factors_to_use = "",
+    error_function = "L2_Lasso",
+    include_alpha_term = FALSE,
+    # Estimation settings
+    weighting = "EW_VYP",
+    max_months = c(1, 60, 120, 150, 180, 210, 240, 300, 360),
+    lambdas = 0,
+    kernel_bandwidth = "llsw", # S = ceil(1.3 sqrt(V)); a number = fixed bandwidth
+    # Cross-validation
+    do_cross_validation = FALSE,
+    part_to_keep = 1,
+    no_partitions = 1,
+    # Output
+    data_out_folder = "simulation/data_out_2026_new",
+    cache_folder_tag = NULL,
+    # Control
+    do_cache = TRUE,
+    do_parallel = TRUE,
+    verbose = TRUE,
+    # Tracking
+    scenario_id = NULL,
+    # Alpha bounds (for optimx)
+    alpha_lower = -Inf,
+    alpha_upper = Inf,
+    # NAV discount
+    final_nav_discount = 100,
+    # Horizon origin t0 per vintage: "first.cf" or "predetermined" (B5)
+    origin_convention = "first.cf",
+    # Vintage weights q_v for error_function = "U_pair": "equal" or "n.funds"
+    vintage_weights = "equal",
+    # Scenario config file used (hashed into provenance); NULL = default file
+    config_path = NULL) {
+    # -------------------------------------------------------------------------
+    # Store current working directory to restore later
+    # -------------------------------------------------------------------------
+    orig_wd <- getwd()
+
+    # Find the r_project root directory
+    script_dir <- orig_wd
+    if (!file.exists(file.path(script_dir, "estim_model_optimized.R"))) {
+        # Try to find it
+        if (file.exists(file.path(dirname(script_dir), "estim_model_optimized.R"))) {
+            script_dir <- dirname(script_dir)
+        } else {
+            stop("Cannot find estim_model_optimized.R. Please run from r_project directory.")
+        }
+    }
+    setwd(script_dir)
+
+    on.exit(
+        {
+            setwd(orig_wd)
+        },
+        add = TRUE
+    )
+
+    # -------------------------------------------------------------------------
+    # Print scenario info
+    # -------------------------------------------------------------------------
+    if (verbose) {
+        cat("\n", paste(rep("=", 70), collapse = ""), "\n")
+        if (!is.null(scenario_id)) {
+            cat("Running scenario: ", scenario_id, "\n")
+        }
+        cat("SDF model: ", sdf_model, "\n")
+        cat("Factors: ", paste(unique(c("MKT", factors_to_use[factors_to_use != ""])), collapse = " + "), "\n")
+        cat("Weighting: ", weighting, "\n")
+        cat("Max months: ", paste(max_months, collapse = ", "), "\n")
+        if (!is.null(simulation_file)) {
+            cat("Simulation file: ", simulation_file, "\n")
+        } else {
+            cat("Data source: ", private_source, "\n")
+        }
+        cat(paste(rep("=", 70), collapse = ""), "\n\n")
+    }
+
+    # -------------------------------------------------------------------------
+    # Determine run mode
+    # -------------------------------------------------------------------------
+    use_simulation <- !is.null(simulation_file)
+
+    # -------------------------------------------------------------------------
+    # Parse weighting to extract VYP flag
+    # -------------------------------------------------------------------------
+    use_vintage_year_pfs <- grepl("VYP", weighting)
+    weighting_base <- gsub("_VYP", "", weighting)
+
+    # -------------------------------------------------------------------------
+    # Generate cache folder tag if not provided
+    # -------------------------------------------------------------------------
+    if (is.null(cache_folder_tag)) {
+        if (use_simulation) {
+            # Extract folder tag from simulation file path
+            cache_folder_tag <- gsub("/.*", "", simulation_file)
+            cache_folder_tag <- paste0(cache_folder_tag, "_simulated_cashflows_", weighting)
+        } else {
+            # Include factor specification in cache tag to separate different models.
+            # Without this, e.g. Alpha-only and ALL runs would share a folder
+            # and the resume logic would incorrectly skip the second model.
+            factor_tag <- ""
+            if (include_alpha_term) factor_tag <- paste0(factor_tag, "alpha_")
+            if (length(factors_to_use) > 0 && any(factors_to_use != "")) factor_tag <- paste0(factor_tag, paste(factors_to_use, collapse = "_"), "_")
+            nc_tag <- if (final_nav_discount != 100) paste0("_NC", final_nav_discount) else ""
+            cache_folder_tag <- paste0(private_source, "_", factor_tag, weighting, nc_tag)
+        }
+    }
+    # Estimator options are part of the folder identity for every run,
+    # including caller-supplied tags (simulations, vintage sweeps): otherwise a
+    # U_pair or predetermined-origin run would share the folder (and the
+    # resume check) of the default run on the same input data.
+    cache_folder_tag <- result.cache.tag(cache_folder_tag, error_function, origin_convention, vintage_weights,
+        partition = if (no_partitions > 1) part_to_keep else NULL)
+
+    # -------------------------------------------------------------------------
+    # Smart Resume: Check for already-completed horizons
+    # -------------------------------------------------------------------------
+    cache_folder_path <- file.path(data_out_folder, paste0("cache_", public_filename, "_", cache_folder_tag))
+
+    # Input file: must exist (also before the resume check), and its hash is
+    # part of the result identity
+    input_path <- input.file.path(
+        use_simulation, simulation_file, private_source,
+        data_prepared_folder, cutoff, weighting, final_nav_discount
+    )
+    if (!file.exists(input_path)) {
+        stop("Input file not found: ", input_path)
+    }
+    brent_interval <- if (exists("brent.interval", envir = .GlobalEnv)) get("brent.interval", .GlobalEnv) else c(-1, 4)
+    gross_floor <- if (exists("gross.floor", envir = .GlobalEnv)) get("gross.floor", .GlobalEnv) else GROSS.FLOOR
+    settings <- list(sdf.model = sdf_model, factors.to.use = as.character(unlist(factors_to_use)),
+        error.function = error_function, include.alpha.term = include_alpha_term,
+        weighting = weighting, max.vintage = max_vintage, kernel.bandwidth = kernel_bandwidth,
+        alpha.lower = alpha_lower, alpha.upper = alpha_upper, origin.convention = origin_convention,
+        vintage.weights = vintage_weights, part.to.keep = part_to_keep, no.partitions = no_partitions,
+        brent.interval = brent_interval, gross.floor = gross_floor)
+    identity <- make.estimation.identity(input_path, public_filename, data_prepared_folder,
+        settings, config_path, use_simulation)
+    input_md5 <- identity$input.md5
+
+    completed <- get_completed_horizons(cache_folder_path, do_cross_validation, input_md5, identity$cache.identity)
+    filtered <- filter_remaining_horizons(max_months, lambdas, completed)
+
+    if (verbose && nrow(completed) > 0) {
+        cat("\n--- HORIZON RESUME CHECK ---\n")
+        cat("Cache folder: ", basename(cache_folder_path), "\n")
+        cat("Completed horizons: ", paste(sort(unique(completed$max.month)), collapse = ", "), "\n")
+        cat("Requested horizons: ", paste(sort(max_months), collapse = ", "), "\n")
+        cat("Skipping: ", length(filtered$skipped), " horizons\n")
+        cat("Remaining: ", length(filtered$remaining), " horizons\n")
+        if (length(filtered$remaining) > 0) {
+            cat("  -> Will estimate: ", paste(sort(filtered$max_months), collapse = ", "), "\n")
+        }
+        cat("----------------------------\n\n")
+    }
+
+    # If all horizons are already complete, return early
+    if (length(filtered$max_months) == 0) {
+        if (verbose) {
+            cat("All requested horizons already complete. Skipping estimation.\n")
+        }
+        return(list(
+            scenario_id = scenario_id,
+            simulation_file = simulation_file,
+            sdf_model = sdf_model,
+            factors_to_use = factors_to_use,
+            weighting = weighting,
+            cache_folder_tag = cache_folder_tag,
+            cache_folder_tags = cache_folder_tag,
+            public_filename = public_filename,
+            data_out_folder = data_out_folder,
+            elapsed_time = 0,
+            success = TRUE,
+            note = "All horizons already complete - skipped estimation"
+        ))
+    }
+
+    # Update max_months and lambdas to only include remaining work
+    max_months <- filtered$max_months
+    lambdas <- filtered$lambdas
+
+    # -------------------------------------------------------------------------
+    # Set global variables for estim_model_optimized.R
+    # These are the variables that the legacy script expects to find
+    # -------------------------------------------------------------------------
+
+    # Prevent estim_model_optimized.R from using its own defaults
+    assign("source.internally", FALSE, envir = .GlobalEnv)
+
+    # Core settings
+    assign("export.data", FALSE, envir = .GlobalEnv)
+    assign("use.vintage.year.pfs", use_vintage_year_pfs, envir = .GlobalEnv)
+    assign("use.simulation", use_simulation, envir = .GlobalEnv)
+    assign("do.cross.validation", do_cross_validation, envir = .GlobalEnv)
+    assign("do.cache", do_cache, envir = .GlobalEnv)
+    assign("do.parallel", do_parallel, envir = .GlobalEnv)
+
+    # Data sources
+    assign("private.source", private_source, envir = .GlobalEnv)
+    assign("cutoff", cutoff, envir = .GlobalEnv)
+    assign("public.filename", public_filename, envir = .GlobalEnv)
+    assign("data.prepared.folder", data_prepared_folder, envir = .GlobalEnv)
+
+    # Model settings
+    assign("weighting", weighting, envir = .GlobalEnv)
+    assign("error.function", error_function, envir = .GlobalEnv)
+    assign("sdf.model", sdf_model, envir = .GlobalEnv)
+    assign("include.alpha.term", include_alpha_term, envir = .GlobalEnv)
+    assign("factors.to.use", factors_to_use, envir = .GlobalEnv)
+
+    # Estimation parameters
+    assign("max.months", max_months, envir = .GlobalEnv)
+    assign("lambdas", lambdas, envir = .GlobalEnv)
+    assign("kernel.bandwidth", kernel_bandwidth, envir = .GlobalEnv)
+    assign("max.vintage", max_vintage, envir = .GlobalEnv)
+
+    # NAV discount
+    assign("final.nav.discount", final_nav_discount, envir = .GlobalEnv)
+
+    # Horizon origin and U-criterion vintage weights (always assigned, so a
+    # setting never leaks from one scenario into the next)
+    assign("origin.convention", origin_convention, envir = .GlobalEnv)
+    assign("vintage.weights", vintage_weights, envir = .GlobalEnv)
+    # B9 provenance: scenario id recorded in every result row
+    assign("scenario.id", scenario_id, envir = .GlobalEnv)
+    # Result identity (helper/result_cache.R) and the config file actually used
+    assign("input.md5", input_md5, envir = .GlobalEnv)
+    assign("config.path", identity$config.path, envir = .GlobalEnv)
+    assign("result.identity.used", identity, envir = .GlobalEnv)
+    assign("brent.interval", brent_interval, envir = .GlobalEnv)
+    assign("gross.floor", gross_floor, envir = .GlobalEnv) # Assumption A7, helper/admissible.R
+
+    # Alpha bounds
+    assign("alpha.lower", alpha_lower, envir = .GlobalEnv)
+    assign("alpha.upper", alpha_upper, envir = .GlobalEnv)
+
+    # Partitioning
+    assign("part.to.keep", part_to_keep, envir = .GlobalEnv)
+    assign("no.partitions", no_partitions, envir = .GlobalEnv)
+
+    # Output paths
+    assign("data.out.folder", data_out_folder, envir = .GlobalEnv)
+    assign("cache.folder.tag", cache_folder_tag, envir = .GlobalEnv)
+
+    # Simulation-specific
+    if (use_simulation) {
+        assign("simulation.filename", simulation_file, envir = .GlobalEnv)
+    }
+
+    # Create output folder if needed
+    if (!dir.exists(data_out_folder)) {
+        dir.create(data_out_folder, recursive = TRUE)
+    }
+
+    # -------------------------------------------------------------------------
+    # Run the estimation
+    # -------------------------------------------------------------------------
+    start_time <- Sys.time()
+
+    tryCatch(
+        {
+            source("estim_model_optimized.R")
+
+            end_time <- Sys.time()
+            elapsed <- difftime(end_time, start_time, units = "secs")
+
+            if (verbose) {
+                cat("\nEstimation completed in", round(as.numeric(elapsed), 1), "seconds\n")
+            }
+
+            # -------------------------------------------------------------------------
+            # Collect results
+            # -------------------------------------------------------------------------
+            result <- list(
+                scenario_id = scenario_id,
+                simulation_file = simulation_file,
+                sdf_model = sdf_model,
+                factors_to_use = factors_to_use,
+                weighting = weighting,
+                cache_folder_tag = cache_folder_tag,
+                cache_folder_tags = cache_folder_tag,
+                public_filename = public_filename,
+                data_out_folder = data_out_folder,
+                elapsed_time = elapsed,
+                success = TRUE
+            )
+
+            # Try to extract estimation results from global environment
+            if (exists("df.res", envir = .GlobalEnv)) {
+                result$df_res <- get("df.res", envir = .GlobalEnv)
+            }
+
+            return(result)
+        },
+        error = function(e) {
+            if (verbose) {
+                cat("\nError during estimation:\n")
+                cat(conditionMessage(e), "\n")
+            }
+
+            return(list(
+                scenario_id = scenario_id,
+                simulation_file = simulation_file,
+                success = FALSE,
+                error = conditionMessage(e)
+            ))
+        }
+    )
+}
+
+# ============================================================================
+# run_estimation_batch() - Run Multiple Scenarios
+# ============================================================================
+
+#' Run estimation for a batch of scenarios
+#'
+#' @param scenarios Named list of scenarios (from get_active_scenarios)
+#' @param type "simulation" or "empirical"
+#' @param verbose Print progress
+#' @return Named list of results keyed by scenario_id
+run_estimation_batch <- function(scenarios, type = "simulation", verbose = TRUE) {
+    results <- list()
+    n <- length(scenarios)
+
+    for (i in seq_along(scenarios)) {
+        scenario <- scenarios[[i]]
+        id <- names(scenarios)[i]
+
+        if (verbose) {
+            cat("\n[", i, "/", n, "] Processing scenario: ", id, "\n")
+        }
+
+        if (type == "simulation") {
+            source("helper/config_loader.R")
+            params <- scenario_to_estimation_params(scenario)
+        } else {
+            source("helper/config_loader.R")
+            params <- empirical_scenario_to_params(scenario)
+        }
+
+        result <- do.call(run_estimation, params)
+        results[[id]] <- result
+    }
+
+    # Summary
+    if (verbose) {
+        cat("\n", paste(rep("=", 70), collapse = ""), "\n")
+        cat(
+            "Batch complete: ", sum(sapply(results, function(r) r$success)),
+            "/", n, " succeeded\n"
+        )
+        cat(paste(rep("=", 70), collapse = ""), "\n")
+    }
+
+    return(results)
+}
+
+# ============================================================================
+# Self-Test (if run directly)
+# ============================================================================
+
+if (sys.nframe() == 0L) {
+    cat("estim_model_core.R loaded successfully.\n")
+    cat("Use run_estimation() to run with explicit parameters.\n")
+    cat("Use run_estimation_batch() to run multiple scenarios.\n")
+
+    cat("\nExample usage:\n")
+    cat("  result <- run_estimation(\n")
+    cat('    simulation_file = "20250808_222540/20250808_222540_simulated_cashflows_EW_VYP.csv",\n')
+    cat('    sdf_model = "linear",\n')
+    cat('    factors_to_use = "ME",\n')
+    cat('    weighting = "EW_VYP",\n')
+    cat("    max_months = c(1, 60, 120, 180)\n")
+    cat("  )\n")
+}

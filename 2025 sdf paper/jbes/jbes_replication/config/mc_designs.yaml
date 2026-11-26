@@ -1,0 +1,154 @@
+# Step 4 Monte Carlo designs (revision plan, Section I, "Step 4: scope and
+# compute plan"; calibration in the log entry "Step 4, stage 4").
+# Read by mc.load.designs() in simulation/mc_driver.R. Every design inherits
+# the defaults; a design lists only what it changes. Fund counts per vintage:
+#   shape: BO | VC  -> the empirical counts (vintages <= 2010, local file)
+#   shape_scale     -> counts multiplied and rounded, at least 2 per vintage
+#   vintages        -> keep only these vintage years (from:to)
+#   consecutive     -> stylized: `funds` funds in each of `count` consecutive vintages ending `last`
+# sigma: monthly sd of the mean-one lognormal deal shock; shared_sd: log-sd
+# of the shock shared by all deals of a vintage.
+defaults:
+  theta0: {MKT: 1}
+  sigma: 0.130            # Buyout calibration (fund-level dispersion)
+  shared_sd: 0
+  no_deals: 15
+  investment_period: 5
+  max_holding_period: 11.5 # calibration (median fund duration)
+  t_max: "2021-12-31"
+  quarterly: true
+  estimators: [L2.vyp, L2.fund, U.eq, U.n]
+  models: [MKT, Alpha]
+  horizons: [0, 60, 120, 180, 240, 360]
+  reps: 250
+
+designs:
+  # core (1,000 replications)
+  core_BO: {shape: BO, reps: 1000}
+  core_VC: {shape: VC, sigma: 0.154, reps: 1000}
+  # margins, Buyout shape (250 replications)
+  m1_thin:   {shape: BO, shape_scale: 0.25}
+  m1_wide:   {shape: BO, shape_scale: 4}
+  m2_early:  {shape: BO, vintages: "1985:1997"}
+  m2_late:   {shape: BO, vintages: "1998:2010"}
+  m3_sigma:  {shape: BO, sigma: 0.195}                 # 1.5 x calibrated
+  m4_shared: {shape: BO, shared_sd: 0.153}             # matches the Buyout U level at H = 0
+  m4_shared2: {shape: BO, shared_sd: 0.306}            # twice (about the VC level)
+  m5_life_2_2:  {shape: BO, investment_period: 2, max_holding_period: 2, reps: 1000}   # extended (rule, 19 Nov)
+  m5_life_3_10: {shape: BO, investment_period: 3, max_holding_period: 10}
+  m6_ME:  {shape: BO, theta0: {MKT: 1, ME: 0.5},  models: [ME],  estimators: [L2.vyp, U.eq], reps: 1000}   # extended (rule, 19 Nov)
+  m6_IA:  {shape: BO, theta0: {MKT: 1, IA: 0.5},  models: [IA],  estimators: [L2.vyp, U.eq]}
+  m6_ROE: {shape: BO, theta0: {MKT: 1, ROE: 0.5}, models: [ROE], estimators: [L2.vyp, U.eq], reps: 1000}  # extended (rule, 19 Nov)
+  m6_EG:  {shape: BO, theta0: {MKT: 1, EG: 0.5},  models: [EG],  estimators: [L2.vyp, U.eq]}
+  m7_beta2: {shape: BO, theta0: {MKT: 2}}
+  # DLP12 grid G: stylized consecutive vintages ending 2005, their deal model
+  # (5-year investment period, holding up to 10 years), sigma = 0.3, H = 0 and
+  # 15 years, (alpha, beta), L2 on vintage portfolios; 500 replications.
+  # V in {10, 20, 39}: V = 80 consecutive vintages do not fit the 1967-2021
+  # factor history (design correction, log entry "Step 4, stage 4").
+  g_n5_V10:   {consecutive: {funds: 5, count: 10, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
+  g_n20_V10:  {consecutive: {funds: 20, count: 10, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
+  g_n50_V10:  {consecutive: {funds: 50, count: 10, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
+  g_n200_V10: {consecutive: {funds: 200, count: 10, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
+  g_n5_V20:   {consecutive: {funds: 5, count: 20, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
+  g_n20_V20:  {consecutive: {funds: 20, count: 20, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
+  g_n50_V20:  {consecutive: {funds: 50, count: 20, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
+  g_n200_V20: {consecutive: {funds: 200, count: 20, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
+  g_n5_V39:   {consecutive: {funds: 5, count: 39, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
+  g_n20_V39:  {consecutive: {funds: 20, count: 39, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
+  g_n50_V39:  {consecutive: {funds: 50, count: 39, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
+  g_n200_V39: {consecutive: {funds: 200, count: 39, last: 2005}, sigma: 0.3, max_holding_period: 10, models: [Alpha], estimators: [L2.vyp], horizons: [0, 180], reps: 500}
+  # Additions of 19 November 2026 (plan, Section J, "Gap found"; log entry
+  # "Step 4, additions"), single factor only:
+  # IV comparator on the draws of existing designs (same design, same seeds,
+  # so the rows pair with those designs' rows)
+  iv_core_BO:    {shape: BO, estimators: [IV], models: [MKT], reps: 1000}
+  iv_core_VC:    {shape: VC, sigma: 0.154, estimators: [IV], models: [MKT], reps: 1000}
+  iv_m4_shared:  {shape: BO, shared_sd: 0.153, estimators: [IV], models: [MKT]}
+  iv_m4_shared2: {shape: BO, shared_sd: 0.306, estimators: [IV], models: [MKT]}
+  # persistent shared vintage shocks (DGP (b)): AR(1) across vintage years, rho 0.6
+  # 1,000 replications by the extension rule (log entry "Step 4, extension rule
+  # for the persistent-shock statements"); m4p_ind, m4p_ind2: the same M4
+  # designs with independent shocks (the draws of m4_shared, m4_shared2), single
+  # factor and the m4p estimators, so every m4p replication has its paired
+  # independent-shock replication at 1,000
+  m4p_shared:  {shape: BO, shared_sd: 0.153, shared_rho: 0.6, estimators: [L2.vyp, U.eq, U.n, IV], models: [MKT], reps: 1000}
+  m4p_shared2: {shape: BO, shared_sd: 0.306, shared_rho: 0.6, estimators: [L2.vyp, U.eq, U.n, IV], models: [MKT], reps: 1000}
+  m4p_ind:     {shape: BO, shared_sd: 0.153, estimators: [L2.vyp, U.eq, U.n, IV], models: [MKT], reps: 1000}
+  m4p_ind2:    {shape: BO, shared_sd: 0.306, estimators: [L2.vyp, U.eq, U.n, IV], models: [MKT], reps: 1000}
+  # growing V with fixed funds per vintage (Referee 2's H = 0 plateau check):
+  # consecutive vintages ending 2005 on factor paths resampled i.i.d. from the
+  # 1967-2021 months (100 or 400 vintages do not fit the history)
+  v_V25_n5:   {consecutive: {funds: 5, count: 25, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  v_V100_n5:  {consecutive: {funds: 5, count: 100, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  v_V400_n5:  {consecutive: {funds: 5, count: 400, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  v_V25_n20:  {consecutive: {funds: 20, count: 25, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  v_V100_n20: {consecutive: {funds: 20, count: 100, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  v_V400_n20: {consecutive: {funds: 20, count: 400, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  # historical-path twins of v_V25_n5 and v_V25_n20 (log entry "Step 4,
+  # resampled-path over-rejection check"): same vintages, funds, horizons and
+  # seeds, on the 1981-2021 factor history instead of resampled months; the
+  # draws are not paired with the v_ designs (resampling uses the random
+  # stream first)
+  h_V25_n5:   {consecutive: {funds: 5, count: 25, last: 2005}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  h_V25_n20:  {consecutive: {funds: 20, count: 25, last: 2005}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  # window against counts (log entry "Step 4, window-versus-counts check"):
+  # equal counts in the Buyout core's window, 15 funds in each of the 25
+  # vintages 1986-2010 (375 funds; the core has 383), historical path
+  w_V25_n15:  {consecutive: {funds: 15, count: 25, last: 2010}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  # Hardening of the revised storyline (log entries "hardening weak links 1
+  # and 3: scope" and "...: results"), single factor.
+  # (A) vintage shock correlated with the factor path: w_v = a log R_v -
+  # log E[R_v^a], R_v the benchmark return over the first 10 years of the
+  # vintage; a = 0.307 / 0.615 gives sd(w_v) = c / 2c (0.153 / 0.306). Pricing
+  # holds unconditionally, not given the path. Controls: v_V25_n20 and
+  # v_V100_n20 (same draws apart from the shock).
+  pc_V25_n20_c:   {consecutive: {funds: 20, count: 25, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, path_shock: {a: 0.307, window_years: 10}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  pc_V25_n20_2c:  {consecutive: {funds: 20, count: 25, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, path_shock: {a: 0.615, window_years: 10}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  pc_V100_n20_c:  {consecutive: {funds: 20, count: 100, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, path_shock: {a: 0.307, window_years: 10}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  pc_V100_n20_2c: {consecutive: {funds: 20, count: 100, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, path_shock: {a: 0.615, window_years: 10}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  # (B) heterogeneous fund sizes (lognormal, sd of log size as the data: Buyout
+  # 1.19, VC 0.90), EW and FW versions of L2 and U; drawn last, so the EW
+  # estimates equal those of core_BO / core_VC
+  s_core_BO: {shape: BO, sizes: {sdlog: 1.19}, estimators: [L2.vyp, U.eq, L2.vyp.fw, U.eq.fw], models: [MKT], horizons: [0, 180], reps: 1000}
+  s_core_VC: {shape: VC, sigma: 0.154, sizes: {sdlog: 0.90}, estimators: [L2.vyp, U.eq, L2.vyp.fw, U.eq.fw], models: [MKT], horizons: [0, 180], reps: 1000}
+  # (A') the deal-level version (the plan's DGP (c)): each deal's log multiple
+  # gets a log R_ab - k log mean(G^a) over its holding period, mean one given
+  # the investment date, so pricing holds at the vintage origin and fails only
+  # given the path (log entry "hardening, design A'"). Same exponents as (A).
+  pd_V25_n20_c:   {consecutive: {funds: 20, count: 25, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, path_shock: {a: 0.307, level: deal}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  pd_V25_n20_2c:  {consecutive: {funds: 20, count: 25, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, path_shock: {a: 0.615, level: deal}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  pd_V100_n20_c:  {consecutive: {funds: 20, count: 100, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, path_shock: {a: 0.307, level: deal}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  pd_V100_n20_2c: {consecutive: {funds: 20, count: 100, last: 2005}, path: {resample: iid, from: "1967-01-31", to: "2021-12-31"}, path_shock: {a: 0.615, level: deal}, estimators: [L2.vyp, U.eq, IV], models: [MKT], horizons: [0, 180], reps: 500}
+  # Shared-vintage-shock exploding-alpha stress test for U_{v,H} (23 Nov 2026):
+  # VC shape with shared vintage shock sd = 0.50 (matching empirical VC vintage
+  # PV dispersion: 0.44 EW, 0.54 FW), joint (alpha, beta), horizons 0, 5, 15, 30 yr.
+  # Demonstrates Lemma lem:coercivity & Theorem 1(T8): under c_v > 0, U_{v,0}
+  # inherits shared-shock exploding alpha at H = 0, and moderate H > 0 restores
+  # coercivity and lowers RMSE.
+  u_vc_shared: {shape: VC, sigma: 0.154, shared_sd: 0.50, estimators: [L2.vyp, U.eq, U.n], models: [Alpha], horizons: [0, 60, 180, 360], reps: 250}
+  # Optimal-H theory & Regime 1-3b cross-vintage dependence verification (26 Nov 2026;
+  # Proposition 2, Figure 3 Panel C, Appendix Table 12).
+  # Panel A: Preqin Buyout calendar (25 vintages 1985-2010, 383 funds), historical
+  # 1985-2021 q5 factors, sigma = 0.130/mo, variance-matched shared shock sigma_W = 0.306
+  # (M4 2c scale), 1-parameter Alpha.only (beta_MKT = 1 fixed) on 2.5-yr horizon grid.
+  optH_R1_BO:      {shape: BO, estimators: [L2.vyp, U.eq], models: [Alpha.only], horizons: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360], reps: 500}
+  optH_R2_BO:      {shape: BO, shared_sd: 0.306, estimators: [U.eq], models: [Alpha.only], horizons: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360], reps: 500}
+  optH_R3a06_BO:   {shape: BO, shared_sd: 0.306, shared_rho: 0.6, estimators: [U.eq], models: [Alpha.only], horizons: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360], reps: 500}
+  optH_R3a08_BO:   {shape: BO, shared_sd: 0.306, shared_rho: 0.8, estimators: [U.eq], models: [Alpha.only], horizons: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360], reps: 500}
+  optH_R3b_iid_BO: {shape: BO, cal_shock: {sigma_W: 0.306, phi_m: 0}, estimators: [U.eq], models: [Alpha.only], horizons: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360], reps: 500}
+  optH_R3b_ar_BO:  {shape: BO, cal_shock: {sigma_W: 0.306, phi_m: 0.947}, estimators: [U.eq], models: [Alpha.only], horizons: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360], reps: 500}
+  # Panel B: Large-V asymptotic check (V = 100 uncensored consecutive vintages ending 1991,
+  # n_v = 15 funds, resampled 1985-2021 q5 monthly returns matching g = 13.3%, sigma_m = 15.4%).
+  optH_V100_R1:      {consecutive: {funds: 15, count: 100, last: 1991}, path: {resample: iid, from: "1985-01-31", to: "2021-12-31"}, estimators: [L2.vyp, U.eq], models: [Alpha.only], horizons: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360], reps: 250}
+  optH_V100_R2:      {consecutive: {funds: 15, count: 100, last: 1991}, path: {resample: iid, from: "1985-01-31", to: "2021-12-31"}, shared_sd: 0.306, estimators: [U.eq], models: [Alpha.only], horizons: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360], reps: 250}
+  optH_V100_R3a06:   {consecutive: {funds: 15, count: 100, last: 1991}, path: {resample: iid, from: "1985-01-31", to: "2021-12-31"}, shared_sd: 0.306, shared_rho: 0.6, estimators: [U.eq], models: [Alpha.only], horizons: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360], reps: 250}
+  optH_V100_R3a08:   {consecutive: {funds: 15, count: 100, last: 1991}, path: {resample: iid, from: "1985-01-31", to: "2021-12-31"}, shared_sd: 0.306, shared_rho: 0.8, estimators: [U.eq], models: [Alpha.only], horizons: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360], reps: 250}
+  optH_V100_R3b_iid: {consecutive: {funds: 15, count: 100, last: 1991}, path: {resample: iid, from: "1985-01-31", to: "2021-12-31"}, cal_shock: {sigma_W: 0.306, phi_m: 0}, estimators: [U.eq], models: [Alpha.only], horizons: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360], reps: 250}
+  optH_V100_R3b_ar:  {consecutive: {funds: 15, count: 100, last: 1991}, path: {resample: iid, from: "1985-01-31", to: "2021-12-31"}, cal_shock: {sigma_W: 0.306, phi_m: 0.947}, estimators: [U.eq], models: [Alpha.only], horizons: [0, 30, 60, 90, 120, 150, 180, 210, 240, 300, 360], reps: 250}
+  # Panel C: Single-factor beta comparison on Preqin Buyout calendar (U_{v,0}, U_{v,15}
+  # vs leave-band-out cross-vintage pair products U.cross.m0/m5/m7, Proposition 2(iv)).
+  optH_cross_R1_BO:      {shape: BO, estimators: [U.eq, U.cross.m0, U.cross.m5, U.cross.m7], models: [MKT], horizons: [0, 180], reps: 500}
+  optH_cross_R2_BO:      {shape: BO, shared_sd: 0.306, estimators: [U.eq, U.cross.m0, U.cross.m5, U.cross.m7], models: [MKT], horizons: [0, 180], reps: 500}
+  optH_cross_R3a06_BO:   {shape: BO, shared_sd: 0.306, shared_rho: 0.6, estimators: [U.eq, U.cross.m0, U.cross.m5, U.cross.m7], models: [MKT], horizons: [0, 180], reps: 500}
+  optH_cross_R3b_iid_BO: {shape: BO, cal_shock: {sigma_W: 0.306, phi_m: 0}, estimators: [U.eq, U.cross.m0, U.cross.m5, U.cross.m7], models: [MKT], horizons: [0, 180], reps: 500}

@@ -218,7 +218,7 @@ ic <- read.csv("results/mc_step4/inference_checks.csv", stringsAsFactors = FALSE
 v4 <- ic[ic$check == "v400_tails", ]; v4 <- v4[order(v4$design != "v_V400_n5", v4$H), ]
 stopifnot(nrow(v4) == 4)
 v4.note <- sprintf(paste0("Equal-count and growing-$V$ rows: on resampled paths at $V=400$, equal-vintage $U_{v,H}$ still rejects in %.1f--%.1f\\%% of draws with low median $N_{\\mathrm{eff}}$ (%.0f--%.0f) and a left-tail excess (left/right rejections %s across $n\\in\\{5,20\\}\\times H\\in\\{0,15\\}$); ",
-    "with the test denominator fixed at the Monte Carlo SD they become %s, so the excess comes from the studentization (an estimated SE that co-moves with the estimation error); heavy-tailed compounded weights (cf.\\ Martin 2012 on compounded-return tails) are a candidate mechanism that we have not tested. "),
+    "with the test denominator fixed at the Monte Carlo SD they become %s, so the excess comes from the studentization (an estimated SE that co-moves with the estimation error). Table~\\ref{tab:mc_v400_studentization} traces this distortion to two compounding-kurtosis channels---left-skewed lognormal deal payoffs at $H=0$ and 15-year compounded benchmark weights $A_{v,15}^2$ at $H=15$ (cf.\\ Martin 2012)---and confirms convergence to nominal 4.4--5.0\\%% rejection by $V=1{,}600$ at $H=0$ (and 3.6--6.0\\%% already at $V=400$ under the null-evaluated fixed-$b$ score test). "),
   100 * min(v4$reject), 100 * max(v4$reject), min(v4$median.neff), max(v4$median.neff),
   paste(sprintf("%d/%d", v4$left, v4$right), collapse = ", "), paste(sprintf("%d/%d", v4$left.mcsd, v4$right.mcsd), collapse = ", "))
 a1 <- c(a1, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",

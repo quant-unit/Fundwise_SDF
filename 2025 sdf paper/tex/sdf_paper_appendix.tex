@@ -1,7 +1,6 @@
-
 \documentclass[12pt]{article}
 
-% Packages
+% Core packages
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{amsthm}
@@ -11,99 +10,58 @@
 \usepackage{natbib}
 \usepackage{graphicx}
 \graphicspath{{./}{figure/}{empirical_bovc_us/}{../../r_project/results/mc_step4/paper/}{../../r_project/results/figures_bovc_us_g1/}{../../r_project/results/figures_bovc_us_g1/main_u/}{../../r_project/results/figures_bovc_us_g1/step5/}}
-% Margin for JFEC
 \usepackage[letterpaper, margin=1in]{geometry}
-\usepackage[margin=1.1cm]{caption}
-% use double spacing
+\usepackage[margin=0.8cm]{caption}
 \usepackage{setspace}
 \usepackage{url}
-\usepackage{ifthen}
-
-
-% Toggle this boolean to easily switch between visually nice working mode (false) and JFEC submission formatting (true)
-\newif\ifSubmissionMode
-\SubmissionModefalse % Set to \SubmissionModetrue before submitting
-%\SubmissionModetrue
-
-\ifSubmissionMode
-\usepackage{endnotes}
-\let\footnote=\endnote
-\usepackage[nomarkers, nolists, tablesfirst]{endfloat}
-\fi
-
+\usepackage{etoolbox}
 \usepackage[outdir=./]{epstopdf}
 \usepackage{booktabs}
 \usepackage{float}
-\usepackage{standalone}
 \usepackage{xcolor}
 \usepackage{tabularx}
 \usepackage{longtable}
-\usepackage{tcolorbox}
 \usepackage{multirow}
 \usepackage{xr-hyper}
 
+% Cross-reference main manuscript
 \externaldocument[]{sdf_paper}
 
-\newtheorem{assume}{Assumption}
-\newtheorem{lemma}{Lemma}
-\newtheorem{proposition}{Proposition}
-\newtheorem{corollary}{Corollary}
-\newtheorem{remark}{Remark}
-\newtheorem{definition}{Definition}
-\newtheorem{example}{Example}
-\newtheorem{theorem}{Theorem}
+% Scrub identifying PDF metadata for double-blind review
+\pdfinfo{
+  /Author ()
+  /Title (Online Supplementary Material: Cash-Flow Pricing of Non-Traded Assets: Finite-Pool Identification, Horizon Selection, and Inference)
+  /Subject ()
+  /Keywords ()
+  /Creator ()
+  /Producer ()
+}
 
+\newtheorem{assume}{Assumption}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{corollary}{Corollary}[section]
+\newtheorem{remark}{Remark}[section]
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{theorem}{Theorem}[section]
 
-% logo
-\usepackage{fancyhdr}
+\numberwithin{equation}{section}
+\numberwithin{table}{section}
+\numberwithin{figure}{section}
 
-
+\AtBeginEnvironment{table}{\singlespacing}
+\AtBeginEnvironment{figure}{\singlespacing}
 
 \begin{document}
-	
 
-\ifSubmissionMode
-\setcounter{page}{2}
-\doublespacing
-\renewcommand{\arraystretch}{1.15}
-\fi
+\onehalfspacing
 
 \input{sdf_paper_online_appendices.tex}
 
-
-
-\ifSubmissionMode
-%% JFEC order: text -> figure legends -> references -> notes -> tables -> figures
-
-%% Figure legends
 \newpage
-\listoffigures
-
-%% References
-\newpage
+\singlespacing
 \bibliographystyle{apalike}
 \bibliography{sdf_paper_refs}
-
-\iffalse
-%% Notes (endnotes converted from footnotes)
-\newpage
-\begingroup
-\parindent 0pt
-\parskip 2ex
-\def\enotesize{\normalsize}
-\renewcommand{\notesname}{Notes}
-\theendnotes
-\endgroup
-\fi
-
-%% Tables and Figures (tablesfirst option ensures tables precede figures)
-\processdelayedfloats
-
-\else
-%% Non-submission mode: standard order
-\newpage
-\bibliographystyle{apalike}
-\bibliography{sdf_paper_refs}
-\fi
 
 \end{document}

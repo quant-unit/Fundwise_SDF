@@ -7,16 +7,16 @@
 {SUPPLEMENTARY MATERIAL}
 }
 
-\section*{Online Appendix to Identification and Stability of SDF Estimators for Pooled, Non-traded Cash Flows}
+\section*{Online Supplementary Material to ``Cash-Flow Pricing of Non-Traded Assets: Finite-Pool Identification, Horizon Selection, and Inference''}
 
-This Online Appendix collects theoretical derivations, econometric proofs, full Monte Carlo robustness tables, and additional empirical diagnostics supporting the main paper:
+This Online Supplementary Material collects all mathematical proofs, the incomplete-markets pricing-kernel analysis, primitive increasing-domain and fixed-$b$ asymptotic derivations, extended Monte Carlo robustness exhibits, and empirical data-construction diagnostics supporting the main paper:
 \begin{itemize}
   \item Appendix~\ref{sec:appendix_notation} summarizes the notation.
-  \item Appendix~\ref{sec:appendix_sdf} characterizes when the benchmark deflator constitutes a PE-specific SDF and compares it with public-calibrated pricing kernels.
-  \item Appendix~\ref{sec:appendix_theory} proves parts T1--T8 of Theorem~\ref{thm:finite_pool} (rescaling identity, mean preservation under (X), inception variance tilt, finite-$n_v$ decomposition, horizon gradient decomposition, the horizon display of the tilt, identification of $U_{v,H}$, and shared vintage shocks), states three supplementary lemmas (large-$\alpha$ attenuation vs.\ coercivity, infill consistency, and multiple roots of the mean pricing moment), and proves Proposition~\ref{prop:optimal_H} (optimal horizon duration matching, cross-vintage dependence across nearby vintages, finite-$V$ MSE expansion, and rank-1 collapse of cross-vintage pair products) with quantitative lookup and Monte Carlo verification tables.
-  \item Appendix~\ref{sec:proofs_asymptotics_H} states the increasing-domain regularity conditions, score-centered and integrated-Hessian consistency and CLT proofs, LLSW/fixed-$b$ SHAC implementation details, and full Step~4 Monte Carlo appendix exhibits.
+  \item Appendix~\ref{sec:appendix_sdf} characterizes when the reciprocal benchmark deflator constitutes an asset-class-specific SDF and compares it with public-calibrated pricing kernels (including the paradigm taxonomy, Table~\ref{tab:comparison}).
+  \item Appendix~\ref{sec:appendix_theory} proves Lemma~\ref{lem:deal_level_timing}, Proposition~\ref{theo:inception_value}, parts T1--T8 of Theorem~\ref{thm:finite_pool}, three supplementary lemmas (large-$\alpha$ attenuation vs.\ coercivity with Figure~\ref{fig:exploding_alpha}, infill consistency, and multiple roots of the mean pricing moment), and Proposition~\ref{prop:optimal_H} (optimal horizon duration matching, cross-vintage dependence across nearby vintages, finite-$V$ MSE expansion, and rank-1 collapse of cross-vintage pair products) with quantitative lookup and Monte Carlo verification tables.
+  \item Appendix~\ref{sec:proofs_asymptotics_H} states primitive DGP Assumptions~A1--A5, proves Lemma~\ref{lem:mixing_moment_inheritance} (1D mixing inheritance, explicit moment/Lipschitz envelopes, and ULLNs), proves Proposition~\ref{prop:consistency_clt} and Corollary~\ref{cor:fixed_b_ar} (1D fixed-$b$ Bartlett and AR asymptotics), documents the calendar-lag vs.\ index-lag sensitivity (Remark~\ref{rem:calendar_vs_index_shac}), resolves the large-$V$ studentization distortion (Table~\ref{tab:mc_v400_studentization}), and collects the remaining Step~4 Monte Carlo exhibits (including design-margin Figure~\ref{fig:mc_margins}).
   \item Appendix~\ref{sec:dlp_results_comparison} compares our repaired estimator against \citet{DLP12} in simulation (Table~1 replication under pipeline r5 and $n_v \times V$ infill grid).
-  \item Appendix~\ref{sec:appendix_empirical_extra} collects all-horizon single-factor tables, VC cohort diagnostics (without 1993--1997), fund-size imputation sensitivity, sample robustness, Fix-$A$ vs.\ Scale-Jacobian decomposition, joint $(\alpha,\beta)$ geometry, four-year vintage-block bootstrap intervals, terminal NAV shares, $hv$-block cross-validation fold diagnostics, and a published-estimates comparison table.
+  \item Appendix~\ref{sec:appendix_empirical_extra} documents Preqin sample filtering, within-vintage median fund-size imputation, terminal NAV haircuts (Figure~\ref{fig:nav_disc_BOVC_MKT}), and $hv$-block cross-validation, and collects all-horizon single-factor and $(\alpha,\beta)$ tables, the full four-horizon IV/AR table (Table~\ref{tab:iv_comparison}), VC cohort diagnostics (without 1993--1997), fund-size imputation sensitivity, sample robustness, Fix-$A$ vs.\ Scale-Jacobian decomposition, joint $(\alpha,\beta)$ geometry, four-year vintage-block bootstrap intervals, terminal NAV shares, $hv$-block cross-validation fold diagnostics, two-factor $q^5$ profiles, and a published-estimates comparison table.
 \end{itemize}
 
 % ==============================================================================
@@ -86,16 +86,36 @@ Table~\ref{tab:notation_asset_pricing} summarizes the notation for the deal-leve
 \input{sdf_paper_appendix_sdf.tex}
 
 % ==============================================================================
-\section{Proofs of Theorem~\ref{thm:finite_pool} (T1--T8), Supplementary Lemmas, and Proposition~\ref{prop:optimal_H}}
+\section{Proofs of Lemma~\ref{lem:deal_level_timing}, Proposition~\ref{theo:inception_value}, Theorem~\ref{thm:finite_pool} (T1--T8), Supplementary Lemmas, and Proposition~\ref{prop:optimal_H}}
 \label{sec:appendix_theory}
 % ==============================================================================
 
-This appendix proves parts T1--T8 of Theorem~\ref{thm:finite_pool} in the numbering of the main text (Subsections~\ref{sec:proof_T1}--\ref{sec:proof_T8}), states three supplementary results used in the discussion (Subsection~\ref{sec:supplementary_lemmas}: large-$\alpha$ attenuation at $H=0$ versus coercivity at $H>0$, Lemma~\ref{lem:coercivity}; infill consistency, Lemma~\ref{lem:infill}; and multiple roots of the mean pricing moment, Lemma~\ref{lem:multiple_roots}), and proves and quantifies Proposition~\ref{prop:optimal_H} on optimal horizon theory and cross-vintage dependence (Subsection~\ref{sec:appendix_optimal_H}). Throughout, $\theta$ lies in the positive-return admissible domain $\Theta$ where $G_u(\theta) = 1 + r_{f,u} + \alpha + \beta^\top F_u > 0$ on the relevant dates, so $\Psi_t(\theta) = \prod_{u=1}^t G_u(\theta)^{-1} > 0$ and $R^b_{a,b}(\theta) = \Psi_a(\theta)/\Psi_b(\theta) > 0$. We write $\mathcal{G}_v$ for the conditioning information $(\mathcal{F}^{\mathrm{pub}},\mathcal{W}_v)$ of the main text: the public factor-path and window information $\mathcal{C}_v$, the eligibility event $n_v \ge 2$, the fund sizes $\{s_{v,i}\}$, and the vintage origin $t_v^0$. Fund weights $w_{v,i}$ (the $\omega_{v,i}$ of the main text) and the horizon scale $A_{v,H}(\theta)$ are $\mathcal{G}_v$-measurable. Differentiation under the expectation is assumed wherever gradients of population criteria appear.
+This appendix proves Lemma~\ref{lem:deal_level_timing} and Proposition~\ref{theo:inception_value} (Subsection~\ref{sec:proof_timing}), proves parts T1--T8 of Theorem~\ref{thm:finite_pool} in the numbering of the main text (Subsections~\ref{sec:proof_T1}--\ref{sec:proof_T8}), states three supplementary results used in the discussion (Subsection~\ref{sec:supplementary_lemmas}: large-$\alpha$ attenuation at $H=0$ versus coercivity at $H>0$, Lemma~\ref{lem:coercivity} and Figure~\ref{fig:exploding_alpha}; infill consistency, Lemma~\ref{lem:infill}; and multiple roots of the mean pricing moment, Lemma~\ref{lem:multiple_roots}), and proves and quantifies Proposition~\ref{prop:optimal_H} on optimal horizon theory and cross-vintage dependence (Subsection~\ref{sec:appendix_optimal_H}). Throughout, $\theta$ lies in the positive-return admissible domain $\Theta$ where $G_u(\theta) = 1 + r_{f,u} + \alpha + \beta^\top F_u > 0$ on the relevant dates, so $\Psi_t(\theta) = \prod_{u=1}^t G_u(\theta)^{-1} > 0$ and $R^b_{a,b}(\theta) = \Psi_a(\theta)/\Psi_b(\theta) > 0$. We write $\mathcal{G}_v$ for the conditioning information $(\mathcal{F}^{\mathrm{pub}},\mathcal{W}_v)$ of the main text: the public factor-path and window information $\mathcal{C}_v$, the eligibility event $n_v \ge 2$, the fund sizes $\{s_{v,i}\}$, and the vintage origin $t_v^0$. Fund weights $w_{v,i}$ (the $\omega_{v,i}$ of the main text) and the horizon scale $A_{v,H}(\theta)$ are $\mathcal{G}_v$-measurable. Differentiation under the expectation is justified by the dominated-convergence moment envelopes established in Appendix~\ref{sec:proofs_asymptotics_H} (Lemma~\ref{lem:mixing_moment_inheritance}).
+
+\subsection{Proofs of Lemma~\ref{lem:deal_level_timing} and Proposition~\ref{theo:inception_value}}
+\label{sec:proof_timing}
+
+\begin{proof}[Proof of Lemma~\ref{lem:deal_level_timing}]
+Part~(1) follows from the law of iterated expectations since $\Psi_{t_{i,j}^{\mathrm{Inv}}}/\Psi_\tau$ is $\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$-measurable when $\tau \le t_{i,j}^{\mathrm{Inv}}$ and $\mathbb{E}[\delta_{i,j}\mid\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}] = 0$.
+Part~(2) holds because $\Psi_{t_{i,j}^{\mathrm{Inv}}}/\Psi_\tau$ is $\mathcal{F}_\tau$-measurable when $\tau > t_{i,j}^{\mathrm{Inv}}$.
+For Part~(3), conditioning first on $\mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}$ gives
+\[
+\mathbb{E}\!\left[\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{t_{i,j}^{\mathrm{Future}}}}\,\delta_{i,j} \,\middle|\, \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}\right]
+= \mathrm{Cov}\!\left(\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{t_{i,j}^{\mathrm{Future}}}},\,\delta_{i,j} \,\middle|\, \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}\right)
++ \mathbb{E}\!\left[\frac{\Psi_{t_{i,j}^{\mathrm{Inv}}}}{\Psi_{t_{i,j}^{\mathrm{Future}}}} \,\middle|\, \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}\right]
+\underbrace{\mathbb{E}\!\left[\delta_{i,j} \,\middle|\, \mathcal{F}_{t_{i,j}^{\mathrm{Inv}}}\right]}_{=0},
+\]
+and taking $\mathbb{E}[\cdot \mid \mathcal{F}_\tau]$ yields \eqref{eq:future_value_bias_derivation}.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{theo:inception_value}]
+Because $\tau \le t_i^0 \le t_{i,j}^{\mathrm{Inv}}$ for every deal $j$ in fund $i$, summing $\sum_t (\Psi_t/\Psi_\tau)CF_{i,t} = \sum_{j=1}^{J_i}(\Psi_{t_{i,j}^{\mathrm{Inv}}}/\Psi_\tau)\delta_{i,j}$ and applying \eqref{eq:zero_deal_expectation} term by term yields zero.
+\end{proof}
 
 \subsection{Proof of T1 (Exact horizon rescaling identity)}
 \label{sec:proof_T1}
 
-For any unit (fund or constant-composition vintage portfolio) with common vintage origin $t_v^0$ and cash-flow stream $\{CF_{v,t}\}_{t=t_v^0}^{T_{\max}}$, the time-$\tau$ revalued pricing error at any date $\tau \in \mathcal{T}_{v,H}$ is
+For any unit (fund or constant-composition vintage portfolio) with common vintage origin $t_v^0$ and cash-flow stream $\{CF_{v,t}\}_{t=t_v^0}^{T_{\max}}$, the time-$\tau$ revalued pricing error at any date $\tau \in \mathcal{T}_{v,H}$ (illustrated schematically in Figure~\ref{fig:npvs}) is
 \[
 \epsilon_{v,\tau}(\theta)
 = \sum_{t=t_v^0}^{T_{\max}} \frac{\Psi_t(\theta)}{\Psi_\tau(\theta)} CF_{v,t}
@@ -109,6 +129,13 @@ where the factorization holds identically whether $\tau < t_v^0$, $\tau = t_v^0$
 = \underbrace{\left(\frac{1}{|\mathcal{T}_{v,H}|} \sum_{\tau \in \mathcal{T}_{v,H}} R^b_{t_v^0,\tau}(\theta)\right)}_{A_{v,H}(\theta)\,>\,0} PV_v(\theta).
 \]
 In particular, $\bar\epsilon_{v,H}(\theta)$ is an exact path- and parameter-dependent scalar multiple of the inception NPV $PV_v(\theta)$. Because all dates $\tau \in \mathcal{T}_{v,H}$ share the common factor $PV_v(\theta)$, averaging across $\tau$ does \emph{not} average imperfectly correlated date-specific pricing errors; conditional on the factor path, all $\epsilon_{v,\tau}(\theta)$ are perfectly collinear with $PV_v(\theta)$. \qed
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.92\textwidth]{npvs3.pdf}
+\caption{\textbf{Construction of the horizon-averaged pricing error $\bar\epsilon_{i,H}(\theta)$.} Cash flows occur at dates $t$ (dots) and are revalued at each date $\tau \in \mathcal{T}_{i,H}$ (blue boxes) to form $\epsilon_{\tau,i}(\theta)$; $\bar\epsilon_{i,H}(\theta)$ averages across $\mathcal{T}_{i,H}$. By Theorem~\ref{thm:finite_pool}(T1), $\bar\epsilon_{i,H}(\theta) = A_{i,H}(\theta)\,PV_i(\theta)$.}
+\label{fig:npvs}
+\end{figure}
 
 \subsection{Proof of T2 (Horizon mean preservation under (X); the compounding wedge under (P) alone)}
 \label{sec:proof_T2}
@@ -232,6 +259,13 @@ Fix $\beta$ and drop the box constraint on $\alpha$.
 (a) As $\alpha \to +\infty$, $G_u(\alpha,\beta) \to +\infty$ for every month $u$, so $\Psi_{t_v^0,t}(\alpha,\beta) = \prod_{u=t_v^0+1}^t G_u(\alpha,\beta)^{-1} \to 0$ for every $t > t_v^0$, while $\Psi_{t_v^0,t_v^0} = 1$; hence $PV_{v,i}(\alpha,\beta) \to CF_{v,i,t_v^0}$ and the limits follow.
 (b) For $t = t_v^{\mathrm{first}} < \tau^\ast$, the compounding factor $R^b_{t_v^{\mathrm{first}},\tau^\ast}(\alpha,\beta) = \prod_{u=t_v^{\mathrm{first}}+1}^{\tau^\ast} G_u(\alpha,\beta)$ grows like $\alpha^{\tau^\ast - t_v^{\mathrm{first}}}$ and dominates every later cash flow, which grows at strictly lower degree in $\alpha$. Thus $|\bar\epsilon_{v,H}(\alpha,\beta)| \to +\infty$ and $Q_H^{\mathrm{L2}} \to +\infty$. For $U_{v,H}$, initial capital calls $CF_{v,i,t_v^{\mathrm{first}}} < 0$ have the same sign across funds, so the dominant pair products $CF_{v,i,t_v^{\mathrm{first}}}CF_{v,j,t_v^{\mathrm{first}}} > 0$ are strictly positive when at least two funds invest at $t_v^{\mathrm{first}}$, and $U_{v,H}(\alpha,\beta) \to +\infty$.
 \end{proof}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\textwidth]{degenerate_alpha_grid.pdf}
+\caption{\textbf{Boundary degeneracy of the inception objective in $(\alpha,\beta)$ (Lemma~\ref{lem:coercivity}).} Sample squared-loss surface over $(\alpha,\beta_{\mathrm{MKT}})$ for simulated cash flows (true $(\alpha_0,\beta_0)=(0,1)$, green dot). At $H=0$ (left), large positive $\alpha$ shrinks all future cash flows toward zero, creating a flat ridge along the $\alpha$ axis. Horizon averaging (right, $H=15$ years) lifts the ridge by compounding past outlays forward via $A_{v,H}(\theta)$, imposing an interior minimum in $\alpha$ even when $\alpha$ is weakly identified.}
+\label{fig:exploding_alpha}
+\end{figure}
 
 \begin{remark}[Large-$\alpha$ behavior of linear mean-moment (IV) estimators]
 \label{rem:iv_alpha}
@@ -525,27 +559,107 @@ Idiosyncratic deal shocks (L2 VYP, $c_v=0$)       & 9.76 & 19.53 & 15.06 & 14.77
 
 \clearpage
 % ==============================================================================
-\section{Increasing-Domain Asymptotics, Fixed-$b$ SHAC Inference, and Full Step 4 Monte Carlo Exhibits}
+\section{Increasing-Domain Asymptotics, Fixed-$b$ Inference, and Full Step 4 Monte Carlo Exhibits}
 \label{sec:proofs_asymptotics_H}
 % ==============================================================================
 
-\subsection{Regularity conditions, consistency, and asymptotic normality}
+\subsection{Primitive DGP assumptions and inheritance of mixing and uniform moments}
+\label{sec:primitive_assumptions}
 
-Fix a horizon $H \ge 0$, and let $Q_{V,H}(\theta) = V^{-1}\sum_{v=1}^V \ell_{v,H}(\theta)$ denote the sample criterion over $V$ vintages, where $\ell_{v,H}(\theta) = \bar\epsilon_{v,H}(\theta)^2$ for L2 on vintage portfolios and $\ell_{v,H}(\theta) = q_v U_{v,H}(\theta)$ for the pair-product estimator (with $v$ ranging over eligible $n_v \ge 2$ vintages). Define the population objective $Q_H(\theta) = \mathbb{E}[\ell_{v,H}(\theta)]$ and target $\theta_H^\dagger = \arg\min_{\theta\in\Theta} Q_H(\theta)$.
+Fix a compounding horizon $H \ge 0$ and let $Q_{V,H}(\theta) := V^{-1}\sum_{v=1}^V \ell_{v,H}(\theta)$ denote the sample criterion over $V$ observed vintages ordered by strictly increasing calendar years $y_1 < y_2 < \dots < y_V$ on the one-dimensional integer lattice $\mathbb{Z}$.
+Here $\ell_{v,H}(\theta) = q_v \bar\epsilon_{v,H}(\theta)^2$ for squared-loss L2 on vintage portfolios ($q_v = 1$ in our baseline) and $\ell_{v,H}(\theta) = q_v U_{v,H}(\theta)$ for the cross-fund pair-product estimator over eligible vintages ($n_v \ge 2$; with outer normalization $\sum_v q_v / V$ absorbed into the constant scaling without affecting minimizers or studentized test statistics).
+Write $Q_H(\theta) := \lim_{V\to\infty} V^{-1}\sum_{v=1}^V \mathbb{E}[\ell_{v,H}(\theta)]$ for the limiting population objective and $\theta_H^\dagger := \arg\min_{\theta\in\Theta} Q_H(\theta)$ for the population criterion target (equal to $\theta_0$ for $U_{v,H}$ under Theorem~\ref{thm:finite_pool}(T7)).
+Unlike spatial random fields on $\mathbb{Z}^d$ ($d \ge 2$), vintage overlap in pooled cash-flow panels occurs strictly along one-dimensional calendar time $y_v \in \mathbb{Z}$, with occasional empty early vintage years handled by the calendar-distance Bartlett kernel $K(|y_v - y_w|/S)$ \citep{C99,KS11}.
+We replace high-level criterion assumptions with primitive conditions directly on the underlying factor, shock, and cash-flow processes.
 
-\begin{assume}[Increasing-domain regularity conditions]
+\begin{assume}[Primitive increasing-domain conditions A1--A5]
 \label{ass:asymptotics_H}
+Maintain the following five conditions for a fixed horizon $H \ge 0$ and some $\delta > 0$ (set $r := 2 + \delta$):
 \begin{enumerate}
-  \item \textbf{Compact admissible domain:} $\Theta \subset \mathbb{R}^p$ is compact with $\min_{t} G_t(\theta) \ge \underline{g} > 0$ for all $\theta \in \Theta$ (in implementation, $\underline{g}=0.08$, $\beta_{\mathrm{MKT}}\in[-1,4]$, $\alpha\in[-2\%,2\%]$/month), and $\theta_H^\dagger$ is the unique global minimizer of $Q_H(\theta)$ on $\Theta$.
-  \item \textbf{Smoothness and envelope bounds:} $\ell_{v,H}(\theta)$ is twice continuously differentiable on $\Theta$ with $\sup_{\theta\in\Theta}|\ell_{v,H}(\theta)|$, $\sup_{\theta\in\Theta}\|\nabla_\theta\ell_{v,H}(\theta)\|$, and $\sup_{\theta\in\Theta}\|\nabla_{\theta\theta}^2\ell_{v,H}(\theta)\|$ possessing uniformly bounded $(2+\delta)$ moments ($\delta > 0$).
-  \item \textbf{Increasing-domain vintage mixing:} Vintages lie on an expanding calendar lattice ($V \to \infty$) with bounded per-vintage fund counts and bounded effective lifetimes, such that the criterion contributions $\ell_{v,H}(\theta)$, the scores $\nabla_\theta\ell_{v,H}(\theta)$, and the Hessians $\nabla_{\theta\theta}^2\ell_{v,H}(\theta)$ satisfy the near-epoch dependence / mixing conditions of \citet{JP09,JP12}.
-  \item \textbf{Interior optimum and nonsingular curvature (for CLT):} $\theta_H^\dagger \in \mathrm{int}(\Theta)$, $\mathcal{H}_H := \mathbb{E}[\nabla_{\theta\theta}^2 \ell_{v,H}(\theta_H^\dagger)]$ is positive definite, and $\Lambda_H := \lim_{V\to\infty}\mathrm{Var}(V^{-1/2}\sum_{v=1}^V s_{v,H}(\theta_H^\dagger))$ is positive definite, where $s_{v,H}(\theta) := \nabla_\theta\ell_{v,H}(\theta)$.
+  \item[\textbf{A1}] \emph{(Compact positive-return domain and global identification.)} $\Theta \subset \mathbb{R}^p$ is compact and convex. The monthly gross benchmark return $G_u(\theta) = 1 + r_{f,u} + \alpha + \beta^\top F_u$ satisfies $\inf_{u \ge 1,\,\theta \in \Theta} G_u(\theta) \ge \underline{G} > 0$ almost surely (in implementation, $\underline{G} = 0.08$, $\beta_{\mathrm{MKT}} \in [-1,4]$, $\alpha \in [-2\%,2\%]$/month). The limiting objective $Q_H(\theta) = \lim_{V\to\infty} V^{-1}\sum_{v=1}^V \mathbb{E}[\ell_{v,H}(\theta)]$ exists on $\Theta$ and attains a unique global minimum at $\theta_H^\dagger \in \Theta$.
+
+  \item[\textbf{A2}] \emph{(Bounded lifetimes, finite pools, and non-degenerate weights.)} Each fund $i \in \mathcal{I}_v$ has active cash flows confined to a bounded lifetime $t - t_v^0 \in \{0, 1, \dots, L_{\max}\}$ ($L_{\max} < \infty$ months). Per-vintage fund counts satisfy $1 \le n_v \le \bar{n} < \infty$ (with $2 \le n_v \le \bar{n}$ for eligible $U_{v,H}$ vintages), vintage weights satisfy $0 < \underline{q} \le q_v \le \bar{q} < \infty$, and normalized fund weights $\omega_{v,i} > 0$ ($\sum_{i \in \mathcal{I}_v}\omega_{v,i}=1$) satisfy $\inf_v \bigl(1 - \sum_{i\in\mathcal{I}_v}\omega_{v,i}^2\bigr) \ge \underline{d} > 0$ almost surely. Calendar vintage years satisfy $y_1 < \dots < y_V$ in $\mathbb{Z}$ with bounded spacing $\sup_v (y_{v+1} - y_v) \le \bar{\Delta} < \infty$.
+
+  \item[\textbf{A3}] \emph{(One-dimensional calendar-time weak dependence.)} Let $X_u := (r_{f,u}, F_u^\top, e_u^\top)^\top$ collect the monthly public factors and any latent calendar-time private-market shocks, and let $\eta_v$ collect vintage-level shocks anchored at $y_v$. The annual calendar-time vector process $Z_y := \bigl((X_{12(y-1)+m})_{m=1}^{12},\, \eta_y,\, \mathcal{W}_y\bigr)_{y \in \mathbb{Z}}$ is $\alpha$-mixing with mixing coefficients $\alpha_Z(k)$ of size $-\lambda$ with $\lambda > r/(r-2) = (2+\delta)/\delta$ (i.e., $\alpha_Z(k) = O(k^{-\lambda})$ so $\sum_{k=1}^\infty \alpha_Z(k)^{\delta/(2+\delta)} < \infty$; in particular, any finite-memory or geometrically mixing process satisfies A3). Fund-idiosyncratic shocks $\nu_{v,i}$ are generated as measurable functions of vintage $v$'s active calendar block $\{Z_y : y_v \le y \le y_v + \lceil L_{\max}/12 \rceil\}$ and mutually independent innovations $U_{v,i}$ that are independent of $\{Z_y\}_{y \in \mathbb{Z}}$.
+
+  \item[\textbf{A4}] \emph{(Primitive moment envelopes on compounded returns, factors, and cash flows.)} Put $L_H := \max(L_{\max}, 12H)$ and define the single-vintage uniform envelopes
+  \begin{align*}
+  M_{v,H}^{(R)} &:= \sup_{\theta \in \Theta} \max_{0 \le k \le L_H} \Bigl(R^b_{t_v^0,\, t_v^0+k}(\theta) + D_{v,\,t_v^0+k}(\theta)\Bigr), \\
+  M_v^{(F)} &:= \max_{1 \le k \le L_H}\bigl(1 + \|F_{t_v^0+k}\|\bigr),
+  \qquad
+  M_v^{(CF)} := \max_{i \in \mathcal{I}_v} \sum_{k=0}^{L_{\max}} |CF_{v,i,t_v^0+k}|.
+  \end{align*}
+  There exists a finite constant $C < \infty$ such that, with $r = 2 + \delta$,
+  \[
+  \sup_{v \ge 1} \mathbb{E}\!\left[\bigl(M_{v,H}^{(R)}\bigr)^{8r}\right] \le C,
+  \qquad
+  \sup_{v \ge 1} \mathbb{E}\!\left[\bigl(M_v^{(F)}\bigr)^{8r}\right] \le C,
+  \qquad
+  \sup_{v \ge 1} \mathbb{E}\!\left[\bigl(M_v^{(CF)}\bigr)^{8r}\right] \le C.
+  \]
+
+  \item[\textbf{A5}] \emph{(Interior optimum, nonsingular curvature, and partial-sum homogeneity.)} $\theta_H^\dagger \in \mathrm{int}(\Theta)$. Both the limiting Hessian $\mathcal{H}_H := \lim_{V\to\infty} V^{-1}\sum_{v=1}^V \mathbb{E}[\nabla_{\theta\theta}^2 \ell_{v,H}(\theta_H^\dagger)]$ and the long-run score covariance $\Lambda_H := \lim_{V\to\infty}\operatorname{Var}\bigl(V^{-1/2}\sum_{v=1}^V s_{v,H}(\theta_H^\dagger)\bigr)$ are symmetric positive definite, where $s_{v,H}(\theta) := \nabla_\theta \ell_{v,H}(\theta)$. For the fixed-$b$ FCLT (Corollary~\ref{cor:fixed_b_ar}), assume further that for every $\tau \in [0,1]$, $V^{-1}\sum_{v=1}^{\lfloor \tau V \rfloor} \mathbb{E}[\nabla_{\theta\theta}^2 \ell_{v,H}(\theta_H^\dagger)] \to \tau\,\mathcal{H}_H$ and $V^{-1}\operatorname{Var}\bigl(\sum_{v=1}^{\lfloor \tau V \rfloor} s_{v,H}(\theta_H^\dagger)\bigr) \to \tau\,\Lambda_H$, and that empty calendar years are sparse in the sense that $(y_V - y_1 + 1 - V)/V \to 0$.
 \end{enumerate}
 \end{assume}
 
+Assumption~A4 transparently links our asymptotic conditions to the finite-sample heavy-tail behavior documented in Subsection~\ref{sec:v400_studentization_app}: because $\ell_{v,H}(\theta) \propto A_{v,H}(\theta)^2 PV_i(\theta) PV_j(\theta)$ is a fourth-order nonlinear product of compounded benchmark returns and cash flows, controlling $(2+\delta)$ moments of the score and Hessian via H\"older's inequality requires high finite moments of single-vintage compounded gross returns and payoffs (automatically satisfied under bounded lifetimes $L_H < \infty$ with lognormal or bounded-support monthly shocks, though finite-sample score kurtosis can remain large when $L_H$ and deal/market volatility are substantial).
+The next lemma verifies explicitly that the nonlinear criterion, score, and Hessian inherit 1D $\alpha$-mixing, uniform moment envelopes, and stochastic equicontinuity directly from Assumptions~A1--A4.
+
+\begin{lemma}[Inheritance of mixing, Lipschitz moment envelopes, and uniform convergence]
+\label{lem:mixing_moment_inheritance}
+Suppose Assumptions~\ref{ass:asymptotics_H}(A1)--(A4) hold for a fixed horizon $H \ge 0$. Then:
+\begin{enumerate}
+  \item[\textbf{(a)}] \emph{(Finite-block mixing inheritance.)} Put $m_H := \lceil L_H/12 \rceil + 1$. For every fixed $\theta \in \Theta$, the vintage-indexed sequence $\bigl(\ell_{v,H}(\theta),\, s_{v,H}(\theta),\, \nabla_{\theta\theta}^2 \ell_{v,H}(\theta)\bigr)_{v \ge 1}$ is $\alpha$-mixing with mixing coefficients $\tilde\alpha(k) \le \alpha_Z(\max(k - m_H, 0))$, preserving the mixing size $-\lambda < -(2+\delta)/\delta$ of Assumption~A3 (and reducing to exact $m_H$-dependence when $Z_y$ is independent across calendar years).
+  \item[\textbf{(b)}] \emph{(Explicit uniform moment and Lipschitz envelopes.)} The criterion $\ell_{v,H}(\theta)$ is infinitely differentiable on $\Theta$, and there exist finite constants $C_{m,H}$ ($m = 0,1,2,3$) depending only on $(L_H, \underline{G}, \bar{q}, \underline{d}, p)$ such that
+  \begin{equation}
+  \label{eq:leibniz_envelope}
+  \sup_{\theta \in \Theta} \bigl\|\nabla_\theta^{(m)} \ell_{v,H}(\theta)\bigr\|
+  \;\le\; C_{m,H}\,\bigl(M_{v,H}^{(R)}\bigr)^4\,\bigl(M_v^{(F)}\bigr)^m\,\bigl(M_v^{(CF)}\bigr)^2
+  =: B_{v,m}, \qquad m \in \{0,1,2,3\},
+  \end{equation}
+  with $\sup_v \mathbb{E}[B_{v,m}^{2+\delta}] < \infty$ for $m \in \{0,1,2\}$ and $\sup_v \mathbb{E}[B_{v,3}^{1+\delta/2}] < \infty$. In particular, for all $\theta, \theta' \in \Theta$, $|\ell_{v,H}(\theta)-\ell_{v,H}(\theta')| \le B_{v,1}\|\theta-\theta'\|$ and $\|\nabla_{\theta\theta}^2\ell_{v,H}(\theta) - \nabla_{\theta\theta}^2\ell_{v,H}(\theta')\| \le B_{v,3}\|\theta-\theta'\|$.
+  \item[\textbf{(c)}] \emph{(Uniform laws of large numbers.)} As $V \to \infty$,
+  \[
+  \sup_{\theta \in \Theta}\bigl|Q_{V,H}(\theta) - Q_H(\theta)\bigr| \xrightarrow{p} 0
+  \qquad\text{and}\qquad
+  \sup_{\theta \in \Theta}\bigl\|\nabla_{\theta\theta}^2 Q_{V,H}(\theta) - \nabla_{\theta\theta}^2 Q_H(\theta)\bigr\| \xrightarrow{p} 0,
+  \]
+  and both $Q_H(\theta)$ and $\nabla_{\theta\theta}^2 Q_H(\theta)$ are continuous on $\Theta$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+\emph{Part (a).} By Assumption~A2, every cash flow of vintage $v$ occurs at $t \in [t_v^0, t_v^0 + L_{\max}]$ and the horizon average $\mathcal{T}_{v,H}$ lies in $[t_v^0, t_v^0 + 12H]$, so $\bigl(\ell_{v,H}(\theta), s_{v,H}(\theta), \nabla_{\theta\theta}^2 \ell_{v,H}(\theta)\bigr)$ is a measurable function solely of the finite calendar block $\bigl\{Z_y : y_v \le y \le y_v + m_H - 1\bigr\}$ together with vintage $v$'s conditionally independent fund shocks $\{\nu_{v,i}\}_{i\in\mathcal{I}_v}$. Because vintage years are strictly increasing integers ($y_{v+k} - y_v \ge k$), for any $v \ge 1$ and $k \ge 1$ the $\sigma$-fields generated by vintages $\{1,\dots,v\}$ and $\{v+k, v+k+1, \dots\}$ are contained in the $\sigma$-fields of $\{Z_y : y \le y_v + m_H - 1\}$ and $\{Z_y : y \ge y_{v+k}\}$ (augmented by independent idiosyncratic draws $\{\nu_{w,i}\}$, which cannot increase the $\alpha$-mixing coefficient). Since $y_{v+k} - (y_v + m_H - 1) \ge k - m_H + 1$, the resulting mixing coefficient satisfies $\tilde\alpha(k) \le \alpha_Z(\max(k - m_H, 0))$ for all $k \ge 1$, preserving $\sum_{k=1}^\infty \tilde\alpha(k)^{\delta/(2+\delta)} < \infty$.
+
+\emph{Part (b).} Write $\tilde{F}_u := (1, F_u^\top)^\top$ (or $F_u$ when $\alpha$ is omitted), so $\|\tilde{F}_u\| \le M_v^{(F)}$ for all $u \in [t_v^0+1, t_v^0+L_H]$. Since $G_u(\theta) \ge \underline{G} > 0$ on $\Theta$ (A1), $D_{v,t}(\theta) = \prod_{u=t_v^0+1}^t G_u(\theta)^{-1}$ and $R^b_{t_v^0,\tau}(\theta) = \prod_{u=t_v^0+1}^\tau G_u(\theta)$ are smooth on $\Theta$. Direct differentiation gives $\nabla_\theta D_{v,t} = -D_{v,t} S_{v,t}$ and $\nabla_\theta R^b_{t_v^0,\tau} = R^b_{t_v^0,\tau} S_{v,\tau}$, where $S_{v,t}(\theta) = \sum_{u=t_v^0+1}^t G_u(\theta)^{-1}\tilde{F}_u$ satisfies $\|S_{v,t}(\theta)\| \le (L_H/\underline{G}) M_v^{(F)}$ uniformly on $\Theta$. Iterating the product rule up to order $m \in \{0,1,2,3\}$ shows that every $m$-th derivative of $D_{v,t}(\theta)$ and $R^b_{t_v^0,\tau}(\theta)$ is bounded in norm by $c_{m,H} M_{v,H}^{(R)} (M_v^{(F)})^m$ for constants $c_{m,H}$ depending only on $(L_H, \underline{G}, p)$. Summing over $k \in \{0,\dots,L_{\max}\}$ yields $\sup_{\theta\in\Theta}\|\nabla_\theta^{(m)} PV_{v,i}(\theta)\| \le c_{m,H} M_{v,H}^{(R)} (M_v^{(F)})^m M_v^{(CF)}$ for every $i \in \mathcal{I}_v$, and averaging over $\tau \in \mathcal{T}_{v,H}$ yields $\sup_{\theta\in\Theta}\|\nabla_\theta^{(m)} A_{v,H}(\theta)\| \le c_{m,H} M_{v,H}^{(R)} (M_v^{(F)})^m$. Writing $\ell_{v,H}(\theta) = q_v A_{v,H}(\theta)^2 \Psi_v^{\mathrm{pair}}(\theta)$, where $\Psi_v^{\mathrm{pair}}(\theta)$ is a bilinear combination of $PV_{v,i}(\theta) PV_{v,j}(\theta)$ with absolute coefficient sum bounded by $\underline{d}^{-1}$ (A2), applying the Leibniz rule to the four-factor product $A_{v,H} \cdot A_{v,H} \cdot PV_{v,i} \cdot PV_{v,j}$ immediately gives \eqref{eq:leibniz_envelope}.
+For the moment bounds with $r = 2 + \delta$, applying the three-factor generalized H\"older inequality with exponents $(2, 4, 4)$ ($1/2 + 1/4 + 1/4 = 1$) and Lyapunov's inequality ($4mr \le 8r$ for $m \in \{0,1,2\}$) gives
+\[
+\mathbb{E}\!\left[B_{v,m}^r\right]
+\le C_{m,H}^r
+\left(\mathbb{E}\!\left[\bigl(M_{v,H}^{(R)}\bigr)^{8r}\right]\right)^{1/2}
+\left(\mathbb{E}\!\left[\bigl(M_v^{(F)}\bigr)^{4mr}\right]\right)^{1/4}
+\left(\mathbb{E}\!\left[\bigl(M_v^{(CF)}\bigr)^{8r}\right]\right)^{1/4}
+\le C_{m,H}^r \max(1, C) < \infty.
+\] For $m = 3$ with exponent $r/2 = 1 + \delta/2 > 1$, the same $(2,4,4)$ H\"older split yields
+\[
+\mathbb{E}\!\left[B_{v,3}^{r/2}\right]
+\le C_{3,H}^{r/2}
+\left(\mathbb{E}\!\left[\bigl(M_{v,H}^{(R)}\bigr)^{4r}\right]\right)^{1/2}
+\left(\mathbb{E}\!\left[\bigl(M_v^{(F)}\bigr)^{6r}\right]\right)^{1/4}
+\left(\mathbb{E}\!\left[\bigl(M_v^{(CF)}\bigr)^{4r}\right]\right)^{1/4}
+< \infty,
+\]
+by Assumption~A4 and Lyapunov's inequality ($4r < 6r < 8r$). The Lipschitz bounds follow from the mean-value theorem on convex $\Theta$.
+
+\emph{Part (c).} By Parts~(a)--(b), at every fixed $\theta \in \Theta$, $\ell_{v,H}(\theta)$ and $\nabla_{\theta\theta}^2 \ell_{v,H}(\theta)$ are $\alpha$-mixing with $\sum_k \tilde\alpha(k)^{\delta/(2+\delta)} < \infty$ and uniformly $L_{2+\delta}$-bounded, so the pointwise LLN for heterogeneous mixing sequences \citep[Theorem~20.21]{Davidson94} holds at every $\theta \in \Theta$. By Part~(b), both families satisfy the global Lipschitz condition with $L_{1+\delta/2}$-bounded (hence uniformly integrable) envelopes $B_{v,1}$ and $B_{v,3}$. On compact $\Theta$, \citet[Theorem~1 and Lemma~1]{Andrews92} therefore yield stochastic equicontinuity and both uniform laws of large numbers, along with continuity of $Q_H$ and $\nabla_{\theta\theta}^2 Q_H$ on $\Theta$.
+\end{proof}
+
+\subsection{Proofs of Proposition~\ref{prop:consistency_clt} and Corollary~\ref{cor:fixed_b_ar} (consistency, CLT, fixed-$b$ inference, and AR inversion)}
+\label{sec:proofs_prop3_cor1}
+
 \begin{proposition}[Consistency and asymptotic normality around $\theta_H^\dagger$]
 \label{prop:proof_cons_clt}
-Under Assumption~\ref{ass:asymptotics_H}(1)--(3), $\hat\theta_H \xrightarrow{p} \theta_H^\dagger$ as $V \to \infty$. Under Assumption~\ref{ass:asymptotics_H}(1)--(4),
+Under Assumptions~\ref{ass:asymptotics_H}(A1)--(A4), $\hat\theta_H \xrightarrow{p} \theta_H^\dagger$ as $V \to \infty$ (with $\theta_H^\dagger = \theta_0$ for $U_{v,H}$ under Theorem~\ref{thm:finite_pool}(T7)). If Assumption~\ref{ass:asymptotics_H}(A5) also holds, then
 \[
 \sqrt{V}(\hat\theta_H - \theta_H^\dagger) \xrightarrow{d} \mathcal{N}(0,\Sigma_H),
 \qquad
@@ -554,25 +668,120 @@ Under Assumption~\ref{ass:asymptotics_H}(1)--(3), $\hat\theta_H \xrightarrow{p} 
 \end{proposition}
 
 \begin{proof}
-\emph{Consistency.} By Assumption~\ref{ass:asymptotics_H}(1)--(3) and the random-field uniform law of large numbers \citep{JP09,PP97}, $\sup_{\theta\in\Theta}|Q_{V,H}(\theta) - Q_H(\theta)| \xrightarrow{p} 0$. Compactness of $\Theta$, continuity of $Q_H$, and unique identification of $\theta_H^\dagger$ yield $\hat\theta_H \xrightarrow{p} \theta_H^\dagger$ by \citet[Theorem~2.1]{NM94}.
+\emph{Consistency.} By Lemma~\ref{lem:mixing_moment_inheritance}(c), $\sup_{\theta\in\Theta}|Q_{V,H}(\theta) - Q_H(\theta)| \xrightarrow{p} 0$ with $Q_H$ continuous on compact $\Theta$. Since $\theta_H^\dagger$ is the unique global minimizer of $Q_H$ on $\Theta$ (A1), \citet[Theorem~2.1]{NM94} gives $\hat\theta_H \xrightarrow{p} \theta_H^\dagger$.
 
-\emph{Asymptotic normality (score centering and integrated Hessian).} Since $\theta_H^\dagger \in \mathrm{int}(\Theta)$ and $\hat\theta_H \xrightarrow{p} \theta_H^\dagger$, the sample first-order condition $\nabla_\theta Q_{V,H}(\hat\theta_H) = 0$ holds with probability approaching one. Crucially, the population score is centered at the criterion target $\theta_H^\dagger$---i.e., $\mathbb{E}[s_{v,H}(\theta_H^\dagger)] = \nabla_\theta Q_H(\theta_H^\dagger) = 0$---rather than at $\theta_0$ (for L2 with finite $n_v$, $\mathbb{E}[s_{v,H}(\theta_0)] \neq 0$ in general; Theorem~\ref{thm:finite_pool}, T3 and T6). Applying the fundamental theorem of calculus to each component of $\nabla_\theta Q_{V,H}$ along the line segment $\theta(u) = \theta_H^\dagger + u(\hat\theta_H - \theta_H^\dagger)$, $u\in[0,1]$, yields the exact integrated-Hessian expansion
-\[
+\emph{Asymptotic normality (score centering and exact integrated Hessian).} Because $\theta_H^\dagger \in \mathrm{int}(\Theta)$ (A5) and $\hat\theta_H \xrightarrow{p} \theta_H^\dagger$, the sample first-order condition $\nabla_\theta Q_{V,H}(\hat\theta_H) = 0$ holds with probability approaching one. Crucially, the limiting score vanishes at the criterion target $\theta_H^\dagger$---that is, $\lim_{V\to\infty} V^{-1}\sum_{v=1}^V \mathbb{E}[s_{v,H}(\theta_H^\dagger)] = \nabla_\theta Q_H(\theta_H^\dagger) = 0$ (justified by dominated convergence via the $L_{2+\delta}$-envelope $B_{v,1}$ in Lemma~\ref{lem:mixing_moment_inheritance}(b))---rather than at $\theta_0$ (for L2 with finite $n_v$, $\mathbb{E}[s_{v,H}(\theta_0)] \neq 0$ in general; Theorem~\ref{thm:finite_pool}, T3 and T6). Applying the fundamental theorem of calculus to each coordinate of $\nabla_\theta Q_{V,H}$ along the segment $\theta(u) = \theta_H^\dagger + u(\hat\theta_H - \theta_H^\dagger) \in \Theta$, $u \in [0,1]$, yields the exact integrated-Hessian expansion
+\begin{equation}
+\label{eq:integrated_hessian}
 0 = \nabla_\theta Q_{V,H}(\hat\theta_H)
   = \nabla_\theta Q_{V,H}(\theta_H^\dagger)
-  + \left(\int_0^1 \nabla_{\theta\theta}^2 Q_{V,H}(\theta(u))\,du\right)(\hat\theta_H - \theta_H^\dagger).
+  + \bar{\mathcal{H}}_{V,H}\,(\hat\theta_H - \theta_H^\dagger),
+\qquad
+\bar{\mathcal{H}}_{V,H} := \int_0^1 \nabla_{\theta\theta}^2 Q_{V,H}(\theta(u))\,du.
+\end{equation}
+By Lemma~\ref{lem:mixing_moment_inheritance}(c), $\sup_{\theta\in\Theta}\|\nabla_{\theta\theta}^2 Q_{V,H}(\theta) - \nabla_{\theta\theta}^2 Q_H(\theta)\| \xrightarrow{p} 0$, and continuity of $\nabla_{\theta\theta}^2 Q_H$ at $\theta_H^\dagger$ together with $\hat\theta_H \xrightarrow{p} \theta_H^\dagger$ implies $\bar{\mathcal{H}}_{V,H} \xrightarrow{p} \mathcal{H}_H$, which is positive definite by A5.
+By Lemma~\ref{lem:mixing_moment_inheritance}(a)--(b), the zero-mean vintage scores $\bigl(s_{v,H}(\theta_H^\dagger) - \mathbb{E}[s_{v,H}(\theta_H^\dagger)]\bigr)_{v=1}^V$ are 1D $\alpha$-mixing of size $-\lambda < -(2+\delta)/\delta$ with $\sup_v \mathbb{E}[\|s_{v,H}(\theta_H^\dagger)\|^{2+\delta}] < \infty$. Under stationary or mean-zero score centering ($\mathbb{E}[s_{v,H}(\theta_H^\dagger)] = 0$, satisfied automatically for stationary vintages and at $\theta_0$ for $U_{v,H}$ under T7) and A5 ($\Lambda_H \succ 0$), the 1D $\alpha$-mixing CLT \citep[Corollary~3.1]{WW88} (see also \citealp[Theorem~24.6]{Davidson94}) yields
+\[
+\sqrt{V}\nabla_\theta Q_{V,H}(\theta_H^\dagger) = \frac{1}{\sqrt{V}}\sum_{v=1}^V s_{v,H}(\theta_H^\dagger) \xrightarrow{d} \mathcal{N}(0,\Lambda_H).
 \]
-By Assumption~\ref{ass:asymptotics_H}(2)--(3), $\sup_{\theta\in\Theta}\|\nabla_{\theta\theta}^2 Q_{V,H}(\theta) - \nabla_{\theta\theta}^2 Q_H(\theta)\| \xrightarrow{p} 0$, and continuity of $\nabla_{\theta\theta}^2 Q_H$ at $\theta_H^\dagger$ implies $\bar{\mathcal{H}}_{V,H} := \int_0^1 \nabla_{\theta\theta}^2 Q_{V,H}(\theta(u))\,du \xrightarrow{p} \mathcal{H}_H$. By Assumption~\ref{ass:asymptotics_H}(3)--(4) and the increasing-domain random-field CLT of \citet{JP12}, $\sqrt{V}\nabla_\theta Q_{V,H}(\theta_H^\dagger) = V^{-1/2}\sum_{v=1}^V s_{v,H}(\theta_H^\dagger) \xrightarrow{d} \mathcal{N}(0,\Lambda_H)$. Slutsky's theorem yields $\sqrt{V}(\hat\theta_H - \theta_H^\dagger) = -\bar{\mathcal{H}}_{V,H}^{-1}\sqrt{V}\nabla_\theta Q_{V,H}(\theta_H^\dagger) \xrightarrow{d} \mathcal{N}(0,\mathcal{H}_H^{-1}\Lambda_H\mathcal{H}_H^{-1})$.
+Slutsky's theorem and \eqref{eq:integrated_hessian} give $\sqrt{V}(\hat\theta_H - \theta_H^\dagger) = -\bar{\mathcal{H}}_{V,H}^{-1}\sqrt{V}\nabla_\theta Q_{V,H}(\theta_H^\dagger) \xrightarrow{d} \mathcal{N}(0,\mathcal{H}_H^{-1}\Lambda_H\mathcal{H}_H^{-1})$.
 \end{proof}
 
-\subsection{LLSW bandwidth, fixed-$b$ critical values, and boundary conventions}
+We now formalize fixed-$b$ asymptotic inference for both the studentized M-estimator Wald/$t$-statistics and the identification-robust Anderson--Rubin moment test on the 1D vintage calendar.
 
-In finite vintage panels ($V = 23$--$27$), classical HAC inference with normal critical values severely over-rejects because the Bartlett estimator $\hat\Lambda_H = V^{-1}\sum_{v,w} K(|v-w|/S)\,\hat s_{v,H}\hat s_{w,H}^\top$ is pulled toward zero by the sample FOC $\sum_v \hat s_{v,H} = 0$. Following \citet{LLSW18} and \citet{KV05}, we set the Bartlett truncation lag to $S = \lceil 1.3\sqrt{V}\rceil$ ($S=7$ for $V\in\{23,25,27\}$) and evaluate $t$- and Wald statistics against the fixed-$b$ limit distribution at $b = S/V$ (two-sided 5\% critical values $2.790$ for $V=25$, $2.867$ for $V=23$, and $2.728$ for $V=27$, computed via the conditional method with $10^6$ draws). Whenever an estimate lies on an active boundary constraint of $\Theta$, interior asymptotic normality does not apply; such cells are marked with $\dagger$ and their standard errors are suppressed. Because L1-loss estimates sit at sample kinks where numerical Hessians shrink with step size and the delete-one jackknife is inconsistent for median-type functionals \citep{Efron79}, L1 estimates are treated as descriptive only with no SEs or tests.
+\begin{proposition}[Proof of Corollary~\ref{cor:fixed_b_ar}: 1D fixed-$b$ Bartlett asymptotics and AR inversion]
+\label{prop:proof_fixed_b_ar}
+Fix a bandwidth ratio $b \in (0, 1]$ and set $S = \lfloor b V \rfloor$. Let $W_k(\cdot)$ denote a standard $k$-dimensional Brownian motion on $[0,1]$, $B_k(r) := W_k(r) - r W_k(1)$ the corresponding Brownian bridge, and
+\[
+\Xi_k(b) := \frac{2}{b}\int_0^1 B_k(r) B_k(r)^\top\,dr - \frac{1}{b}\int_0^{1-b}\Bigl(B_k(r) B_k(r+b)^\top + B_k(r+b) B_k(r)^\top\Bigr)\,dr.
+\]
+\begin{enumerate}
+  \item[\textbf{(i)}] \emph{(Fixed-$b$ M-estimator Wald and $t$-statistics.)} Suppose Assumptions~\ref{ass:asymptotics_H}(A1)--(A5) hold with $\mathbb{E}[s_{v,H}(\theta_H^\dagger)] = 0$ and let $\hat\Lambda_H(b) := V^{-1}\sum_{v,w=1}^V K(|y_v - y_w|/S)\,\tilde{s}_{v,H}\tilde{s}_{w,H}^\top$ be the centered Bartlett estimator of \eqref{eq:shac_H}. Then as $V \to \infty$,
+  \[
+  \hat\Lambda_H(b) \;\Rightarrow\; \Lambda_H^{1/2}\,\Xi_p(b)\,\Lambda_H^{1/2}.
+  \]
+  Consequently, for any full-row-rank $q \times p$ contrast matrix $R$ testing $H_0: R\theta_H^\dagger = r_0$,
+  \[
+  W_V(R) := V\bigl(R\hat\theta_H - r_0\bigr)^\top \Bigl(R\hat{\mathcal{H}}_H^{-1}\hat\Lambda_H(b)\hat{\mathcal{H}}_H^{-1} R^\top\Bigr)^{-1}\bigl(R\hat\theta_H - r_0\bigr)
+  \;\Rightarrow\; W_q(1)^\top \Xi_q(b)^{-1} W_q(1),
+  \]
+  and for $q = 1$ ($R = a^\top \neq 0$), the signed $t$-statistic converges to $t_{\mathrm{KV}}(b) := W_1(1)/\sqrt{\Xi_1(b)}$.
+
+  \item[\textbf{(ii)}] \emph{(Identification-robust fixed-$b$ AR moment test.)} Suppose Condition~(P) holds at $\theta_0$ for $H = 0$ ($z_{v,0} \equiv 1$), or Condition~(X) holds for fixed $H > 0$ ($z_{v,H} = A_{v,H}(1)/A_{v,0}(1)$). Let $g_{v,H}(\theta_0) := z_{v,H} PV_v(\theta_0)$, and assume Assumptions~A2--A3, $\sup_v \mathbb{E}[|g_{v,H}(\theta_0)|^{2+\delta}] < \infty$, sparse calendar gaps $(y_V - y_1 + 1 - V)/V \to 0$, and $V^{-1}\operatorname{Var}\!\bigl(\sum_{v=1}^{\lfloor \tau V \rfloor} g_{v,H}(\theta_0)\bigr) \to \tau\,\Omega_g$ with $\Omega_g > 0$. Then, \emph{without} requiring unique roots, interior optimization, or a nonzero moment Jacobian $\mathbb{E}[\nabla_\theta g_{v,H}(\theta_0)]$, the centered Bartlett AR statistic of \eqref{eq:ar_set} satisfies
+  \[
+  t_V^{\mathrm{AR}}(\theta_0) := \frac{\sqrt{V}\,\bar{g}_H(\theta_0)}{\sqrt{\hat\Omega_g(\theta_0; b)}} \;\Rightarrow\; t_{\mathrm{KV}}(b).
+  \]
+  Hence the inverted set $\mathcal{C}_{1-\alpha}^{\mathrm{AR}} := \{\theta \in \Theta : |t_V^{\mathrm{AR}}(\theta)| \le c_\alpha^{\mathrm{fb}}(b)\}$ satisfies $\lim_{V\to\infty}\mathbb{P}(\theta_0 \in \mathcal{C}_{1-\alpha}^{\mathrm{AR}}) = 1 - \alpha$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+\emph{Part (i).} By Lemma~\ref{lem:mixing_moment_inheritance}(a)--(b) and Assumption~A5, the vintage score sequence $\{s_{v,H}(\theta_H^\dagger)\}_{v=1}^V$ is 1D $\alpha$-mixing of size $-\lambda < -(2+\delta)/\delta$, uniformly $L_{2+\delta}$-bounded, and satisfies homogeneous partial-sum variance convergence $V^{-1}\operatorname{Var}\bigl(\sum_{v=1}^{\lfloor \tau V \rfloor} s_{v,H}(\theta_H^\dagger)\bigr) \to \tau \Lambda_H$. By the multivariate invariance principle for heterogeneous $\alpha$-mixing processes \citep[Theorem~2.11]{WW88} (see also \citealp[Theorem~29.6]{Davidson94}), the partial-sum process satisfies
+\[
+\mathcal{S}_V(\tau) := \frac{1}{\sqrt{V}}\sum_{v=1}^{\lfloor \tau V \rfloor} s_{v,H}(\theta_H^\dagger) \;\Rightarrow\; \Lambda_H^{1/2} W_p(\tau) \qquad \text{in } D[0,1]^p.
+\]
+Next, consider the estimated partial-sum process $\hat{\mathcal{S}}_V(\tau) := V^{-1/2}\sum_{v=1}^{\lfloor \tau V \rfloor} \tilde{s}_{v,H}$, where $\tilde{s}_{v,H} = s_{v,H}(\hat\theta_H)$ on the event (having probability approaching one) that $\hat\theta_H \in \mathrm{int}(\Theta)$ solves $\sum_{v=1}^V s_{v,H}(\hat\theta_H) = 0$. Applying the fundamental theorem of calculus to each vintage score along $\theta(u) = \theta_H^\dagger + u(\hat\theta_H - \theta_H^\dagger)$ gives
+\[
+\hat{\mathcal{S}}_V(\tau)
+= \mathcal{S}_V(\tau) + \left(\frac{1}{V}\sum_{v=1}^{\lfloor \tau V \rfloor} \bar{h}_{v,H}\right)\sqrt{V}(\hat\theta_H - \theta_H^\dagger),
+\qquad
+\bar{h}_{v,H} := \int_0^1 \nabla_{\theta\theta}^2 \ell_{v,H}(\theta(u))\,du.
+\]
+Using the Lipschitz envelope $B_{v,3}$ of Lemma~\ref{lem:mixing_moment_inheritance}(b), $\sup_{\tau\in[0,1]}\bigl\|V^{-1}\sum_{v=1}^{\lfloor \tau V \rfloor} (\bar{h}_{v,H} - \nabla_{\theta\theta}^2 \ell_{v,H}(\theta_H^\dagger))\bigr\| \le \bigl(V^{-1}\sum_{v=1}^V B_{v,3}\bigr)\|\hat\theta_H - \theta_H^\dagger\| = O_p(V^{-1/2})$, while the uniform LLN on partial sums and Assumption~A5 yield $\sup_{\tau\in[0,1]}\bigl\|V^{-1}\sum_{v=1}^{\lfloor \tau V \rfloor} \nabla_{\theta\theta}^2 \ell_{v,H}(\theta_H^\dagger) - \tau \mathcal{H}_H\bigr\| \xrightarrow{p} 0$. Substituting $\sqrt{V}(\hat\theta_H - \theta_H^\dagger) = -\mathcal{H}_H^{-1}\mathcal{S}_V(1) + o_p(1)$ yields uniformly over $\tau \in [0,1]$,
+\[
+\hat{\mathcal{S}}_V(\tau)
+= \mathcal{S}_V(\tau) - \tau\,\mathcal{S}_V(1) + o_p(1)
+\;\Rightarrow\; \Lambda_H^{1/2}\bigl(W_p(\tau) - \tau W_p(1)\bigr) = \Lambda_H^{1/2} B_p(\tau),
+\]
+jointly with $\mathcal{S}_V(1) \Rightarrow \Lambda_H^{1/2} W_p(1)$.
+
+Now compare the calendar-lag Bartlett estimator $\hat\Lambda_H(b)$ with the regular index-lag estimator $\hat\Lambda_H^{\mathrm{idx}}(b) := V^{-1}\sum_{v,w=1}^V K(|v-w|/S)\,\tilde{s}_{v,H}\tilde{s}_{w,H}^\top$.
+Embed the $V$ observed vintages onto the regular annual grid $\{y_1, y_1+1, \dots, y_V\}$ of length $V_{\mathrm{cal}} := y_V - y_1 + 1$ by placing zero scores at the $G_V := V_{\mathrm{cal}} - V$ empty calendar years.
+By the sparse-gap condition $G_V / V \to 0$ (A5), $V_{\mathrm{cal}}/V \to 1$ and the calendar-time partial-sum process $\hat{\mathcal{S}}_{V}^{\mathrm{cal}}(\tau) := V_{\mathrm{cal}}^{-1/2}\sum_{y=y_1}^{y_1+\lfloor \tau V_{\mathrm{cal}}\rfloor} \tilde{s}_{y,H}^{\mathrm{pad}}$ differs from $\hat{\mathcal{S}}_V(\tau)$ only by a uniform time-change perturbation $|\phi_V(\tau) - \tau| \le G_V/V_{\mathrm{cal}} \to 0$; by continuity of the limiting Brownian bridge sample paths, $\hat{\mathcal{S}}_V^{\mathrm{cal}}(\cdot) \Rightarrow \Lambda_H^{1/2} B_p(\cdot)$ in $D[0,1]^p$ with the same bandwidth ratio $S/V_{\mathrm{cal}} \to b$.
+Writing $\hat{S}_t^{\mathrm{cal}} := \sum_{j=1}^t \tilde{s}_{y_1+j-1,H}^{\mathrm{pad}}$ for the unnormalized padded partial sums (so $V_{\mathrm{cal}}^{-1/2}\hat{S}_{\lfloor r V_{\mathrm{cal}}\rfloor}^{\mathrm{cal}} = \hat{\mathcal{S}}_V^{\mathrm{cal}}(r) \Rightarrow \Lambda_H^{1/2} B_p(r)$ and $\hat{S}_{V_{\mathrm{cal}}}^{\mathrm{cal}} = 0$), applying the exact Bartlett summation-by-parts identity of \citet[Theorem~1 and Theorem~2]{KV05} on the padded regular grid $\{y_1,\dots,y_V\}$ and the continuous mapping theorem gives
+\begin{align*}
+\hat\Lambda_H(b)
+&= \frac{V_{\mathrm{cal}}}{V}\left[\frac{2}{S V_{\mathrm{cal}}}\sum_{t=1}^{V_{\mathrm{cal}}} \hat{S}_t^{\mathrm{cal}}(\hat{S}_t^{\mathrm{cal}})^\top - \frac{1}{S V_{\mathrm{cal}}}\sum_{t=1}^{V_{\mathrm{cal}}-S}\Bigl(\hat{S}_t^{\mathrm{cal}}(\hat{S}_{t+S}^{\mathrm{cal}})^\top + \hat{S}_{t+S}^{\mathrm{cal}}(\hat{S}_t^{\mathrm{cal}})^\top\Bigr)\right] + o_p(1) \\
+&\Rightarrow\; \Lambda_H^{1/2}\,\Xi_p(b)\,\Lambda_H^{1/2}.
+\end{align*}
+Because $\hat{\mathcal{H}}_H \xrightarrow{p} \mathcal{H}_H$ and $\sqrt{V}(R\hat\theta_H - r_0) = -R\mathcal{H}_H^{-1}\mathcal{S}_V(1) + o_p(1)$ jointly with $\hat\Lambda_H(b)$, putting $\Sigma_R := R\mathcal{H}_H^{-1}\Lambda_H\mathcal{H}_H^{-1} R^\top \succ 0$ and using rotational invariance of standard Brownian motion yields $W_V(R) \Rightarrow W_q(1)^\top \Xi_q(b)^{-1} W_q(1)$, and $t_V(a) \Rightarrow t_{\mathrm{KV}}(b)$ for $q = 1$.
+
+\emph{Part (ii).} At the true parameter $\theta_0$, $\mathbb{E}[g_{v,H}(\theta_0)] = 0$ by Condition~(P) (at $H=0$) or Condition~(X) (at $H>0$; Theorem~\ref{thm:finite_pool}(T2)). Since $g_{v,H}(\theta_0)$ is a measurable function of the same finite calendar block of length $L_H$, Lemma~\ref{lem:mixing_moment_inheritance}(a) implies it is 1D $\alpha$-mixing of size $-\lambda < -(2+\delta)/\delta$. By \citet[Theorem~2.11]{WW88}, $V^{-1/2}\sum_{v=1}^{\lfloor \tau V \rfloor} g_{v,H}(\theta_0) \Rightarrow \Omega_g^{1/2} W_1(\tau)$, so the centered partial-sum process $V^{-1/2}\sum_{v=1}^{\lfloor \tau V \rfloor}(g_{v,H}(\theta_0) - \bar{g}_H(\theta_0)) \Rightarrow \Omega_g^{1/2} B_1(\tau)$. Repeating the sparse-gap embedding and \citet[Theorem~1]{KV05} Bartlett identity on the centered scores yields $\hat\Omega_g(\theta_0; b) \Rightarrow \Omega_g\,\Xi_1(b)$ jointly with $\sqrt{V}\bar{g}_H(\theta_0) \Rightarrow \Omega_g^{1/2} W_1(1)$, giving $t_V^{\mathrm{AR}}(\theta_0) \Rightarrow W_1(1)/\sqrt{\Xi_1(b)} = t_{\mathrm{KV}}(b)$ without inverting a Hessian or moment Jacobian \citep{AR49,SW00}.
+\end{proof}
+
+\subsection{LLSW bandwidth, sparse calendar gaps, and boundary conventions}
+\label{sec:llsw_bandwidth_app}
+
+In finite vintage panels ($V = 23$--$27$), classical HAC inference with normal critical values severely over-rejects because the Bartlett estimator $\hat\Lambda_H$ is pulled toward zero by score centering ($\sum_v \tilde{s}_{v,H} = 0$). Following \citet{LLSW18} and \citet{KV05}, we set the Bartlett truncation lag to $S = \lceil 1.3\sqrt{V}\rceil$ ($S=7$ for $V\in\{23,25,27\}$) and evaluate $t$- and Wald statistics against the fixed-$b$ limit distribution at $b = S/V$ (two-sided 5\% critical values $2.790$ for $V=25$, $2.867$ for $V=23$, and $2.722$ for $V=27$, computed via the conditional Rao--Blackwell method with $10^6$ draws). Whenever an estimate lies on an active boundary constraint of $\Theta$, interior asymptotic normality does not apply; such cells are marked with $\dagger$ and their standard errors are suppressed. Because L1-loss estimates sit at sample kinks where numerical Hessians shrink with step size and the delete-one jackknife is inconsistent for median-type functionals \citep{Efron79}, L1 estimates are treated as descriptive only with no SEs or tests.
+
+\begin{remark}[Calendar-lag versus index-lag Bartlett weighting under missing early vintages]
+\label{rem:calendar_vs_index_shac}
+In our empirical Preqin panels, a few early calendar years are empty or contain a single fund: Buyout misses 1989 ($V=25$ across 26 calendar years, gap share $3.8\%$); VC L2 misses 1983--1984 ($V=27$ across 29 years, $6.9\%$); and VC $U_{v,H}$ excludes four singleton vintages (1982, 1988, 1989, 1991; $V=23$ across 26 years 1985--2010, $11.5\%$).
+Comparing our calendar-distance Bartlett kernel $K(|y_v - y_w|/S)$ against the integer index-lag Bartlett kernel $K(|v - w|/S)$ (script \texttt{results/calendar\_vs\_index\_shac.R}, output \texttt{calendar\_vs\_index\_shac.csv}) confirms that every substantive empirical conclusion is invariant:
+at $H = 0$, Buyout $U_{v,0}$ SEs shift by only $+0.00004$ EW ($0.1180 \to 0.1181$, $p_1 = 0.325$ unchanged) and $+0.0027$ FW ($0.1426 \to 0.1454$, $p_1$: $0.280 \to 0.288$), while AR lower bounds shift by $-0.005$ (EW) and $-0.008$ (FW).
+In Venture Capital $U_{v,0}$, index-lag weighting pulls the 1987 vintage artificially closer to 1990--1993 and lowers the SE by $0.031$ ($0.325 \to 0.294$ EW, $p_1$: $0.247 \to 0.206$; $0.342 \to 0.310$ FW, $p_1$: $0.116 \to 0.089$), while VC AR lower bounds shift by $-0.018$ (EW) and $-0.023$ (FW).
+Thus calendar-distance weighting is slightly more conservative in VC while preserving identical test decisions across all models and horizons.
+\end{remark}
+
+\subsection{Diagnosis of large-$V$ studentization distortion and low $N_{\mathrm{eff}}$}
+\label{sec:v400_studentization_app}
+
+In Table~\ref{tab:mc_size_additions}, equal-vintage $U_{v,H}$ ($q_v=1$) on i.i.d.\ resampled factor paths still rejects $\beta_0 = 1$ in $6.8\%$--$10.8\%$ of draws at $V = 400$ with low median $N_{\mathrm{eff}} = 13\text{--}27$ and a pronounced left-tail excess (left/right counts $22/12$ to $38/16$), whereas replacing the random sandwich SE with the Monte Carlo SD removes the excess.
+Table~\ref{tab:mc_v400_studentization} (\texttt{simulation/mc\_v400\_diagnostic.R}, 500 replications per design) resolves this puzzle cleanly through mechanism ablations at $V=400$ (Panel~A) and increasing-domain scaling through $V=1{,}600$ (Panel~B):
+\begin{enumerate}
+  \item \emph{Asymptotic validity holds; convergence is slow due to finite but large score kurtosis.} At $H = 0$, $U_{v,0}$ rejection declines to nominal $4.4\%$ ($n_v=20$, $\mathrm{SE}/\mathrm{SD}=1.00$, $N_{\mathrm{eff}}=69.4$) and $5.0\%$ ($n_v=5$, $\mathrm{SE}/\mathrm{SD}=0.96$, $N_{\mathrm{eff}}=27.5$) by $V = 1{,}600$, while the estimator SD shrinks at the exact $V^{-1/2}$ rate ($0.0668 \to 0.0289 \to 0.0146 \to 0.0105 \to 0.0067$ across $V = 25, 100, 400, 800, 1{,}600$ at $n_v=20$, kurtosis of $\hat\beta - 1$ already $3.0$--$3.5$ at $V=400$).
+  \item \emph{Channel~1 ($H=0$ left-tail excess): compounded lognormal deal skewness.} In the calibrated deal model ($\sigma = 0.130$/mo over up to $138$ months, log-variance $k s^2 \le 2.31$), rare right-skewed payoff multiples generate strongly left-skewed vintage scores $g_v(\beta_0)$ (median skewness $-1.81$ at $n_v=20$ and $-3.19$ at $n_v=5$; the largest-magnitude score is negative in $87\%$--$91\%$ of draws). Because $\hat\beta - \beta_0 \approx -\mathcal{H}^{-1}\bar g(\beta_0)$ with $\mathcal{H}>0$, negative score outliers push $\hat\beta$ upward while inflating $\hat\Psi$, inducing $\mathrm{Corr}(\hat\beta-\beta_0, \widehat{\mathrm{SE}}) = +0.28$ ($n_v=20$) to $+0.47$ ($n_v=5$) and shrinking $\widehat{\mathrm{SE}}$ in the left tail. Replacing resampled historical returns with i.i.d.\ Gaussian returns leaves $N_{\mathrm{eff}}$ ($28.1$ vs.\ $27.2$) and skewness ($-1.84$ vs.\ $-1.81$) unchanged---ruling out non-Gaussian equity crashes---whereas replacing lognormal deal shocks with symmetric shocks, lowering $\sigma$ to $0.05$, or shortening deal lives to $2/2$~years immediately eliminates $\mathrm{Corr}(\hat\beta-\beta_0, \widehat{\mathrm{SE}})$, doubles $N_{\mathrm{eff}}$ to $45$--$52$, and brings $H=0$ rejection to $3.2\%$--$6.0\%$.
+  \item \emph{Channel~2 (extra $H=15$ distortion): stochastic benchmark compounding $A_{v,H}^2$.} Even under symmetric light-tailed deal shocks, extending the horizon from $H=0$ to $H=15$~yr cuts $N_{\mathrm{eff}}$ from $50.4$ to $19.2$, raises score kurtosis from $7.9$ to $21.3$ (because $s_{v,15}^4$ scales with $A_{v,15}^8$; cf.\ \citealp{Martin12}), lowers $\mathrm{SE}/\mathrm{SD}$ from $1.00$ to $0.88$, and lifts Wald rejection from $3.2\%$ to $9.0\%$ (symmetric $21/24$). Lowering monthly market volatility to $5\%$/yr eliminates this $H=15$ distortion completely ($N_{\mathrm{eff}} = 81.4$, kurtosis $4.9$, $\mathrm{SE}/\mathrm{SD}=0.97$, rejection $4.0\%$).
+  \item \emph{Practical diagnostic and null-evaluated score check.} Evaluating the centered fixed-$b$ score statistic at the null $\beta_0$ (column \texttt{Score\,\%}, avoiding plug-in leverage shrinkage and Hessian estimation noise) eliminates the $H=15$ over-rejection already at $V=400$ ($4.8\%$ at $n_v=20$, $3.6\%$ at $n_v=5$) and remains calibrated at $V=1{,}600$ ($4.2\%$--$5.4\%$). In empirical practice, we therefore recommend reporting $N_{\mathrm{eff}}$ alongside fixed-$b$ Wald SEs (our empirical $H=0$ Preqin $U_{v,0}$ panels have $N_{\mathrm{eff}} = 5.3$ BO EW, $8.9$ BO FW, $4.5$ VC EW, and $4.9$ VC FW---consistently higher than L2's $5.1, 8.4, 2.9, 1.9$), preferring $H=0$ when $c_v=0$, and pairing Wald intervals with the identification-robust AR moment set \eqref{eq:ar_set} whenever $N_{\mathrm{eff}}$ is modest.
+\end{enumerate}
+
+\input{../../r_project/results/mc_step4/paper/table_AS7_v400_studentization.tex}
 
 \subsection{Full Step 4 Monte Carlo appendix exhibits}
 
-Tables~\ref{tab:mc_size}--\ref{tab:mc_hardening} and Figure~\ref{fig:mc_growing_v} (together with the 16 Optimal-$H$ Regime~1--3b designs in Appendix~\ref{sec:appendix_optimal_H}, Table~\ref{tab:mc_regimes_verification}) report the complete Step~4 Monte Carlo appendix exhibits across all 72 designs (1,456 summary rows), including Gaussian location-model size benchmarks (D0), SE-method comparisons (Bartlett $S=7$--$25$, independent, jackknife), two-factor $q^5$ models (Table~\ref{tab:mc_two_factor}), $U_{v,H}$ joint $(\alpha,\beta)$ boundary-hit shares across all 13 designs (Table~\ref{tab:mc_alpha_beta_bounds}), the $n_v \times V$ infill grid, growing-$V$ plateau diagnostics, and the hardening designs (Design~B heterogeneous fund sizes; Designs~A$'$ and~A path-correlated shocks).
+Tables~\ref{tab:mc_size}--\ref{tab:mc_hardening} and Figure~\ref{fig:mc_growing_v} (together with the 16 Optimal-$H$ Regime~1--3b designs in Appendix~\ref{sec:appendix_optimal_H}, Table~\ref{tab:mc_regimes_verification}, and the large-$V$ studentization ablation in Table~\ref{tab:mc_v400_studentization}) report the complete Step~4 Monte Carlo appendix exhibits across all 72 designs (1,456 summary rows), including Gaussian location-model size benchmarks (D0), SE-method comparisons (Bartlett $S=7$--$25$, independent, jackknife), two-factor $q^5$ models (Table~\ref{tab:mc_two_factor}), $U_{v,H}$ joint $(\alpha,\beta)$ boundary-hit shares across all 13 designs (Table~\ref{tab:mc_alpha_beta_bounds}), the $n_v \times V$ infill grid, growing-$V$ plateau diagnostics, and the hardening designs (Design~B heterogeneous fund sizes; Designs~A$'$ and~A path-correlated shocks).
 
+\input{../../r_project/results/mc_step4/paper/figure_S2_margins.tex}
 \input{../../r_project/results/mc_step4/paper/table_AS1_size.tex}
 \input{../../r_project/results/mc_step4/paper/table_AS2_se_study.tex}
 \input{../../r_project/results/mc_step4/paper/table_S2_two_factor.tex}
@@ -594,13 +803,52 @@ Table~\ref{tab:driessen_comparison} re-estimates all 19 scenarios of the \citet[
 \input{../../r_project/results/mc_step4/paper/table_AD_dlp12.tex}
 
 % ==============================================================================
-\section{Additional Empirical Exhibits and Step 5 Diagnostics}
+\section{Empirical Data Construction and Additional Step 5 Diagnostics}
 \label{sec:appendix_empirical_extra}
 % ==============================================================================
 
-This appendix collects the complete 12-horizon single-factor table (Table~\ref{tab:u_l2_beta_all}), the VC cohort diagnostic excluding 1993--1997 (Table~\ref{tab:vc_without_1993_1997}), the three-rule fund-size imputation sensitivity (Table~\ref{tab:fw_imputation_sensitivity}), sample robustness across complete histories, all funds, and the 20\% terminal-NAV early-stopper filter for both L2 and $U_{v,H}$ (Table~\ref{tab:robustness_samples}), the Fix-$A$ vs.\ Scale-Jacobian decomposition (Table~\ref{tab:fixA_jacobian}), joint $(\alpha,\beta)$ geometry and contours (Table~\ref{tab:alpha_beta_identification} and Figure~\ref{fig:alpha_beta_contours}), four-year overlapping vintage-block bootstrap intervals (Table~\ref{tab:block_bootstrap}), vintage-level residuals and booked terminal NAV shares (Figure~\ref{fig:vintage_residuals} and Table~\ref{tab:terminal_nav_shares}), $hv$-block cross-validation fold diagnostics (Table~\ref{tab:appendix_e_cv_folds}), two-factor $q^5$ empirical horizon profiles (Figures~\ref{fig:empirical_BO_q_factors} and~\ref{fig:empirical_VC_q_factors}), and a comparison with published Buyout and VC risk/return estimates (Table~\ref{tab:published_estimates}).
+\subsection{Preqin sample filtering, fund-size imputation, terminal NAVs, and $hv$-block cross-validation}
+\label{sec:appendix_data_engineering}
+
+\paragraph{Constant-composition complete-history filter and sample sensitivity.}
+The empirical panel uses the Preqin cash-flow export as of April~14, 2022, restricted to North American USD-denominated Buyout (BO) and Venture Capital (VC) funds to match the U.S.\ $q^5$ factors (\url{http://global-q.org/factors.html}; \citealp{HXZ15,hou2021augmented}).
+To prevent survivor and reporting-horizon distortions, a fund enters the baseline complete-history sample only if its last Preqin record lies more than five years after January~1 of its vintage year, or if it is still reporting at the export end (last record within 12 months of March~31, 2022); 218 of 1{,}033 North American Buyout and VC funds with vintages up to 2010 stop reporting earlier (predominantly a vendor reporting artifact) and are excluded rather than having an early stale NAV booked as a liquidating cash flow.
+In the seasoned baseline ($V \le 2010$), this yields 383 Buyout funds across 25 vintages (1985--2010; 1989 absent, all 25 vintages with $n_v \ge 2$) and 432 Venture Capital funds across 27 vintages (1982--2010; 1983--1984 absent; four singleton vintages 1982, 1988, 1989, and 1991 with $n_v=1$, leaving 23 eligible vintages for $U_{v,H}$).
+Table~\ref{tab:robustness_samples} verifies stability across (i) the complete-history baseline, (ii) an \emph{all-funds} sample retaining truncated histories (495 BO / 538 VC funds), and (iii) a \emph{20\% terminal-NAV-threshold} sample dropping funds that stop reporting after age five but before March~31, 2021 with a final NAV exceeding 20\% of total value (328 BO / 344 VC funds).
+
+\paragraph{Fund-size imputation.}
+In the baseline $V \le 2010$ panel, fund size is missing for 10 of 383 Buyout funds (2.6\%) and 15 of 432 VC funds (3.5\%), heavily concentrated in early small vintages (1985--1995 in BO; 1982--1994 in VC).
+Imputing the pooled cross-vintage mean (\$1{,}842.24M Buyout; \$379.43M VC) assigns 94.9\% weight to a single missing-size 1986 Buyout fund, 92.8\% to two 1992 Buyout funds, 51.5\% to two 1988 Buyout funds, 98.8\% to two 1985 VC funds, and 87.3\% to two 1986 VC funds.
+Our baseline FW rule therefore imputes the \emph{within-vintage median} observed fund size (expanding symmetrically to the nearest adjacent vintages with observed sizes only for singleton 1982 VC, which receives the 1985 median of \$9M), yielding $\mathrm{SD}(\log S) = 1.185$ (BO) and $0.941$ (VC)---matching our FW Monte Carlo Design~B ($\sigma_{\log S} = 1.19$ BO, $0.90$ VC).
+Table~\ref{tab:fw_imputation_sensitivity} compares within-vintage median imputation, pooled cross-vintage mean imputation, and dropping missing-size funds (which shrinks Buyout $U_{v,H}$ from 25 to 22 vintages while L2 keeps 25): Buyout FW $U_{v,0}$ moves only from $1.197$ (median) to $1.205$ (mean) and $1.226$ (drop), whereas pooled-mean imputation exaggerates Buyout FW L2's 0--30~yr decline from $0.427$ to $0.634$ and flips the inception $\mathrm{L2}-U$ gap from $+0.028$ to $-0.013$.
+
+\paragraph{Terminal NAV haircuts and $hv$-block cross-validation.}
+In $V \le 2010$, median vintage-level booked terminal NAV shares are $8.1\%$ (BO EW), $5.4\%$ (BO FW), $10.8\%$ (VC EW), and $8.1\%$ (VC FW), with 2006--2010 averages of $12.2\%/10.7\%$ in Buyout and $27.1\%/24.2\%$ in VC (Table~\ref{tab:terminal_nav_shares} and Figure~\ref{fig:terminal_nav_shares}).
+Across five constant terminal-NAV haircuts from 0\% (full NAV) to 100\% (complete write-off), single-factor inception L2 betas move smoothly and modestly: $1.283 \to 1.170$ (BO EW), $1.224 \to 1.133$ (BO FW), $1.925 \to 1.877$ (VC EW), and $2.287 \to 2.245$ (VC FW; Figure~\ref{fig:nav_disc_BOVC_MKT}), providing a transparent nonparametric envelope without imposing a parametric residual-value model \citep{JLRS20,brown2023nowcasting}.
+To provide a descriptive stability check alongside fixed-$b$ inference, Table~\ref{tab:appendix_e_cv_folds} reports rolling $hv$-block cross-validation \citep{R00} with 3-year validation blocks buffered by 3-year exclusion zones on each side (8 folds in $V \le 2010$), evaluating every horizon's fold estimates on the common held-out $H=0$ inception loss (minimized at $H=0$ for BO FW $0.117$, VC EW $0.303$, and VC FW $0.375$, and flat in BO EW at $0.109$ vs.\ $0.106$ at $H=20$).
+
+\begin{figure}[htbp]
+\centering
+\begin{minipage}{0.49\textwidth}
+  \centering
+  \includegraphics[width=0.99\textwidth]{nav_disc_BO_US_MKT_combined_NC.pdf}
+\end{minipage}
+\begin{minipage}{0.49\textwidth}
+  \centering
+  \includegraphics[width=0.99\textwidth]{nav_disc_VC_US_MKT_combined_NC.pdf}
+\end{minipage}
+\caption{\textbf{Terminal NAV haircut sensitivity ($MKT$ factor, $V \le 2010$).} Single-factor L2 vintage-portfolio estimates for Buyout (left) and Venture Capital (right) under five terminal NAV treatments: full NAV as final cash flow, 25\%, 50\%, 75\% discounts, and 100\% write-off.}
+\label{fig:nav_disc_BOVC_MKT}
+\end{figure}
+
+\subsection{Extended empirical tables and figures}
+\label{sec:appendix_empirical_exhibits}
+
+The exhibits below collect the complete 12-horizon single-factor table (Table~\ref{tab:u_l2_beta_all}), the full four-horizon IV/AR/matched-vintage comparison (Table~\ref{tab:iv_comparison}), the complete 7-horizon $(\alpha,\beta)$ table (Table~\ref{tab:u_l2_alpha_beta_all}), the VC cohort diagnostic excluding 1993--1997 (Table~\ref{tab:vc_without_1993_1997}), the three-rule fund-size imputation sensitivity (Table~\ref{tab:fw_imputation_sensitivity}), sample robustness across complete histories, all funds, and the 20\% terminal-NAV early-stopper filter (Table~\ref{tab:robustness_samples}), the Fix-$A$ vs.\ Scale-Jacobian decomposition (Table~\ref{tab:fixA_jacobian}), joint $(\alpha,\beta)$ geometry and contours (Table~\ref{tab:alpha_beta_identification} and Figure~\ref{fig:alpha_beta_contours}), four-year overlapping vintage-block bootstrap intervals (Table~\ref{tab:block_bootstrap}), vintage-level residuals and booked terminal NAV shares (Figure~\ref{fig:vintage_residuals} and Table~\ref{tab:terminal_nav_shares}), $hv$-block cross-validation fold diagnostics (Table~\ref{tab:appendix_e_cv_folds}), two-factor $q^5$ empirical horizon profiles (Figures~\ref{fig:empirical_BO_q_factors} and~\ref{fig:empirical_VC_q_factors}), and a comparison with published Buyout and VC risk/return estimates (Table~\ref{tab:published_estimates}).
 
 \input{../../r_project/results/figures_bovc_us_g1/main_u/table_E1_beta_all.tex}
+\input{../../r_project/results/figures_bovc_us_g1/iv_comparison.tex}
+\input{../../r_project/results/figures_bovc_us_g1/main_u/table_E2_alpha_beta_all.tex}
 \input{../../r_project/results/figures_bovc_us_g1/main_u/table_OA_vc_without_1993_1997.tex}
 \input{../../r_project/results/figures_bovc_us_g1/fw_imputation_sensitivity.tex}
 \input{../../r_project/results/figures_bovc_us_g1/robustness_samples.tex}
