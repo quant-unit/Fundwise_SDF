@@ -1,0 +1,225 @@
+% =============================================================================
+% STANDALONE 3-PANEL PUBLICATION FIGURE FOR sdf_paper.tex
+% =============================================================================
+% Adapts the two P1 revision defense slides (p1-score-logic.tex and
+% p1-revision.tex) into a clean, publication-grade 3-panel academic figure
+% using newtxtext/newtxmath fonts to match sdf_paper.tex.
+%
+% Build:
+%   cd paper_submission/optimal_H_theory && pdflatex figure_optimal_H_theory.tex
+% =============================================================================
+\documentclass[border=3pt]{standalone}
+
+\usepackage[T1]{fontenc}
+\usepackage{newtxtext}
+\usepackage{newtxmath}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.14}
+\usetikzlibrary{arrows.meta,positioning}
+
+% Refined academic color palette (colorblind-safe & crisp in print/grayscale)
+\definecolor{inkDark}{HTML}{1C2430}
+\definecolor{inkMuted}{HTML}{5E6B7A}
+\definecolor{inkFaint}{HTML}{B8C2CC}
+\definecolor{accentRed}{HTML}{B8292F}
+\definecolor{accentBlue}{HTML}{1F5FA8}
+\definecolor{accentTeal}{HTML}{1B7F6B}
+\definecolor{bandFill}{HTML}{F3E6E7}
+
+\pgfplotsset{
+  paperaxis/.style={
+    scale only axis,
+    axis lines*=left,
+    axis line style={inkDark, line width=0.55pt},
+    tick style={inkDark, line width=0.45pt},
+    tick label style={font=\scriptsize, text=inkDark},
+    label style={font=\footnotesize, text=inkDark},
+    title style={font=\footnotesize\bfseries, text=inkDark, yshift=-1.5pt},
+    ymajorgrids=true,
+    grid style={inkFaint!55, line width=0.3pt},
+    legend style={
+      draw=none, fill=white, fill opacity=0.92, text opacity=1,
+      font=\fontsize{6.2}{7.3}\selectfont,
+      inner sep=1.2pt, row sep=-0.4pt,
+      cells={anchor=west}
+    },
+    legend image code/.code={\draw[#1] (0mm,0mm) -- (3.6mm,0mm);},
+  }
+}
+
+\begin{document}
+\begin{tikzpicture}
+
+% =============================================================================
+% PANEL A: Objective level vs. score slope at theta_0 (from p1-score-logic.tex)
+% =============================================================================
+\begin{axis}[
+  paperaxis,
+  name=panelA,
+  at={(0mm,0mm)},
+  anchor=south west,
+  width=44mm, height=40mm,
+  xmin=-1.30, xmax=1.80, ymin=0, ymax=2.05,
+  xtick={0, 0.62},
+  xticklabels={$\theta_0$, $\theta_0^\dagger$},
+  ytick=\empty, ymajorgrids=false,
+  xlabel={Parameter $\theta$},
+  ylabel={Population objective $\mathbb{E}[U_{v,H}(\theta)]$},
+  ylabel style={yshift=0pt},
+  xlabel style={yshift=1pt},
+  title={Panel A: Level vs.\ slope at $\theta_0$},
+  clip=false,
+  legend style={at={(0.48,0.99)}, anchor=north}
+]
+  % Vertical reference at true theta_0
+  \addplot[sharp plot, inkMuted, densely dotted, line width=0.6pt, forget plot]
+    coordinates {(0,0) (0,1.45)};
+  % H = 0 objective (tilted minimum at theta = 0.62)
+  \addplot[inkMuted, line width=1.05pt, domain=-0.92:1.72, samples=70, smooth]
+    {0.55*(x-0.62)^2 + 0.24};
+  \addlegendentry{$H = 0$ (tilted)}
+  % H = H_0* objective (higher level, centered minimum at theta_0 = 0)
+  \addplot[accentRed, line width=1.15pt, domain=-1.18:1.18, samples=70, smooth]
+    {0.55*x^2 + 0.78};
+  \addlegendentry{$H = H_0^\ast$ (zero slope)}
+  % Tangent slope at theta_0 for H = 0: y(0) = 0.55*0.62^2 + 0.24 = 0.4514; slope = -0.682
+  \addplot[inkDark, line width=0.85pt, domain=-0.36:0.46]
+    {0.4514 - 0.682*x};
+  \addlegendentry{Slope $\nabla\mathbb{E}[U](\theta_0)$}
+
+  % Key points
+  \fill[inkDark] (axis cs:0, 0.4514) circle (1.3pt);
+  \fill[accentRed] (axis cs:0, 0.78) circle (1.3pt);
+  \fill[inkMuted] (axis cs:0.62, 0.24) circle (1.3pt);
+  \addplot[sharp plot, inkFaint, densely dotted, line width=0.55pt, forget plot]
+    coordinates {(0.62,0) (0.62,0.24)};
+
+  % Bias arrow
+  \draw[-{Stealth[length=1.4mm,width=1.1mm]}, inkDark, line width=0.6pt]
+    (axis cs:0.03, 0.12) -- (axis cs:0.59, 0.12);
+  \node[anchor=west, font=\fontsize{6.2}{7.2}\selectfont, text=inkDark, inner sep=1.2pt]
+    at (axis cs:0.66, 0.12) {bias};
+
+  % Vertical level arrow illustrating "level shift harmless"
+  \draw[{Stealth[length=1.1mm,width=0.9mm]}-{Stealth[length=1.1mm,width=0.9mm]}, accentRed!80, line width=0.55pt]
+    (axis cs:-1.08, 0.24) -- (axis cs:-1.08, 0.78);
+  \node[anchor=west, font=\fontsize{5.9}{6.9}\selectfont, text=accentRed, align=left, inner sep=1.2pt]
+    at (axis cs:-1.03, 0.51) {level shift\\[-0.5pt]harmless};
+\end{axis}
+
+% =============================================================================
+% PANEL B: Exact Duration-Matching Curve H_0*(T_eff; g, sigma_r)
+% =============================================================================
+\begin{axis}[
+  paperaxis,
+  name=panelB,
+  at={(60mm,0mm)},
+  anchor=south west,
+  width=44mm, height=40mm,
+  xmin=1.5, xmax=11.5, ymin=2, ymax=23.5,
+  xtick={2,4,6,8,10},
+  ytick={5,10,15,20},
+  xlabel={Effective payoff duration $T_{\mathrm{eff}}$ (yr)},
+  ylabel={Zero-bias horizon $H_0^\ast$ (yr)},
+  ylabel style={yshift=-1pt},
+  xlabel style={yshift=1pt},
+  title={Panel B: Exact duration matching},
+  legend style={at={(0.03,0.98)}, anchor=north west}
+]
+  % 1:1 lower bound line H = T_eff
+  \addplot[inkFaint, densely dotted, line width=0.7pt, domain=1.5:11.5, forget plot] {x};
+  \node[anchor=north west, font=\fontsize{5.8}{6.8}\selectfont, text=inkMuted, rotate=24]
+    at (axis cs:3.7, 5.2) {$H = T_{\mathrm{eff}}$};
+
+  % Flat return g = 0% (2 T_eff)
+  \addplot[inkMuted, dashed, line width=0.95pt]
+    table[col sep=comma, x=T_eff, y=H_g0]{data/panelB_Hstar_curves.csv};
+  \addlegendentry{$g = 0\%$ ($2T_{\mathrm{eff}}$)}
+
+  % Deterministic g = 13.3%
+  \addplot[accentBlue, line width=1.0pt]
+    table[col sep=comma, x=T_eff, y=H_g133_det]{data/panelB_Hstar_curves.csv};
+  \addlegendentry{$g = 13.3\%$ (det.)}
+
+  % Stochastic g = 13.3%, sigma_m = 15.4%
+  \addplot[accentRed, line width=1.15pt]
+    table[col sep=comma, x=T_eff, y=H_g133_stoch]{data/panelB_Hstar_curves.csv};
+  \addlegendentry{$g = 13.3\%$, $\sigma_m{=}15.4\%$}
+
+  % Core calibration markers on stochastic curve:
+  % Static W_v: T_eff = 8.09, H_stoch = 12.65
+  % Calendar e_u / L2: T_eff = 9.87, H_stoch = 14.91
+  \draw[accentRed!60, densely dotted, line width=0.55pt] (axis cs:8.09, 2) -- (axis cs:8.09, 12.65);
+  \draw[accentTeal!65, densely dotted, line width=0.55pt] (axis cs:9.87, 2) -- (axis cs:9.87, 14.91);
+
+  \addplot[only marks, mark=*, mark size=1.8pt, accentRed, forget plot]
+    coordinates {(8.09, 12.65)};
+  \addplot[only marks, mark=square*, mark size=1.8pt, accentTeal, forget plot]
+    coordinates {(9.87, 14.91)};
+
+  % Clean non-overlapping callouts with thin leader lines
+  \draw[accentRed!75, line width=0.45pt] (axis cs:8.09, 12.65) -- (axis cs:7.0, 10.6);
+  \node[anchor=north, fill=white, fill opacity=0.9, text opacity=1,
+        font=\fontsize{5.8}{6.8}\selectfont, text=accentRed, align=center, inner sep=1pt]
+    at (axis cs:6.8, 10.5) {Static $W_v$\\[-0.5pt]$12.7$\,yr};
+
+  \draw[accentTeal!80, line width=0.45pt] (axis cs:9.87, 14.91) -- (axis cs:9.87, 9.2);
+  \node[anchor=north, fill=white, fill opacity=0.9, text opacity=1,
+        font=\fontsize{5.8}{6.8}\selectfont, text=accentTeal, align=center, inner sep=1pt]
+    at (axis cs:9.15, 9.1) {Cal.\ $e_u$ / L2\\[-0.5pt]$14.8$--$15.0$\,yr};
+\end{axis}
+
+% =============================================================================
+% PANEL C: Finite-V RMSE across Regimes 1-3 (V=25 nonlinear cash-flow MC)
+% =============================================================================
+\begin{axis}[
+  paperaxis,
+  name=panelC,
+  at={(120mm,0mm)},
+  anchor=south west,
+  width=44mm, height=40mm,
+  xmin=-0.8, xmax=21.5, ymin=0, ymax=6.15,
+  xtick={0,5,10,15,20},
+  ytick={0,1,2,3,4,5,6},
+  xlabel={Horizon $H$ (years)},
+  ylabel={$U_{v,H}$ $\hat\alpha$ RMSE (\%/yr)},
+  ylabel style={yshift=-1pt},
+  xlabel style={yshift=1pt},
+  title={Panel C: Regimes 1--3 ($V=25$ MC)},
+  legend style={at={(0.99,0.99)}, anchor=north east, font=\fontsize{5.8}{6.8}\selectfont}
+]
+  % Shaded duration-matched band [12.5, 15]
+  \fill[bandFill] (axis cs:12.5, 0) rectangle (axis cs:15.0, 6.15);
+  \node[anchor=south, font=\fontsize{5.9}{6.9}\selectfont, text=accentRed, inner sep=1pt]
+    at (axis cs:13.75, 0.62) {$H_0^\ast$};
+
+  % Regime 1: i.i.d. (c_v = 0)
+  \addplot[inkDark, line width=1.0pt, mark=*, mark size=1.0pt,
+           restrict x to domain=0:21]
+    table[col sep=comma, x=H, y=R1_U_rmse]{data/panelC_mc_regimes.csv};
+  \addlegendentry{R1: i.i.d.\ ($c_v{=}0$)}
+
+  % Regime 2: static W_v (rho_W = 0)
+  \addplot[accentRed, line width=1.1pt, mark=*, mark size=1.0pt,
+           restrict x to domain=0:21]
+    table[col sep=comma, x=H, y=R2_U_rmse]{data/panelC_mc_regimes.csv};
+  \addlegendentry{R2: $W_v$ ($\rho_W{=}0$)}
+
+  % Regime 3a: AR(1) W_v (rho_W = 0.6)
+  \addplot[accentBlue, line width=1.05pt, dashed, mark=triangle*, mark size=1.1pt,
+           restrict x to domain=0:21]
+    table[col sep=comma, x=H, y=R3a06_U_rmse]{data/panelC_mc_regimes.csv};
+  \addlegendentry{R3a: $W_v$ ($\rho_W{=}0.6$)}
+
+  % Regime 3b: calendar shock e_u (i.i.d.)
+  \addplot[accentTeal, line width=1.05pt, densely dotted, mark=square*, mark size=1.0pt,
+           restrict x to domain=0:21]
+    table[col sep=comma, x=H, y=R3b_iid_U_rmse]{data/panelC_mc_regimes.csv};
+  \addlegendentry{R3b: cal.\ $e_u$}
+\end{axis}
+
+\end{tikzpicture}
+\end{document}

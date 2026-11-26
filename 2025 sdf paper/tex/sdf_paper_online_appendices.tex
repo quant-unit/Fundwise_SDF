@@ -13,7 +13,7 @@ This Online Appendix collects theoretical derivations, econometric proofs, full 
 \begin{itemize}
   \item Appendix~\ref{sec:appendix_notation} summarizes the notation.
   \item Appendix~\ref{sec:appendix_sdf} characterizes when the benchmark deflator constitutes a PE-specific SDF and compares it with public-calibrated pricing kernels.
-  \item Appendix~\ref{sec:appendix_theory} proves parts T1--T8 of Theorem~\ref{thm:finite_pool} (rescaling identity, mean preservation under (X), inception variance tilt, finite-$n_v$ decomposition, horizon gradient decomposition, the horizon display of the tilt, identification of $U_{v,H}$, and shared vintage shocks) and states three supplementary lemmas (large-$\alpha$ attenuation vs.\ coercivity, infill consistency, and multiple roots of the mean pricing moment).
+  \item Appendix~\ref{sec:appendix_theory} proves parts T1--T8 of Theorem~\ref{thm:finite_pool} (rescaling identity, mean preservation under (X), inception variance tilt, finite-$n_v$ decomposition, horizon gradient decomposition, the horizon display of the tilt, identification of $U_{v,H}$, and shared vintage shocks), states three supplementary lemmas (large-$\alpha$ attenuation vs.\ coercivity, infill consistency, and multiple roots of the mean pricing moment), and proves Proposition~\ref{prop:optimal_H} (optimal horizon duration matching, cross-vintage dependence across nearby vintages, finite-$V$ MSE expansion, and rank-1 collapse of cross-vintage pair products) with quantitative lookup and Monte Carlo verification tables.
   \item Appendix~\ref{sec:proofs_asymptotics_H} states the increasing-domain regularity conditions, score-centered and integrated-Hessian consistency and CLT proofs, LLSW/fixed-$b$ SHAC implementation details, and full Step~4 Monte Carlo appendix exhibits.
   \item Appendix~\ref{sec:dlp_results_comparison} compares our repaired estimator against \citet{DLP12} in simulation (Table~1 replication under pipeline r5 and $n_v \times V$ infill grid).
   \item Appendix~\ref{sec:appendix_empirical_extra} collects all-horizon single-factor tables, VC cohort diagnostics (without 1993--1997), fund-size imputation sensitivity, sample robustness, Fix-$A$ vs.\ Scale-Jacobian decomposition, joint $(\alpha,\beta)$ geometry, four-year vintage-block bootstrap intervals, terminal NAV shares, $hv$-block cross-validation fold diagnostics, and a published-estimates comparison table.
@@ -47,6 +47,7 @@ Table~\ref{tab:notation_asset_pricing} summarizes the notation for the deal-leve
 		$\mathcal{C}_v$ & Public factor-path and horizon-window information set for vintage $v$ \\
 		$\mathcal{G}_v$ & Conditioning set including $\mathcal{C}_v$, eligibility $n_v\ge 2$, fund sizes $\{s_{v,i}\}$, and origin $t_v^0$ \\
 		$\mu_v(\theta), c_v(\theta), \sigma_v^2(\theta)$ & Conditional mean, common within-vintage covariance, and total conditional variance of $PV_{v,i}(\theta)$ given $\mathcal{G}_v$ \\
+		$c_{v,w}(\theta)$ & Cross-vintage conditional shock covariance $\operatorname{Cov}(\eta_v(\theta), \eta_w(\theta) \mid \mathcal{F}^{\mathrm{pub}}, \mathcal{W})$ (with $c_{v,v} = c_v$) \\
 		\bottomrule
 	\end{tabularx}
 	\caption{Key notation for pooled private-equity cash flows and benchmark discounting.}
@@ -65,6 +66,8 @@ Table~\ref{tab:notation_asset_pricing} summarizes the notation for the deal-leve
 		$\bar\epsilon_{v,i,H}(\theta), \bar\epsilon_{v,H}(\theta)$ & Horizon-averaged pricing errors $A_{v,H}(\theta) PV_{v,i}(\theta)$ and $A_{v,H}(\theta) PV_v(\theta)$ \\
 		$Q_{V,H}^{\mathrm{L2}}(\theta), Q_H^{\mathrm{L2}}(\theta)$ & Sample and population squared pooled-NPV (L2) criteria \\
 		$U_{v,H}(\theta), q_v$ & Within-vintage cross-fund pair-product statistic and vintage weight ($q_v=1$ main; $q_v=n_v$ robustness) \\
+		$\widetilde{U}_{H,m}^{\mathrm{cross}}(\theta)$ & Leave-band-out cross-vintage pair-product criterion over pairs $|y_v - y_w| > m$ \\
+		$H_0^\ast, H_{\mathrm{MSE}}^\ast(V)$ & Zero-bias duration-matching horizon and finite-$V$ asymptotic MSE-optimal horizon \\
 		$\Theta$ & Admissible parameter domain ($\beta_{\mathrm{MKT}}\in[-1,4]$, $\alpha\in[-2\%,2\%]$/mo, $\min_t G_t(\theta)\ge 0.08$) \\
 		$\theta_0, \theta_H^\dagger$ & Structural pricing parameter and horizon-specific population criterion minimizer \\
 		$S, b$ & Bartlett truncation bandwidth $S = \lceil 1.3\sqrt{V}\rceil$ (LLSW) and fixed-$b$ ratio $b = S/V$ \\
@@ -82,11 +85,11 @@ Table~\ref{tab:notation_asset_pricing} summarizes the notation for the deal-leve
 \input{sdf_paper_appendix_sdf.tex}
 
 % ==============================================================================
-\section{Proofs of Theorem~\ref{thm:finite_pool} (T1--T8) and Supplementary Lemmas}
+\section{Proofs of Theorem~\ref{thm:finite_pool} (T1--T8), Supplementary Lemmas, and Proposition~\ref{prop:optimal_H}}
 \label{sec:appendix_theory}
 % ==============================================================================
 
-This appendix proves parts T1--T8 of Theorem~\ref{thm:finite_pool} in the numbering of the main text (Subsections~\ref{sec:proof_T1}--\ref{sec:proof_T8}) and then states three supplementary results used in the discussion: large-$\alpha$ attenuation at $H=0$ versus coercivity at $H>0$ (Lemma~\ref{lem:coercivity}), infill consistency (Lemma~\ref{lem:infill}), and multiple roots of the mean pricing moment (Lemma~\ref{lem:multiple_roots}). Throughout, $\theta$ lies in the positive-return admissible domain $\Theta$ where $G_u(\theta) = 1 + r_{f,u} + \alpha + \beta^\top F_u > 0$ on the relevant dates, so $\Psi_t(\theta) = \prod_{u=1}^t G_u(\theta)^{-1} > 0$ and $R^b_{a,b}(\theta) = \Psi_a(\theta)/\Psi_b(\theta) > 0$. We write $\mathcal{G}_v$ for the conditioning information $(\mathcal{F}^{\mathrm{pub}},\mathcal{W}_v)$ of the main text: the public factor-path and window information $\mathcal{C}_v$, the eligibility event $n_v \ge 2$, the fund sizes $\{s_{v,i}\}$, and the vintage origin $t_v^0$. Fund weights $w_{v,i}$ (the $\omega_{v,i}$ of the main text) and the horizon scale $A_{v,H}(\theta)$ are $\mathcal{G}_v$-measurable. Differentiation under the expectation is assumed wherever gradients of population criteria appear.
+This appendix proves parts T1--T8 of Theorem~\ref{thm:finite_pool} in the numbering of the main text (Subsections~\ref{sec:proof_T1}--\ref{sec:proof_T8}), states three supplementary results used in the discussion (Subsection~\ref{sec:supplementary_lemmas}: large-$\alpha$ attenuation at $H=0$ versus coercivity at $H>0$, Lemma~\ref{lem:coercivity}; infill consistency, Lemma~\ref{lem:infill}; and multiple roots of the mean pricing moment, Lemma~\ref{lem:multiple_roots}), and proves and quantifies Proposition~\ref{prop:optimal_H} on optimal horizon theory and cross-vintage dependence (Subsection~\ref{sec:appendix_optimal_H}). Throughout, $\theta$ lies in the positive-return admissible domain $\Theta$ where $G_u(\theta) = 1 + r_{f,u} + \alpha + \beta^\top F_u > 0$ on the relevant dates, so $\Psi_t(\theta) = \prod_{u=1}^t G_u(\theta)^{-1} > 0$ and $R^b_{a,b}(\theta) = \Psi_a(\theta)/\Psi_b(\theta) > 0$. We write $\mathcal{G}_v$ for the conditioning information $(\mathcal{F}^{\mathrm{pub}},\mathcal{W}_v)$ of the main text: the public factor-path and window information $\mathcal{C}_v$, the eligibility event $n_v \ge 2$, the fund sizes $\{s_{v,i}\}$, and the vintage origin $t_v^0$. Fund weights $w_{v,i}$ (the $\omega_{v,i}$ of the main text) and the horizon scale $A_{v,H}(\theta)$ are $\mathcal{G}_v$-measurable. Differentiation under the expectation is assumed wherever gradients of population criteria appear.
 
 \subsection{Proof of T1 (Exact horizon rescaling identity)}
 \label{sec:proof_T1}
@@ -212,7 +215,7 @@ all own-fund variance terms cancel for every finite $n_v \ge 2$. Multiplying by 
 \subsection{Proof of T8 (Shared vintage shocks)}
 \label{sec:proof_T8}
 
-Under the conditions of T8, the funds of vintage $v$ have common conditional mean $\mu_v(\theta)$ and pairwise conditional covariance $\tau_v^2(\theta)$ given $\mathcal{G}_v$, so $\mathbb{E}[PV_{v,i}(\theta)PV_{v,j}(\theta)\mid\mathcal{G}_v] = \mu_v(\theta)^2 + \tau_v^2(\theta)$ for $i \neq j$. Substituting into the pair representation of $U_{v,H}$ in the proof of T7 gives $\mathbb{E}[U_{v,H}(\theta)\mid\mathcal{G}_v] = A_{v,H}(\theta)^2(\mu_v(\theta)^2 + \tau_v^2(\theta))$; own-fund variances again cancel. Multiplying by $q_v$ and taking expectations yields T8. Because $\mu_v(\theta_0) = 0$, the gradient at $\theta_0$ is $\mathbb{E}[q_v A_{v,H}(\theta_0)^2(\nabla_\theta\tau_v^2(\theta_0) + 2\tau_v^2(\theta_0)\nabla_\theta\log A_{v,H}(\theta_0))]$, the expression of T6 with $n_v^{-1}\sigma_v^2$ replaced by $\tau_v^2$. \qed
+Under the conditions of T8, the funds of vintage $v$ have common conditional mean $\mu_v(\theta)$ and pairwise conditional covariance $c_v(\theta)$ given $\mathcal{G}_v$, so $\mathbb{E}[PV_{v,i}(\theta)PV_{v,j}(\theta)\mid\mathcal{G}_v] = \mu_v(\theta)^2 + c_v(\theta)$ for $i \neq j$. Substituting into the pair representation of $U_{v,H}$ in the proof of T7 gives $\mathbb{E}[U_{v,H}(\theta)\mid\mathcal{G}_v] = A_{v,H}(\theta)^2(\mu_v(\theta)^2 + c_v(\theta))$; own-fund variances again cancel. Multiplying by $q_v$ and taking expectations yields T8. Because $\mu_v(\theta_0) = 0$, the gradient at $\theta_0$ is $\mathbb{E}[q_v A_{v,H}(\theta_0)^2(\nabla_\theta c_v(\theta_0) + 2c_v(\theta_0)\nabla_\theta\log A_{v,H}(\theta_0))]$, the expression of T6 with $n_v^{-1}\sigma_v^2$ replaced by $c_v$. \qed
 
 \subsection{Supplementary lemmas}
 \label{sec:supplementary_lemmas}
@@ -265,7 +268,311 @@ has, besides the structural root $\beta_{\mathrm{PE}}$, a second root $\beta^\as
 $g(0) = \mathbb{E}[F]/R_f > 0$; $g$ is strictly decreasing because $g'(\beta) = -\mathbb{E}[F^2/(R_f+\beta F)^2] < 0$; and $g(\beta) \to -\infty$ as $\beta$ approaches the upper positivity boundary $R_f/|\min F|$, where the denominator of the term at $\min F < 0$ vanishes. Hence $g$ has exactly one root $\beta^\ast > 0$. For example, with $R_f = 1$ and $F \in \{-0.4, +0.6\}$ equally likely, $\beta_{\mathrm{PE}} = 1$ and $\beta^\ast = 5/12$ both satisfy $m(\beta) = 0$, so a ``smallest-root'' rule selects $5/12 \neq 1$.
 \end{proof}
 
-Under persistent vintage shocks ($c_v > 0$, $\rho_W > 0$), any instrument $z_v$ constructed from neighboring vintages' cash flows correlates with $PV_v(\theta_0)$; valid moments $\mathbb{E}[z_v PV_v(\theta_0)] = 0$ therefore require strictly exogenous path instruments $z_v = h(\mathcal{C}_v)$ (valid under (X)), $z_v = 1$ under (P) alone (T2), or $h$-block neighbor-excluding instruments.
+Under persistent vintage shocks ($c_v > 0$, $\rho_W > 0$), any instrument $z_v$ constructed from neighboring vintages' cash flows correlates with $PV_v(\theta_0)$; valid linear moments $\mathbb{E}[z_v PV_v(\theta_0)] = 0$ therefore require strictly exogenous path instruments $z_v = h(\mathcal{C}_v)$ (valid under (X)), $z_v = 1$ under (P) alone (T2), or $h$-block neighbor-excluding instruments (whereas quadratic cross-vintage leave-band-out pair products fail via rank-1 collapse and finite-$V$ indefiniteness, proved next).
+
+\subsection{Proofs and quantitative analysis of Proposition~\ref{prop:optimal_H} (optimal horizon theory)}
+\label{sec:appendix_optimal_H}
+
+This subsection proves Parts~(i)--(iv) of Proposition~\ref{prop:optimal_H}, reports exact numerical lookup tables for $H_0^\ast(T_{\mathrm{eff}}, g, \sigma_m)$ and $T_{\mathrm{eff}}$ across shock mechanisms (Tables~\ref{tab:H_star_lookup}--\ref{tab:T_eff_mechanisms}), and verifies all three dependence regimes and the failure of cross-vintage leave-band-out pair products in a dedicated nonlinear cash-flow Monte Carlo study (Table~\ref{tab:mc_regimes_verification}).
+
+\begin{proof}[Proof of Proposition~\ref{prop:optimal_H}]
+We prove Parts~(i)--(iv) in sequence.
+
+\paragraph{Part (i): Exact multi-deal duration matching, uniqueness, global bounds, and volatility shrinkage.}
+Under Condition~(X), $\mu_v(\theta_0) = \mathbb{E}[PV_i(\theta_0) \mid \mathcal{G}_v] = 0$, so both $\mu_v(\theta)^2$ and its gradient $2\mu_v(\theta)\nabla_\theta\mu_v(\theta)$ vanish at $\theta = \theta_0$.
+Differentiating $\mathbb{E}[\mathcal{L}_{v,H}(\theta) \mid \mathcal{G}_v] = q_v A_{v,H}(\theta)^2(\mu_v(\theta)^2 + \omega_v(\theta))$ under the expectation and evaluating at $\theta_0$ gives
+\begin{equation}
+\label{eq:app_score_general}
+\nabla_\theta\,\mathbb{E}\!\left[\mathcal{L}_{v,H}(\theta) \,\middle|\, \mathcal{G}_v\right]\Big|_{\theta=\theta_0}
+= q_v A_{v,H}(\theta_0)^2\Big(2\,\omega_v(\theta_0)\,\nabla_\theta\log A_{v,H}(\theta_0) + \nabla_\theta\omega_v(\theta_0)\Big).
+\end{equation}
+First, since $A_{v,H}(\theta) = |\mathcal{T}_{v,H}|^{-1}\sum_{\tau\in\mathcal{T}_{v,H}} R^b_{t_v^0,\tau}(\theta)$ and $\nabla_\theta R^b_{t_v^0,\tau}(\theta) = R^b_{t_v^0,\tau}(\theta)\,S_{v,\tau}(\theta)$, we have
+\[
+\nabla_\theta\log A_{v,H}(\theta_0)
+= \frac{\sum_{\tau\in\mathcal{T}_{v,H}} R^b_{t_v^0,\tau}(\theta_0)\,S_{v,\tau}(\theta_0)}{\sum_{\tau\in\mathcal{T}_{v,H}} R^b_{t_v^0,\tau}(\theta_0)}
+= \bar{S}_{v,H}^{\mathrm{comp}}(\theta_0).
+\]
+Second, write $\omega_v(\theta) = \sum_{s,t \ge t_v^0} D_{v,s}(\theta) D_{v,t}(\theta)\,\Sigma_v^{(s,t)}$ where $D_{v,t}(\theta) = R^b_{t_v^0,t}(\theta)^{-1}$ satisfies $\nabla_\theta D_{v,t}(\theta) = -D_{v,t}(\theta)\,S_{v,t}(\theta)$ and $\Sigma_v^{(s,t)} = \Sigma_v^{(t,s)}$ does not depend on $\theta$.
+Differentiating yields
+\[
+\nabla_\theta\omega_v(\theta_0)
+= -\sum_{s,t\ge t_v^0} D_{v,s}(\theta_0)D_{v,t}(\theta_0)\,\Sigma_v^{(s,t)}\bigl(S_{v,s}(\theta_0) + S_{v,t}(\theta_0)\bigr)
+= -2\,\omega_v(\theta_0)\,\bar{S}_v^{\mathrm{eff}}(\theta_0),
+\]
+by symmetry of $\Sigma_v^{(s,t)}$. Substituting both expressions into \eqref{eq:app_score_general}, taking unconditional expectations, and averaging across $v = 1,\dots,V$ yields \eqref{eq:duration_matching_score}.
+
+Now specialize to a constant per-period gross benchmark return $G_u(\theta_0) \equiv G = e^r > 0$.
+For $\theta = \alpha$, $S_{v,t}^{(\alpha)}(\theta_0) = (t - t_v^0)/G$ (and for $\theta = \beta$ with constant excess return $F_u \equiv \bar{F} > 0$, $S_{v,t}^{(\beta)}(\theta_0) = (\bar{F}/G)(t - t_v^0)$).
+In both cases the positive scalar factor ($1/G$ or $\bar{F}/G$) cancels from $\bar{S}_{v,H}^{\mathrm{comp}} - \bar{S}_v^{\mathrm{eff}} = 0$, leaving the discrete duration-matching equation
+\[
+\frac{\sum_{\tau=0}^{K_H} \tau\,G^\tau}{\sum_{\tau=0}^{K_H} G^\tau} = T_{\mathrm{eff}},
+\qquad
+T_{\mathrm{eff}} := \frac{\sum_{s,t\ge 0} G^{-(s+t)}\,\Sigma^{(s,t)}\,t}{\sum_{s,t\ge 0} G^{-(s+t)}\,\Sigma^{(s,t)}} > 0.
+\]
+Note that even on an arbitrary realized positive path $R_\tau > 0$, the discrete ratio $\bar\tau(K) := \frac{\sum_{\tau=0}^K \tau R_\tau}{\sum_{\tau=0}^K R_\tau}$ is strictly increasing in $K$ because
+\[
+\bar\tau(K+1) - \bar\tau(K)
+= \frac{R_{K+1}}{\sum_{\tau=0}^{K+1} R_\tau}\,\bigl((K+1) - \bar\tau(K)\bigr) > 0.
+\]
+In the continuous-time counterpart on $[0,H]$, integration by parts gives
+\[
+\bar\tau(H;\,r)
+= \frac{\int_0^H \tau e^{r\tau}\,d\tau}{\int_0^H e^{r\tau}\,d\tau}
+= \frac{r^{-2}\bigl((rH - 1)e^{rH} + 1\bigr)}{r^{-1}(e^{rH} - 1)}
+= H - \frac{1}{r} + \frac{H}{e^{rH} - 1}
+\]
+for $r \neq 0$, with continuous limit $\bar\tau(H;0) = H/2$ by L'H\^opital's rule.
+Setting $x := rH > 0$, direct differentiation gives
+\[
+\frac{\partial \bar\tau(H;\,r)}{\partial H}
+= 1 + \frac{(e^x - 1) - x e^x}{(e^x - 1)^2}
+= \frac{e^x(e^x - 1 - x)}{(e^x - 1)^2} > 0 \qquad \forall\, x > 0,
+\]
+since $e^x > 1 + x$ for all $x \neq 0$.
+Because $\lim_{H\downarrow 0}\bar\tau(H;r) = 0 < T_{\mathrm{eff}}$ and $\lim_{H\to\infty}\bar\tau(H;r) = \infty$ for $r \ge 0$, the intermediate value theorem guarantees a unique zero-bias root $H_0^\ast \in (0,\infty)$.
+Next, interpret $\bar\tau(H;r) = \mathbb{E}_{\pi_r}[\tau]$ under the exponential-family density $\pi_r(\tau) = e^{r\tau}/\int_0^H e^{ru}\,du$ on $[0,H]$.
+By the standard exponential-family cumulant identity,
+\[
+\frac{\partial \bar\tau(H;\,r)}{\partial r} = \operatorname{Var}_{\pi_r}(\tau) > 0 \qquad \forall\, H > 0.
+\]
+By the implicit function theorem, $\frac{\partial H_0^\ast}{\partial r} = -\frac{\operatorname{Var}_{\pi_r}(\tau)}{\partial_H \bar\tau(H_0^\ast;r)} < 0$, so $H_0^\ast$ is strictly decreasing in $r$.
+For the global sandwich bounds \eqref{eq:H_star_bounds} when $r > 0$:
+(a) $\bar\tau(H_0^\ast;r) < H_0^\ast$ immediately gives $T_{\mathrm{eff}} < H_0^\ast$;
+(b) strict monotonicity in $r$ implies $T_{\mathrm{eff}} = \bar\tau(H_0^\ast;r) > \bar\tau(H_0^\ast;0) = H_0^\ast/2$, giving $H_0^\ast < 2\,T_{\mathrm{eff}}$;
+(c) rewriting \eqref{eq:exact_tau_bar} as $H_0^\ast = T_{\mathrm{eff}} + \frac{1}{r} - \frac{H_0^\ast}{e^{rH_0^\ast}-1}$ and noting $\frac{H_0^\ast}{e^{rH_0^\ast}-1} > 0$ yields $H_0^\ast < T_{\mathrm{eff}} + \frac{1}{r}$.
+Combining (a)--(c) establishes \eqref{eq:H_star_bounds}.
+Furthermore, expanding $\frac{x}{e^x-1} = 1 - \frac{x}{2} + \frac{x^2}{12} + O(x^4)$ gives $\bar\tau(H;r) = \frac{H}{2} + \frac{rH^2}{12} + O(r^3 H^4)$, solving to $H_0^\ast = 2T_{\mathrm{eff}} - \frac{2}{3}rT_{\mathrm{eff}}^2 + O(r^2 T_{\mathrm{eff}}^3)$ for $rT_{\mathrm{eff}} \ll 1$, while $e^{rH}\gg 1$ yields the large-$rT_{\mathrm{eff}}$ asymptote $H_0^\ast \approx T_{\mathrm{eff}} + \frac{1}{r}$.
+
+Finally, consider stochastic i.i.d.\ lognormal returns $r_u \sim \mathcal{N}(\mu_r,\sigma_r^2)$ with arithmetic drift $r_{\mathrm{arith}} = \mu_r + \frac{1}{2}\sigma_r^2$ and cumulative gross return $R_t = \exp(\int_0^t dX_u)$, where $X_t = \mu_r t + \sigma_r B_t$ is Brownian motion.
+For constant-duration $\alpha$ with deterministic $T_{\mathrm{eff}}$, the zero-bias condition $\mathbb{E}[A_H(\theta_0)^2(\bar{S}_H^{\mathrm{comp}}(\theta_0) - T_{\mathrm{eff}})] = 0$ rewrites (using $A_H \partial_\alpha A_H = H^{-2}\int_0^H\int_0^H t\,R_s R_t\,ds\,dt$) as
+\[
+\bar\tau_{\mathrm{stoch}}(H;\,r_{\mathrm{arith}},\sigma_r)
+:= \frac{\int_0^H\int_0^H t\,\mathbb{E}[R_s R_t]\,ds\,dt}{\int_0^H\int_0^H \mathbb{E}[R_s R_t]\,ds\,dt}
+= T_{\mathrm{eff}}.
+\]
+Because $X_s + X_t$ is Gaussian with mean $\mu_r(s+t)$ and variance $\sigma_r^2(s + t + 2\min(s,t))$,
+\[
+\mathbb{E}[R_s R_t] = \exp\!\Big(r_{\mathrm{arith}}(s+t) + \sigma_r^2\min(s,t)\Big).
+\]
+Differentiating $\bar\tau_{\mathrm{stoch}}$ with respect to $\sigma_r^2$ (holding $r_{\mathrm{arith}}$ fixed) gives
+\[
+\frac{\partial \bar\tau_{\mathrm{stoch}}(H;\,r_{\mathrm{arith}},\sigma_r)}{\partial (\sigma_r^2)}
+= \operatorname{Cov}_{\tilde\pi}\!\bigl(t,\,\min(s,t)\bigr) > 0,
+\]
+where $\tilde\pi(s,t) \propto \mathbb{E}[R_s R_t]$ on $[0,H]^2$ (positive covariance follows directly from the FKG / Harris inequality because both $t$ and $\min(s,t)$ are coordinatewise non-decreasing functions on $[0,H]^2$ and $\tilde\pi$ is log-supermodular: $\partial_{s,t}\log\tilde\pi = \sigma_r^2\,\delta(s-t) \ge 0$).
+Hence $\bar\tau_{\mathrm{stoch}}(H; r_{\mathrm{arith}}, \sigma_r) > \bar\tau(H; r_{\mathrm{arith}})$ for all $\sigma_r > 0$, and strict monotonicity in $H$ implies $H_0^{\ast,\mathrm{stoch}} < H_0^{\ast,\mathrm{det}}(r_{\mathrm{arith}})$.
+
+\paragraph{Part (ii): Cross-vintage dependence of nearby vintages.}
+(a) For each vintage $v$, $U_{v,H}(\theta)$ pairs only funds $i \neq j \in \mathcal{I}_v$. Because $\nu_i \perp \nu_j$ and $\nu_i \perp \eta_v$ conditionally on $\mathcal{G}_v$,
+\[
+\mathbb{E}\!\left[U_{v,H}(\theta) \,\middle|\, \mathcal{F}^{\mathrm{pub}},\mathcal{W}\right]
+= A_{v,H}(\theta)^2\bigl(\mu_v(\theta)^2 + c_{v,v}(\theta)\bigr),
+\]
+independently of $c_{v,w}(\theta)$ ($v \neq w$). By linearity of expectation,
+\[
+\mathbb{E}\!\left[\widehat{U}_{V,H}(\theta)\right]
+= \frac{1}{\sum_v q_v}\sum_{v=1}^V q_v\,\mathbb{E}\!\left[A_{v,H}(\theta)^2\bigl(\mu_v(\theta)^2 + c_v(\theta)\bigr)\right],
+\]
+and under the increasing-domain mixing/local-dependence conditions of Proposition~\ref{prop:consistency_clt}, the ULLN ensures $\widehat{U}_{V,H}(\theta) \xrightarrow{p} \mathcal{Q}_H(\theta)$ uniformly on $\Theta$. Thus off-diagonal covariances $c_{v,w}$ ($v \neq w$) do not enter $\mathcal{Q}_H(\theta)$ or $H_0^\ast$. However, because the cross-vintage covariance matrix $[c_{v,w}(\theta_0)]_{v,w=1}^V$ is positive semidefinite, any pair with $c_{v,w}(\theta_0) \neq 0$ must satisfy $c_v(\theta_0) c_w(\theta_0) \ge c_{v,w}(\theta_0)^2 > 0$, so $c_v(\theta_0) > 0$ and $U_{v,0}$ inherits the inception variance tilt $\nabla_\theta c_v(\theta_0) \neq 0$.
+
+(b) Under a stationary vintage shock $W_v$ with $\operatorname{Var}(W_v) = \sigma_W^2$ and $\operatorname{Cov}(W_v, W_w) = \sigma_W^2 \rho_W^{|y_v-y_w|}$, the within-vintage cross-fund cash-flow covariance $\Sigma_{v,U}^{(s,t)} = \sigma_W^2 \mu_{v,s}^{\mathrm{exit}}\mu_{v,t}^{\mathrm{exit}}$ is independent of $\rho_W$, so $T_{\mathrm{eff}}$ and $H_0^\ast$ are invariant to $\rho_W$.
+By contrast, under a zero-mean calendar-time private shock $e_u \perp \mathcal{F}^{\mathrm{pub}}$ accumulated over each deal's active period $[a,b]$ (linearized multiplicative shock $\sum_{u=a+1}^b e_u$ with $\operatorname{Cov}(e_u,e_{u'}) = \gamma_e(|u-u'|)$), the cross-fund covariance between deals $(a_1,b_1)$ and $(a_2,b_2)$ in vintage $v$ is
+\[
+\operatorname{Cov}\!\left(\sum_{u=a_1+1}^{b_1} e_u,\;\sum_{u'=a_2+1}^{b_2} e_{u'}\right)
+= \sum_{u=a_1+1}^{b_1}\sum_{u'=a_2+1}^{b_2} \gamma_e(|u-u'|),
+\]
+which reduces to $\sigma_e^2\,|[a_1,b_1]\cap[a_2,b_2]|$ when $e_u$ is i.i.d.
+For any deal $(a_2,b_2)$, its expected overlap $\mathbb{E}_{a_1,b_1}[|[a_1,b_1]\cap[a_2,b_2]|]$ is strictly increasing in the exit date $b_2$ (holding $a_2$ fixed), and positively correlated with $b_2$ unconditionally. By Chebyshev's sum inequality, weighting exit dates $b_2$ by expected overlap strictly increases the effective duration $T_{\mathrm{eff}}$ relative to the unweighted PV-average exit date of a static shock $W_v$, shifting $H_0^\ast$ strictly upward.
+
+(c) Differentiating $U_{v,H}(\theta)$ at $\theta_0$ (using $PV_i(\theta_0) = \eta_v + \nu_i$ and $\nabla_\theta PV_i(\theta_0) = \mu_v'(\theta_0) + \eta_v' + \nu_i'$) yields the score decomposition
+\begin{equation}
+\label{eq:app_score_decomp}
+s_{v,H}(\theta_0)
+= q_v A_{v,H}(\theta_0)^2\Big[\underbrace{2\,\mu_v'(\theta_0)\,\bar\xi_v}_{\text{linear score } s_{v,H}^{\mathrm{lin}}}
++ \underbrace{2\,\eta_v\eta_v' + 2\,\eta_v^2\,\bar{S}_{v,H}^{\mathrm{comp}}(\theta_0)}_{\text{quadratic cohort score } s_{v,H}^{\mathrm{quad}}}
++ s_{v,H}^{\mathrm{idio}}\Big],
+\end{equation}
+where $\bar\xi_v = \eta_v + \sum_i \tilde\omega_{v,i}\nu_i$ with $\tilde\omega_{v,i} = \omega_{v,i}(1-\omega_{v,i})/(1-\sum_k\omega_{v,k}^2)$, and $s_{v,H}^{\mathrm{idio}}$ collects mean-zero cross terms involving $\nu_i$ (uncorrelated across $v \neq w$).
+Hence for $v \neq w$,
+\[
+\operatorname{Cov}\!\left(s_{v,H}^{\mathrm{lin}},\, s_{w,H}^{\mathrm{lin}} \,\middle|\, \mathcal{F}^{\mathrm{pub}}\right)
+= 4\,q_v q_w A_{v,H}^2 A_{w,H}^2\,\mu_v'(\theta_0)\,\mu_w'(\theta_0)\,c_{v,w}(\theta_0),
+\]
+which enters $\Lambda_H^{\mathrm{cross}} = \lim_{V\to\infty} V^{-1}\sum_{v\neq w}\operatorname{Cov}(s_{v,H}, s_{w,H})$ directly.
+Moreover, by standard second-order M-estimator expansion around $\theta_H^\dagger$ \citep{rilstone1996second,newey2004higher} (written for scalar $\theta$; the vector tensor analogue is immediate),
+\[
+\mathbb{E}[\hat\theta_H - \theta_H^\dagger]
+= \frac{1}{V}\left[\mathcal{H}_H^{-2}\,C_{hs}(H) - \frac{1}{2}\mathcal{H}_H^{-3}\mathcal{D}_H\,\Lambda_H\right] + o(V^{-1}),
+\]
+where
+\[
+C_{hs}(H) := \lim_{V\to\infty}\frac{1}{V}\sum_{v,w}\operatorname{Cov}\!\bigl(h_{v,H}(\theta_H^\dagger),\, s_{w,H}(\theta_H^\dagger)\bigr),
+\qquad
+\mathcal{D}_H := \lim_{V\to\infty}\frac{1}{V}\sum_{v=1}^V \mathbb{E}\!\left[\nabla_{\theta\theta\theta}\mathcal{L}_{v,H}(\theta_H^\dagger)\right].
+\]
+Both $C_{hs}(H)$ and $\Lambda_H$ contain double sums over nearby vintages $v \neq w$, inflating the $O(1/V)$ finite-sample bias in proportion to $V / V_{\mathrm{eff}}$.
+Finally, for a multiplicative shock $\eta_v(\theta) = W_v \tilde{g}_v(\theta)$ with $\nabla_\theta\log\tilde{g}_v(\theta_0) = -\bar{S}_v^{\mathrm{eff}}(\theta_0)$, the quadratic cohort score simplifies pointwise to
+\[
+s_{v,H}^{\mathrm{quad}}(\theta_0) = 2\,q_v A_{v,H}(\theta_0)^2\,\eta_v(\theta_0)^2\,\Big(\bar{S}_{v,H}^{\mathrm{comp}}(\theta_0) - \bar{S}_v^{\mathrm{eff}}(\theta_0)\Big).
+\]
+For Gaussian $(\eta_v,\eta_w)$, $\operatorname{Cov}(\eta_v^2,\eta_w^2) = 2\,c_{v,w}^2$, so both $\operatorname{Var}(s_{v,H}^{\mathrm{quad}})$ and $\operatorname{Cov}(s_{v,H}^{\mathrm{quad}}, s_{w,H}^{\mathrm{quad}})$ carry the factor $(\bar{S}_{v,H}^{\mathrm{comp}} - \bar{S}_v^{\mathrm{eff}})(\bar{S}_{w,H}^{\mathrm{comp}} - \bar{S}_w^{\mathrm{eff}})$ and collapse to zero near $H_0^\ast$.
+
+\paragraph{Part (iii): Multi-parameter trade-off and MSE-optimal horizon.}
+In dimension $p \ge 2$, $\nabla_\theta \mathcal{Q}_H(\theta_0) = 0$ imposes $p$ nonlinear equations on one scalar $H \ge 0$, which admit no common solution in general unless the coordinate sensitivity vectors $S_{v,\tau}^{(1)}, \dots, S_{v,\tau}^{(p)}$ are collinear across $\tau$ (which holds approximately for $(\alpha,\beta)$ when excess returns have positive drift, but fails across non-market $q^5$ factors).
+For the asymptotic MSE criterion $\mathrm{MSE}_V(H) = B_0(H)^2 + V^{-1}\mathcal{V}(H)$:
+when $\omega_v \equiv 0$, $B_0(H) \equiv 0$ for all $H \ge 0$. Under homoscedastic independent vintages with $q_v = 1$, $s_{v,H}(\theta_0) = A_{v,H}^2 s_{v,0}(\theta_0)$ and $\mathcal{H}_H = \mathbb{E}[A_{v,H}^2]\,\mathcal{H}_0$, so Cauchy--Schwarz gives
+\[
+\frac{\mathcal{V}(H)}{\mathcal{V}(0)}
+= \frac{\mathbb{E}[A_{v,H}^4]}{(\mathbb{E}[A_{v,H}^2])^2}
+= 1 + \frac{\operatorname{Var}(A_{v,H}^2)}{(\mathbb{E}[A_{v,H}^2])^2} \ge 1,
+\]
+with strict inequality whenever $A_{v,H}$ varies across vintages ($H > 0$), proving $H_{\mathrm{MSE}}^\ast(V) = 0$.
+When $\omega_v > 0$ for scalar $\theta$ and $H_0^\ast > 0$ is a simple zero of $B_0(H)$ ($B_0(H_0^\ast) = 0$, $B_0'(H_0^\ast) \neq 0$), expand the first-order condition
+\[
+0 = \frac{d}{dH}\mathrm{MSE}_V(H)
+= 2\,B_0(H)\,B_0'(H) + \frac{1}{V}\,\mathcal{V}'(H)
+\]
+around $H_0^\ast$ with $\delta_V := H_{\mathrm{MSE}}^\ast(V) - H_0^\ast = O(V^{-1})$:
+\[
+0 = 2\,[B_0'(H_0^\ast)]^2\,\delta_V + \frac{1}{V}\,\mathcal{V}'(H_0^\ast) + O(V^{-2})
+\implies
+H_{\mathrm{MSE}}^\ast(V) = H_0^\ast - \frac{\mathcal{V}'(H_0^\ast)}{2\,V\,[B_0'(H_0^\ast)]^2} + O(V^{-2}).
+\]
+When $\mathcal{V}'(H_0^\ast) > 0$, $H_{\mathrm{MSE}}^\ast(V) < H_0^\ast$ strictly at finite $V$, and decomposing $\mathcal{V}' = (\mathcal{V}^{\mathrm{indep}})' + (\mathcal{V}^{\mathrm{cross}})'$ shows that positive cross-vintage dependence pulls $H_{\mathrm{MSE}}^\ast(V)$ further inward whenever $(\mathcal{V}^{\mathrm{cross}})'(H_0^\ast) > 0$. As $V \to \infty$, $\delta_V = O(V^{-1}) \to 0$ so $H_{\mathrm{MSE}}^\ast(V) \to H_0^\ast$.
+
+\paragraph{Part (iv): Rank-1 collapse and finite-$V$ indefiniteness of $\widetilde{U}_{H,m}^{\mathrm{cross}}$.}
+Write the leave-band-out cross-vintage criterion in matrix form as
+\[
+\widetilde{U}_{H,m}^{\mathrm{cross}}(\theta)
+= |\mathcal{P}_m|^{-1}\,\boldsymbol{\bar\epsilon}_H(\theta)^\top M_m \boldsymbol{\bar\epsilon}_H(\theta),
+\]
+where $\boldsymbol{\bar\epsilon}_H(\theta) = (\bar\epsilon_{1,H}(\theta),\dots,\bar\epsilon_{V,H}(\theta))^\top$, $(M_m)_{v,w} = \mathbf{1}_{\{|y_v - y_w| > m\}}$, and $|\mathcal{P}_m| = \sum_{v,w}(M_m)_{v,w} = V^2 - O(mV)$.
+Notice the algebraic identity
+\[
+\widetilde{U}_{H,m}^{\mathrm{cross}}(\theta)
+= \frac{V^2}{|\mathcal{P}_m|}\left(\frac{1}{V}\sum_{v=1}^V \bar\epsilon_{v,H}(\theta)\right)^2
+- \frac{1}{|\mathcal{P}_m|}\sum_{|y_v-y_w|\le m}\bar\epsilon_{v,H}(\theta)\bar\epsilon_{w,H}(\theta).
+\]
+For fixed band $m$ as $V \to \infty$, the second term has $O(mV)$ summands divided by $|\mathcal{P}_m| = O(V^2)$, so it is $O_p(m/V) = o_p(1)$ uniformly on $\Theta$, while $V^2/|\mathcal{P}_m| \to 1$.
+By the ULLN for the vintage mean $\bar{g}_H(\theta) := V^{-1}\sum_{v=1}^V \bar\epsilon_{v,H}(\theta) \xrightarrow{p} g_H(\theta) := \lim_{V\to\infty} V^{-1}\sum_v \mathbb{E}[\bar\epsilon_{v,H}(\theta)]$,
+\[
+\sup_{\theta \in \Theta}\left|\widetilde{U}_{H,m}^{\mathrm{cross}}(\theta) - g_H(\theta)^2\right| \xrightarrow{p} 0.
+\]
+Hence the population limit is $g_H(\theta)^2$; because $g_H(\theta_0) = 0$, its Hessian at $\theta_0$ equals
+\[
+\nabla_{\theta\theta}\!\left[g_H(\theta)^2\right]\Big|_{\theta=\theta_0}
+= 2\,\nabla_\theta g_H(\theta_0)\,\nabla_\theta g_H(\theta_0)^\top,
+\]
+a matrix of rank at most~$1$.
+Consequently, $\widetilde{U}_{H,m}^{\mathrm{cross}}$ cannot locally identify any parameter vector of dimension $p \ge 2$, and for scalar $\beta$ it vanishes at every root of $g_H(\beta) = 0$ (including the growth-optimal multiple root $\beta^\ast$ of Lemma~\ref{lem:multiple_roots}).
+Finally, for finite $V$ and any $m \ge 0$, every diagonal entry of $M_m$ is zero, so $\operatorname{tr}(M_m) = \sum_{k=1}^V \lambda_k(M_m) = 0$.
+Because $M_m \neq 0$ is real symmetric and has a positive top eigenvalue $\lambda_{\max}(M_m) \ge \mathbf{1}^\top M_m \mathbf{1} / V = |\mathcal{P}_m|/V > 0$, $M_m$ necessarily possesses strictly negative eigenvalues.
+Explicitly, for $V=25$ annual vintages: at $m=0$, $\lambda_{\min}=-1.00$ (24 negative eigenvalues) vs.\ $\lambda_{\max}=24.00$; at $m=5$, $\lambda_{\min}=-8.50$ (12 negative) vs.\ $\lambda_{\max}=15.36$; at $m=7$, $\lambda_{\min}=-9.51$ (10 negative) vs.\ $\lambda_{\max}=12.62$; and at $m=10$, $\lambda_{\min}=-9.09$ (11 negative) vs.\ $\lambda_{\max}=9.39$.
+\end{proof}
+
+\begin{remark}[Nonlinear finite-$V$ Jensen offset under strong cross-vintage persistence]
+\label{rem:jensen_finite_V}
+When $V$ is small (e.g., $V=25$) and cross-vintage correlation is strong ($\rho_W \to 1$ or multi-year calendar overlap), the sample cross-vintage dispersion of $W_v$ falls below $\sigma_W^2$ while the common sample level $\bar{W} = V^{-1}\sum_v W_v$ enters nonlinearly through $\hat\alpha \approx T^{-1}\log(1 + \bar{W})$. For a mean-one lognormal shock $1+\bar{W} = \exp(Z - \frac{1}{2}\operatorname{Var}(Z))$, $\mathbb{E}[\log(1+\bar{W})] = -\frac{1}{2}\operatorname{Var}(Z) < 0$, which injects a negative $O(1/V_{\mathrm{eff}})$ bias at finite $V$ that partially offsets the positive $O(1)$ inception variance tilt while inflating estimation variance dramatically. Table~\ref{tab:mc_regimes_verification} verifies both this finite-$V$ effect ($V=25$) and its disappearance at $V=100$.
+\end{remark}
+
+\begin{table}[htbp]
+\centering
+\footnotesize
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}r rrrrrrr r@{}}
+\toprule
+& \multicolumn{7}{c}{Deterministic constant return $g$ ($\sigma_r = 0$)} & \multicolumn{1}{c}{Stochastic} \\
+\cmidrule(lr){2-8}\cmidrule(l){9-9}
+$T_{\mathrm{eff}}$ (yr) & $g=0\%$ ($2T_{\mathrm{eff}}$) & $8\%$ & $10\%$ & $12\%$ & $13.3\%$ & $15\%$ & $20\%$ & $g=13.3\%$, $\sigma_m=15.4\%$ \\
+\midrule
+3.00  &  6.00 &  5.60 &  5.52 &  5.44 &  5.40 &  5.34 &  5.19 &  5.35 \\
+5.00  & 10.00 &  8.97 &  8.79 &  8.62 &  8.52 &  8.39 &  8.08 &  8.41 \\
+7.00  & 14.00 & 12.14 & 11.82 & 11.55 & 11.39 & 11.19 & 10.71 & 11.20 \\
+8.25  & 16.50 & 14.02 & 13.63 & 13.29 & 13.09 & 12.85 & 12.27 & 12.85 \\
+10.00 & 20.00 & 16.57 & 16.06 & 15.62 & 15.36 & 15.07 & 14.35 & 15.07 \\
+\bottomrule
+\end{tabular}%
+}
+\caption{\textbf{Exact zero-bias horizon $H_0^\ast$ (years) by effective payoff duration $T_{\mathrm{eff}}$, annual benchmark return $g$, and return volatility $\sigma_m$.} Columns~2--8 solve the deterministic continuous-time duration-matching equation \eqref{eq:exact_tau_bar} with $r = \ln(1+g)$; the final column solves the exact stochastic lognormal equation $\bar\tau_{\mathrm{stoch}}(H_0^\ast; r_{\mathrm{arith}}, \sigma_m) = T_{\mathrm{eff}}$ calibrated to the 1985--2021 U.S.\ $q^5$ market factor ($g=13.3\%$, $\sigma_m=15.4\%$).}
+\label{tab:H_star_lookup}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4.5pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}l rrrr rrrr@{}}
+\toprule
+& \multicolumn{4}{c}{Core ($I=5$, $h\in[0.25,11.5]$\,yr)} & \multicolumn{4}{c}{Short-life M5 2/2 ($I=2$, $h\in[0.25,2.0]$\,yr)} \\
+\cmidrule(lr){2-5}\cmidrule(l){6-9}
+Shock mechanism & $T_{\mathrm{eff}}$ & $2T_{\mathrm{eff}}$ & $H_0^{\ast,\mathrm{det}}$ & $H_0^{\ast,\mathrm{stoch}}$ & $T_{\mathrm{eff}}$ & $2T_{\mathrm{eff}}$ & $H_0^{\ast,\mathrm{det}}$ & $H_0^{\ast,\mathrm{stoch}}$ \\
+\midrule
+Static vintage shock ($W_v$, $U_{v,H}$)           & 8.09 & 16.18 & 12.87 & 12.65 & 2.08 & 4.16 & 3.85 & 3.82 \\
+Calendar-time shock ($e_u$, i.i.d., $U_{v,H}$)    & 9.77 & 19.54 & 15.07 & 14.78 & 2.30 & 4.59 & 4.22 & 4.19 \\
+Calendar-time shock ($e_u$, AR(1) $\rho_e=0.5$)   & 9.87 & 19.74 & 15.20 & 14.91 & 2.32 & 4.64 & 4.26 & 4.23 \\
+Calendar-time shock ($e_u$, AR(1) $\rho_e=0.8$)   & 9.96 & 19.93 & 15.32 & 15.02 & 2.33 & 4.65 & 4.28 & 4.24 \\
+Idiosyncratic deal shocks (L2 VYP, $c_v=0$)       & 9.76 & 19.53 & 15.06 & 14.77 & 2.28 & 4.56 & 4.19 & 4.16 \\
+\bottomrule
+\end{tabular}%
+}
+\caption{\textbf{Effective payoff duration $T_{\mathrm{eff}}$ and zero-bias horizon $H_0^\ast$ (years) across shock mechanisms.} Deal entries follow $a \sim U[0,I]$ and holding lives $h \sim U[0.25, h_{\max}]$, PV-weighted at inception by $D_{0,a} = (1+g)^{-a}$ with $g=13.3\%$ and $\sigma_m=15.4\%$. Overlapping calendar-time shocks $e_u$ and idiosyncratic deal shocks both weight late exits more heavily than a static vintage shock $W_v$, shifting $H_0^\ast$ upward by $2.1\text{--}2.4$~years in the core calibration.}
+\label{tab:T_eff_mechanisms}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\footnotesize
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}ll rrrrrrr rr@{}}
+\toprule
+& & \multicolumn{7}{c}{Horizon $H$ (years)} & & \\
+\cmidrule(lr){3-9}
+Regime & Metric & $0$ & $5$ & $10$ & $12.5$ & $15$ & $20$ & $30$ & $H_{\mathrm{zb}}$ & $H_{\mathrm{RMSE}}^\ast$ \\
+\midrule
+\multicolumn{11}{@{}l}{\textbf{Panel A: Finite-$V$ nonlinear cash-flow panel ($V=25$, $n_v=15$, $J=15$, 600 reps; $\hat\alpha$ in \%/yr, true $\alpha_0=0$)}} \\
+\addlinespace[2pt]
+1.\ i.i.d.\ ($c_v=0$, $U_{v,H}$) & Bias & $-0.04$ & $-0.04$ & $-0.03$ & $-0.02$ & $-0.02$ & $-0.01$ & $+0.01$ & --- & 5.0 \\
+ & RMSE & 0.43 & 0.40 & 0.41 & 0.41 & 0.41 & 0.41 & 0.78 & & \\
+1.\ i.i.d.\ ($c_v=0$, L2 VYP) & Bias & $+0.38$ & $+0.28$ & $+0.16$ & $+0.10$ & $+0.03$ & $-0.11$ & $-0.96$ & 16.1 & 20.0 \\
+ & RMSE & 0.65 & 0.55 & 0.49 & 0.45 & 0.42 & 0.41 & 2.49 & & \\
+2.\ Static $W_v$ ($\rho_W=0$, $U_{v,H}$) & Bias & $+3.05$ & $+1.72$ & $+0.69$ & $+0.16$ & $-0.41$ & $-1.87$ & $-12.16$ & 13.2 & 15.0 \\
+ & SD / RMSE & 2.45 / 3.91 & 1.66 / 2.39 & 1.43 / 1.59 & 1.32 / 1.33 & 1.21 / \textbf{1.28} & 1.10 / 2.17 & 2.40 / 12.39 & & \\
+3a.\ AR(1) $W_v$ ($\rho_W=0.6$, $U_{v,H}$) & Bias & $+2.55$ & $+1.42$ & $+0.51$ & $+0.04$ & $-0.47$ & $-1.78$ & $-11.34$ & 12.7 & 15.0 \\
+ & SD / RMSE & 3.38 / 4.23 & 2.66 / 3.02 & 2.46 / 2.51 & 2.34 / 2.34 & 2.22 / \textbf{2.27} & 1.94 / 2.63 & 3.20 / 11.78 & & \\
+3a.\ AR(1) $W_v$ ($\rho_W=0.8$, $U_{v,H}$) & Bias & $+1.86$ & $+0.98$ & $+0.25$ & $-0.14$ & $-0.56$ & $-1.68$ & $-10.29$ & 11.6 & 17.5 \\
+ & SD / RMSE & 4.12 / 4.53 & 3.59 / 3.72 & 3.40 / 3.40 & 3.28 / 3.28 & 3.15 / 3.20 & 2.78 / 3.25 & 4.05 / 11.06 & & \\
+3b.\ Calendar $e_u$ (i.i.d., $U_{v,H}$) & Bias & $+1.46$ & $+0.74$ & $+0.13$ & $-0.18$ & $-0.51$ & $-1.38$ & $-8.75$ & 11.0 & 17.5 \\
+ & SD / RMSE & 4.45 / 4.68 & 4.01 / 4.07 & 3.84 / 3.85 & 3.78 / 3.78 & 3.70 / 3.74 & 3.47 / 3.74 & 5.06 / 10.11 & & \\
+3b.\ Calendar $e_u$ (AR(1), $U_{v,H}$) & Bias & $+1.27$ & $+0.63$ & $+0.07$ & $-0.22$ & $-0.54$ & $-1.35$ & $-8.48$ & 10.6 & 17.5 \\
+ & SD / RMSE & 4.38 / 4.57 & 4.07 / 4.12 & 3.94 / 3.94 & 3.89 / 3.90 & 3.82 / 3.86 & 3.60 / 3.84 & 5.22 / 9.96 & & \\
+\midrule
+\multicolumn{11}{@{}l}{\textbf{Panel B: Large-$V$ asymptotic check ($V=100$, $n_v=15$, $J=15$, 250 reps; $\hat\alpha$ bias in \%/yr)}} \\
+\addlinespace[2pt]
+1.\ i.i.d.\ ($c_v=0$, $U_{v,H}$) & Bias & $-0.01$ & $-0.01$ & $-0.01$ & $-0.01$ & $0.00$ & $0.00$ & $0.00$ & --- & 5.0 \\
+1.\ i.i.d.\ ($c_v=0$, L2 VYP) & Bias & $+0.43$ & $+0.31$ & $+0.17$ & $+0.10$ & $+0.03$ & $-0.13$ & $-0.70$ & 15.92 & --- \\
+2.\ Static $W_v$ ($\rho_W=0$, $U_{v,H}$) & Bias & $+3.22$ & $+1.87$ & $+0.66$ & $+0.05$ & $-0.60$ & $-2.24$ & $-13.12$ & \textbf{12.70} & 12.5 \\
+3a.\ AR(1) $W_v$ ($\rho_W=0.6$, $U_{v,H}$) & Bias & $+3.08$ & $+1.77$ & $+0.61$ & $+0.03$ & $-0.58$ & $-2.17$ & $-12.82$ & \textbf{12.63} & 12.5 \\
+3a.\ AR(1) $W_v$ ($\rho_W=0.8$, $U_{v,H}$) & Bias & $+2.88$ & $+1.64$ & $+0.56$ & $+0.01$ & $-0.57$ & $-2.10$ & $-12.25$ & \textbf{12.55} & 12.5 \\
+3b.\ Calendar $e_u$ (i.i.d., $U_{v,H}$) & Bias & $+2.73$ & $+1.73$ & $+0.79$ & $+0.31$ & $-0.20$ & $-1.57$ & $-11.57$ & \textbf{14.04} & 15.0 \\
+3b.\ Calendar $e_u$ (AR(1), $U_{v,H}$) & Bias & $+2.66$ & $+1.69$ & $+0.77$ & $+0.31$ & $-0.19$ & $-1.53$ & $-11.44$ & \textbf{14.04} & 15.0 \\
+\midrule
+\multicolumn{11}{@{}l}{\textbf{Panel C: Single-factor $\beta$ comparison ($V=25$, true $\beta_0=1$): $U_{v,H}$ vs.\ cross-vintage leave-band-out $\widetilde{U}_{0,m}^{\mathrm{cross}}$}} \\
+\addlinespace[2pt]
+& & \multicolumn{2}{c}{$U_{v,0}$} & \multicolumn{2}{c}{$U_{v,15}$} & \multicolumn{2}{c}{$\widetilde{U}_{0,0}^{\mathrm{cross}}$ ($m=0$)} & \multicolumn{2}{c}{$\widetilde{U}_{0,5}^{\mathrm{cross}}$ ($m=5$)} & $\widetilde{U}_{0,7}^{\mathrm{cross}}$ ($m=7$) \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}\cmidrule(lr){7-8}\cmidrule(lr){9-10}\cmidrule(l){11-11}
+Regime & & Bias & RMSE & Bias & RMSE & Bnd\,\% & RMSE & Bnd\,\% & RMSE & Bnd\,\% / RMSE \\
+\midrule
+1.\ i.i.d.\ ($c_v=0$) & & $-0.005$ & \textbf{0.079} & $-0.002$ & 0.076 & 0.0 & 0.080 & 0.0 & 0.083 & 0.0 / 0.083 \\
+2.\ Static $W_v$ ($\rho_W=0$) & & $+0.356$ & 0.492 & $-0.077$ & \textbf{0.232} & 12.7 & 1.107 & 16.8 & 1.260 & 3.7 / 0.672 \\
+3a.\ AR(1) $W_v$ ($\rho_W=0.6$) & & $+0.302$ & 0.575 & $-0.074$ & \textbf{0.391} & 16.5 & 1.390 & 24.0 & 1.559 & 10.5 / 1.135 \\
+3b.\ Calendar $e_u$ (i.i.d.) & & $+0.177$ & 0.669 & $-0.079$ & \textbf{0.593} & 16.3 & 1.528 & 27.7 & 1.737 & 15.0 / 1.382 \\
+\bottomrule
+\end{tabular}%
+}
+\caption{\textbf{Dedicated nonlinear cash-flow Monte Carlo verification of Proposition~\ref{prop:optimal_H} across dependence regimes.} Quarterly deal panels calibrated to the Preqin core timing and return parameters ($a\sim U[0,5]$, $h\sim U[0.25,11.5]$~yr, $g=13.3\%$, $\sigma_m=15.4\%$, $\sigma_{\mathrm{idio}}=0.45/\text{yr}$, matched shared-shock scale $\sigma_W=0.35$; separate from the 56-design Step~4 suite in Appendix~\ref{sec:proofs_asymptotics_H}, with replication code in \texttt{r\_project/simulation/optimal\_H\_theory/}). Panel~B confirms asymptotic invariance of $H_{\mathrm{zb}}$ across $\rho_W \in \{0, 0.6, 0.8\}$ ($12.55\text{--}12.70$~yr, matching the $12.65$~yr analytical prediction of Table~\ref{tab:T_eff_mechanisms}) and the rightward duration shift under overlapping calendar-time shocks $e_u$ ($14.04$~yr, RMSE minimum at $15.0$~yr). Panel~A exhibits the finite-$V$ cross-vintage SD inflation and the $O(1/V_{\mathrm{eff}})$ negative Jensen offset of Remark~\ref{rem:jensen_finite_V}, while confirming that $H=15$~yr sharply lowers RMSE across all shared-shock regimes. Panel~C confirms the boundary failure and $3\times$--$5\times$ higher RMSE of leave-band-out cross-vintage pair products $\widetilde{U}_{0,m}^{\mathrm{cross}}$ (Proposition~\ref{prop:optimal_H}(iv)).}
+\label{tab:mc_regimes_verification}
+\end{table}
 
 % ==============================================================================
 \section{Increasing-Domain Asymptotics, Fixed-$b$ SHAC Inference, and Full Step 4 Monte Carlo Exhibits}

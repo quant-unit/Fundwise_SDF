@@ -120,7 +120,8 @@ Under conditional independence of funds within a vintage given the factor path, 
 If, in addition, fund pricing errors have zero conditional mean given the factor path (Condition~(X) below), the criterion $U_{v,H}$ targets the structural parameter $\theta_0$ at \emph{every} horizon, including inception ($H = 0$), without requiring $n_v \to \infty$; under inception pricing alone, a path-correlated pricing error can shift its target even at $H=0$.
 Because $H = 0$ avoids horizon-induced scale noise and minimizes finite-sample root mean squared error (RMSE) for single-factor $\beta$ and joint $(\alpha,\beta)$ when $c_v = 0$, $U_{v,0}$ serves as our headline estimator.
 At the same time, moderate post-inception horizons ($H = 5$--$15$ years) remain complementary to $U_{v,H}$ whenever shared vintage shocks are substantial ($c_v > 0$, Theorem~\ref{thm:finite_pool}(T8)): they restore coercivity against shared-shock exploding $\alpha$ (Lemma~\ref{lem:coercivity}), sharply cut joint $(\alpha,\beta)$ RMSE and second-factor $q^5$ RMSE, and provide a profile diagnostic for residual vintage effects or misspecification.
-To probe sensitivity to shared vintage shocks ($c_v \neq 0$) without relying on unstable point-root selection, we pair $U_{v,0}$ with an identification-robust diagnostic obtained by inverting the centered Bartlett fixed-$b$ test of the inception mean pricing moment $V^{-1}\sum_v PV_v(\theta) = 0$ \citep{AR49,SW00,KV05}.
+We formalize this horizon trade-off across i.i.d., independent vintage-shock, and locally dependent cross-vintage error regimes in Proposition~\ref{prop:optimal_H}, deriving an exact duration-matching equation for the zero-bias horizon $H_0^\ast$, characterizing its MSE behavior under nearby-vintage dependence, and proving why extending pair products across distant vintages fails via rank-1 collapse and finite-$V$ indefiniteness.
+To probe sensitivity to shared and cross-vintage shocks ($c_v \neq 0$) without relying on unstable point-root selection or indefinite cross-vintage quadratics, we pair $U_{v,0}$ with an identification-robust diagnostic obtained by inverting the centered Bartlett fixed-$b$ test of the inception mean pricing moment $V^{-1}\sum_v PV_v(\theta) = 0$ \citep{AR49,SW00,KV05}.
 
 We develop increasing-domain vintage-year asymptotics for both criteria, using the \citet{LLSW18} Bartlett bandwidth $S = \lceil 1.3\sqrt{V}\rceil$ and \citet{KV05} fixed-$b$ critical values, and validate finite-sample behavior across 56 Monte Carlo designs (1,270 summary rows by design, estimator, model, parameter, and horizon) calibrated to the empirical Preqin vintage calendars, fund counts, deal volatilities, fund-size dispersion, shared vintage shocks, and path-correlated shock environments.
 We then apply the framework to a cleaned North American USD Preqin panel with constant-composition vintage portfolios covering 383 Buyout funds across 25 vintages (1985--2010) and 432 Venture Capital funds across 27 vintages (1982--2010; 23 vintages with $n_v \ge 2$).
@@ -168,7 +169,8 @@ Technical proofs, the standalone SDF-pricing analysis, full simulation grids, an
 
 We build a semiparametric framework for SDF estimation from pooled, non-traded cash flows.
 Section~\ref{sec:asset_pricing_pooled} states the deal-level timing restrictions and establishes when pooled fund cash flows satisfy a conditional zero-moment condition.
-Section~\ref{sec:fundwise_lmd_estimator} derives the exact horizon-rescaling identity, proves why finite-pool squared loss is biased even at inception, introduces the cross-fund pair-product estimator $U_{v,H}$, and defines our identification-robust inception moment diagnostic.
+Section~\ref{sec:fundwise_lmd_estimator} derives the exact horizon-rescaling identity, proves why finite-pool squared loss is biased even at inception, and introduces the cross-fund pair-product estimator $U_{v,H}$.
+Section~\ref{sec:optimal_H_theory} develops our optimal horizon theory across i.i.d., vintage-shock, and cross-vintage-dependent regimes, proves why cross-vintage pair products collapse in rank, and defines our identification-robust inception moment diagnostic.
 Section~\ref{sec:asymptotic_framework} presents the increasing-domain asymptotic theory and fixed-$b$ SHAC inference.
 Section~\ref{sec:comparison_to_similar_estimators} positions our framework relative to \citet{DLP12}, \citet{DLP09wp}, and \citet{KN16}.
 
@@ -394,11 +396,11 @@ Suppose all funds in vintage $v$ share origin $t_v^0$ and evaluation set $\mathc
   \mathbb{E}\!\left[q_v\,U_{v,H}(\theta)\right] = \mathbb{E}\!\left[q_v\,A_{v,H}(\theta)^2\,\frac{\sum_{i \neq j}\omega_{v,i}\omega_{v,j}\,\mu_{v,i}(\theta)\mu_{v,j}(\theta)}{1 - \sum_i \omega_{v,i}^2}\right],
   \]
   which equals $0$ at $\theta_0$ for every $H \ge 0$. When the funds of a vintage share a common conditional mean, $\mu_{v,i}(\theta)=\mu_v(\theta)$, it reduces to $\mathbb{E}[q_v A_{v,H}(\theta)^2 \mu_v(\theta)^2] \ge 0$, so $\theta_0$ is a global minimizer; with size-dependent conditional means the pair sum can be negative away from $\theta_0$, and identification must be assumed. Provided $\theta_0$ is the unique minimizer on $\Theta$ and the uniform convergence conditions of Section~\ref{sec:asymptotic_framework} hold, $\hat\theta_H^U := \arg\min_{\theta \in \Theta} \widehat{U}_H(\theta) \xrightarrow{p} \theta_0$ for every fixed $H \ge 0$ under bounded $n_v \ge 2$.
-  \item[\textbf{T8}] \emph{(Shared vintage shocks, $c_v \neq 0$.)} Suppose the conditions of T7 hold, except that the funds of vintage $v$ share a common conditional mean $\mu_v(\theta)$ and a common vintage component, so that $\operatorname{Cov}(PV_i(\theta),PV_j(\theta)\mid \mathcal{F}^{\mathrm{pub}},\mathcal{W}_v) = \tau_v^2(\theta) \ge 0$ for $i \neq j$. Then
+  \item[\textbf{T8}] \emph{(Shared vintage shocks, $c_v \neq 0$.)} Suppose the conditions of T7 hold, except that the funds of vintage $v$ share a common conditional mean $\mu_v(\theta)$ and a common vintage component, so that $\operatorname{Cov}(PV_i(\theta),PV_j(\theta)\mid \mathcal{F}^{\mathrm{pub}},\mathcal{W}_v) = c_v(\theta) \ge 0$ for $i \neq j$. Then
   \[
-  \mathbb{E}\!\left[q_v\,U_{v,H}(\theta)\right] = \mathbb{E}\!\left[q_v\,A_{v,H}(\theta)^2\left(\mu_v(\theta)^2 + \tau_v^2(\theta)\right)\right].
+  \mathbb{E}\!\left[q_v\,U_{v,H}(\theta)\right] = \mathbb{E}\!\left[q_v\,A_{v,H}(\theta)^2\left(\mu_v(\theta)^2 + c_v(\theta)\right)\right].
   \]
-  Hence $U_{v,H}$ removes idiosyncratic fund noise completely, while a shared vintage variance $\tau_v^2(\theta)$ tilts its target with the same structure as in T6 ($n_v^{-1}\sigma_v^2$ replaced by $\tau_v^2$): an inception tilt---including potential ``exploding $\alpha$'' boundary hits at $H = 0$ because $U_{v,0}$ is not coercive in $\alpha$ (Lemma~\ref{lem:coercivity})---offset or reversed by the Scale-Jacobian term at longer $H$.
+  Hence $U_{v,H}$ removes idiosyncratic fund noise completely, while a shared vintage covariance $c_v(\theta)$ tilts its target with the same structure as in T6 ($n_v^{-1}\sigma_v^2$ replaced by $c_v$): an inception tilt---including potential ``exploding $\alpha$'' boundary hits at $H = 0$ because $U_{v,0}$ is not coercive in $\alpha$ (Lemma~\ref{lem:coercivity})---offset or reversed by the Scale-Jacobian term at longer $H$.
 \end{enumerate}
 \end{theorem}
 
@@ -418,8 +420,142 @@ Whenever a minimizer lies on an active boundary of $\Theta$, standard interior s
 \label{fig:exploding_alpha}
 \end{figure}
 
+\subsection{Optimal horizon theory, cross-vintage dependence, and the inception moment diagnostic}
+\label{sec:optimal_H_theory}
+
+Theorem~\ref{thm:finite_pool}(T6, T8) shows that whenever a squared-error or pair-product objective retains a nonzero conditional noise variance---$n_v^{-1}\sigma_{\nu,v}^2(\theta) + c_v(\theta)$ in L2 VYP, or the shared vintage covariance $c_v(\theta)$ alone in $U_{v,H}$---horizon averaging pits two opposing forces against each other: backward discounting of random future payouts (the inception tilt) against forward compounding through $A_{v,H}(\theta)^2$ (the Scale-Jacobian pull).
+We now formalize this trade-off across three progressively richer error regimes: (1)~fund-specific i.i.d.\ noise ($c_v = 0$, $c_{v,w} = 0$), (2)~independent shared vintage shocks ($c_v > 0$, $c_{v,w} = 0$ for $v \neq w$), and (3)~cross-vintage dependence across nearby vintages ($c_{v,w} \neq 0$ for $0 < |y_v - y_w| \le L$), arising either from persistent cohort shocks (e.g., AR(1) vintage shocks $W_v$) or from an overlapping calendar-time private-equity shock $e_u$ shared by active funds across adjacent vintages.
+
+Maintain Condition~(X) so that the first-moment compounding wedge vanishes ($b_{v,H} \equiv 0$) and write the fund inception NPV as
+\begin{equation}
+\label{eq:three_regime_decomp}
+PV_i(\theta) = \mu_v(\theta) + \eta_v(\theta) + \nu_i(\theta),
+\qquad i \in \mathcal{I}_v,
+\end{equation}
+where $\nu_i(\theta)$ is fund-idiosyncratic with conditional variance $\sigma_{\nu,v}^2(\theta)$ given $\mathcal{G}_v := (\mathcal{F}^{\mathrm{pub}}, \mathcal{W}_v)$ and independent across all funds, while $\eta_v(\theta)$ is a zero-mean cohort or calendar-time shock with conditional covariance $c_{v,w}(\theta) := \operatorname{Cov}(\eta_v(\theta), \eta_w(\theta) \mid \mathcal{F}^{\mathrm{pub}}, \mathcal{W})$ and lag-0 (within-vintage) variance $c_v(\theta) := c_{v,v}(\theta)$.
+Both L2 VYP and $U_{v,H}$ share the unified conditional population objective
+\begin{align*}
+\mathbb{E}\!\left[\mathcal{L}_{v,H}(\theta) \,\middle|\, \mathcal{G}_v\right]
+&= q_v\,A_{v,H}(\theta)^2\!\left(\mu_v(\theta)^2 + \omega_v(\theta)\right), \\
+\omega_v(\theta)
+&:= \begin{cases}
+  c_v(\theta) + \left(\sum_{i\in\mathcal{I}_v}\omega_{v,i}^2\right)\sigma_{\nu,v}^2(\theta) & \text{(L2 VYP)}, \\
+  c_v(\theta) & \text{($U_{v,H}$)}.
+\end{cases}
+\end{align*}
+Let $e_{i,t} := CF_{i,t} - \mathbb{E}[CF_{i,t} \mid \mathcal{G}_v]$ denote zero-mean cash-flow innovations at date $t \ge t_v^0$, define $D_{v,t}(\theta) := \Psi_t(\theta)/\Psi_{t_v^0}(\theta) = R^b_{t_v^0,t}(\theta)^{-1}$, and let $\Sigma_v^{(s,t)}$ denote the effective conditional cash-flow covariance matrix ($\operatorname{Cov}(e_{v,s}, e_{v,t} \mid \mathcal{G}_v)$ for L2; $\operatorname{Cov}(e_{i,s}, e_{j,t} \mid \mathcal{G}_v)$, $i \neq j$, for $U_{v,H}$), so that $\omega_v(\theta) = \sum_{s,t \ge t_v^0} D_{v,s}(\theta) D_{v,t}(\theta)\,\Sigma_v^{(s,t)}$.
+Define the cumulative log-return sensitivity
+$S_{v,t}(\theta) := \nabla_\theta \log R^b_{t_v^0,t}(\theta) = \sum_{u = t_v^0 + 1}^t G_u(\theta)^{-1}\nabla_\theta G_u(\theta)$.
+
+\begin{proposition}[Optimal horizon theory and cross-vintage dependence]
+\label{prop:optimal_H}
+Suppose Condition~(X), the regularity and local-dependence (mixing) conditions of Section~\ref{sec:asymptotic_framework}, and $\omega_v(\theta_0) > 0$ hold (proofs in Appendix~\ref{sec:appendix_optimal_H}).
+\begin{enumerate}
+  \item[\textbf{(i)}] \emph{(Exact multi-deal duration matching and global bounds.)}
+  For any multi-deal cash-flow stream and shock covariance $\Sigma_v$, the population score at $\theta_0$ equals
+  \begin{equation}
+  \label{eq:duration_matching_score}
+  \nabla_\theta \mathcal{Q}_H(\theta_0)
+  = 2 \lim_{V\to\infty}\frac{1}{V}\sum_{v=1}^V \mathbb{E}\!\left[q_v A_{v,H}(\theta_0)^2\,\omega_v(\theta_0)\,\Big(\bar{S}_{v,H}^{\mathrm{comp}}(\theta_0) - \bar{S}_v^{\mathrm{eff}}(\theta_0)\Big)\right],
+  \end{equation}
+  where the compounding sensitivity and covariance-weighted payoff duration are
+  \[
+  \bar{S}_{v,H}^{\mathrm{comp}}(\theta_0) := \frac{\sum_{\tau\in\mathcal{T}_{v,H}} R^b_{t_v^0,\tau}(\theta_0)\,S_{v,\tau}(\theta_0)}{\sum_{\tau\in\mathcal{T}_{v,H}} R^b_{t_v^0,\tau}(\theta_0)},
+  \qquad
+  \bar{S}_v^{\mathrm{eff}}(\theta_0) := \frac{\sum_{s,t\ge t_v^0} D_{v,s}(\theta_0)D_{v,t}(\theta_0)\,\Sigma_v^{(s,t)}\,S_{v,t}(\theta_0)}{\sum_{s,t\ge t_v^0} D_{v,s}(\theta_0)D_{v,t}(\theta_0)\,\Sigma_v^{(s,t)}}.
+  \]
+  For a scalar parameter ($\alpha$, or $\beta$ under constant excess return) with constant benchmark gross return $G = e^r$ ($r \ge 0$), \eqref{eq:duration_matching_score} vanishes at a \emph{unique} zero-bias horizon $H_0^\ast \in (0,\infty)$ solving the continuous-time duration-matching equation
+  \begin{equation}
+  \label{eq:exact_tau_bar}
+  \bar\tau(H_0^\ast;\, r) := H_0^\ast - \frac{1}{r} + \frac{H_0^\ast}{e^{r H_0^\ast} - 1} = T_{\mathrm{eff}}
+  \qquad\bigl(\text{with } \bar\tau(H;\,0) = H/2 \implies H_0^\ast = 2\,T_{\mathrm{eff}}\bigr),
+  \end{equation}
+  where $T_{\mathrm{eff}}$ is the covariance-weighted exit date.
+  For every $r > 0$, $H_0^\ast$ is strictly decreasing in $r$ and satisfies the exact global bounds
+  \begin{equation}
+  \label{eq:H_star_bounds}
+  T_{\mathrm{eff}} \;<\; H_0^\ast \;<\; \min\!\left(2\,T_{\mathrm{eff}},\; T_{\mathrm{eff}} + \frac{1}{r}\right).
+  \end{equation}
+  Moreover, under stochastic i.i.d.\ lognormal returns $r_u \sim \mathcal{N}(\mu_r,\sigma_r^2)$ with arithmetic drift $r_{\mathrm{arith}} = \mu_r + \frac{1}{2}\sigma_r^2$, squaring $A_{v,H}$ adds a volatility-compounding tilt $\exp(\sigma_r^2 \min(\tau_1,\tau_2))$, shrinking $H_0^\ast$ strictly below the deterministic root of \eqref{eq:exact_tau_bar} at $r = r_{\mathrm{arith}}$.
+
+  \item[\textbf{(ii)}] \emph{(Cross-vintage dependence: $O(1)$ invariance, calendar-shock duration shift, and $O(1/V)$ amplification.)}
+  Under local cross-vintage dependence ($c_{v,w} \neq 0$ for $0 < |y_v - y_w| \le L$):
+  \begin{enumerate}
+    \item[(a)] Within-vintage $U_{v,H}$ continues to eliminate idiosyncratic fund noise $\sigma_{\nu,v}^2/n_v$ identically, and off-diagonal covariances $c_{v,w}$ ($v \neq w$) do not enter $\mathcal{Q}_H(\theta)$ or $H_0^\ast$. However, positive semidefiniteness ($|c_{v,w}| \le \sqrt{c_v c_w}$) guarantees $c_v > 0$ whenever $c_{v,w} \neq 0$, so $U_{v,0}$ alone is no longer asymptotically unbiased.
+    \item[(b)] While $H_0^\ast$ is invariant to cross-vintage persistence $\rho_W$ under stationary cohort shocks $W_v$ (at fixed $c_v$), an overlapping calendar-time shock $e_u$ accumulated over deal lives yields $\Sigma_{v,U}^{(s,t)} \propto |[a_1,b_1]\cap[a_2,b_2]|$, placing greater weight on late exits than a static vintage shock and strictly lengthening $T_{\mathrm{eff}}$ and $H_0^\ast$.
+    \item[(c)] Off-diagonal $c_{v,w} > 0$ directly inflates both the long-run score variance $\Lambda_H = \Lambda_H^{\mathrm{indep}} + \Lambda_H^{\mathrm{cross}}$ and the $O(1/V)$ finite-sample M-estimator bias (shrinking the effective vintage count $V_{\mathrm{eff}}$), even though for multiplicative shocks the quadratic-shock score variance and cross-vintage covariance ($\propto c_{v,w}^2$) collapse to zero near $H_0^\ast$.
+  \end{enumerate}
+
+  \item[\textbf{(iii)}] \emph{(MSE-optimal horizon and multi-parameter trade-off.)}
+  In dimension $p \ge 2$, a single scalar $H$ cannot generically zero all $p$ coordinates of $\nabla_\theta \mathcal{Q}_H(\theta_0)$ simultaneously on a stochastic factor path. Defining the asymptotic MSE criterion $\mathrm{MSE}_V(H) := \|B_0(H)\|^2 + V^{-1}\mathrm{tr}(\mathcal{H}_H^{-1}\Lambda_H\mathcal{H}_H^{-1})$ with $H_{\mathrm{MSE}}^\ast(V) := \arg\min_{H \ge 0}\mathrm{MSE}_V(H)$: when $\omega_v \equiv 0$ ($U_{v,H}$ with $c_v = 0$) and homoscedastic $q_v = 1$, $H_{\mathrm{MSE}}^\ast(V) = 0$ for every $V$; when $\omega_v > 0$ for scalar $\theta$ with $\mathcal{V}'(H_0^\ast) > 0$,
+  \begin{equation}
+  \label{eq:H_mse_expansion}
+  H_{\mathrm{MSE}}^\ast(V) = H_0^\ast - \frac{\mathcal{V}'(H_0^\ast)}{2\,V\,[B_0'(H_0^\ast)]^2} + O(V^{-2}) \;<\; H_0^\ast,
+  \qquad \lim_{V\to\infty} H_{\mathrm{MSE}}^\ast(V) = H_0^\ast,
+  \end{equation}
+  where $\mathcal{V}(H) = \mathcal{H}_H^{-1}(\Lambda_H^{\mathrm{indep}} + \Lambda_H^{\mathrm{cross}})\mathcal{H}_H^{-1}$ and positive cross-vintage dependence shifts $H_{\mathrm{MSE}}^\ast(V)$ further inward whenever $(\mathcal{V}^{\mathrm{cross}})'(H_0^\ast) > 0$ (whereas when $H=0$ is near-singular or non-coercive in $\alpha$, moderate $H \approx H_0^\ast$ reduces both bias and variance simultaneously).
+
+  \item[\textbf{(iv)}] \emph{(Rank-1 collapse and indefiniteness of cross-vintage pair products.)}
+  Extending the pair-product trick across vintages via the leave-band-out criterion
+  \[
+  \widetilde{U}_{H,m}^{\mathrm{cross}}(\theta)
+  := \frac{1}{|\mathcal{P}_m|}\sum_{|y_v-y_w|>m}\bar\epsilon_{v,H}(\theta)\bar\epsilon_{w,H}(\theta)
+  \]
+  eliminates $c_v$ and nearby $c_{v,w}$ ($|y_v-y_w|\le m$) in expectation, but as $V\to\infty$ with fixed $m$ its population limit collapses to the squared scalar mean moment $\big(\mathbb{E}[\bar\epsilon_{v,H}(\theta)]\big)^2$, whose Hessian has rank~$1$ (destroying $p \ge 2$ identification and re-introducing multiple roots for scalar $\beta$; Lemma~\ref{lem:multiple_roots}). Moreover, for finite $V$ and any $m \ge 0$, the adjacency matrix $M_m = [\mathbf{1}_{|y_v-y_w|>m}]$ is strongly indefinite (e.g., at $V=25$ and $m=7$, $\lambda_{\min} = -9.51$ vs.\ $\lambda_{\max} = 12.62$), driving minimizers to $\partial\Theta$.
+\end{enumerate}
+\end{proposition}
+
+\paragraph{Economic intuition and practical verdict.}
+Figure~\ref{fig:optimal_H_theory} visualizes Proposition~\ref{prop:optimal_H}, and Table~\ref{tab:regime_summary} summarizes the three dependence regimes.
+Panel~A isolates the core M-estimation principle: the vertical \emph{level} of $\mathbb{E}[U_{v,H}(\theta)]$ is irrelevant for consistency; only its \emph{slope} at $\theta_0$ moves the population target $\theta_H^\dagger$.
+Setting $H = H_0^\ast$ aligns the mean compounding date $\bar\tau(H; r)$ with the covariance-weighted exit date $T_{\mathrm{eff}}$ so the two slope terms cancel.
+Panel~B shows why the familiar 12.5--15~year empirical bias minimum arises naturally from deal geometry and positive equity returns: in our core Preqin deal calibration (5-year investment window, 0.25--11.5-year holding lives, historical annualized benchmark return $g = 13.3\%$, volatility $\sigma_m = 15.4\%$), $H_0^\ast$ shrinks from $2\,T_{\mathrm{eff}} \approx 16\text{--}20$~years under flat returns to \textbf{12.65~years} under a static vintage shock $W_v$ ($T_{\mathrm{eff}} = 8.09$~yr) and \textbf{14.78--15.02~years} under an overlapping calendar-time shock $e_u$ or idiosyncratic L2 deal noise ($T_{\mathrm{eff}} = 9.76\text{--}9.96$~yr; Appendix Tables~\ref{tab:H_star_lookup}--\ref{tab:T_eff_mechanisms}).
+
+Crucially, Proposition~\ref{prop:optimal_H} delivers a sharp verdict on cross-vintage dependence: our finite-sample bias-correction framework \emph{still works} when nearby vintages are locally dependent, provided within-vintage $U_{v,H}$ is paired with moderate horizon averaging ($H \approx 12.5\text{--}15$~yr) rather than $H = 0$ alone (Panel~C; Appendix Table~\ref{tab:mc_regimes_verification}).
+At the same time, Part~(iv) proves why one cannot bypass the horizon choice at $H=0$ by pairing distant vintages: cross-vintage pair products sacrifice the state-by-state factor-path matching that gives within-vintage $U_{v,H}$ full-rank identification, collapsing directly back to the squared linear mean moment.
+Accordingly, the only valid $H=0$ sensitivity check against shared and cross-vintage shocks is an identification-robust test of the linear inception moment itself, to which we turn next.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{figure_optimal_H_theory.pdf}
+  \caption{\textbf{Optimal horizon theory across error-dependence regimes (Proposition~\ref{prop:optimal_H}).}
+  \emph{Panel~A:} M-estimation slope geometry---shared shocks raise the vertical level of $\mathbb{E}[U_{v,H}(\theta)]$ harmlessly, whereas the nonzero score slope $\nabla_\theta\mathbb{E}[U_{v,0}](\theta_0)$ tilts the minimizer from $\theta_0$ to $\theta_0^\dagger$; at $H=H_0^\ast$, the Scale-Jacobian pull zeroes the slope at $\theta_0$.
+  \emph{Panel~B:} Exact zero-bias horizon $H_0^\ast$ against effective payoff duration $T_{\mathrm{eff}}$ under flat returns ($2T_{\mathrm{eff}}$), deterministic $g=13.3\%$, and stochastic lognormal returns ($g=13.3\%$, $\sigma_m=15.4\%$); markers locate the Preqin core deal calibration under a static vintage shock $W_v$ ($H_0^\ast=12.65$~yr) and an overlapping calendar-time shock $e_u$ ($14.78\text{--}15.02$~yr).
+  \emph{Panel~C:} Finite-$V$ annualized $\hat\alpha$ RMSE of $U_{v,H}$ ($V=25$, $n_v=15$, $\sigma_W=0.35$, 600 replications; Appendix Table~\ref{tab:mc_regimes_verification}) across Regime~1 ($c_v=0$, flat minimum near $H=0$), Regime~2 (independent $W_v$, $\rho_W=0$), Regime~3a (AR(1) $W_v$, $\rho_W=0.6$), and Regime~3b (overlapping calendar shock $e_u$); shaded band marks the $12.5\text{--}15$~yr duration-matched region.}
+  \label{fig:optimal_H_theory}
+\end{figure}
+
+\begin{table}[htbp]
+\centering
+\footnotesize
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}p{3.0cm} p{3.6cm} p{3.8cm} p{3.8cm}@{}}
+\toprule
+\textbf{Dependence regime} & \textbf{Within-vintage $U_{v,0}$} & \textbf{Cross-vintage $\widetilde{U}_{0,m}^{\mathrm{cross}}$} & \textbf{Composite $(U_{v,H}, H^\ast)$} \\
+\midrule
+\textbf{1. i.i.d.\ fund noise}\newline ($\sigma_\nu^2>0$, $c_v=0$, $c_{v,w}=0$) &
+  \textbf{Exact fix at $H=0$}: kills $\sigma_\nu^2/n_v$; full-rank $\mathbb{E}[\mu_v^2]$; $H_{\mathrm{MSE}}^\ast=0$. &
+  Unnecessary; collapses to rank-1 $(\mathbb{E}[\mu_v])^2$ (loses $(\alpha,\beta)$ \& multiple roots). &
+  Unbiased for all $H \ge 0$; $H=0$ minimizes variance under $q_v=1$. \\
+\addlinespace[4pt]
+\textbf{2. Independent vintage shocks}\newline ($c_v>0$, $c_{v,w}=0$ for $v\neq w$) &
+  Kills $\sigma_\nu^2/n_v$; retains $c_v$ tilt ($O(1)$ bias) and non-coercivity in $\alpha$. &
+  Kills $c_v$ only via rank-1 collapse to $(\mathbb{E}[PV_v])^2$ and indefinite $M_0$. &
+  \textbf{Unique zero-bias $H_0^\ast$} solving $\bar\tau(H_0^\ast;r)=T_{\mathrm{eff}}$; coercive; cuts bias \& RMSE sharply. \\
+\addlinespace[4pt]
+\textbf{3. Nearby cross-vintage dependence}\newline ($c_{v,w}\neq 0$ for $|y_v-y_w|\le L \Rightarrow c_v>0$) &
+  Kills $\sigma_\nu^2/n_v$; no extra $O(1)$ bias from $c_{v,w}$, but retains $c_v$ tilt; $V_{\mathrm{eff}}\downarrow$. &
+  Kills $c_{v,w}$ only via rank-1 collapse and severely indefinite $M_m$ (up to $28\%$ bound hits). &
+  \textbf{Still cancels $O(1)$ bias} ($H_0^\ast$ invariant to $\rho_W$, longer under calendar $e_u$); $c_{v,w}>0$ lifts $\Lambda_H$ \& $O(1/V)$ bias. \\
+\bottomrule
+\end{tabular}%
+}
+\caption{\textbf{Estimator behavior across error-dependence regimes.} Summary of Theorem~\ref{thm:finite_pool} and Proposition~\ref{prop:optimal_H} under Condition~(X). Under Regimes~2--3, the only valid $H=0$ check for scalar $\beta$ that avoids both $c_v$ bias and rank-1/indefinite quadratic minimization is the centered fixed-$b$ Anderson--Rubin test on the linear inception moment \eqref{eq:ar_set}.}
+\label{tab:regime_summary}
+\end{table}
+
 \paragraph{Identification-robust inception moment diagnostic (Anderson--Rubin sets).}
-Theorem~\ref{thm:finite_pool}(T7) shows that, at finite $n_v$, the population $U_{v,H}$ criterion vanishes at $\theta_0$ (its minimum when fund means are common) when (X) holds and $c_v = 0$, whereas shared vintage shocks ($\tau_v^2 > 0$, T8) or failures of strict exogeneity~(X) can shift the targets of both L2 and $U_{v,H}$.
+Theorem~\ref{thm:finite_pool}(T7) shows that, at finite $n_v$, the population $U_{v,H}$ criterion vanishes at $\theta_0$ (its minimum when fund means are common) when (X) holds and $c_v = 0$, whereas shared or cross-vintage shocks ($c_v > 0$, T8 and Proposition~\ref{prop:optimal_H}) or failures of strict exogeneity~(X) can shift the targets of both L2 and $U_{v,H}$.
 By contrast, the linear inception pricing moment
 \begin{equation}
 \label{eq:iv_moment}
@@ -632,11 +768,12 @@ Table~\ref{tab:mc_alpha_beta} evaluates joint $(\alpha,\beta_{\mathrm{MKT}})$ es
   However, the nominal 5\% fixed-$b$ test of $\alpha = 0$ \emph{over-rejects} in $12.1\%$ (Buyout) and $10.9\%$ (VC) of draws at $H = 0$, and at 30 years conditional rejection collapses to $0.4\%$--$0.5\%$ for $\alpha$ and $0.3\%$--$1.1\%$ for $\beta$ (same-sample SE/SD ratios $1.34$ / $1.33$).
   Accordingly, we suppress significance stars in our empirical $(\alpha,\beta)$ table (Table~\ref{tab:u_l2_alpha_beta}) and treat its standard errors as approximate precision measures only.
   \item \emph{When shared vintage shocks are substantial ($c_v > 0$), $U_{v,0}$ itself suffers exploding $\alpha$, and moderate $H>0$ genuinely helps $U_{v,H}$ (Panel~B).}
-  Because $U_{v,H}$ removes idiosyncratic $O(1/n_v)$ noise while retaining shared vintage variance $\tau_v^2(\theta)$ (Theorem~\ref{thm:finite_pool}(T8)), shared vintage shocks re-introduce upward $\alpha$ tilt and downward $\beta$ attenuation at $H=0$.
+  Because $U_{v,H}$ removes idiosyncratic $O(1/n_v)$ noise while retaining shared vintage covariance $c_v(\theta)$ (Theorem~\ref{thm:finite_pool}(T8)), shared vintage shocks re-introduce upward $\alpha$ tilt and downward $\beta$ attenuation at $H=0$.
   In Buyout M4~$2c$ ($\sigma_W = 0.306$), $U_{v,0}$ ($q_v = 1$) has $\hat\alpha$ bias $+0.345\%$/month ($\hat\beta$ bias $-0.269$, $\alpha=0$ rejection $28.1\%$); moving to $H = 15$ years cuts $\hat\alpha$ bias 16-fold to $+0.021\%$, lowers $\hat\alpha$ RMSE from $0.474\%$ to $0.198\%$ and $\hat\beta$ RMSE from $0.489$ to $0.328$, and brings $\alpha=0$ rejection down to $6.0\%$.
   Under VC-scale shared shocks ($\sigma_W = 0.50$, matching empirical VC cross-vintage PV dispersion of $0.44$ EW / $0.54$ FW), exploding $\alpha$ strikes $U_{v,0}$ directly: $25.6\%$ of $U_{v,0}$ ($q_v=1$) draws ($24.8\%$ at $\alpha=+2\%$) and $46.8\%$ of $q_v=n_v$ draws ($42.8\%$ at $\alpha=+2\%$) hit the boundary (population target $\alpha_0^\dagger = +1.431\%$ for $q_v=1$ and $+2.000\%$ for $q_v=n_v$ and L2 VYP; finite-sample $U_{v,0}$ bias $+1.144\%$/month in $\alpha$ and $-0.801$ in $\beta$).
   Extending to $H = 5$--$15$ years restores coercivity ($0.4\% \to 0.0\%$ boundary hits), cuts $U_{v,H}$ ($q_v=1$) $\hat\alpha$ bias 20-fold to $+0.057\%$/month, reduces $\hat\alpha$ RMSE more than fivefold ($1.327\% \to 0.259\%$) and $\hat\beta$ RMSE by more than half ($0.967 \to 0.422$), and lowers $\alpha=0$ rejection from $31.2\%$ to $6.4\%$, before $H = 30$ years overshoots negative ($-0.438\%$/month).
   Thus moderate post-inception horizons complement $U_{v,H}$ when shared vintage shocks are large, even though the exact zero-crossing horizon remains DGP-dependent.
+  This 15-year empirical zero-crossing aligns quantitatively with Proposition~\ref{prop:optimal_H}: in our core deal calibration ($g = 13.3\%$, $\sigma_m = 15.4\%$), the exact duration-matching horizon is $H_0^\ast = 12.65$~years under a static vintage shock and $14.78\text{--}15.02$~years under an overlapping calendar-time shock (Appendix Tables~\ref{tab:T_eff_mechanisms}--\ref{tab:mc_regimes_verification}, which also verify invariance to AR(1) persistence $\rho_W$ at large $V$ and document up to $27.7\%$ boundary collapse for cross-vintage leave-band-out pair products).
 \end{enumerate}
 
 \input{../../r_project/results/mc_step4/paper/table_AS3_alpha_beta.tex}
@@ -756,6 +893,7 @@ Averaging pricing errors over post-inception compounding horizons multiplies eve
 
 Dropping own-fund diagonal squares via the cross-fund pair-product criterion $U_{v,H}$ with equal vintage weights ($q_v = 1$) eliminates idiosyncratic within-vintage noise tilt at every horizon, restoring structural identification at inception ($H = 0$) under bounded fund counts per vintage ($n_v \ge 2$) when fund pricing errors have zero conditional mean given the factor path, funds are conditionally independent, and there are no shared vintage shocks.
 At the same time, when substantial shared vintage shocks are present ($c_v > 0$), $U_{v,0}$ inherits a shared-shock tilt and non-coercivity in $\alpha$; moderate post-inception horizons ($H = 5$--$15$ years) then complement $U_{v,H}$ by restoring coercivity, cutting joint $(\alpha,\beta)$ and two-factor second-loading RMSE, and diagnosing cohort-level misspecification.
+Proposition~\ref{prop:optimal_H} formalizes this duration-matching mechanism and shows that the composite $(U_{v,H}, H^\ast)$ strategy continues to eliminate asymptotic bias under local cross-vintage dependence across nearby vintages, whereas cross-vintage leave-band-out pair products collapse to the rank-1 squared linear mean moment.
 Paired with fixed-$b$ Bartlett SHAC inference ($S = \lceil 1.3\sqrt{V}\rceil$) and an identification-robust Anderson--Rubin inversion of the inception mean pricing moment, the framework separates what pooled private-equity cash flows can identify from what they cannot.
 
 In our cleaned North American Preqin panel (383 Buyout and 432 Venture Capital funds, vintages 1982--2010), equal-vintage $U_{v,0}$ recovers economically coherent single-factor market betas of $1.15$ (EW) and $1.20$ (FW) for Buyout and $1.49$ (EW) and $1.74$ (FW) for Venture Capital, none distinguishable from unity.
