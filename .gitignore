@@ -67,3 +67,7 @@ r_project/simulation/data_out_mc/
 # build scratch (R default device, LaTeX toc of the revision plan)
 r_project/Rplots.pdf
 2025 sdf paper/jfinecon_referees/revision_plan.toc
+
+# JBES benchmark PDFs (keep markdown analysis and revision plan tracked)
+2025 sdf paper/jbes/*.pdf
+
