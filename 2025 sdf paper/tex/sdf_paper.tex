@@ -75,10 +75,11 @@
 \fi
 
 \begin{abstract}
-We study semiparametric stochastic discount factor (SDF) estimation from pooled, non-traded cash flows when vintage portfolios contain a finite number of funds.
+We study semiparametric estimation of asset-specific reciprocal benchmark deflators---valid stochastic discount factors (SDFs) on the private-market cash-flow space---from pooled, non-traded cash flows when vintage portfolios contain a finite number of funds.
 Minimizing squared pooled net present values---the inception criterion of \citet{DLP12}---does not target the structural pricing parameter at finite pool sizes: within-vintage cash-flow noise enters the population objective through a parameter-dependent variance term and tilts the estimand even at inception.
 Averaging pricing errors across post-inception compounding horizons $H$ multiplies each vintage's inception error by a parameter-dependent scale factor, displaying the noise tilt through reweighting and a scale-Jacobian pull rather than removing it.
 To eliminate the diagonal variance tilt under finite pool sizes, we introduce a cross-fund pair-product criterion $U_{v,H}$ that targets the structural parameter at every horizon---including inception ($H=0$)---when fund pricing errors have zero conditional mean given the factor path, funds are conditionally independent, and there are no shared vintage shocks, and pair it with an identification-robust fixed-$b$ moment test on the inception pricing restriction.
+When shared or cross-vintage shocks are present, moderate compounding horizons restore coercivity and match an exact multi-deal duration equation, whereas leave-band-out cross-vintage pair products collapse to rank one.
 In a cleaned North American Preqin panel of 383 Buyout and 432 Venture Capital funds (vintages 1982--2010), equal-vintage $U_{v,0}$ yields market betas of 1.15 (EW) and 1.20 (FW) for Buyout and 1.49 (EW) and 1.74 (FW) for Venture Capital---none distinguishable from unity---while squared-loss estimates decline sharply with horizon and turn negative at 30 years in Venture Capital.
 In contrast, abnormal performance ($\alpha$) and second $q^5$ factor loadings are only weakly identified: Buyout $(\alpha,\beta)$ estimates trade off sharply (sampling correlation about $-0.8$) and nominal tests of $\alpha$ over-reject in simulation, and Venture Capital inception estimates sit on the $+2\%$ monthly alpha ceiling, which they leave once the 1993--1997 cohort is excluded.
 \end{abstract}
@@ -96,10 +97,12 @@ In contrast, abnormal performance ($\alpha$) and second $q^5$ factor loadings ar
 \label{sec:introduction}
 \fi
 
-How should stochastic discount factor (SDF) estimators be identified and interpreted when the underlying data consist of pooled, non-traded cash flows rather than traded returns?
+How should cash-flow discounting models be identified and interpreted when the underlying data consist of pooled, non-traded cash flows rather than traded returns?
 This question sits at the center of the empirical private-market asset-pricing literature on abnormal performance and systematic risk \citep[see][for reviews]{K19,korteweg2023risk}.
-The semiparametric cash-flow SDF estimators of \citet{DLP12} and \citet{KN16} recover factor exposures ($\beta$) and abnormal performance ($\alpha$) without imposing parametric return distributions.
-Yet an essential econometric question remains open: in realistic panels with a modest number of overlapping vintages and finite numbers of funds per vintage, which objects do squared-error cash-flow criteria actually target, and which parameters can be identified with reliable inference?
+Two fundamentally distinct semiparametric paradigms have emerged.
+One calibrates an economy-wide stochastic discount factor (SDF) solely to traded public-equity and Treasury moments and uses private-equity (PE) cash flows only ex post to evaluate abnormal present values \citep{KN16,GSW20,GN18}; \citet{KN24} bridge this public-SDF discipline with asset-specific benchmark betas under lognormal return structure.
+The other, pioneered by \citet{DLP12}, fits an asset-class-specific reciprocal benchmark deflator---a valid SDF on the PE cash-flow space in incomplete markets---directly from PE cash flows alone to recover factor exposures ($\beta$) and a return wedge ($\alpha$) without imposing parametric return distributions.
+For this cash-flow-identified benchmark-deflator paradigm, an essential econometric question remains open: in realistic panels with a modest number of overlapping vintages and finite numbers of funds per vintage, which objects do squared-error cash-flow criteria actually target, and which parameters can be identified with reliable inference?
 
 This paper shows that the standard squared-loss criterion of \citet{DLP12} has a structural identification flaw whenever vintage portfolios contain a finite number of funds ($n_v < \infty$).
 Minimizing the average squared vintage-portfolio net present value (NPV) targets the minimizer of $\mathbb{E}[PV_v(\theta)^2] = \operatorname{Var}(PV_v(\theta)) + (\mathbb{E}[PV_v(\theta)])^2$.
@@ -151,7 +154,7 @@ The empirical analysis yields four main findings:
 \end{enumerate}
 
 \paragraph{Related literature.}
-This paper contributes to the semiparametric cash-flow SDF literature initiated by \citet{DLP12} and \citet{KN16}.
+This paper contributes to the semiparametric cash-flow discounting literature in private markets, clarifying the structural boundary between cash-flow-identified reciprocal benchmark deflators \citep{DLP12} and public-calibrated SDF evaluation frameworks \citep{KN16,KN24}.
 The \citet{DLP12} squared-NPV approach has been applied across venture capital, buyout, real estate, and human capital \citep{kroencke2013return,kim2015estimation,farrelly2019risk,lee2019new,zhao2020master,TP24}, while the \citet{KN16} public-SDF generalized PME framework has been extended across private equity, infrastructure, REITs, CLOs, impact funds, and private debt \citep{giommetti2021risk,GN18,andonov2021institutional,riddiough2022private,boyer2023discount,cordell2023clo,erel2024risk,jeffers2024risk,KN24,korteweg2024private}.
 We complement \citet{GSW20} on NPV versus per-period return biases and \citet{burnside2016identification} on SDF identification by isolating the finite-pool variance tilt of squared-NPV criteria, formalizing the exact horizon rescaling mechanism, and introducing the pair-product $U_{v,H}$ estimator with fixed-$b$ increasing-domain inference \citep{PP97,NM94,JP09,JP12,KS11,KV05,LLSW18}.
 Our empirical diagnostics also connect to parametric private-equity models \citep{FNP12,ACGP18}, tailored PME benchmarks \citep{HJK14,RS16}, secondary-market discount-rate risk \citep{boyer2023discount}, NAV smoothing and residual-value adjustments \citep{BGK19,JLRS20,brown2023nowcasting}, and drift-uncertainty limits on return-based alpha inference \citep{Merton80}.
@@ -167,12 +170,12 @@ Technical proofs, the standalone SDF-pricing analysis, full simulation grids, an
 \section{Methodology}
 \label{sec:spatial_sdf_methodology}
 
-We build a semiparametric framework for SDF estimation from pooled, non-traded cash flows.
+We build a semiparametric framework for estimating reciprocal benchmark deflators (PE-specific SDFs) from pooled, non-traded cash flows.
 Section~\ref{sec:asset_pricing_pooled} states the deal-level timing restrictions and establishes when pooled fund cash flows satisfy a conditional zero-moment condition.
 Section~\ref{sec:fundwise_lmd_estimator} derives the exact horizon-rescaling identity, proves why finite-pool squared loss is biased even at inception, and introduces the cross-fund pair-product estimator $U_{v,H}$.
 Section~\ref{sec:optimal_H_theory} develops our optimal horizon theory across i.i.d., vintage-shock, and cross-vintage-dependent regimes, proves why cross-vintage pair products collapse in rank, and defines our identification-robust inception moment diagnostic.
 Section~\ref{sec:asymptotic_framework} presents the increasing-domain asymptotic theory and fixed-$b$ SHAC inference.
-Section~\ref{sec:comparison_to_similar_estimators} positions our framework relative to \citet{DLP12}, \citet{DLP09wp}, and \citet{KN16}.
+Section~\ref{sec:comparison_to_similar_estimators} positions our cash-flow-identified framework relative to \citet{DLP12}, \citet{DLP09wp}, public-calibrated SDF evaluation \citep{KN16,GSW20,GN18}, and the structured benchmark-deflator bridge of \citet{KN24}.
 
 \subsection{Asset pricing for pooled cash flows}
 \label{sec:asset_pricing_pooled}
@@ -191,7 +194,7 @@ For each fund $i$, there exist $J_i$ underlying deals such that:
 \end{enumerate}
 \end{assume}
 
-Let $\Psi_t = \prod_{u=1}^t M_u$ ($\Psi_0 = 1$) denote the cumulative SDF discounting a time-$t$ cash flow to time $0$, and write $\Psi_{\tau,t} = \Psi_t / \Psi_\tau$.
+Let $\Psi_t = \prod_{u=1}^t M_u$ ($\Psi_0 = 1$) denote the cumulative deflator discounting a time-$t$ cash flow to time $0$, and write $\Psi_{\tau,t} = \Psi_t / \Psi_\tau$.
 Under exact deal-level pricing at acquisition, the deal-level pricing error
 \begin{equation}
 \label{eq:deal_pricing_error}
@@ -405,7 +408,7 @@ Suppose all funds in vintage $v$ share origin $t_v^0$ and evaluation set $\mathc
 \end{theorem}
 
 \paragraph{Admissible parameter domain $\Theta$.}
-Because the reciprocal SDF $M_u(\theta) = G_u(\theta)^{-1}$ requires strictly positive gross benchmark returns $G_u(\theta) = 1 + r_{f,u} + \alpha + \beta^\top F_u$ at every month $u$ spanned by the sample cash flows, we define the compact admissible domain
+Because the reciprocal benchmark deflator $M_u(\theta) = G_u(\theta)^{-1}$ requires strictly positive gross benchmark returns $G_u(\theta) = 1 + r_{f,u} + \alpha + \beta^\top F_u$ at every month $u$ spanned by the sample cash flows, we define the compact admissible domain
 \begin{equation}
 \label{eq:admissible_domain}
 \Theta := \left\{\theta = (\alpha,\beta) :\; \alpha \in [-0.02, 0.02],\ \beta_{\mathrm{MKT}} \in [-1, 4],\ \min_{u \in \mathcal{U}} G_u(\theta) \ge \underline{G}\right\},
@@ -615,34 +618,44 @@ We also cross-check our fixed-$b$ intervals against a four-year overlapping vint
 \subsection{Comparison to similar estimators}
 \label{sec:comparison_to_similar_estimators}
 
-Table~\ref{tab:comparison} contrasts our framework with \citet{DLP12}, \citet{DLP09wp}, and \citet{KN16}.
-At the objective level, L2 VYP at $H = 0$ nests \citet{DLP12} exactly, while Theorem~\ref{thm:finite_pool} reveals why their portfolio-infill consistency ($n_v \to \infty$ inside fixed vintages; Lemma~\ref{lem:infill}) breaks down at finite $n_v$ and how $U_{v,H}$ restores identification under vintage-year increasing-domain asymptotics ($V \to \infty$, bounded $n_v \ge 2$).
-Relative to \citet{DLP09wp}, who stabilize inception NPV via log-ratio or PME transformations after portfolio averaging, our horizon averaging operates directly on net cash flows without requiring separate investment/dividend labeling, but reveals that horizon shifts cannot cure finite-pool squared-loss bias.
-Relative to \citet{KN16} and \citet{KN24}, who calibrate a public-market SDF to equity and Treasury moments and then evaluate PE payoffs, our estimators fit a PE-specific reciprocal benchmark deflator directly from PE cash flows (Appendix~\ref{sec:appendix_sdf}).
+Table~\ref{tab:comparison} classifies the main semiparametric cash-flow discounting paradigms along their first-order economic and econometric dimensions: the object estimated, the identifying moments, the role of $(\alpha,\beta)$, and the asymptotic device.
+Within the cash-flow-identified reciprocal benchmark-deflator paradigm, L2 VYP at $H = 0$ nests \citet{DLP12} exactly, while Theorem~\ref{thm:finite_pool} reveals why their portfolio-infill consistency ($n_v \to \infty$ inside fixed vintages; Lemma~\ref{lem:infill}) breaks down at finite $n_v$ and how $U_{v,H}$ restores identification under vintage-year increasing-domain asymptotics ($V \to \infty$, bounded $n_v \ge 2$).
+Relative to \citet{DLP09wp}, who stabilize inception NPV via log-ratio or PME transformations after portfolio averaging, our horizon averaging operates directly on net cash flows without requiring separate investment/dividend labeling, while showing that horizon shifts do not eliminate finite-pool squared-loss bias in general.
+
+By contrast, \citet{KN16}---alongside public-kernel and cash-flow-strip valuation frameworks such as \citet{GSW20} and \citet{GN18}---occupy a fundamentally different paradigm.
+\citet{KN16} calibrate an economy-wide exponential-affine SDF exclusively to traded public-equity and Treasury-bill moments, assigning zero weight to PE cash flows during parameter estimation, and then evaluate PE cash flows ex post to obtain a Generalized PME (GPME) abnormal-value readout.
+Its estimated parameters are public risk-price loadings rather than PE factor exposures $\beta$, and its intercept is pinned by the risk-free rate rather than a PE return wedge $\alpha$.
+\citet{KN24} explicitly highlight this distinction---noting that a reciprocal benchmark return $1/R_u^b$ is an asset-specific deflator rather than an economy-wide SDF---and connect the two paradigms by using a PE benchmark beta to strip out realized-market-path noise $(\beta - \gamma)(r^m - \mathbb{E}[r^m])$ while anchoring abnormal performance to a public-calibrated SDF under lognormal return structure and constant risk-free rates (Appendix~\ref{sec:appendix_sdf}).
+
+A direct consequence is that pitting \citet{KN16} against \citet{DLP12} or $U_{v,H}$ in a Monte Carlo horse-race for $\beta$ is not an apples-to-apples comparison: the two paradigms estimate different population objects from different identifying moments to answer different empirical questions.
+Accordingly, our simulation study in Section~\ref{sec:simulation_study} benchmarks estimators that target the \emph{same} cash-flow-identified benchmark-deflator parameter $\theta_0 = (\alpha_0, \beta_0)$ solely from PE cash flows: individual-fund L2, pooled L2 VYP (\citealp{DLP12} at $H=0$), cross-fund pair-product $U_{v,H}$, inception linear mean-moment IV/AR sets, and leave-band-out cross-vintage pair products $\widetilde{U}_{H,m}^{\mathrm{cross}}$.
 
 \begin{table}[ht]
 \centering
-\footnotesize
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{@{}l p{3.3cm} p{3.3cm} p{3.8cm}@{}}
+\scriptsize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{2.35cm} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X@{}}
 \toprule
- & \citet{DLP12} & \citet{KN16} & This paper ($U_{v,H}$ \& L2) \\
+ & \citet{DLP12} & \citet{KN16} & \citet{KN24} & This paper ($U_{v,H}$ \& L2) \\
 \midrule
-\textbf{Estimator type} & Cross-sectional squared NPV (one-step GMM) & Public-calibrated GMM / GPME & Cross-fund pair-product $U_{v,H}$ (main) \& L2 VYP \\
+\textbf{Object estimated} & PE-specific reciprocal benchmark deflator $1/G_u(\alpha,\beta)$ & Economy-wide exponential-affine SDF $M_t(\gamma)$ & Asset-specific benchmark deflator anchored to a public SDF & PE-specific reciprocal benchmark deflator $1/G_u(\alpha,\beta)$ \\
 \addlinespace
-\textbf{Cash flows priced} & PE vintage portfolios & Public benchmarks (fit); PE payoffs (eval.) & PE funds / vintage portfolios \\
+\textbf{Identifying moments} & PE vintage-portfolio cash flows only & Traded public equity \& T-bill returns only (PE evaluated ex post) & Public-market SDF moments plus PE cash flows (lognormal return structure) & PE fund / vintage-portfolio cash flows only \\
 \addlinespace
-\textbf{Discounting dates} & Inception only ($H=0$) & Inception only ($H=0$) & $H=0$ main ($U_{v,0}$); horizon grid $H \in [0,30]$ diagnostic \\
+\textbf{Role of $\alpha$ and $\beta$} & Both estimated from PE cash flows ($\alpha$ = return wedge) & Public risk-price loadings $\gamma$; no PE $\beta$; GPME = ex-post PV error & PE $\beta$ strips realized factor-path noise; $\alpha$ anchored to public SDF & Both estimated from PE cash flows ($\alpha$ = return wedge; $\beta$ = benchmark loading) \\
 \addlinespace
-\textbf{Asymptotic device} & Infill: $n_v \to \infty$ in fixed vintages & Growing calendar span (nonoverlapping windows) & Increasing-domain vintages $V \to \infty$, bounded $n_v \ge 2$ \\
+\textbf{Criterion \& dates} & Squared pooled NPV at inception ($H=0$) & Public-market GMM; ex-post PE GPME at $H=0$ & Public-SDF GMM plus benchmark-adjusted PE valuation at $H=0$ & Cross-fund pair-product $U_{v,H}$ ($H=0$ main; $H\in[0,30]$ \& AR diagnostic) \\
 \addlinespace
-\textbf{Finite-$n_v$ noise tilt} & Present in squared loss (T3/T4) & Eliminated by linear mean moment & Eliminated by pair-product $U_{v,H}$ (T7) when $c_v=0$; checked via AR set \\
+\textbf{Asymptotic device} & Infill ($n_v \to \infty$ in fixed vintages) & Growing calendar span (nonoverlapping windows) & Growing calendar span & Increasing-domain vintages ($V \to \infty$, bounded $n_v \ge 2$) \\
 \addlinespace
-\textbf{Inference} & Bootstrap & Spatial HAC & Bartlett SHAC ($S=\lceil 1.3\sqrt{V}\rceil$) with fixed-$b$ critical values \\
+\textbf{Finite-$n_v$ noise tilt} & Present in squared loss (T3/T4) & Absent (linear mean PE evaluation moment) & Absent in linear PE pricing moments (uses return structure) & Eliminated by $U_{v,H}$ (T7) when $c_v=0$; checked via $H>0$ (Prop.~\ref{prop:optimal_H}) \& AR set \\
+\addlinespace
+\textbf{Inference} & Bootstrap & Spatial HAC \citep{C99} & Spatial HAC & Bartlett SHAC ($S=\lceil 1.3\sqrt{V}\rceil$) with \citet{KV05} fixed-$b$ critical values \\
 \bottomrule
-\end{tabular}%
-}
-\caption{\textbf{Comparison of semiparametric SDF estimation frameworks for private equity.}}
+\end{tabularx}
+\par\vspace{3pt}
+\parbox{\linewidth}{\scriptsize\textit{Notes:} \citet{DLP12} and this paper estimate a PE-specific reciprocal benchmark deflator (a valid SDF on the PE cash-flow space in incomplete markets) solely from PE cash flows, whereas \citet{KN16} calibrate an economy-wide public SDF strictly from traded public returns and treat PE cash flows as an ex-post valuation readout; \citet{KN24} bridge both under parametric return-distribution structure (Appendix~\ref{sec:appendix_sdf}).}
+\caption{\textbf{Taxonomy of semiparametric cash-flow discounting frameworks for private equity.}}
 \label{tab:comparison}
 \end{table}
 
@@ -685,10 +698,10 @@ Table~\ref{tab:fw_imputation_sensitivity} in Appendix~\ref{sec:appendix_empirica
   \item Crucially, log fund-size dispersion under within-vintage median imputation is $\mathrm{SD}(\log S) = 1.185$ (BO) and $0.941$ (VC), virtually identical to the values calibrated in our FW Monte Carlo Design~B ($\sigma_{\log S} = 1.19$ BO, $0.90$ VC), so our FW simulation calibration remains directly representative.
 \end{itemize}
 
-\subsection{SDF specification, public factors, terminal NAVs, and cross-validation}
+\subsection{Benchmark deflator specification, public factors, terminal NAVs, and cross-validation}
 \label{sec:model_selection}
 
-Following \citet{DLP12}, our baseline SDF is the monthly reciprocal linear benchmark deflator
+Following \citet{DLP12}, our baseline discounting process is the monthly reciprocal linear benchmark deflator (a PE-specific SDF on the private-equity payoff space; Appendix~\ref{sec:appendix_sdf})
 \begin{equation}
 \label{eq:linear_sdf}
 \Psi_{\tau,t}^{\mathrm{SL}}(\theta)
@@ -729,6 +742,7 @@ To compare horizons on a common scale, we evaluate every horizon's fold estimate
 We evaluate estimator accuracy, horizon dynamics, and fixed-$b$ test calibration across 72 data-shaped Monte Carlo designs (1,456 summary rows; 250 to 1,000 replications per design, 1,000 in the two cores and in the fund-size Design~B, 500 in the path-shock Designs~A and~A$'$ and the Preqin Buyout Optimal-$H$ Regime~1--3b suite) using common deal draws across estimators and horizons.
 In the two \emph{core designs}, we match the exact Preqin Buyout (25 vintages, 383 funds) and VC (27 vintages, 432 funds) calendars and fund counts through 2010, the historical U.S.\ $q^5$ factor path, 15 deals per fund with quarterly cash flows, and exact pricing at $\beta_{\mathrm{MKT}} = 1$ ($\alpha = 0$) with mean-one lognormal multiplicative deal shocks calibrated to match empirical within-vintage cross-sectional dispersion (monthly deal volatility $\sigma = 0.130$ Buyout, $0.154$ VC).
 Because deal shocks are multiplicative and mean-one, both Condition~(P) and Condition~(X) hold exactly in the core designs (unlike additive shocks with default truncation, which bias expected payoffs upward; see Appendix~\ref{sec:dlp_simulation}).
+Consistent with Section~\ref{sec:comparison_to_similar_estimators}, every estimator evaluated below targets the same cash-flow-identified benchmark-deflator parameter $\theta_0$ from PE cash flows alone (individual-fund L2, pooled L2 VYP, cross-fund $U_{v,H}$, inception linear IV/AR sets, and leave-band-out cross-vintage pair products); public-calibrated SDF methods such as \citet{KN16} estimate a distinct public-market object and are therefore not directly comparable in a $\beta$ horse-race.
 
 \input{../../r_project/results/mc_step4/paper/table_S1_core.tex}
 
@@ -887,7 +901,7 @@ Our finding that abnormal performance $\alpha$ is weakly identified in pooled ca
 \section{Conclusion}
 \label{sec:conclusion}
 
-This paper shows that finite-pool cross-sectional noise fundamentally alters the identification of semiparametric cash-flow SDF estimators.
+This paper shows that finite-pool cross-sectional noise fundamentally alters the identification of cash-flow-identified reciprocal benchmark deflators (PE-specific SDFs).
 Minimizing squared vintage-portfolio NPVs \citep{DLP12} embeds a parameter-dependent variance term that tilts the population target upward even at inception ($H = 0$).
 Averaging pricing errors over post-inception compounding horizons multiplies every vintage's inception error by a parameter-dependent scale factor $A_{v,H}(\theta)$; differentiating $A_{v,H}(\theta)^2$ creates a downward Scale-Jacobian pull that displays finite-pool bias across horizons rather than curing it.
 
