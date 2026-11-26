@@ -1,0 +1,513 @@
+# simulation_multifactor.R
+# ========================
+# Extended simulation data generator with multi-factor DGP support.
+# This file provides a new function that supports two-factor models
+# while maintaining backward compatibility with the original simulation_improved.R.
+#
+# Supported factors: MKT + one of (Alpha, ME, IA, ROE, EG)
+#
+# When simulate.mkt = TRUE:
+#   - RF is set to a constant 4% annualized = (1.04)^(1/12) - 1 per month
+#   - MKT (excess) is drawn from a shifted lognormal (S&P 500 1980-2003 moments)
+#   - Both RF and MKT are saved to _simulated_factors.csv for the estimator
+#
+# Usage:
+#   source("simulation/simulation_multifactor.R")
+#   create.simulation.multifactor(
+#     beta_MKT = 1,
+#     beta_ME = 0.5,   # Second factor loading
+#     ...
+#   )
+
+# ============================================================================
+# Dependencies
+# ============================================================================
+
+if (!requireNamespace("data.table", quietly = TRUE)) {
+    install.packages("data.table")
+}
+library(data.table)
+# memory-aware number of parallel workers (n.parallel.workers)
+if (!exists("n.parallel.workers")) source("helper/parallel_workers.R")
+
+# ============================================================================
+# Load Q-Factors Data
+# ============================================================================
+
+# Handle both direct sourcing and sourcing from run_simulation_study.R
+if (exists("df.q5", envir = .GlobalEnv) && is.data.frame(get("df.q5", envir = .GlobalEnv))) {
+    # Already loaded, use it
+} else {
+    # Load from file
+    current_dir <- getwd()
+
+    # Try different paths (prefer data_prepared_2026 for consistency with estimator)
+    possible_paths <- c(
+        file.path(current_dir, "empirical", "data_prepared_2026", "q_factors.csv"),
+        file.path(current_dir, "empirical", "data_prepared", "q_factors.csv"),
+        file.path(dirname(current_dir), "empirical", "data_prepared_2026", "q_factors.csv"),
+        file.path(dirname(current_dir), "empirical", "data_prepared", "q_factors.csv")
+    )
+
+    loaded <- FALSE
+    for (path in possible_paths) {
+        if (file.exists(path)) {
+            df.q5 <- read.csv(path)
+            df.q5$Date <- as.Date(df.q5$Date)
+            loaded <- TRUE
+            break
+        }
+    }
+
+    if (!loaded) {
+        stop("Cannot find q_factors.csv. Please run from r_project directory.")
+    }
+}
+
+# Ensure Alpha column exists
+if (!"Alpha" %in% colnames(df.q5)) {
+    df.q5$Alpha <- 1
+}
+
+# ============================================================================
+# deal.multiplier() - payoff multiple of one deal (revision plan B1)
+# ============================================================================
+#
+# G: gross benchmark returns 1 + alpha + RF + beta' F on the fund's monthly rows
+#    (linear SDF), so that the estimator discounts a flow at row b back to row a
+#    by R_{a,b} = prod_{u = a+1}^{b} G_u.
+# A deal invested at row `start` and exited at row `end` pays
+#    m = prod_{u = start+1}^{end} G_u (1 + eps_u)        (shock.model = "multiplicative")
+# with 1 + eps_u = exp(N(-s^2/2, s^2)) > 0, s^2 = log(1 + stdv^2), i.e.
+# E[1 + eps_u] = 1 and sd(1 + eps_u) = stdv. Then E[m | factor path] = R_{start,end}
+# exactly, so the DGP satisfies conditional pricing (P) and (X) at theta_0 for
+# every stdv, and m > 0 whenever G > 0 (no default truncation needed).
+#
+# Repairs relative to the former code: (a) compounding over (start+1):end
+# instead of start:end, which added a zero-noise pricing error of G_start - 1
+# per deal; (b) the former additive shocks (G_u + e_u, Gaussian or shifted
+# lognormal) with default truncation (path < 0 -> m = 0) raise E[m] above
+# R_{start,end} (E[(G + e)_+] > G). They remain available as a stress case,
+# shock.model = "additive" (use.shifted selects the shifted-lognormal shock).
+deal.multiplier <- function(G, start, end, stdv, shock.model = "multiplicative", use.shifted = FALSE) {
+    if (end <= start) return(1) # no holding period: the deal returns its capital
+    g <- G[(start + 1):end]
+    k <- length(g)
+    if (shock.model == "multiplicative") {
+        if (stdv == 0) return(prod(g))
+        s2 <- log(1 + stdv^2)
+        return(prod(g * exp(rnorm(k, -s2 / 2, sqrt(s2)))))
+    }
+    if (shock.model == "additive") {
+        if (use.shifted) {
+            sigma <- sqrt(log(1 + stdv^2))
+            e <- exp(rnorm(k, -sigma^2 / 2, sigma)) - 1
+        } else {
+            e <- rnorm(k, 0, stdv)
+        }
+        path <- cumprod(g + e)
+        return(if (any(path < 0)) 0 else path[k]) # default truncation (stress case)
+    }
+    stop("unknown shock.model: ", shock.model)
+}
+
+# ============================================================================
+# create.simulation.multifactor() - Multi-Factor DGP Support
+# ============================================================================
+
+#' Create simulated cash flows with multi-factor DGP
+#'
+#' Extended version of create.simulation() that supports two-factor models.
+#' The DGP is: R = alpha + RF + beta_MKT*MKT + beta_F*Factor + noise
+#' where Factor is one of ME, IA, ROE, EG.
+#'
+#' @param no.deals Number of deals per fund
+#' @param investment.period Investment period in years
+#' @param max.holding.period Maximum holding period in years
+#' @param alpha Monthly alpha (intercept)
+#' @param beta_MKT Loading on market factor (MKT)
+#' @param beta_ME Loading on ME factor (default: 0)
+#' @param beta_IA Loading on IA factor (default: 0)
+#' @param beta_ROE Loading on ROE factor (default: 0)
+#' @param beta_EG Loading on EG factor (default: 0)
+#' @param no.samples Number of Monte Carlo samples
+#' @param no.funds Number of funds per vintage year
+#' @param min.vin Earliest vintage year
+#' @param max.vin Latest vintage year
+#' @param stdvs Idiosyncratic volatility
+#' @param exp.aff.sdf Use exponential-affine SDF (default: FALSE)
+#' @param deterministic.inv.timing If TRUE, deal investment dates are evenly
+#'   spaced across the investment period instead of randomly sampled (default: FALSE)
+#' @param scenario_id Optional scenario identifier for metadata
+#' @param output_folder Output folder for generated data
+#'
+#' @return Invisibly returns list with file paths
+create.simulation.multifactor <- function(
+    no.deals,
+    investment.period,
+    max.holding.period,
+    alpha,
+    beta_MKT,
+    beta_ME = 0,
+    beta_IA = 0,
+    beta_ROE = 0,
+    beta_EG = 0,
+    no.samples,
+    no.funds,
+    min.vin,
+    max.vin,
+    stdvs,
+    exp.aff.sdf = FALSE,
+    use.shifted.lognormal = FALSE,
+    simulate.mkt = FALSE,
+    deterministic.inv.timing = FALSE,
+    scenario_id = NULL,
+    output_folder = "simulation/data_prepared_sim",
+    shock.model = "multiplicative",
+    n.cores = n.parallel.workers(no.samples), # capped by cores and free memory
+    write.fund.level = TRUE) {
+    stopifnot(shock.model %in% c("multiplicative", "additive"))
+    set.seed(100) # For reproducibility
+    months <- 12
+
+    # -------------------------------------------------------------------------
+    # Identify active second factor
+    # -------------------------------------------------------------------------
+    second_factors <- c(ME = beta_ME, IA = beta_IA, ROE = beta_ROE, EG = beta_EG)
+    active_second_factor <- names(second_factors[second_factors != 0])
+
+    if (length(active_second_factor) > 1) {
+        warning(
+            "Multiple non-zero second factors detected. Using only the first: ",
+            active_second_factor[1]
+        )
+        active_second_factor <- active_second_factor[1]
+    } else if (length(active_second_factor) == 0) {
+        active_second_factor <- NULL
+    }
+
+    cat("DGP Configuration:\n")
+    cat("  alpha =", alpha, "\n")
+    cat("  shock model =", shock.model, if (shock.model == "additive") "(stress case: default truncation)" else "", "\n")
+    cat("  beta_MKT =", beta_MKT, "\n")
+    if (!is.null(active_second_factor)) {
+        cat("  beta_", active_second_factor, " = ",
+            second_factors[active_second_factor], "\n",
+            sep = ""
+        )
+    }
+    cat(
+        "  Samples:", no.samples, "| Funds:", no.funds, "| Vintages:",
+        min.vin, "-", max.vin, "\n"
+    )
+    if (deterministic.inv.timing) {
+        cat("  Deterministic investment timing: ON\n")
+    }
+    cat("\n")
+
+    # Precompute deterministic start dates (evenly spaced across investment period)
+    if (deterministic.inv.timing) {
+        inv_months <- max(1, investment.period * months)
+        start.dates <- as.integer(seq(1, inv_months, length.out = no.deals))
+    }
+
+    # -------------------------------------------------------------------------
+    # Inner function: Generate a single fund
+    # -------------------------------------------------------------------------
+    make.fund <- function(no = 0, vintage = 1990, stdv = 0.01, exp.aff = exp.aff.sdf,
+                          use.shifted = use.shifted.lognormal,
+                          df = df.q5) {
+        # Filter data to start from vintage year
+        df <- df[as.integer(format(df$Date, "%Y")) >= vintage, ]
+        df$Vintage <- vintage
+        df$CF <- 0
+
+        # Build type string including factor info
+        sdf_str <- ifelse(exp.aff, "ea", "sl")
+        factor_str <- ifelse(!is.null(active_second_factor),
+            paste0(" +", active_second_factor),
+            ""
+        )
+        df$type <- paste0("sdf:", sdf_str, factor_str, " stdv:", stdv, " #d:", no.deals)
+        df$Fund.ID <- paste(vintage, no, sep = "_")
+
+        # Gross benchmark return G_u of the linear SDF: depends on the factor
+        # path only, so it is computed once per fund (speed; it used to be
+        # recomputed for every deal and draws no random numbers, so simulated
+        # data are unchanged)
+        if (!exp.aff) {
+            G <- 1 + alpha + df$RF +
+                beta_MKT * df$MKT +
+                beta_ME * df$ME +
+                beta_IA * df$IA +
+                beta_ROE * df$ROE +
+                beta_EG * df$EG
+        }
+
+        # Simulate N deals
+        for (i in 1:no.deals) {
+            if (deterministic.inv.timing) {
+                start <- start.dates[i]
+            } else if (investment.period == 0) {
+                start <- 1
+            } else {
+                start <- sample(1:(investment.period * months), 1)
+            }
+            end <- start + sample(1:(max.holding.period * months), 1)
+            end <- min(end, nrow(df))
+
+            if (exp.aff) {
+                # Exponential-affine SDF: log gross return per month, mean-one
+                # multiplicative noise; compounded over (start+1):end (B1)
+                df$deal <- alpha + log(1 + df$RF) +
+                    beta_MKT * log(1 + df$MKT) +
+                    beta_ME * log(1 + df$ME) +
+                    beta_IA * log(1 + df$IA) +
+                    beta_ROE * log(1 + df$ROE) +
+                    beta_EG * log(1 + df$EG) +
+                    rnorm(nrow(df), 0, stdv) - stdv^2 / 2
+                m <- if (end > start) exp(sum(df$deal[(start + 1):end])) else 1
+            } else {
+                # Simple linear SDF: gross benchmark return G_u (B1, deal.multiplier)
+                m <- deal.multiplier(G, start, end, stdv, shock.model, use.shifted)
+            }
+
+            df$CF[start] <- df$CF[start] - 1
+            df$CF[end] <- df$CF[end] + m
+        }
+
+        df <- df[df$Date <= max(df$Date[df$CF != 0]), ]
+        df <- df[df$CF != 0, ]
+        cols <- c("Date", "CF", "type", "Vintage", "Fund.ID")
+        df <- df[, cols]
+        return(df)
+    }
+
+    # -------------------------------------------------------------------------
+    # Generate all samples
+    # -------------------------------------------------------------------------
+    cat("Generating", no.samples, "samples...\n")
+    pb_interval <- max(1, no.samples %/% 10)
+
+    output <- list()
+    output_factors <- list() # Collect simulated factors per sample
+    # One Monte Carlo sample. Each sample reseeds itself (set.seed(x)), so
+    # generating the samples in parallel (forked workers, speed) gives exactly
+    # the same data as the serial loop.
+    one.sample <- function(x) {
+        set.seed(x)
+        factors_x <- NULL
+
+        df_current <- df.q5
+        if (simulate.mkt) {
+            # Constant risk-free rate: 4% annualized
+            RF_const <- (1.04)^(1 / 12) - 1
+            df_current$RF <- RF_const
+
+            # Shifted lognormal total market return (S&P 500 1980-2003 moments)
+            mu_m <- 0.01156253
+            sig_m <- 0.04613695
+            lower.bound <- -0.20
+
+            sigma_ln <- sqrt(log(1 + sig_m^2 / (mu_m - lower.bound)^2))
+            mu_ln <- log(mu_m - lower.bound) - sigma_ln^2 / 2
+
+            # Generate shifted lognormal total market return, then excess
+            r_mkt_sim <- exp(rnorm(nrow(df_current), mu_ln, sigma_ln)) + lower.bound
+            df_current$MKT <- r_mkt_sim - RF_const
+
+            # Store the simulated factors for the estimator
+            factors_x <- data.frame(
+                Date = df_current$Date,
+                sample_id = x,
+                MKT = df_current$MKT,
+                RF = RF_const
+            )
+        }
+
+        l <- list()
+        for (i in 1:no.funds) {
+            for (v in min.vin:max.vin) {
+                for (s in stdvs) {
+                    l[[paste(i, v, s)]] <- make.fund(i, v, s, df = df_current)
+                }
+            }
+        }
+        df.out <- as.data.frame(data.table::rbindlist(l))
+        df.out$type <- paste0(df.out$type, " #f:", no.funds, " #y:", max.vin - min.vin, " .", x)
+        df.out$Fund.ID <- paste0(df.out$type, "+", df.out$Fund.ID)
+        list(cashflows = df.out, factors = factors_x)
+    }
+    samples <- if (n.cores > 1 && no.samples > 1) {
+        parallel::mclapply(seq_len(no.samples), one.sample, mc.cores = n.cores)
+    } else {
+        lapply(seq_len(no.samples), one.sample)
+    }
+    failed <- vapply(samples, function(z) inherits(z, "try-error") || is.null(z$cashflows), TRUE)
+    if (any(failed)) stop("Simulation failed for sample(s): ", paste(which(failed), collapse = ", "))
+    output <- lapply(samples, `[[`, "cashflows")
+    output_factors <- lapply(samples, `[[`, "factors")
+    output_factors <- output_factors[!vapply(output_factors, is.null, TRUE)]
+    rm(samples)
+    cat("  Generated", no.samples, "samples\n")
+
+    df.out <- data.table::rbindlist(output)
+    rm(output)
+
+    # -------------------------------------------------------------------------
+    # Aggregate to Vintage-Year Portfolios
+    # -------------------------------------------------------------------------
+    cat("Aggregating to vintage-year portfolios...\n")
+    df.vyp <- df.out[, .(CF = sum(CF)), by = .(Date, type, Vintage)]
+    df.vyp$Fund.ID <- paste0(df.vyp$type, " v:", df.vyp$Vintage)
+
+    # -------------------------------------------------------------------------
+    # Save output files
+    # -------------------------------------------------------------------------
+    timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
+
+    # Use scenario_id for folder/file naming if provided, otherwise fall back to timestamp
+    if (!is.null(scenario_id)) {
+        folder_name <- scenario_id
+    } else {
+        folder_name <- timestamp
+    }
+
+    DATA_PREPARED_SIM_PATH <- file.path(output_folder, folder_name, "")
+    dir.create(DATA_PREPARED_SIM_PATH, recursive = TRUE, showWarnings = FALSE)
+
+    filename.vyp <- paste0(DATA_PREPARED_SIM_PATH, folder_name, "_simulated_cashflows_EW_VYP.csv")
+    filename.fund <- paste0(DATA_PREPARED_SIM_PATH, folder_name, "_simulated_cashflows_EW.csv")
+    filename.meta <- paste0(DATA_PREPARED_SIM_PATH, folder_name, "_simulated_cashflows_EW_meta.csv")
+
+    # Build metadata with all factor loadings
+    df.meta <- data.frame(
+        scenario_id = ifelse(is.null(scenario_id), "", scenario_id),
+        timestamp = timestamp,
+        investment.period = investment.period,
+        max.holding.period = max.holding.period,
+        no.deals = no.deals,
+        alpha = alpha,
+        beta_MKT = beta_MKT,
+        beta_ME = beta_ME,
+        beta_IA = beta_IA,
+        beta_ROE = beta_ROE,
+        beta_EG = beta_EG,
+        no.samples = no.samples,
+        no.funds = no.funds,
+        min.vin = min.vin,
+        max.vin = max.vin,
+        stdvs = stdvs,
+        exp.aff.sdf = exp.aff.sdf,
+        use.shifted.lognormal = use.shifted.lognormal,
+        simulate.mkt = simulate.mkt,
+        shock.model = shock.model
+    )
+
+    cat("Saving files to:", DATA_PREPARED_SIM_PATH, "\n")
+    write.csv(df.vyp, filename.vyp, row.names = FALSE)
+    # fund-level file is large (~3 GB for 1,000 samples x 50 funds x 20
+    # vintages) and only needed for fund-level estimation (EW, U_pair)
+    if (write.fund.level) {
+        write.csv(df.out, filename.fund, row.names = FALSE)
+    } else {
+        filename.fund <- NULL
+        cat("  Fund-level file not written (write.fund.level = FALSE)\n")
+    }
+    write.csv(df.meta, filename.meta, row.names = FALSE)
+
+    # Save simulated factors if market was simulated
+    filename.factors <- NULL
+    if (simulate.mkt && length(output_factors) > 0) {
+        df.sim.factors <- data.table::rbindlist(output_factors)
+        filename.factors <- paste0(DATA_PREPARED_SIM_PATH, folder_name, "_simulated_factors.csv")
+        write.csv(df.sim.factors, filename.factors, row.names = FALSE)
+        cat("  Simulated factors:", basename(filename.factors), "\n")
+        rm(df.sim.factors)
+    }
+
+    cat("Done! Generated files:\n")
+    cat("  VYP data:", basename(filename.vyp), "\n")
+    cat("  Fund data:", basename(filename.fund), "\n")
+    cat("  Metadata:", basename(filename.meta), "\n")
+    if (!is.null(filename.factors)) cat("  Sim factors:", basename(filename.factors), "\n")
+    cat("\n")
+
+    return(invisible(list(
+        vyp_path = filename.vyp,
+        fund_path = filename.fund,
+        meta_path = filename.meta,
+        factors_path = filename.factors,
+        folder = DATA_PREPARED_SIM_PATH,
+        timestamp = timestamp,
+        metadata = df.meta
+    )))
+}
+
+# ============================================================================
+# Backward-Compatible Wrapper
+# ============================================================================
+
+#' Backward-compatible wrapper for create.simulation.multifactor
+#'
+#' Maps old parameter names to new function. Can be used as drop-in replacement.
+create.simulation <- function(
+    no.deals,
+    investment.period,
+    max.holding.period,
+    alpha,
+    beta, # Old name for beta_MKT
+    beta_ME = 0,
+    beta_IA = 0,
+    beta_ROE = 0,
+    beta_EG = 0,
+    no.samples,
+    no.funds,
+    min.vin,
+    max.vin,
+    stdvs,
+    exp.aff.sdf,
+    use.shifted.lognormal = FALSE,
+    simulate.mkt = FALSE,
+    scenario_id = NULL) {
+    create.simulation.multifactor(
+        no.deals = no.deals,
+        investment.period = investment.period,
+        max.holding.period = max.holding.period,
+        alpha = alpha,
+        beta_MKT = beta,
+        beta_ME = beta_ME,
+        beta_IA = beta_IA,
+        beta_ROE = beta_ROE,
+        beta_EG = beta_EG,
+        no.samples = no.samples,
+        no.funds = no.funds,
+        min.vin = min.vin,
+        max.vin = max.vin,
+        stdvs = stdvs,
+        exp.aff.sdf = exp.aff.sdf,
+        use.shifted.lognormal = use.shifted.lognormal,
+        simulate.mkt = simulate.mkt,
+        scenario_id = scenario_id
+    )
+}
+
+# ============================================================================
+# Self-Test (if run directly)
+# ============================================================================
+
+if (sys.nframe() == 0L) {
+    cat("\n=== simulation_multifactor.R ===\n\n")
+    cat("This script provides multi-factor DGP support for simulation studies.\n\n")
+    cat("Available functions:\n")
+    cat("  create.simulation.multifactor()  - Full multi-factor support\n")
+    cat("  create.simulation()              - Backward-compatible wrapper\n")
+    cat("\n")
+    cat("Example:\n")
+    cat("  create.simulation.multifactor(\n")
+    cat("    no.deals = 15, investment.period = 5, max.holding.period = 10,\n")
+    cat("    alpha = 0, beta_MKT = 1, beta_ME = 0.5,\n")
+    cat("    no.samples = 100, no.funds = 5, min.vin = 1990, max.vin = 1995,\n")
+    cat("    stdvs = 0.2, exp.aff.sdf = FALSE\n")
+    cat("  )\n")
+}

@@ -217,10 +217,16 @@ for (g in C.ROWS) {
 ic <- read.csv("results/mc_step4/inference_checks.csv", stringsAsFactors = FALSE)
 v4 <- ic[ic$check == "v400_tails", ]; v4 <- v4[order(v4$design != "v_V400_n5", v4$H), ]
 stopifnot(nrow(v4) == 4)
+# Wald size at V = 1,600 and null-evaluated score-test size at V = 400 (simulation/mc_v400_diagnostic.R)
+v4d <- read.csv("results/mc_step4/v400_studentization_diagnostic.csv", stringsAsFactors = FALSE)
+v4d.400 <- v4d[v4d$label %in% c("1. Baseline (resamp+LN)", "Scale V=400  n=5"), ]
+v4d.1600 <- v4d[v4d$label %in% c("Scale V=1600 n=20", "Scale V=1600 n=5") & v4d$H == 0, ]
+stopifnot(nrow(v4d.400) == 4, nrow(v4d.1600) == 2, all(v4d.400$V == 400), all(v4d.1600$V == 1600))
 v4.note <- sprintf(paste0("Equal-count and growing-$V$ rows: on resampled paths at $V=400$, equal-vintage $U_{v,H}$ still rejects in %.1f--%.1f\\%% of draws with low median $N_{\\mathrm{eff}}$ (%.0f--%.0f) and a left-tail excess (left/right rejections %s across $n\\in\\{5,20\\}\\times H\\in\\{0,15\\}$); ",
-    "with the test denominator fixed at the Monte Carlo SD they become %s, so the excess comes from the studentization (an estimated SE that co-moves with the estimation error). Table~\\ref{tab:mc_v400_studentization} traces this distortion to two compounding-kurtosis channels---left-skewed lognormal deal payoffs at $H=0$ and 15-year compounded benchmark weights $A_{v,15}^2$ at $H=15$ (cf.\\ Martin 2012)---and confirms convergence to nominal 4.4--5.0\\%% rejection by $V=1{,}600$ at $H=0$ (and 3.6--6.0\\%% already at $V=400$ under the null-evaluated fixed-$b$ score test). "),
+    "with the test denominator fixed at the Monte Carlo SD they become %s, so the excess comes from the studentization (an estimated SE that co-moves with the estimation error). Table~\\ref{tab:mc_v400_studentization} traces this distortion to two compounding-kurtosis channels---left-skewed lognormal deal payoffs at $H=0$ and 15-year compounded benchmark weights $A_{v,15}^2$ at $H=15$ (cf.\\ Martin 2012)---and is consistent with convergence to nominal %.1f--%.1f\\%% rejection by $V=1{,}600$ at $H=0$ (the null-evaluated fixed-$b$ score test rejects %.1f--%.1f\\%% at $V=400$). "),
   100 * min(v4$reject), 100 * max(v4$reject), min(v4$median.neff), max(v4$median.neff),
-  paste(sprintf("%d/%d", v4$left, v4$right), collapse = ", "), paste(sprintf("%d/%d", v4$left.mcsd, v4$right.mcsd), collapse = ", "))
+  paste(sprintf("%d/%d", v4$left, v4$right), collapse = ", "), paste(sprintf("%d/%d", v4$left.mcsd, v4$right.mcsd), collapse = ", "),
+  100 * min(v4d.1600$rej_h), 100 * max(v4d.1600$rej_h), 100 * min(v4d.400$rej_score0), 100 * max(v4d.400$rej_score0))
 a1 <- c(a1, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
   paste0("{\\scriptsize\\textit{Notes:} Panel C: single factor, horizons 0 and 15 years; entries are conditional rejection rates of the structural value $\\beta_{MKT}=1$ among tested interior draws (for L2 VYP and $U_{v,H}$, 100\\% of draws are tested except 99.8\\% in $v\\_{V25\\_n5}$ $H=0$ $U_{v,H}$). ",
     "IV is the smallest root of $V^{-1}\\sum_v z_vPV_v(\\beta)=0$ with $z_v=A_{v,H}(1)/A_{v,0}(1)$ (the mean pricing moment at $H=0$), tested only when a root exists on the interior of $\\Theta$ (Tested column: share of draws with a tested root at $H=0/15$ yr); assigning $\\beta_0=1$ as the IV target without path shocks reflects moment validity rather than general root identification. ",
@@ -547,7 +553,7 @@ p2 <- ggplot(f2, aes(value, design, colour = estimator, shape = estimator)) +
 ggsave(file.path(out.dir, "figure_S2_margins.pdf"), p2, width = 8, height = 7, device = "pdf")
 message("wrote ", file.path(out.dir, "figure_S2_margins.pdf"))
 
-# Figure S3: growing V with fixed funds per vintage (Referee 2's H = 0 plateau
+# Figure S3: growing V with fixed funds per vintage (the H = 0 plateau
 # diagnostic): bias and rejection of the true beta against V, resampled paths
 # (rejection bars: binomial SE at the observed rate)
 S3.SERIES <- c("L2, vintage portfolios", "L2: target shift", "U, q = 1", "IV")

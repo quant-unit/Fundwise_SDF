@@ -1,0 +1,846 @@
+# ==================================
+# Empirical Scenarios Configuration
+# ==================================
+# This YAML file defines all empirical estimation scenarios.
+# Each scenario specifies data sources and estimation settings.
+#
+# Usage:
+#   source("run_empirical_study.R")
+#   run_empirical_study(scenario_ids = c("fw_no_cv", "ew_cv"))
+
+# Default values inherited by all scenarios unless overridden
+defaults:
+  private_source: "preqin"
+  public_filename: "q_factors"
+  # data_prepared_2026_c: constant-composition pools (B4), commitment-normalized
+  # FW pools (B6), complete-history main sample. Robustness sample with all
+  # funds: data_prepared_2026_c_allfunds. Previous reporter-mean pools:
+  # data_prepared_2026_b (results in results/data_out_2026-emp).
+  data_prepared_folder: "data_prepared_2026_c"
+  cutoff: ""
+  sdf_model: "linear"
+  error_function: "L2_Lasso"
+  include_alpha_term: false
+  use_vintage_year_pfs: true
+  max_months: [0, 1, 30, 60, 120, 150, 180, 210, 240, 270, 300, 330, 360]
+  lambdas: 0
+  # HAC truncation: "llsw" = ceil(1.3 * sqrt(V)) per sample (Lazarus, Lewis, Stock and
+  # Watson 2018) with Kiefer-Vogelsang fixed-b tests (decision 2026-11-17,
+  # helper/fixedb.R); a number keeps a fixed bandwidth in vintage years
+  kernel_bandwidth: "llsw"
+  alpha_lower: -0.02
+  alpha_upper: 0.02
+  part_to_keep: 1
+  no_partitions: 1
+  max_vintage: 2010
+  final_nav_discount: 100
+  # vintage origin t0 of the horizon window: "first.cf" (first cash-flow date
+  # of the vintage) or "predetermined" (Dec 31 of vintage year - 1); B5
+  origin_convention: "first.cf"
+  # separate output folder: cached results are timestamped files per scenario
+  # and the analysis reads every file in a folder, so _b and _c must not mix
+  data_out_folder: "results/data_out_2026-emp-c"
+
+# ============================================================================
+# ONE-FACTOR MODELS (Market Beta Only)
+# ============================================================================
+
+scenarios:
+  # --------------------------------------------------------------------------
+  # Fund-Weighted Scenarios
+  # --------------------------------------------------------------------------
+  fw_no_cv:
+    description: "Fund-weighted VYP, no cross-validation"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+  
+  fw_cv:
+    description: "Fund-weighted VYP, with cross-validation"
+    weighting: "FW"
+    do_cross_validation: true
+    factors_to_use: ""
+    active: true
+  
+  # --------------------------------------------------------------------------
+  # Equal-Weighted Scenarios
+  # --------------------------------------------------------------------------
+  ew_no_cv:
+    description: "Equal-weighted VYP, no cross-validation"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+  
+  ew_cv:
+    description: "Equal-weighted VYP, with cross-validation"
+    weighting: "EW"
+    do_cross_validation: true
+    factors_to_use: ""
+    active: true
+
+  # --------------------------------------------------------------------------
+  # Regional Scenarios (Europe & North America)
+  # --------------------------------------------------------------------------
+  fw_no_cv_europe:
+    description: "Fund-weighted VYP, no CV, Europe"
+    weighting: "FW"
+    region: "Europe"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+
+  fw_cv_europe:
+    description: "Fund-weighted VYP, CV, Europe"
+    weighting: "FW"
+    region: "Europe"
+    do_cross_validation: true
+    factors_to_use: ""
+    active: true
+
+  ew_no_cv_europe:
+    description: "Equal-weighted VYP, no CV, Europe"
+    weighting: "EW"
+    region: "Europe"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+
+  ew_cv_europe:
+    description: "Equal-weighted VYP, CV, Europe"
+    weighting: "EW"
+    region: "Europe"
+    do_cross_validation: true
+    factors_to_use: ""
+    active: true
+
+  fw_no_cv_north_america:
+    description: "Fund-weighted VYP, no CV, North America"
+    weighting: "FW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+
+  fw_cv_north_america:
+    description: "Fund-weighted VYP, CV, North America"
+    weighting: "FW"
+    region: "North America"
+    do_cross_validation: true
+    factors_to_use: ""
+    active: true
+
+  ew_no_cv_north_america:
+    description: "Equal-weighted VYP, no CV, North America"
+    weighting: "EW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+
+  ew_cv_north_america:
+    description: "Equal-weighted VYP, CV, North America"
+    weighting: "EW"
+    region: "North America"
+    do_cross_validation: true
+    factors_to_use: ""
+    active: true
+
+  # --------------------------------------------------------------------------
+  # Cross-fund pair-product criterion U_{v,H} (revision plan B5, theorem T7).
+  # Uses fund-level files (use_vintage_year_pfs: false); fund-level CSVs are
+  # gitignored and regenerated by empirical/prep_preqin.R.
+  # --------------------------------------------------------------------------
+  u_ew_no_cv_north_america:
+    description: "U_{v,H}, equal fund weights, equal vintage weights, North America"
+    weighting: "EW"
+    region: "North America"
+    use_vintage_year_pfs: false
+    error_function: "U_pair"
+    vintage_weights: "equal"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+
+  u_ew_no_cv_north_america_qn:
+    description: "U_{v,H}, equal fund weights, vintage weights q_v = n_v, North America"
+    weighting: "EW"
+    region: "North America"
+    use_vintage_year_pfs: false
+    error_function: "U_pair"
+    vintage_weights: "n.funds"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+
+  u_fw_no_cv_north_america:
+    description: "U_{v,H}, fund-size weights, equal vintage weights, North America"
+    weighting: "FW"
+    region: "North America"
+    use_vintage_year_pfs: false
+    error_function: "U_pair"
+    vintage_weights: "equal"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+
+  u_fw_no_cv_north_america_qn:
+    description: "U_{v,H}, fund-size weights, vintage weights q_v = n_v, North America"
+    weighting: "FW"
+    region: "North America"
+    use_vintage_year_pfs: false
+    error_function: "U_pair"
+    vintage_weights: "n.funds"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+
+  fw_no_cv_north_america_l1:
+    description: "Fund-weighted VYP, no CV, North America, L1 Loss"
+    weighting: "FW"
+    error_function: "L1_Ridge"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+
+  fw_cv_north_america_l1:
+    description: "Fund-weighted VYP, CV, North America, L1 Loss"
+    weighting: "FW"
+    error_function: "L1_Ridge"
+    region: "North America"
+    do_cross_validation: true
+    factors_to_use: ""
+    active: true
+
+  ew_no_cv_north_america_l1:
+    description: "Equal-weighted VYP, no CV, North America, L1 Loss"
+    weighting: "EW"
+    error_function: "L1_Ridge"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+
+  ew_cv_north_america_l1:
+    description: "Equal-weighted VYP, CV, North America, L1 Loss"
+    weighting: "EW"
+    error_function: "L1_Ridge"
+    region: "North America"
+    do_cross_validation: true
+    factors_to_use: ""
+    active: true
+    
+  fw_vintage_sweep_north_america:
+    description: "FW VYP, no CV, max vintage 2011–2021"
+    weighting: "FW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    max_vintages: [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+    active: false
+
+  ew_vintage_sweep_north_america:
+    description: "EW VYP, no CV, max vintage 2011–2021"
+    weighting: "EW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    max_vintages: [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+    active: false
+
+  fw_vintage_sweep_north_america_NC50:
+    description: "FW VYP, no CV, max vintage 2011–2021, 50% final NAV discout"
+    weighting: "FW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    max_vintages: [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+    active: false
+    final_nav_discount: 50
+
+  ew_vintage_sweep_north_america_NC50:
+    description: "EW VYP, no CV, max vintage 2011–2021, 50% final NAV discout"
+    weighting: "EW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    max_vintages: [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+    active: false
+    final_nav_discount: 50
+
+  fw_no_cv_north_america_NC0:
+    description: "Fund-weighted VYP, no CV, North America"
+    weighting: "FW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+    final_nav_discount: 0
+
+  ew_no_cv_north_america_NC0:
+    description: "Equal-weighted VYP, no CV, North America"
+    weighting: "EW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+    final_nav_discount: 0
+
+  fw_no_cv_north_america_NC25:
+    description: "Fund-weighted VYP, no CV, North America"
+    weighting: "FW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+    final_nav_discount: 25
+
+  ew_no_cv_north_america_NC25:
+    description: "Equal-weighted VYP, no CV, North America"
+    weighting: "EW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+    final_nav_discount: 25
+
+  fw_no_cv_north_america_NC50:
+    description: "Fund-weighted VYP, no CV, North America"
+    weighting: "FW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+    final_nav_discount: 50
+
+  ew_no_cv_north_america_NC50:
+    description: "Equal-weighted VYP, no CV, North America"
+    weighting: "EW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+    final_nav_discount: 50
+    
+  fw_no_cv_north_america_NC75:
+    description: "Fund-weighted VYP, no CV, North America"
+    weighting: "FW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+    final_nav_discount: 75
+
+  ew_no_cv_north_america_NC75:
+    description: "Equal-weighted VYP, no CV, North America"
+    weighting: "EW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: true
+    final_nav_discount: 75
+    
+# ============================================================================
+# TWO-FACTOR MODELS (Market Beta + Second Factor)
+# ============================================================================
+  
+  # --------------------------------------------------------------------------
+  # Fund-Weighted + Second Factor
+  # --------------------------------------------------------------------------
+  fw_no_cv_alpha:
+    description: "Fund-weighted VYP, no CV, estimate α"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: "Alpha"
+    active: false
+  
+  fw_no_cv_ME:
+    description: "Fund-weighted VYP, no CV, estimate ME"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: "ME"
+    active: false
+  
+  fw_no_cv_IA:
+    description: "Fund-weighted VYP, no CV, estimate IA"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: "IA"
+    active: false
+  
+  fw_no_cv_ROE:
+    description: "Fund-weighted VYP, no CV, estimate ROE"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: "ROE"
+    active: false
+  
+  fw_no_cv_EG:
+    description: "Fund-weighted VYP, no CV, estimate EG"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: "EG"
+    active: false
+  
+  # --------------------------------------------------------------------------
+  # Equal-Weighted + Second Factor
+  # --------------------------------------------------------------------------
+  ew_no_cv_alpha:
+    description: "Equal-weighted VYP, no CV, estimate α"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: "Alpha"
+    active: false
+  
+  ew_no_cv_ME:
+    description: "Equal-weighted VYP, no CV, estimate ME"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: "ME"
+    active: false
+  
+  ew_no_cv_IA:
+    description: "Equal-weighted VYP, no CV, estimate IA"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: "IA"
+    active: false
+  
+  ew_no_cv_ROE:
+    description: "Equal-weighted VYP, no CV, estimate ROE"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: "ROE"
+    active: false
+  
+  ew_no_cv_EG:
+    description: "Equal-weighted VYP, no CV, estimate EG"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: "EG"
+    active: false
+
+# ============================================================================
+# MAX VINTAGE SWEEP (Robustness: estimate for each max vintage year)
+# ============================================================================
+
+  fw_vintage_sweep:
+    description: "FW VYP, no CV, max vintage 2011–2021"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: ""
+    max_vintages: [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+    active: false
+
+  ew_vintage_sweep:
+    description: "EW VYP, no CV, max vintage 2011–2021"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: ""
+    max_vintages: [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+    active: false
+
+  fw_vintage_sweep_NC50:
+    description: "FW VYP, no CV, max vintage 2011–2021, 50% final NAV discout"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: ""
+    max_vintages: [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+    active: false
+    final_nav_discount: 50
+
+  ew_vintage_sweep_NC50:
+    description: "EW VYP, no CV, max vintage 2011–2021, 50% final NAV discout"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: ""
+    max_vintages: [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+    active: false
+    final_nav_discount: 50
+    
+# ============================================================================
+# FAMA-FRENCH 3 FACTOR MODELS
+# ============================================================================
+
+  # --------------------------------------------------------------------------
+  # One-Factor (MKT only, using FF3 data source)
+  # --------------------------------------------------------------------------
+  ff3_fw_no_cv:
+    description: "FF3 data, fund-weighted VYP, no CV (MKT-only)"
+    public_filename: "ff3_factors"
+    region: "North America"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: "MKT"
+    active: true
+
+  ff3_ew_no_cv:
+    description: "FF3 data, equal-weighted VYP, no CV (MKT-only)"
+    public_filename: "ff3_factors"
+    region: "North America"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: "MKT"
+    active: true
+
+  ff3_fw_cv:
+    description: "FF3 data, fund-weighted VYP, no CV (MKT-only)"
+    public_filename: "ff3_factors"
+    region: "North America"
+    weighting: "FW"
+    do_cross_validation: true
+    factors_to_use: "MKT"
+    active: true
+
+  ff3_ew_cv:
+    description: "FF3 data, equal-weighted VYP, no CV (MKT-only)"
+    public_filename: "ff3_factors"
+    region: "North America"
+    weighting: "EW"
+    do_cross_validation: true
+    factors_to_use: "MKT"
+    active: true
+    
+  # --------------------------------------------------------------------------
+  # Two-Factor: MKT + SMB
+  # --------------------------------------------------------------------------
+  ff3_fw_no_cv_SMB:
+    description: "FF3 data, fund-weighted VYP, no CV, MKT+SMB"
+    public_filename: "ff3_factors"
+    region: "North America"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: "SMB"
+    active: false
+
+  ff3_ew_no_cv_SMB:
+    description: "FF3 data, equal-weighted VYP, no CV, MKT+SMB"
+    public_filename: "ff3_factors"
+    region: "North America"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: "SMB"
+    active: false
+
+  # --------------------------------------------------------------------------
+  # Two-Factor: MKT + HML
+  # --------------------------------------------------------------------------
+  ff3_fw_no_cv_HML:
+    description: "FF3 data, fund-weighted VYP, no CV, MKT+HML"
+    public_filename: "ff3_factors"
+    region: "North America"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: "HML"
+    active: false
+
+  ff3_ew_no_cv_HML:
+    description: "FF3 data, equal-weighted VYP, no CV, MKT+HML"
+    public_filename: "ff3_factors"
+    region: "North America"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: "HML"
+    active: false
+
+  # --------------------------------------------------------------------------
+  # Two-Factor: Alpha + MKT (FF3 data)
+  # --------------------------------------------------------------------------
+  ff3_fw_no_cv_alpha:
+    description: "FF3 data, fund-weighted VYP, no CV, Alpha+MKT"
+    public_filename: "ff3_factors"
+    region: "North America"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: "Alpha"
+    include_alpha_term: true
+    active: false  # Redundant: Alpha is already handled by include_alpha_term
+
+  ff3_ew_no_cv_alpha:
+    description: "FF3 data, equal-weighted VYP, no CV, Alpha+MKT"
+    public_filename: "ff3_factors"
+    region: "North America"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: "Alpha"
+    include_alpha_term: true
+    active: false  # Redundant: Alpha is already handled by include_alpha_term
+
+  ff3_fw_cv_alpha:
+    description: "FF3 data, fund-weighted VYP, CV, Alpha+MKT"
+    public_filename: "ff3_factors"
+    region: "North America"
+    weighting: "FW"
+    do_cross_validation: true
+    factors_to_use: "Alpha"
+    include_alpha_term: true
+    active: false  # Deactivated: run after verifying no-CV first
+
+  ff3_ew_cv_alpha:
+    description: "FF3 data, equal-weighted VYP, CV, Alpha+MKT"
+    public_filename: "ff3_factors"
+    region: "North America"
+    weighting: "EW"
+    do_cross_validation: true
+    factors_to_use: "Alpha"
+    include_alpha_term: true
+    active: false  # Deactivated: run after verifying no-CV first
+  
+  # --------------------------------------------------------------------------
+  # Three-Factor: MKT + SMB + HML (FF3 data)
+  # --------------------------------------------------------------------------
+  ff3_fw_no_cv_ALL_3f:
+    description: "FF3 data, fund-weighted VYP, no CV, MKT+SMB+HML"
+    public_filename: "ff3_factors"
+    region: "North America"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: ["MKT", "SMB", "HML"]
+    include_alpha_term: false
+    active: true
+
+  ff3_ew_no_cv_ALL_3f:
+    description: "FF3 data, equal-weighted VYP, no CV, MKT+SMB+HML"
+    public_filename: "ff3_factors"
+    region: "North America"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: ["MKT", "SMB", "HML"]
+    include_alpha_term: false
+    active: true
+ 
+  ff3_fw_cv_ALL_3f:
+    description: "FF3 data, fund-weighted VYP, no CV, MKT+SMB+HML"
+    public_filename: "ff3_factors"
+    region: "North America"
+    weighting: "FW"
+    do_cross_validation: true
+    factors_to_use: ["MKT", "SMB", "HML"]
+    include_alpha_term: false
+    active: true
+
+  ff3_ew_cv_ALL_3f:
+    description: "FF3 data, equal-weighted VYP, no CV, MKT+SMB+HML"
+    public_filename: "ff3_factors"
+    region: "North America"
+    weighting: "EW"
+    do_cross_validation: true
+    factors_to_use: ["MKT", "SMB", "HML"]
+    include_alpha_term: false
+    active: true    
+  # --------------------------------------------------------------------------
+  # Four-Factor: Alpha + MKT + SMB + HML (FF3 data)
+  # --------------------------------------------------------------------------
+  ff3_fw_no_cv_ALL:
+    description: "FF3 data, fund-weighted VYP, no CV, Alpha+MKT+SMB+HML"
+    public_filename: "ff3_factors"
+    region: "North America"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: "ALL"
+    include_alpha_term: true
+    active: true
+
+  ff3_ew_no_cv_ALL:
+    description: "FF3 data, equal-weighted VYP, no CV, Alpha+MKT+SMB+HML"
+    public_filename: "ff3_factors"
+    region: "North America"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: "ALL"
+    include_alpha_term: true
+    active: true
+    
+  ff3_fw_cv_ALL:
+    description: "FF3 data, fund-weighted VYP, CV, Alpha+MKT+SMB+HML"
+    public_filename: "ff3_factors"
+    region: "North America"
+    weighting: "FW"
+    do_cross_validation: true
+    factors_to_use: "ALL"
+    include_alpha_term: true
+    active: true
+
+  ff3_ew_cv_ALL:
+    description: "FF3 data, equal-weighted VYP, CV, Alpha+MKT+SMB+HML"
+    public_filename: "ff3_factors"
+    region: "North America"
+    weighting: "EW"
+    do_cross_validation: true
+    factors_to_use: "ALL"
+    include_alpha_term: true
+    active: true
+    
+# ============================================================================
+# ALTERNATIVE DATA SOURCES
+# ============================================================================
+
+  pitchbook_fw_no_cv:
+    description: "PitchBook data, fund-weighted, no CV"
+    private_source: "pitchbook"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: false
+  
+  pitchbook_ew_no_cv:
+    description: "PitchBook data, equal-weighted, no CV"
+    private_source: "pitchbook"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: ""
+    active: false
+
+### PITCHBOOK
+
+# ============================================================================
+# MAX VINTAGE SWEEP (Robustness: estimate for each max vintage year)
+# ============================================================================
+
+  pitchbook_fw_vintage_sweep:
+    private_source: "pitchbook"
+    data_prepared_folder: "data_prepared"
+    cutoff: "_cutoff_2025"
+    description: "FW VYP, no CV, max vintage 2011–2021"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: ""
+    max_vintages: [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+    active: false
+
+  pitchbook_ew_vintage_sweep:
+    private_source: "pitchbook"
+    data_prepared_folder: "data_prepared"
+    cutoff: "_cutoff_2025"
+    description: "EW VYP, no CV, max vintage 2011–2021"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: ""
+    max_vintages: [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+    active: false
+
+  pitchbook_fw_vintage_sweep_NC50:
+    private_source: "pitchbook"
+    data_prepared_folder: "data_prepared"
+    cutoff: "_cutoff_2025"
+    description: "FW VYP, no CV, max vintage 2011–2021, 50% final NAV discout"
+    weighting: "FW"
+    do_cross_validation: false
+    factors_to_use: ""
+    max_vintages: [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+    active: false
+    final_nav_discount: 50
+
+  pitchbook_ew_vintage_sweep_NC50:
+    private_source: "pitchbook"
+    data_prepared_folder: "data_prepared"
+    cutoff: "_cutoff_2025"
+    description: "EW VYP, no CV, max vintage 2011–2021, 50% final NAV discout"
+    weighting: "EW"
+    do_cross_validation: false
+    factors_to_use: ""
+    max_vintages: [2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021]
+    active: false
+    final_nav_discount: 50
+
+  # --------------------------------------------------------------------------
+  # Sample robustness (revision plan, Section B; log entries "robustness runs:
+  # scope" and "robustness runs"): the North America L2 (no CV) and U_{v,H}
+  # (q_v = 1) scenarios on the all-funds sample and on the complete-history
+  # sample without early stoppers with terminal NAV > 20% of total value. Each
+  # variant writes to its own output folder, so its caches never mix with the
+  # main results.
+  # --------------------------------------------------------------------------
+  ew_no_cv_north_america_allfunds:
+    description: "Equal-weighted VYP, no CV, North America; sample: all funds (complete and truncated histories)"
+    weighting: "EW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    data_prepared_folder: "data_prepared_2026_c_allfunds"
+    data_out_folder: "results/data_out_2026-emp-c-allfunds"
+    active: true
+
+  fw_no_cv_north_america_allfunds:
+    description: "Fund-weighted VYP, no CV, North America; sample: all funds (complete and truncated histories)"
+    weighting: "FW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    data_prepared_folder: "data_prepared_2026_c_allfunds"
+    data_out_folder: "results/data_out_2026-emp-c-allfunds"
+    active: true
+
+  u_ew_no_cv_north_america_allfunds:
+    description: "U_{v,H}, equal fund weights, equal vintage weights, North America; sample: all funds (complete and truncated histories)"
+    weighting: "EW"
+    region: "North America"
+    use_vintage_year_pfs: false
+    error_function: "U_pair"
+    vintage_weights: "equal"
+    do_cross_validation: false
+    factors_to_use: ""
+    data_prepared_folder: "data_prepared_2026_c_allfunds"
+    data_out_folder: "results/data_out_2026-emp-c-allfunds"
+    active: true
+
+  u_fw_no_cv_north_america_allfunds:
+    description: "U_{v,H}, fund-size fund weights, equal vintage weights, North America; sample: all funds (complete and truncated histories)"
+    weighting: "FW"
+    region: "North America"
+    use_vintage_year_pfs: false
+    error_function: "U_pair"
+    vintage_weights: "equal"
+    do_cross_validation: false
+    factors_to_use: ""
+    data_prepared_folder: "data_prepared_2026_c_allfunds"
+    data_out_folder: "results/data_out_2026-emp-c-allfunds"
+    active: true
+
+  ew_no_cv_north_america_navtrim20:
+    description: "Equal-weighted VYP, no CV, North America; sample: complete histories without funds stopping early with terminal NAV > 20% of total value (empirical/prep_nav_threshold.R)"
+    weighting: "EW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    data_prepared_folder: "data_prepared_2026_c_navtrim20"
+    data_out_folder: "results/data_out_2026-emp-c-navtrim20"
+    active: true
+
+  fw_no_cv_north_america_navtrim20:
+    description: "Fund-weighted VYP, no CV, North America; sample: complete histories without funds stopping early with terminal NAV > 20% of total value (empirical/prep_nav_threshold.R)"
+    weighting: "FW"
+    region: "North America"
+    do_cross_validation: false
+    factors_to_use: ""
+    data_prepared_folder: "data_prepared_2026_c_navtrim20"
+    data_out_folder: "results/data_out_2026-emp-c-navtrim20"
+    active: true
+
+  u_ew_no_cv_north_america_navtrim20:
+    description: "U_{v,H}, equal fund weights, equal vintage weights, North America; sample: complete histories without funds stopping early with terminal NAV > 20% of total value (empirical/prep_nav_threshold.R)"
+    weighting: "EW"
+    region: "North America"
+    use_vintage_year_pfs: false
+    error_function: "U_pair"
+    vintage_weights: "equal"
+    do_cross_validation: false
+    factors_to_use: ""
+    data_prepared_folder: "data_prepared_2026_c_navtrim20"
+    data_out_folder: "results/data_out_2026-emp-c-navtrim20"
+    active: true
+
+  u_fw_no_cv_north_america_navtrim20:
+    description: "U_{v,H}, fund-size fund weights, equal vintage weights, North America; sample: complete histories without funds stopping early with terminal NAV > 20% of total value (empirical/prep_nav_threshold.R)"
+    weighting: "FW"
+    region: "North America"
+    use_vintage_year_pfs: false
+    error_function: "U_pair"
+    vintage_weights: "equal"
+    do_cross_validation: false
+    factors_to_use: ""
+    data_prepared_folder: "data_prepared_2026_c_navtrim20"
+    data_out_folder: "results/data_out_2026-emp-c-navtrim20"
+    active: true

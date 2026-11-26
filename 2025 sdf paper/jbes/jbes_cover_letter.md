@@ -34,7 +34,7 @@ To ensure full transparency and end-to-end reproducibility despite this commerci
 
 ### Submitted Files
 
-1. `jbes_main_blind.pdf`: Anonymized double-spaced main manuscript (38 pages inclusive of 3 figures, 5 tables, and references; 184-word abstract).
+1. `jbes_main_blind.pdf`: Anonymized double-spaced main manuscript (39 pages inclusive of 3 figures, 5 tables, and references; 184-word abstract).
 2. `jbes_supplement_blind.pdf`: Anonymized standalone Online Supplementary Material (Appendices A–F; all mathematical proofs, primitive verification lemmas, and extended Monte Carlo and empirical exhibits).
 3. `jbes_titlepage.pdf`: Separate non-blind title page with author affiliations, acknowledgments, funding, and conflict-of-interest disclosure.
 4. `jbes_replication.zip`: Anonymized, self-contained R replication archive with detailed `README.md` and synthetic end-to-end verification script.

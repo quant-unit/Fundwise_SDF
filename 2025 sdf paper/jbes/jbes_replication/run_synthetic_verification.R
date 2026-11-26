@@ -44,6 +44,31 @@ err_t1 <- max(abs(e15 - sc15 * e0))
 cat(sprintf("Check T1 (exact horizon rescaling identity): max |eps_H - A_H * PV| = %.3e\n", err_t1))
 stopifnot(err_t1 < 1e-12)
 
+# Identity check U_{v,H} (Eq. (6)): the O(n_v) formula used in estimation equals the
+# direct sum over distinct fund pairs, for EW and FW fund weights, at H = 15 yr
+u_direct <- function(e, fp, s, vintage.weights = "equal") {
+  u <- vapply(seq_len(fp$n.groups), function(k) {
+    i <- which(fp$group == k)
+    if (length(i) < 2) return(NA_real_)
+    P <- outer(e[i], e[i]); W <- outer(s[i], s[i])
+    (sum(P) - sum(diag(P))) / (sum(W) - sum(diag(W)))
+  }, 0)
+  w <- u.unit.weights(fp$group.n, vintage.weights)
+  ok <- !is.na(w)
+  mean(w[ok] * u[ok])
+}
+err_u <- 0
+for (lvl in c("fund", "fund.fw")) {
+  fp_u <- mc.as.fast(dr_bo, pub, lvl)
+  s_u <- if (lvl == "fund.fw") fp_u$size else rep(1, fp_u$n.units)
+  e_u <- fast.unit.errors(c(MKT = 1.25), fp_u, 180)
+  q_fast <- fast.u.criterion(e_u, fp_u, s_u)
+  q_pair <- u_direct(e_u, fp_u, s_u)
+  err_u <- max(err_u, abs(q_fast - q_pair) / max(1, abs(q_pair)))
+}
+cat(sprintf("Check U_{v,H} identity (O(n_v) formula vs. direct distinct-pair sum, EW and FW): max rel. diff = %.3e\n", err_u))
+stopifnot(err_u < 1e-10)
+
 # Identity check fixed-b critical values at empirical V in {23, 25, 27}
 c25 <- fixedb.crit.t(0.05, hac.bandwidth.llsw(25) / 25)
 c23 <- fixedb.crit.t(0.05, hac.bandwidth.llsw(23) / 23)
