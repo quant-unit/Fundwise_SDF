@@ -6,6 +6,8 @@
 *Companion Analysis:* `jbes_fit_analysis.md` (same folder)  
 *Source Files:* `2025 sdf paper/tex/sdf_paper.tex`, `sdf_paper_online_appendices.tex`, `sdf_paper_appendix_sdf.tex`, `sdf_paper_refs.bib`, `r_project/`
 
+> **Status (updated 2026-11-27):** Sections 0–7 are the original work plan of 2026-11-26. Section 8 is the running log of what has been done since, what was decided and why, and what is still open. Read Section 8 first when resuming.
+
 ---
 
 ## 0. Strategic Targets & Hard Constraints
@@ -213,3 +215,167 @@ Add verified entries for:
 | **Phase 5** | **WP5** (End-to-end numerical audit, visual PDF inspection, Cover Letter + Preqin exemption request) | 0.5–1 day | Submission-ready JBES package |
 
 **Total estimated timeline:** **~7–11 focused working days** (with every single upgrade also transferring 1-to-1 to JFEC / JEF / *Econometric Reviews* if ever needed as a fallback).
+
+---
+
+## 8. Pre-Submission Audit, Fixes, and Decisions Log (from 2026-11-27)
+
+Repository `~/github/Fundwise_SDF`, branch `revision-2026`. Nothing in this section has been pushed unless stated otherwise. Rule followed throughout: every number in the paper is recomputed from a file or produced by a script before it is stated.
+
+### 8.1 Commits
+
+| Commit | Content |
+| :--- | :--- |
+| `5db48f6` | JBES refinement 1: the package as audited. |
+| `8585b0d` | Critical audit fixes (8.2). |
+| `718cf64` | Clean empirical rerun from `8585b0d`; all exhibits regenerated (8.3). |
+| `cc1d53c` | Moderate audit items (8.4). |
+| `97c3c7f` | KV05 cubic-approximation footnote (8.5). |
+
+### 8.2 Referee-style audit of `5db48f6` and the critical fixes (`8585b0d`)
+
+The audit checked Appendix D (A1–A5, Lemma D.1, Prop 3, Cor 1 / Prop D.2), the code, every headline number against the CSVs, the fixed-*b* critical values, and blind/packaging hygiene.
+
+1. **Text claims contradicted by the CSVs**, corrected:
+   - *Calendar- vs. index-lag Bartlett weighting.* "No test decision changes" was wrong: 5 of 80 p-values cross a conventional threshold. No H = 0 decision at 5% changes.
+   - *Score test.* It was called calibrated, but it rejects 7.8% at V = 800, H = 0.
+   - *SD scaling.* "Exact V^{-1/2}" became "close to the V^{-1/2} rate".
+   - *Introduction.* "AR tests restore nominal size" was removed: the AR replay rejects 9–22%.
+2. **Unsourced numbers.**
+   - The kurtosis of β̂−1 at V = 400 (2.97–3.47) is now written by `simulation/mc_v400_error_moments.R` to `results/mc_step4/v400_error_moments.csv`.
+   - The Table AS1 note is computed in `mc_paper.R` instead of being hard-coded.
+3. **A1/A4 logical gap.**
+   - A fixed Θ with an almost-sure floor on gross returns is impossible with unbounded (e.g. Gaussian) factors, so A1 now assumes bounded factor support.
+   - The A4 remark "automatically satisfied with lognormal shocks" was wrong; it is replaced by explicit envelope bounds.
+4. **Replication archive.**
+   - The archive could not rebuild what the README claimed, so the missing configs, scripts and small precomputed inputs were added.
+   - The README runtimes were corrected: the Monte Carlo study takes about 9.6 h and the empirical estimation about 5 h.
+   - `jbes/build_jbes_replication.sh` refreshes the archive from `r_project/`, leak-scans it and zips it.
+5. **PDFs.** Recompiled with 0 `??`. The main text is 39 pp and the cover letter says 39.
+
+Verified clean in the audit:
+- The Hölder (2,4,4) step needs exactly 16+8δ moments; 8+4δ would not suffice.
+- The proofs of Lemma D.1(a), the KV functional and summation by parts, the sparse-gap embedding, the H₀* formula and bounds, and the M_m eigenvalues all check out.
+- The fixed-*b* critical values 2.790 / 2.867 / 2.722 were reproduced independently.
+- All headline and Section 4 numbers match the files.
+
+### 8.3 Clean empirical rerun and provenance (`718cf64`)
+
+- **Why.** Every empirical number had come from caches written with uncommitted changes (`git.dirty` TRUE).
+- **What was rerun.** The 26 exhibit scenarios were rerun from `8585b0d` in a clean scratch worktree. All 806 cache files (37,128 rows) are bit-identical to the earlier dirty caches. The superseded caches were moved to `r_project/results/data_out_2026-emp-superseded-731ea2f/` (gitignored).
+- **Pipeline fact (non-obvious).** The exhibit scripts read `0_*_summary.csv`, written by `results/analyze_result.R`, and nothing ran that step for the current result folders. The new `results/analyze_empirical_results.R` must run between `run_empirical_study.R` and `export_g1_g2_tables.R`; archive README §4.3 lists it.
+- **L1_Ridge tables.** They are not exhibits of the paper, and their scenarios were not re-estimated after the Nov 22 data change. `export_g1_g2_tables.R` now skips them with a message, and the tracked L1 tables are stale (Nov 18).
+- **Generation stamps.** Each exhibit's generation stamp reads "(uncommitted changes)" because earlier scripts in the chain had already rewritten tracked outputs. Only the estimation-provenance line matters, and it reads `8585b0d`, uncommitted FALSE.
+- **Known check quirk.** Check 3 of `check_main_u.R` reports "same sequence FALSE" for the E1 tables because `U.p1` is recorded first. The tables themselves are correct.
+
+### 8.4 Moderate audit items (`cc1d53c`)
+
+1. **Per-vintage score centering.**
+   - *Change.* Prop 3, Cor 1, Prop D.1 and D.2 now require E[s_v(θ†)] = 0 *for every vintage*. New Remark `rem:per_vintage_centering`.
+   - *Why.* The definition of θ† only zeroes the cross-vintage average. Centering holds for U under T7 for any pool sizes, because each vintage's expected criterion is stationary at θ₀. It fails for L2 when n_v varies, because the T3–T6 variance tilt moves each vintage's own minimizer. Hence significance markers go on U only.
+2. **A5 homogeneity versus trending n_v.**
+   - *Change.* "Exact KV reference distribution used throughout" is dropped.
+   - *Why.* n_v rises from 2 to 41 (Buyout) and 56 (VC U), so the KV values are an approximation. The justification is size by design: the core Monte Carlo designs use the observed calendars and fund counts, and U_{v,0} rejects 4.6% / 6.4% there.
+3. **Table AS6 rejection rates.**
+   - *Change.* The table now has Rej.% rows.
+   - *Why.* Horizon choice fixes bias but not inference. At H = 12.5–15 under persistent cohort or calendar shocks, tests reject a true α in 18.4–20.8% of draws at V = 25 (19.0–23.8% around the pseudo-true value) and in up to 17.2% at V = 100. The main text states this too.
+4. **The −5.12%/yr at H = 30, V = 100** is a finite-sample effect, not a contradiction of T7. The target shift is 0.00 and there are no bound hits, but the SD jumps from 0.30 to 7.74. The Table AS6 note says so, and the caption was shortened into a note so the table fits its page.
+5. **β at H = 15 under shared shocks.** It is biased by −0.074 (Buyout 2c) and −0.191 (VC), entirely because the target itself shifts (−0.083 / −0.199); tests of β = 1 reject 9.6%. This is stated in the main text and the Table AS3 note.
+6. **Symmetric deal-shock ablation.** It makes 22% of payoffs negative (37% for deals held ≥ 11 years; the light version 2.3%), which is outside Assumption 1. The shares are computed exactly in `mc_v400_table.R` and the ablation is labelled as such.
+7. **"Lowest RMSE"** now reads "among estimators with near-nominal tests". The text discloses that q_v = n_v has RMSE 0.056 / 0.086, and that a jackknife still rejects 10.3%.
+8. **Exposition.**
+   - *Prop 2(i).* The closed-form H₀* is now marked as continuous-time. `simulation/optimal_H_theory/discrete_vs_continuous_H0.R` shows the monthly-grid roots are at most 0.42 months shorter.
+   - *Prop 2(iv).* "Driving minimizers to ∂Θ" is replaced by the Monte Carlo evidence (42–100%); indefiniteness alone does not prove it.
+   - *Bandwidth ratio.* b = S/V is the conservative choice relative to S/V_cal (critical values 2.753 at 7/26 and 2.665 at 7/29). `helper/fixedb_q1_omega.rds` gained one cache entry (M = 241); the existing entries are unchanged.
+9. **Page counts.** The main text is still 39 pp; the supplement went from 59 to 60 pp.
+
+### 8.5 KV05 footnote (`97c3c7f`)
+
+- **Source.** Kiefer and Vogelsang (2005), Table 1, p. 1146, Bartlett 97.5% quantile: cv(b) = 1.9600 + 2.9694b + 0.4160b² − 0.5324b³. The copy is in `jfinecon_referees/papers/`.
+- **Size of the gap.** The cubic gives 2.812 / 2.887 / 2.749, i.e. 0.020–0.027 above ours.
+- **Nature of the gap.** It is a level difference between the two sets of simulated values, not a property of the cubic form. A cubic refitted to our grid matches it within 0.023, whereas KV's cubic lies above our whole grid (mean 0.027). The cause is not traced.
+- **Effect on results.** No main-sample Buyout/VC U test changes its 5% decision. Five robustness-sample tests would, and none of them is printed as a test.
+- **Script.** `results/fixedb_kv05_comparison.R`.
+
+### 8.6 Decisions (with reasons)
+
+| Date | Decision | Why |
+| :--- | :--- | :--- |
+| 2026-11-19 | q_v = n_v U columns: point estimates only, no SE or stars. The jackknife is kept in reserve for a referee. | q_v = n_v over-rejects about 20% under Bartlett; the jackknife brings this down to 10.3%, still twice nominal. |
+| 2026-11-27 | **No PitchBook data before submission.** Keep it as an independent replication sample for an R&R. | It does not resolve the VC identification question, and the complete-history rule adds only about 5 vintages (V ≈ 30, N_eff stays single-digit). The cost is weeks: license, a new prep pipeline, recalibrated MC designs (size by design rests on matching the sample's calendar and counts), regenerated exhibits, and a new audit. First check PitchBook's coverage of complete cash-flow histories per vintage for North American BO/VC. |
+| 2026-11-27 | **"Which VC beta": do options 1 and 3 now, option 2 as a short appendix result** (8.7). | Option 1 turns the referee's question into a test the paper runs itself. |
+| open | AssetMetrix affiliation in the disclosure statement. | The author's decision. |
+| open | Push `revision-2026`. | The author's decision. |
+
+### 8.7 "Which VC beta" weakness: plan
+
+- **The problem.** VC U β is 1.493 / 1.742 (EW/FW) at H = 0, 1.382 / 1.583 at H = 12.5 and 1.250 / 1.423 at H = 15 (`upair_VC_US_data.csv`). The headline at H = 0 is valid only without shared vintage shocks (T7). Yet the paper uses shared shocks to explain the VC alpha ceiling and calibrates its VC Monte Carlo with σ_W = 0.50. The paper has no test of which case holds.
+- **Option 1: horizon-invariance test.**
+  - *Logic.* Under (X) and c_v = 0, U targets the same β at every H, so a significant β̂_0 − β̂_H rejects the assumptions behind the headline.
+  - *Method.* The SE comes from one Bartlett sandwich over the stacked per-vintage scores of both horizons, with the fixed-*b* critical value. Buyout serves as a check.
+  - *Validation.* Size and power are checked by Monte Carlo on the core designs (c_v = 0) and the shared-shock designs.
+- **Option 2: joint two-moment test at H = 0** (short appendix result). At β₀ the mean pricing moment is zero either way, but the pair-product moment is zero only if c_v = 0. Inverting a joint fixed-*b* q = 2 test over β, an empty set means shared shocks. Low power is expected.
+- **Option 3: framing.** Present VC β as a band from H₀* to H = 0, with the bias direction known: under c_v > 0, U_{v,0} is biased upward. Conclusions to check at both ends: β > 0 rejected, β = 1 not rejected, point estimates below the squared-loss 2.73 of DLP12. Flag the 18–21% over-rejection at H = 12.5–15 under persistent shocks.
+
+### 8.8 "Which VC beta": results (2026-11-27, after `97c3c7f`)
+
+**Code.** All of it is in `r_project/` and copied to the replication archive; README §4.1 step 6 and §4.3 step 5 list it.
+- `helper/horizon_invariance.R` implements both tests.
+  - `u.horizon.contrast()`: the stacked M-estimator (β̂_0, β̂_H) of the separable criterion Q_0 + Q_H on the same vintage units. The SE is the q = 1 contrast of the stacked Bartlett sandwich: influence differences d_v = g_{v,0}/h_0 − g_{v,H}/h_H, se² = d′Kd/V², calendar-distance kernel, S = ⌈1.3√V⌉, b = S/V, fixed-*b* p-value.
+  - `u.two.moment.test()`: per vintage (n_v ≥ 2) at H = 0, the moments are g1 = Σe/Σs (vintage mean error) and g2 = U_v. A centered fixed-*b* Wald statistic with q = 2 is inverted over a 401-point β grid on the admissible domain.
+- `results/horizon_invariance_test.R` runs both tests on the Preqin panels (~30 s) and writes `results/figures_bovc_us_g1/horizon_invariance_test.csv` and `two_moment_test.csv`. Checks:
+  - its influence code reproduces the production SEs to 1e-8;
+  - all 40 β̂ match `upair_*_US_data.csv` within 5e-8.
+- `simulation/mc_horizon_invariance.R` runs the Monte Carlo (8.6 min on 10 workers) on nine Step 4 designs with common random numbers.
+  - Replication r is `mc.draw(design, r)`, and replication 1 reproduces the production estimates exactly. The archive reproduces it from a fresh unzip.
+  - Output: `results/mc_step4/horizon_invariance_mc.csv`. The replication rows go to `simulation/data_out_mc/horizon_invariance/` (gitignored).
+- `results/horizon_invariance_tables.R` writes Supplement Table D.1 (`table_OA_horizon_invariance.tex`, label `tab:horizon_invariance`) and the printed numbers to `horizon_invariance_exhibit_data.csv`.
+
+**Preqin results (Supplement Table D.1, Panels A–B).**
+
+| Panel | H₁ | β̂_0 | β̂_H₁ | Diff | SE | Corr | t | p |
+| :--- | :---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| VC EW | 15 | 1.493 | 1.250 | 0.243 | 0.142 | 0.91 | 1.71 | 0.200 |
+| VC FW | 15 | 1.742 | 1.423 | 0.319 | 0.147 | 0.93 | 2.18 | 0.115 |
+| VC EW | 12.5 | 1.493 | 1.382 | 0.111 | 0.121 | 0.95 | 0.92 | 0.468 |
+| VC FW | 12.5 | 1.742 | 1.583 | 0.159 | 0.130 | 0.95 | 1.22 | 0.343 |
+| Buyout (all) | 5–20 | | | | | | | ≥ 0.513 |
+
+- **Other horizons.** Over the full profile (H₁ = 5, 10, 12.5, 15, 20), the largest |t| is 2.58 (VC FW, H₁ = 5, p = 0.071), where the VC profile peaks. This is disclosed in the supplement text.
+- **Two-moment test.** Its largest p-value is 0.52–0.86, and its sets cover 27–65% of the domain: no rejection, not informative.
+
+**Monte Carlo (Supplement Table D.1, Panel C; 5% rejection rates).**
+- **Size (c_v = 0).** EW cores: 3.8% (BO) and 2.0% (VC) at H₁ = 15, 4.8% and 3.4% at 12.5. FW with fund sizes: 3.2% and 1.4% at 15, 7.0% and 3.6% at 12.5. SE/SD is 0.64–0.72, so the SEs are too small, but the fixed-*b* critical value compensates.
+- **Power at H₁ = 15.**
+
+  | Design | Power at 15 | Power at 12.5 |
+  | :--- | ---: | ---: |
+  | m4_shared (c) | 8.4% | 6.8% |
+  | m4p_shared2 (2c, persistent) | 15.6% | 12.4% |
+  | m4_shared2 (2c) | 20.8% | 15.2% |
+  | u_vc_shared (VC scale, σ_W = 0.50) | **33.2%** (49.6% at 10%) | 18.4% |
+
+  Power is lower at 12.5 because the target overshoots beyond H₀*.
+- **Biases in u_vc_shared.** U_{v,0} +0.249, U_{v,12.5} −0.008, U_{v,15} −0.135. So **the zero-bias horizon for β is about 12.5 yr, not 15**; the same holds in m4_shared2 (+0.143 / −0.011 / −0.056). Mean diff at H₁ = 15: −0.007 under c_v = 0 versus +0.384 at VC scale.
+- **Path-correlated design A′ ((X) fails).** Both targets move about equally (+0.32 at H = 0, +0.35 at H = 15), so the test has no power there. Its 16–21% rejections come from SE/SD = 0.30, and this is disclosed.
+- **Two-moment test.** 0% rejections in every design, so it has no power at V ≈ 25. It is kept in the supplement only as a documented negative result.
+
+**Decisions taken from these results (2026-11-27).**
+1. **Primary test horizon H₁ = 15 yr**, fixed before the power results; 12.5 is secondary. Why: the test is valid at any H₁ under the null, and the overshoot beyond H₀* makes 15 the more powerful choice.
+2. **The shared-shock end of the VC band is H = 12.5, not 15**: VC β is 1.382 / 1.583 at 12.5 and 1.493 / 1.742 at inception. Why: under the VC-scale shared shock, U_{v,12.5} is unbiased (−0.008) while U_{v,15} overshoots (−0.135). This replaces the "1.25–1.42" I quoted earlier in the conversation.
+3. **The band is reported in the abstract, introduction, empirical section and conclusion.**
+   - Abstract: "Venture Capital betas of 1.49–1.74 at inception, or 1.38–1.58 if vintages share common shocks"; it now has 198 words (limit 200), and the cover letter says 198.
+   - Both ends reject β = 0 at 5% (H = 12.5: p₀ = 0.017 / 0.014) and neither rejects β = 1 (p₁ = 0.418 / 0.269 at 12.5; ≥ 0.116 at 0).
+4. **Non-rejection is reported as weak evidence.** The VC gaps (0.24 / 0.32) lie between the c_v = 0 expectation (≈ −0.01) and the VC-scale expectation (0.38), and the power against VC-scale shocks is only 33%.
+5. **Placement.**
+   - Main text, Section 3.3: a short paragraph "Horizon-invariance test", with no displayed equation to save space.
+   - Supplement Appendix D: new subsection "Specification tests of the U_{v,H} identifying conditions", with Remark D.2 (validity and consistency: stacked separable criterion, block-diagonal Hessian, per-vintage centering under T7, Cor 1(i) applied to a = (1, −1)), Remark D.3 (two-moment test) and Table D.1.
+   - This renumbers the later D floats: the V = 400 table is now D.2, the mc_paper D tables are D.3–D.9, and the calendar-vs-index remark is D.4. Archive README updated. The README's "Remark D.1" had been stale since `cc1d53c`.
+6. **Page counts.** The main text is 40 pp (plan limit ≤ 40; it was 39), the supplement 62 pp; the cover letter says 40.
+
+### 8.9 Still open (referee-level, not errors)
+
+1. Inference with V ≈ 25 and N_eff of 4.5–8.9; the AR sets reach the domain ceiling.
+   - The horizon-invariance test has only modest power (≤ 33%) against VC-scale shared shocks.
+   - To raise power, a referee could ask for more vintages. PitchBook data could later extend V to about 30.
+2. Mixed messages and scope: "the horizon displays the bias" versus "a unique zero-bias horizon"; the paper reads like two papers; U's novelty over leave-one-out quadratic forms rests on the compounding argument.

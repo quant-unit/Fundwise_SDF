@@ -21,7 +21,7 @@ Runtimes below were measured on the machine that produced the paper (macOS, 12 c
    - `empirical/data_prepared_2026/q_factors.csv`: monthly U.S. $q^5$ factors (`RF`, `MKT`, `ME`, `IA`, `ROE`, `EG`) from `http://global-q.org/factors.html` (Hou, Xue, and Zhang 2015; Hou, Mo, Xue, and Zhang 2021).
    - `empirical/data_prepared_2026_c/preqin_sample_funnel_North America.csv`: **aggregate** fund counts per strategy and vintage year only (no fund names, identifiers, sizes, or cash flows). The Monte Carlo designs use it to reproduce the vintage calendars.
 2. **Proprietary, excluded.** Preqin fund-level cash flows (April 14, 2022 export; North American USD Buyout and Venture Capital funds, vintages through 2010) cannot be redistributed under the Preqin license. Licensed users place the raw export in `empirical/data_in/` and follow Section 4.3.
-3. **Precomputed simulation outputs, included** (simulated data only, no fund-level data): `results/mc_step4/summary.csv`, `inference_checks.csv`, `v400_studentization_diagnostic.csv`, `v400_error_moments.csv`, `appendix_d_summary.csv`; `simulation/data_out_mc/summary.rds`, `d0/d0.rds`, `se_study/se_study.rds`; `simulation/optimal_H_theory/data/` (Figure 1 data).
+3. **Precomputed simulation outputs, included** (simulated data only, no fund-level data): `results/mc_step4/summary.csv`, `inference_checks.csv`, `v400_studentization_diagnostic.csv`, `v400_error_moments.csv`, `appendix_d_summary.csv`, `horizon_invariance_mc.csv`; `simulation/data_out_mc/summary.rds`, `d0/d0.rds`, `se_study/se_study.rds`; `simulation/optimal_H_theory/data/` (Figure 1 data).
 
 ---
 
@@ -30,8 +30,8 @@ Runtimes below were measured on the machine that produced the paper (macOS, 12 c
 | Command | What it does | Runtime |
 | :--- | :--- | :---: |
 | `LANG=en_US.UTF-8 Rscript run_synthetic_verification.R` | Builds synthetic Buyout and VC panels with the paper's vintage counts on the historical $q^5$ path. Checks the exact horizon rescaling identity (T1), the $U_{v,H}$ identity (the $O(n_v)$ formula against the direct sum over distinct fund pairs, EW and FW), and the fixed-$b$ critical values 2.790 / 2.867 / 2.722. Then runs the single-factor and $(\alpha,\beta)$ estimation, Bartlett fixed-$b$ inference, $N_{\mathrm{eff}}$, and the centered AR set end to end. Writes `output/synthetic_verification_summary.csv` (deterministic). | ~11 s |
-| `LANG=en_US.UTF-8 Rscript simulation/mc_paper.R` | Rebuilds all Monte Carlo exhibits from the included simulation outputs: main Tables 2–3 and Figure 2; Supplement Tables C.3, D.2–D.8 and E.1; Figures D.1–D.2. Writes `results/mc_step4/paper/` and the Figure 1 Panel C data. | ~2 s |
-| `LANG=en_US.UTF-8 Rscript simulation/mc_v400_table.R` | Supplement Table D.1 from `results/mc_step4/v400_studentization_diagnostic.csv`. | <2 s |
+| `LANG=en_US.UTF-8 Rscript simulation/mc_paper.R` | Rebuilds all Monte Carlo exhibits from the included simulation outputs: main Tables 2–3 and Figure 2; Supplement Tables C.3, D.3–D.9 and E.1; Figures D.1–D.2. Writes `results/mc_step4/paper/` and the Figure 1 Panel C data. | ~2 s |
+| `LANG=en_US.UTF-8 Rscript simulation/mc_v400_table.R` | Supplement Table D.2 from `results/mc_step4/v400_studentization_diagnostic.csv`. | <2 s |
 | `LANG=en_US.UTF-8 Rscript results/fixedb_kv05_comparison.R` | Compares the fixed-$b$ critical values with the cubic approximation of Kiefer and Vogelsang (2005, Table 1) (Supplement Appendix D footnote). With the licensed empirical results present, it also lists the $U_{v,H}$ tests whose 5% decision would change. | ~5 s |
 
 ---
@@ -45,8 +45,9 @@ Run in this order:
 1. `simulation/mc_production.R`: all 72 designs of `config/mc_designs.yaml` (replication counts are in the file). Writes `simulation/data_out_mc/<design>/batch_*.rds`. **About 9.6 h wall-clock** on 12 cores.
 2. `simulation/mc_targets.R`, then `simulation/mc_report.R`: computes the criterion targets and writes `simulation/data_out_mc/summary.rds` and `results/mc_step4/summary.csv`.
 3. `simulation/mc_d0.R` and `simulation/mc_se_study.R` (~9 min): the Gaussian size benchmark (D0) and the SE study. `simulation/mc_inference_checks.R` (~2 min): the AR replay and the $V=400$ tail check.
-4. `simulation/mc_v400_diagnostic.R` (~19 min; Supplement Table D.1) and `simulation/mc_v400_error_moments.R` (moments of $\hat\beta-1$ in the growing-$V$ designs; reads the stored batches).
+4. `simulation/mc_v400_diagnostic.R` (~19 min; Supplement Table D.2) and `simulation/mc_v400_error_moments.R` (moments of $\hat\beta-1$ in the growing-$V$ designs; reads the stored batches).
 5. `simulation/mc_paper.R` and `simulation/mc_v400_table.R`: the exhibits listed in Section 3.
+6. `simulation/mc_horizon_invariance.R` (~9 min): size and power of the specification tests of `helper/horizon_invariance.R` (horizon-invariance test and two-moment test) on nine Step 4 designs with common random numbers. Writes `results/mc_step4/horizon_invariance_mc.csv` (included); Panel C of Supplement Table D.1.
 
 **Figure 1 (Proposition 2).** Run `python3 simulation/optimal_H_theory/verify_optimal_H_regimes.py` (prints the lookup values of Supplement Tables C.1–C.2 and writes the Panel B data; not re-timed). Run `simulation/mc_paper.R` **after** it: the Python script also writes a Python-simulated Panel C file, and `mc_paper.R` overwrites it with the R Monte Carlo numbers cited in the figure caption and Table C.3. Then compile `simulation/optimal_H_theory/figure_optimal_H_theory.tex` with `pdflatex`. `Rscript simulation/optimal_H_theory/discrete_vs_continuous_H0.R` (seconds, base R) compares the continuous-time roots of Supplement Table C.1 with the roots on the estimator's monthly horizon grid (at most 0.42 months apart).
 
@@ -62,7 +63,7 @@ Run in this order:
 2. `run_empirical_study.R`: in R, `source("run_empirical_study.R"); run_empirical_study()` runs all 48 active scenarios of `config/empirical_scenarios.yaml`. From the shell, `Rscript run_empirical_study.R <scenario_id> ...` runs selected ones. Writes result caches to `results/data_out_2026-emp-c[-allfunds|-navtrim20]/`. **About 5 h wall-clock** on 12 cores.
 3. `results/analyze_empirical_results.R` (~1 min): runs `results/analyze_result.R` on every cache folder and writes the inference and cross-validation summaries that steps 4–7 read. A folder without current results is reported and skipped.
 4. `results/export_g1_g2_tables.R`: writes the L2 and $U_{v,H}$ data files and tables in `results/figures_bovc_us_g1/` (uses `results/plot_empirical_estimates.R`). It skips the $L_1$ tables, which are not exhibits of the paper, if the `*_l1` scenarios have no current results.
-5. `results/empirical_iv.R` (IV roots, AR sets, Supplement Table F.2), `results/vc_alpha_diagnostic.R`, and `results/calendar_vs_index_shac.R` (~1 min; Supplement Remark D.1).
+5. `results/empirical_iv.R` (IV roots, AR sets, Supplement Table F.2), `results/vc_alpha_diagnostic.R`, and `results/calendar_vs_index_shac.R` (~1 min; Supplement Remark D.4). `results/horizon_invariance_test.R` (~30 s): the horizon-invariance test (main text, Section 3, paragraph "Horizon-invariance test") and the two-moment test on the Buyout and VC panels. Then `results/horizon_invariance_tables.R`, which also needs `results/mc_step4/horizon_invariance_mc.csv` (Section 4.1, step 6), writes Supplement Table D.1 (Remarks D.2–D.3).
 6. `results/main_exhibits_u.R`: main Tables 4–5 and Figure 3, plus Supplement Tables F.1, F.3 and F.4.
 7. `results/step5_diagnostics.R`, `results/fw_imputation_sensitivity.R`, `results/robustness_samples.R`, `results/appendix_e_cv_folds.R`, and `results/table_published_estimates.R` (run after step 6): Supplement Tables F.5–F.12. The Appendix F figures come from steps 4 and 7.
 
