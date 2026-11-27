@@ -96,10 +96,10 @@ crit.VC <- fixedb.crit.t(0.05, bU.VC)
 
 NOTE.COMMON <- paste0(sprintf("North America, vintages up to 2010 (FW baseline: within-vintage median fund-size imputation; sensitivity in Table~\\ref{tab:fw_imputation_sensitivity}): Buyout %d vintages; VC %d, of which the %d with at least two funds enter $U_{v,H}$. ",
     nV(l2, "BO"), nV(l2, "VC"), nV(u, "VC")), if (nV(u, "BO") != nV(l2, "BO")) stop("Buyout vintage counts differ between L2 and U") else "",
-  "$U_{v,H}$: the cross-fund pair-product criterion with equal vintage weights ($q_v=1$); under Theorem~T7 (conditional independence of funds given the factor path, eligibility $n_v\\ge2$, fund sizes, and vintage origin, zero conditional mean pricing error, no shared vintage effects $c_v=0$, and unique identification), it targets $\\theta_0$ at every horizon, $H=0$ included. ",
-  "L2: squared loss on vintage portfolios (DLP12 at $H=0$), whose target is tilted by within-vintage fund noise and moves with $H$ (matched-vintage 23-vintage VC L2 reported in Table~\\ref{tab:iv_comparison}). ",
+  "$U_{v,H}$: the cross-fund pair-product criterion with equal vintage weights ($q_v=1$); under Theorem~T7 (conditional independence of funds given the factor path, eligibility $n_v\\ge2$, fund sizes, and vintage origin, zero sign-aligned conditional mean pricing error, no shared vintage effects $c_v=0$, and unique identification), it targets $\\theta_0$ at every horizon, $H=0$ included. ",
+  "L2: per-commitment squared loss on vintage portfolios (matching the inverse-FoF-size normalization of \\citealp[p.~533]{DLP12} at $H=0$; unnormalized dollar sums scale each vintage squared error by $S_v^2$), whose target is tilted by within-vintage fund noise and moves with $H$ (matched-vintage 23-vintage VC L2 reported in Table~\\ref{tab:iv_comparison}). ",
   "SE: Bartlett sandwich over vintage years, $S=\\lceil1.3\\sqrt V\\rceil$. ")
-NOTE.STARS.E1 <- "Markers on $U_{v,H}$: two-sided fixed-$b$ $p$-values of a test of $\\beta=0$, $^{*}$\\,$p<0.05$, $^{**}$\\,$p<0.01$, $^{***}$\\,$p<0.001$; column $p_1$ gives the two-sided fixed-$b$ $p$-value of $\\beta=1$. FW single-factor markers are qualified by mild finite-sample over-rejection (8.1\\% Buyout / 8.5\\% VC at $H=0$ in Design~B, Table~\\ref{tab:mc_hardening}). $^{\\dagger}$: estimate on a bound of the admissible domain ($\\beta\\in[-1,4]$, $\\alpha\\in[-2\\%,2\\%]$ per month, gross benchmark return at least 0.08), no SE. "
+NOTE.STARS.E1 <- "Markers on $U_{v,H}$: two-sided fixed-$b$ $p$-values of a test of $\\beta=0$, $^{*}$\\,$p<0.05$, $^{**}$\\,$p<0.01$, $^{***}$\\,$p<0.001$; column $p_1$ gives the two-sided fixed-$b$ $p$-value of $\\beta=1$ (under shared shocks T8, per-vintage score centering can fail at $H>0$, Remark~\\ref{rem:per_vintage_centering}). FW single-factor markers are qualified by mild finite-sample over-rejection (8.1\\% Buyout / 8.5\\% VC at $H=0$ in Design~B, Table~\\ref{tab:mc_hardening}). $^{\\dagger}$: estimate on a bound of the admissible domain ($\\beta\\in[-1,4]$, $\\alpha\\in[-2\\%,2\\%]$ per month, gross benchmark return at least 0.08), no SE. "
 
 # ---- Table E1: single-factor beta (with p(beta=1) on U_{v,H}) --------------------------
 table.e1 <- function(H, file, label, caption, ex) {
@@ -124,13 +124,13 @@ table.e1 <- function(H, file, label, caption, ex) {
     "\\cmidrule(lr){2-4} \\cmidrule(lr){5-6} \\cmidrule(lr){7-9} \\cmidrule(lr){10-11}",
     "Horizon & $\\hat\\beta$ & SE & $p_1$ & $\\hat\\beta$ & SE & $\\hat\\beta$ & SE & $p_1$ & $\\hat\\beta$ & SE \\\\", "\\midrule",
     lines, "\\bottomrule", "\\end{tabular}%", "}", "\\par\\vspace{2pt}",
-    paste0("{\\scriptsize\\textit{Notes:} Single-factor $\\hat\\beta_{MKT}$. ", NOTE.COMMON, NOTE.STARS.E1,
-      "The headline estimate is $U_{v,H}$ at $H=0$: in our data-shaped Monte Carlo, $H=0$ minimizes $U_{v,H}$ RMSE for single-factor $\\beta$ and $(\\alpha,\\beta)$ (whereas in two-factor models, Table~\\ref{tab:mc_two_factor}, $H=15$ yr lowers $U_{v,H}$'s second-loading RMSE for ME, IA, and ROE while market-beta RMSE rises in ROE).",
+    paste0("{\\scriptsize\\textit{Notes:} Single-factor $\\hat\\beta_{MKT}$ ($\\alpha$ fixed at zero). ", NOTE.COMMON, NOTE.STARS.E1,
+      "The headline estimate is $U_{v,H}$ at $H=0$: in our data-shaped core Monte Carlo, $H=0$ minimizes $U_{v,H}$ RMSE for single-factor $\\beta$ and $(\\alpha,\\beta)$ (whereas in two-factor models, Table~\\ref{tab:mc_two_factor}, $H=15$ yr lowers $U_{v,H}$'s second-loading RMSE for ME, IA, and ROE while market-beta RMSE rises in ROE).",
       if (length(H) < length(H.ALL)) " All horizons: Table~\\ref{tab:u_l2_beta_all}." else "", "}"),
     "\\end{table}"))
 }
-table.e1(H.MAIN, "table_E1_beta.tex", "tab:u_l2_beta", "Single-factor $\\hat\\beta_{MKT}$: $U_{v,H}$ and L2", "E1")
-table.e1(H.ALL, "table_E1_beta_all.tex", "tab:u_l2_beta_all", "Single-factor $\\hat\\beta_{MKT}$: $U_{v,H}$ and L2, all horizons", "E1.all")
+table.e1(H.MAIN, "table_E1_beta.tex", "tab:u_l2_beta", "Single-factor $\\hat\\beta_{MKT}$ ($\\alpha$ fixed at zero): $U_{v,H}$ and L2", "E1")
+table.e1(H.ALL, "table_E1_beta_all.tex", "tab:u_l2_beta_all", "Single-factor $\\hat\\beta_{MKT}$ ($\\alpha$ fixed at zero): $U_{v,H}$ and L2, all horizons", "E1.all")
 
 # ---- Table E1 (JBES main): single-factor beta + compact Panel B inception diagnostics ---
 shac.cmp <- if (file.exists(file.path(src.dir, "calendar_vs_index_shac.csv"))) rd("calendar_vs_index_shac.csv") else NULL
@@ -162,11 +162,11 @@ for (ty in names(TYPES)) {
   if (ty == "BO") e1.lines <- c(e1.lines, "\\addlinespace")
 }
 write.tex("table_E1_beta_jbes.tex", c("\\begin{table}[htbp]", "\\centering", "\\footnotesize",
-  "\\caption{Single-factor $\\hat\\beta_{\\mathrm{MKT}}$: $U_{v,H}$, L2, and inception ($H=0$) identification diagnostics}",
+  "\\caption{Single-factor $\\hat\\beta_{\\mathrm{MKT}}$ ($\\alpha$ fixed at zero): $U_{v,H}$, L2, and inception ($H=0$) identification diagnostics}",
   "\\label{tab:u_l2_beta}",
   "\\resizebox{\\linewidth}{!}{%",
   "\\begin{tabular}{l rrr rr rrr rr}", "\\toprule",
-  "\\multicolumn{11}{l}{\\textit{Panel A: Single-factor $\\hat\\beta_{\\mathrm{MKT}}$ across horizons}} \\\\",
+  "\\multicolumn{11}{l}{\\textit{Panel A: Single-factor $\\hat\\beta_{\\mathrm{MKT}}$ ($\\alpha$ fixed at zero) across horizons}} \\\\",
   "\\addlinespace[2pt]",
   " & \\multicolumn{5}{c}{Equally weighted funds (EW)} & \\multicolumn{5}{c}{Fund-size weighted funds (FW)} \\\\",
   "\\cmidrule(lr){2-6} \\cmidrule(lr){7-11}",
@@ -177,13 +177,13 @@ write.tex("table_E1_beta_jbes.tex", c("\\begin{table}[htbp]", "\\centering", "\\
   "\\par\\vspace{4pt}",
   "\\resizebox{\\linewidth}{!}{%",
   "\\begin{tabular}{l r r r c r c}", "\\toprule",
-  "\\multicolumn{7}{l}{\\textit{Panel B: Inception ($H=0$) estimator gaps, IV root fragility, $N_{\\mathrm{eff}}$, and nominal 95\\% AR sets}} \\\\",
+  "\\multicolumn{7}{l}{\\textit{Panel B: Inception ($H=0$, $\\alpha=0$) estimator gaps, IV root fragility, $N_{\\mathrm{eff}}$, and nominal 95\\% AR sets}} \\\\",
   "\\addlinespace[2pt]",
   "Series & L2$-U_{v,0}$ & Expected core gap & IV roots & LOO no-root & $N_{\\mathrm{eff}}(U_{v,0})$ & Nominal 95\\% AR set \\\\", "\\midrule",
   panel.b.lines, "\\bottomrule", "\\end{tabular}%", "}",
   "\\par\\vspace{2pt}",
-  paste0("{\\scriptsize\\textit{Notes:} Single-factor $\\hat\\beta_{\\mathrm{MKT}}$. ", NOTE.COMMON, NOTE.STARS.E1,
-    "Panel~B reports inception ($H=0$) L2$-U_{v,0}$ gaps (Buyout: LOO jackknife SE in parentheses; VC: full-sample followed in brackets by matched 23-vintage difference), paired expected core MC gaps (MC SE), all roots of the inception mean pricing moment $V^{-1}\\sum_v PV_v(\\beta)=0$ on $\\Theta$, delete-one-vintage refits losing all roots, $U_{v,0}$ effective vintage count $N_{\\mathrm{eff}}$, and centered Bartlett fixed-$b$ nominal 95\\% AR confidence sets \\eqref{eq:ar_set}. Full 12-horizon estimates and four-horizon IV/AR diagnostics: Online Supplement Tables~\\ref{tab:u_l2_beta_all} and~\\ref{tab:iv_comparison}.}"),
+  paste0("{\\scriptsize\\textit{Notes:} Single-factor $\\hat\\beta_{\\mathrm{MKT}}$ ($\\alpha$ fixed at zero). ", NOTE.COMMON, NOTE.STARS.E1,
+    "Panel~B reports inception ($H=0$) L2$-U_{v,0}$ gaps (Buyout: LOO jackknife SE in parentheses; VC: full-sample 27-vintage L2 minus 23-vintage $U_{v,0}$, followed in brackets by the matched 23-vintage difference), paired expected core MC gaps (MC SE), all roots of the inception mean pricing moment $V^{-1}\\sum_v PV_v(\\beta)=0$ on $\\Theta$ (using all 25 Buyout / 27 VC vintages), delete-one-vintage refits losing all roots, $U_{v,0}$ score-concentration count $N_{\\mathrm{eff}}$, and centered Bartlett fixed-$b$ nominal 95\\% AR confidence sets \\eqref{eq:ar_set} (all 27 VC vintages). Full 12-horizon estimates and four-horizon IV/AR diagnostics: Online Supplement Tables~\\ref{tab:u_l2_beta_all} and~\\ref{tab:iv_comparison}.}"),
   "\\end{table}"))
 
 # ---- Table E2: (alpha, beta) model (stars suppressed per calibration audit) -------------
