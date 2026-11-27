@@ -59,10 +59,11 @@ Run in this order:
 
 1. `empirical/prep_preqin.R` (raw export in `empirical/data_in/`): writes the main sample `empirical/data_prepared_2026_c/` and the robustness samples `_allfunds`, `_fwmean`, `_fwdrop`. Then run `empirical/prep_nav_threshold.R` (default threshold 0.20), which writes `empirical/data_prepared_2026_c_navtrim20/`.
 2. `run_empirical_study.R`: in R, `source("run_empirical_study.R"); run_empirical_study()` runs all 48 active scenarios of `config/empirical_scenarios.yaml`. From the shell, `Rscript run_empirical_study.R <scenario_id> ...` runs selected ones. Writes result caches to `results/data_out_2026-emp-c[-allfunds|-navtrim20]/`. **About 5 h wall-clock** on 12 cores.
-3. `results/export_g1_g2_tables.R`: writes the L2 and $U_{v,H}$ data files and tables in `results/figures_bovc_us_g1/` (uses `results/plot_empirical_estimates.R`).
-4. `results/empirical_iv.R` (IV roots, AR sets, Supplement Table F.2), `results/vc_alpha_diagnostic.R`, and `results/calendar_vs_index_shac.R` (~1 min; Supplement Remark D.1).
-5. `results/main_exhibits_u.R`: main Tables 4–5 and Figure 3, plus Supplement Tables F.1, F.3 and F.4.
-6. `results/step5_diagnostics.R`, `results/fw_imputation_sensitivity.R`, `results/robustness_samples.R`, `results/appendix_e_cv_folds.R`, and `results/table_published_estimates.R` (run after step 5): Supplement Tables F.5–F.12. The Appendix F figures come from steps 3 and 6.
+3. `results/analyze_empirical_results.R` (~1 min): runs `results/analyze_result.R` on every cache folder and writes the inference and cross-validation summaries that steps 4–7 read. A folder without current results is reported and skipped.
+4. `results/export_g1_g2_tables.R`: writes the L2 and $U_{v,H}$ data files and tables in `results/figures_bovc_us_g1/` (uses `results/plot_empirical_estimates.R`). It skips the $L_1$ tables, which are not exhibits of the paper, if the `*_l1` scenarios have no current results.
+5. `results/empirical_iv.R` (IV roots, AR sets, Supplement Table F.2), `results/vc_alpha_diagnostic.R`, and `results/calendar_vs_index_shac.R` (~1 min; Supplement Remark D.1).
+6. `results/main_exhibits_u.R`: main Tables 4–5 and Figure 3, plus Supplement Tables F.1, F.3 and F.4.
+7. `results/step5_diagnostics.R`, `results/fw_imputation_sensitivity.R`, `results/robustness_samples.R`, `results/appendix_e_cv_folds.R`, and `results/table_published_estimates.R` (run after step 6): Supplement Tables F.5–F.12. The Appendix F figures come from steps 4 and 7.
 
 Without a license, `run_synthetic_verification.R` exercises the same estimation and inference code on a synthetic panel (Section 3).
 

@@ -83,6 +83,15 @@ for (ft in c("BO", "VC")) {
 }
 
 if (!core.only) {
+  # The L1_Ridge tables are not exhibits of the paper. They are skipped, with a message,
+  # when their analysis summaries are missing or stale (for example, when the *_l1
+  # scenarios were not rerun after a change of the prepared data).
+  l1.current <- all(vapply(c("EW", "FW"), function(w) {
+    f <- file.path(file.folder, sprintf("cache_q_factors_preqin_%s_VYP_North America_L1_Ridge", w), "0_asymptotic_inference_summary.csv")
+    file.exists(f) && !inherits(tryCatch(read.result.summary(f), error = function(e) e), "error")
+  }, TRUE))
+  if (!l1.current) message("Skipping the L1_Ridge tables (not exhibits of the paper): their summaries are missing or stale. ",
+    "Rerun the *_l1 scenarios of config/empirical_scenarios.yaml, then results/analyze_empirical_results.R.")
   # Max-vintage sweeps (100% NAV and 50% NAV discount)
   for (ft in c("BO", "VC")) {
     plot_max_vintage_cutoff_combined_mkt(
@@ -101,6 +110,7 @@ if (!core.only) {
       main.linewidth = 0.8, weighting_filter = c("FW"), region = "North America",
       output_file = file.path(out.folder, sprintf("max_vintage_%s_US_Alpha_MKT_combined_NC", ft))
     )
+    if (!l1.current) next
     plot_empirical_estimates(
       data_dir = file.folder, fund_type = ft, factors = c("MKT"),
       export_pdf = TRUE, export_csv = TRUE, export_latex = TRUE,
