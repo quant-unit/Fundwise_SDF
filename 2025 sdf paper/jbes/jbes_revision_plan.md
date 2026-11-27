@@ -231,6 +231,10 @@ Repository `~/github/Fundwise_SDF`, branch `revision-2026`. Nothing in this sect
 | `718cf64` | Clean empirical rerun from `8585b0d`; all exhibits regenerated (8.3). |
 | `cc1d53c` | Moderate audit items (8.4). |
 | `97c3c7f` | KV05 cubic-approximation footnote (8.5). |
+| `5510a05` | Horizon-invariance test, two-moment test, VC beta band, and this Section 8 log (8.7–8.8). |
+| `733dbc1` | The test outputs regenerated on the clean commit `5510a05`. Only the provenance columns changed; the table body and the PDFs are unchanged. |
+
+Nothing above is pushed; `revision-2026` is 7 commits ahead of `origin` after the commit that adds this table row.
 
 ### 8.2 Referee-style audit of `5db48f6` and the critical fixes (`8585b0d`)
 
