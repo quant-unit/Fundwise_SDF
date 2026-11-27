@@ -304,6 +304,7 @@ bo.a30 <- srow("core_BO", "U.eq", "Alpha", "Alpha", 30); vc.a30 <- srow("core_VC
 bo.b30 <- srow("core_BO", "U.eq", "Alpha", "MKT", 30); vc.b30 <- srow("core_VC", "U.eq", "Alpha", "MKT", 30)
 m4.u0 <- srow("m4_shared2", "U.eq", "Alpha", "Alpha", 0); m4.u15 <- srow("m4_shared2", "U.eq", "Alpha", "Alpha", 15)
 vc.u0 <- srow("u_vc_shared", "U.eq", "Alpha", "Alpha", 0); vc.u15 <- srow("u_vc_shared", "U.eq", "Alpha", "Alpha", 15)
+m4.b15 <- srow("m4_shared2", "U.eq", "Alpha", "MKT", 15); vc.b15 <- srow("u_vc_shared", "U.eq", "Alpha", "MKT", 15)
 a3 <- c(a3, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
   paste0("{\\scriptsize\\textit{Notes:} Joint fit of $(\\alpha,\\beta_{MKT})$ over the admissible domain ($\\alpha\\in[-2\\%,2\\%]$ per month, $\\beta_{MKT}\\in[-1,4]$, monthly gross benchmark return $\\ge 0.08$). ",
     "Outer vintage weights for $U_{v,H}$: $q_v=1$ weights each eligible ($n_v\\ge 2$) vintage year equally (main specification), whereas $q_v=n_v$ weights each vintage proportionally to its fund count $n_v$. ",
@@ -314,6 +315,8 @@ a3 <- c(a3, "\\bottomrule", "\\end{tabular}", "\\par\\vspace{2pt}",
       pct(bo.a0$size), pct(vc.a0$size), pct(bo.a30$size), pct(vc.a30$size), pct(bo.b30$size), pct(vc.b30$size),
       f3(bo.b30$se.ratio.tested), f3(vc.b30$se.ratio.tested), f3(bo.b30$se.ratio), f3(vc.b30$se.ratio),
       pct(m4.u0$size), pct(m4.u15$size), pct(vc.u0$size), pct(vc.u15$size)),
+    sprintf("The horizon that removes the $\\alpha$ bias does not remove the $\\beta$ bias: at $H=15$ yr, $U_{v,H}$ ($q_v=1$) $\\hat\\beta$ is biased by $%s$ (Buyout $2c$) and $%s$ (VC) because the target itself is shifted ($%s$ and $%s$), and the test of $\\beta=1$ rejects in %s\\%% and %s\\%% of draws. ",
+      f3(m4.b15$bias), f3(vc.b15$bias), f3(m4.b15$shift), f3(vc.b15$shift), pct(m4.b15$size), pct(vc.b15$size)),
     sprintf("Boundary rates across all 13 core and margin designs appear in Appendix Table~\\ref{tab:mc_alpha_beta_bounds}. Monte Carlo SE of $\\hat\\beta$ bias: %s (Panel~A), %s (Panel~B).}",
       mcse.range(s$mcse.bias[s$design %in% c("core_BO", "core_VC") & s$model == "Alpha" & s$parameter == "MKT"]),
       mcse.range(s$mcse.bias[s$design %in% c("m4_shared2", "u_vc_shared") & s$model == "Alpha" & s$parameter == "MKT"]))),
@@ -647,6 +650,25 @@ if (all(c("optH_R1_BO", "optH_V100_R1", "optH_cross_R1_BO") %in% unique(s$design
     d <- s[s$design == des & s$estimator == est & s$model == "Alpha.only" & s$parameter == "Alpha", ]
     d[order(d$H), ]
   }
+  # Rejection rate of the true alpha (5% fixed-b test) for the horizons of the table
+  as6.size.row <- function(sub, sp) {
+    z.cells <- vapply(seq_along(H.opt), function(j) {
+      rec("AS6", list(design = sp$d, estimator = sp$e, model = "Alpha.only", parameter = "Alpha", H = H.opt[j]), "size", sub$size[j], pct(sub$size[j]))
+    }, "")
+    paste0(" & Rej.\\,\\% & ", paste(z.cells, collapse = " & "), " & & \\\\")
+  }
+  # Ranges quoted in the caption: rejection at H = 12.5-15 under persistent or calendar shocks
+  size.range <- function(des, col, H = c(12.5, 15)) {
+    v <- unlist(lapply(des, function(d) { r <- opt.rows(d, "U.eq"); r[[col]][r$H %in% H] }))
+    stopifnot(length(v) == length(des) * length(H))
+    range(v)
+  }
+  pa.dep <- c("optH_R3a08_BO", "optH_R3b_iid_BO", "optH_R3b_ar_BO")
+  pb.dep <- c("optH_V100_R2", "optH_V100_R3a06", "optH_V100_R3a08", "optH_V100_R3b_iid", "optH_V100_R3b_ar")
+  pa.sz <- size.range(pa.dep, "size"); pa.tg <- size.range(pa.dep, "size.target")
+  pb.sz <- size.range(pb.dep, "size")
+  v1 <- opt.rows("optH_V100_R1", "U.eq"); v1.25 <- v1[v1$H == 25, ]; v1.30 <- v1[v1$H == 30, ]
+  stopifnot(nrow(v1.25) == 1, nrow(v1.30) == 1)
   # Export Figure 3 Panel C CSV directly from R Preqin Buyout Panel A
   h.grid <- opt.rows("optH_R1_BO", "U.eq")$H
   get.col <- function(des, est, col) {
@@ -672,7 +694,9 @@ if (all(c("optH_R1_BO", "optH_V100_R1", "optH_cross_R1_BO") %in% unique(s$design
   write.csv(panelC.df, "simulation/optimal_H_theory/data/panelC_mc_regimes.csv", row.names = FALSE, quote = FALSE)
   message("wrote simulation/optimal_H_theory/data/panelC_mc_regimes.csv")
 
-  as6 <- c("\\begin{table}[htbp]", "\\centering", "\\footnotesize", "\\resizebox{\\linewidth}{!}{%",
+  as6 <- c("\\begin{table}[htbp]", "\\centering", "\\footnotesize",
+    "\\caption{\\textbf{Step~4 R Monte Carlo verification of Proposition~\\ref{prop:optimal_H} across dependence regimes}}",
+    "\\label{tab:mc_regimes_verification}", "\\resizebox{\\linewidth}{!}{%",
     "\\begin{tabular}{@{}ll rrrrrrr rr@{}}", "\\toprule",
     " & & \\multicolumn{7}{c}{Horizon $H$ (years)} & & \\\\", "\\cmidrule(lr){3-9}",
     "Regime & Metric & $0$ & $5$ & $10$ & $12.5$ & $15$ & $20$ & $30$ & $H_{\\mathrm{zb}}$ & $H_{\\mathrm{RMSE}}^\\ast / H_{\\mathrm{tg}}$ \\\\",
@@ -713,6 +737,7 @@ if (all(c("optH_R1_BO", "optH_V100_R1", "optH_cross_R1_BO") %in% unique(s$design
       } else rs.str
     }, "")
     as6 <- c(as6, paste0(" & ", if (sp$sd.rmse) "SD / RMSE" else "RMSE", " & ", paste(r.cells, collapse = " & "), " & & \\\\"))
+    as6 <- c(as6, as6.size.row(sub, sp))
   }
 
   as6 <- c(as6, "\\midrule",
@@ -742,6 +767,7 @@ if (all(c("optH_R1_BO", "optH_V100_R1", "optH_cross_R1_BO") %in% unique(s$design
     rec("AS6", list(design = sp$d, estimator = sp$e, model = "Alpha.only", parameter = "Alpha"), "H.tg", htg, htg.str)
     # In Panel B, show H_tg in the last column (headed below or noted) -> keep column count identical, label last col $H_{\mathrm{tg}}$ in Panel B subheader
     as6 <- c(as6, paste0(sp$lab, " & Bias & ", paste(b.cells, collapse = " & "), " & ", hzb.str, " & ", htg.str, " \\\\"))
+    as6 <- c(as6, as6.size.row(sub, sp))
   }
 
   as6 <- c(as6, "\\midrule",
@@ -773,9 +799,14 @@ if (all(c("optH_R1_BO", "optH_V100_R1", "optH_cross_R1_BO") %in% unique(s$design
       cell("AS6", m5,  "on.bound", pct), cell("AS6", m5, "rmse", f3),
       cell("AS6", m7,  "on.bound", pct), cell("AS6", m7, "rmse", f3)))
   }
-  as6 <- c(as6, "\\bottomrule", "\\end{tabular}%", "}",
-    "\\caption{\\textbf{Step~4 R Monte Carlo verification of Proposition~\\ref{prop:optimal_H} across dependence regimes.} Generated directly by the main Preqin-calendar Step~4 simulator (\\texttt{r\\_project/simulation/mc\\_generate.R}, 16 Optimal-$H$ designs integrated into the 72-design suite): monthly deal timing ($I=5$, $h\\in[0.25,11.5]$~yr, 15 deals/fund, quarterly booking), Buyout-calibrated idiosyncratic shock ($\\sigma=0.130$/mo), and variance-matched shared-shock scale $\\sigma_W=0.306$ (Buyout M4~$2c$; monthly AR(1) $\\phi_m=0.947$ in Regime~3b AR(1), corresponding to $0.52$/yr). In Panel~A, $H_{\\mathrm{RMSE}}^\\ast$ is the RMSE-minimizing horizon on the 2.5-year grid $\\{0,2.5,\\dots,20,25,30\\}$ (bold marks the lowest displayed RMSE per row; Regime~1 $U_{v,H}$ achieves its strict global minimum at $H=0$, confirming Proposition~\\ref{prop:optimal_H}(iii)). In Panel~B ($V=100$ uncensored vintages on i.i.d.\\ resampled 1985--2021 $q^5$ monthly factors with $g=13.3\\%$, $\\sigma_m=15.4\\%$), the final column reports the averaged-criterion population target zero-crossing $H_{\\mathrm{tg}}$ (200 replications): $H_{\\mathrm{tg}}$ is invariant across $\\rho_W\\in\\{0,0.6,0.8\\}$ ($12.19\\text{--}12.32$~yr, matching the $12.65$~yr analytical prediction of Table~\\ref{tab:T_eff_mechanisms}) and shifts rightward by $2.0$~yr under overlapping calendar-time shocks $e_u$ ($14.24\\text{--}14.26$~yr); at $H=30$~yr ($H\\gg 2T_{\\mathrm{eff}}$), extreme compounding dispersion pulls even $c_v=0$ draws toward negative $\\alpha$. Panel~C (bold marks lowest RMSE per row) confirms that $U_{v,0}$ wins under Regime~1 ($0.085$ vs.\\ $0.111$) while $U_{v,15}$ beats $U_{v,0}$ across Regimes~2--3b, whereas leave-band-out cross-vintage pair products $\\widetilde{U}_{0,m}^{\\mathrm{cross}}$ collapse to the gross-return boundary ($\\beta\\approx 3.99$) in $42\\%$--$100\\%$ of draws ($86\\%$--$100\\%$ for $m\\ge 5$) on the historical 1985--2021 market path due to finite-$V$ indefiniteness (Proposition~\\ref{prop:optimal_H}(iv)).}",
-    "\\label{tab:mc_regimes_verification}",
+  as6 <- c(as6, "\\bottomrule", "\\end{tabular}%", "}", "\\par\\vspace{2pt}",
+    paste0("{\\scriptsize\\textit{Notes:} Generated directly by the main Preqin-calendar Step~4 simulator (\\texttt{r\\_project/simulation/mc\\_generate.R}, 16 Optimal-$H$ designs integrated into the 72-design suite): monthly deal timing ($I=5$, $h\\in[0.25,11.5]$~yr, 15 deals/fund, quarterly booking), Buyout-calibrated idiosyncratic shock ($\\sigma=0.130$/mo), and variance-matched shared-shock scale $\\sigma_W=0.306$ (Buyout M4~$2c$; monthly AR(1) $\\phi_m=0.947$ in Regime~3b AR(1), corresponding to $0.52$/yr). In Panel~A, $H_{\\mathrm{RMSE}}^\\ast$ is the RMSE-minimizing horizon on the 2.5-year grid $\\{0,2.5,\\dots,20,25,30\\}$ (bold marks the lowest displayed RMSE per row; Regime~1 $U_{v,H}$ achieves its strict global minimum at $H=0$, confirming Proposition~\\ref{prop:optimal_H}(iii)). In Panel~B ($V=100$ uncensored vintages on i.i.d.\\ resampled 1985--2021 $q^5$ monthly factors with $g=13.3\\%$, $\\sigma_m=15.4\\%$), the final column reports the averaged-criterion population target zero-crossing $H_{\\mathrm{tg}}$ (200 replications): $H_{\\mathrm{tg}}$ is invariant across $\\rho_W\\in\\{0,0.6,0.8\\}$ ($12.19\\text{--}12.32$~yr, matching the $12.65$~yr analytical prediction of Table~\\ref{tab:T_eff_mechanisms}) and shifts rightward by $2.0$~yr under overlapping calendar-time shocks $e_u$ ($14.24\\text{--}14.26$~yr). ",
+    sprintf("Rej.: rejection rate of the true $\\alpha_0=0$ by the two-sided 5\\%% fixed-$b$ test ($S=\\lceil 1.3\\sqrt V\\rceil$). Choosing $H$ near $H_{\\mathrm{zb}}$ removes the bias but not the size distortion: under persistent cohort shocks ($\\rho_W=0.8$) or calendar-time shocks, tests at $H=12.5$--$15$~yr still reject in %s--%s\\%% of draws at $V=25$ (%s--%s\\%% around the pseudo-true target, so the excess is not only bias), and in up to %s\\%% of draws in Panel~B regimes 2--3b. ",
+      pct(pa.sz[1]), pct(pa.sz[2]), pct(pa.tg[1]), pct(pa.tg[2]), pct(pb.sz[2])),
+    sprintf("At $H=30$~yr the $c_v=0$ $U_{v,H}$ row of Panel~B keeps its population target (target shift %s\\%%/yr, as Theorem~\\ref{thm:finite_pool}(T7) requires), but its finite-$V$ distribution breaks down: the SD of $\\hat\\alpha$ jumps from %s to %s\\%%/yr between $H=25$ and $H=30$~yr, the mean error is $%s$\\%%/yr with %s, and the test rejects in %s\\%% of draws. T7 is a large-$V$ statement, and at this horizon $V=100$ is not yet large. ",
+      f2(1200 * v1.30$shift), f2(1200 * v1.25$sd), f2(1200 * v1.30$sd), f2p(1200 * v1.30$bias),
+      if (v1.30$on.bound == 0) "no draw on a bound" else paste0(pct(v1.30$on.bound), "\\% of draws on a bound"), pct(v1.30$size)),
+    "Panel~C (bold marks lowest RMSE per row) confirms that $U_{v,0}$ wins under Regime~1 ($0.085$ vs.\\ $0.111$) while $U_{v,15}$ beats $U_{v,0}$ across Regimes~2--3b, whereas leave-band-out cross-vintage pair products $\\widetilde{U}_{0,m}^{\\mathrm{cross}}$ collapse to the gross-return boundary ($\\beta\\approx 3.99$) in $42\\%$--$100\\%$ of draws ($86\\%$--$100\\%$ for $m\\ge 5$) on the historical 1985--2021 market path, consistent with finite-$V$ indefiniteness (Proposition~\\ref{prop:optimal_H}(iv)).}"),
     "\\end{table}")
   write.table.tex("table_AS6_optimal_H_regimes.tex", as6)
 }

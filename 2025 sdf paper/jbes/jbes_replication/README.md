@@ -47,7 +47,7 @@ Run in this order:
 4. `simulation/mc_v400_diagnostic.R` (~19 min; Supplement Table D.1) and `simulation/mc_v400_error_moments.R` (moments of $\hat\beta-1$ in the growing-$V$ designs; reads the stored batches).
 5. `simulation/mc_paper.R` and `simulation/mc_v400_table.R`: the exhibits listed in Section 3.
 
-**Figure 1 (Proposition 2).** Run `python3 simulation/optimal_H_theory/verify_optimal_H_regimes.py` (prints the lookup values of Supplement Tables C.1–C.2 and writes the Panel B data; not re-timed). Run `simulation/mc_paper.R` **after** it: the Python script also writes a Python-simulated Panel C file, and `mc_paper.R` overwrites it with the R Monte Carlo numbers cited in the figure caption and Table C.3. Then compile `simulation/optimal_H_theory/figure_optimal_H_theory.tex` with `pdflatex`.
+**Figure 1 (Proposition 2).** Run `python3 simulation/optimal_H_theory/verify_optimal_H_regimes.py` (prints the lookup values of Supplement Tables C.1–C.2 and writes the Panel B data; not re-timed). Run `simulation/mc_paper.R` **after** it: the Python script also writes a Python-simulated Panel C file, and `mc_paper.R` overwrites it with the R Monte Carlo numbers cited in the figure caption and Table C.3. Then compile `simulation/optimal_H_theory/figure_optimal_H_theory.tex` with `pdflatex`. `Rscript simulation/optimal_H_theory/discrete_vs_continuous_H0.R` (seconds, base R) compares the continuous-time roots of Supplement Table C.1 with the roots on the estimator's monthly horizon grid (at most 0.42 months apart).
 
 ### 4.2 Comparison to Driessen, Lin, and Phalippou (2012) (Supplement Table E.1)
 

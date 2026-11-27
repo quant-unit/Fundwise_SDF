@@ -2,6 +2,22 @@
 # results/mc_step4/v400_studentization_diagnostic.csv.
 # Run from r_project/:  LANG=en_US.UTF-8 Rscript simulation/mc_v400_table.R
 d <- read.csv("results/mc_step4/v400_studentization_diagnostic.csv", stringsAsFactors = FALSE)
+# Share of negative deal payoffs under the symmetric deal shocks of mc_v400_diagnostic.R
+# (exact expectation over its uniform timing: investment month U{1..60} from January of the
+# vintage year, holding period U{1..138} months, booking at quarter ends, sigma = 0.130).
+# shock_mode "sym_matched": multiple = path return * (1 + N(0, exp(k * s2) - 1));
+# shock_mode "sym_light":   multiple = path return * (1 + N(0, 0.5^2)).
+neg <- local({
+  s2 <- log(1 + 0.130^2)
+  q.shift <- function(month0) (3L - (month0 %% 12L + 1L) %% 3L) %% 3L # month0 = 0 for January
+  g <- expand.grid(start = 0:59, hold = 1:138)
+  a <- g$start + q.shift(g$start)
+  b <- g$start + g$hold + q.shift(g$start + g$hold)
+  k <- b - a
+  p <- ifelse(k > 0, pnorm(-1 / sqrt(expm1(pmax(k, 1) * s2))), 0)
+  c(all = mean(p), long = mean(p[g$hold >= 132]), light = pnorm(-1 / 0.5))
+})
+neg.pct <- function(x) sprintf("%.0f", 100 * x)
 fmt_row <- function(r, disp) {
   sprintf("%-36s & %d & %d & %2d & %4.1f & %2d/%-2d & %4.1f & %4.2f & %+.2f & %5.1f & %4.1f & %+.2f \\\\",
           disp, r$V, r$n, r$H, 100 * r$rej_h, r$left_h, r$right_h, 100 * r$rej_score0,
@@ -57,7 +73,9 @@ tex <- c(
   "\\end{tabular}%",
   "}",
   "\\par\\vspace{2pt}",
-  "{\\scriptsize\\textit{Notes:} Equal-vintage $U_{v,H}$ ($q_v=1$) for single-factor $\\hat\\beta_{\\mathrm{MKT}}$ (true $\\beta_0=1$, 500 replications per cell, $S=\\lceil 1.3\\sqrt{V}\\rceil$, fixed-$b$ 5\\% critical values). Wald\\,\\% (L/R): two-sided rejection rate and left/right counts of the plug-in Bartlett fixed-$b$ Wald test. Score\\,\\%: rejection rate of the null-evaluated centered fixed-$b$ score test of $\\mathbb{E}[s_{v,H}(1)]=0$, which avoids plug-in leverage shrinkage and Hessian noise. SE/SD: mean plug-in SE divided by Monte Carlo SD of $\\hat\\beta-1$. $\\mathrm{Corr}(\\hat e,\\widehat{\\mathrm{SE}})$: correlation between estimation error $\\hat\\beta-1$ and plug-in SE. $N_{\\mathrm{eff}}$, Kurt., and Skew.: medians across replications of the influence-share effective sample size $(\\sum g_v^2)^2/\\sum g_v^4$, score fourth-moment ratio $\\overline{g^4}/(\\overline{g^2})^2$, and score skewness $\\overline{g^3}/(\\overline{g^2})^{3/2}$ (evaluated at $\\beta_0=1$ for Kurt./Skew., at $\\hat\\beta$ for $N_{\\mathrm{eff}}$). Panel~A separates the two compounding-kurtosis channels: lognormal deal skewness drives the $H=0$ left-tail excess and positive $\\mathrm{Corr}(\\hat e,\\widehat{\\mathrm{SE}})$, whereas 15-year stochastic factor compounding $A_{v,15}^2$ drives the additional $H=15$ drop in $N_{\\mathrm{eff}}$ and SE/SD (even under Gaussian factors and symmetric deals). Panel~B confirms asymptotic convergence: by $V=1{,}600$, $H=0$ Wald rejection reaches nominal 4.4\\% ($n_v=20$, SE/SD $=1.00$) and 5.0\\% ($n_v=5$, SE/SD $=0.96$).}",
+  "{\\scriptsize\\textit{Notes:} Equal-vintage $U_{v,H}$ ($q_v=1$) for single-factor $\\hat\\beta_{\\mathrm{MKT}}$ (true $\\beta_0=1$, 500 replications per cell, $S=\\lceil 1.3\\sqrt{V}\\rceil$, fixed-$b$ 5\\% critical values). Wald\\,\\% (L/R): two-sided rejection rate and left/right counts of the plug-in Bartlett fixed-$b$ Wald test. Score\\,\\%: rejection rate of the null-evaluated centered fixed-$b$ score test of $\\mathbb{E}[s_{v,H}(1)]=0$, which avoids plug-in leverage shrinkage and Hessian noise. SE/SD: mean plug-in SE divided by Monte Carlo SD of $\\hat\\beta-1$. $\\mathrm{Corr}(\\hat e,\\widehat{\\mathrm{SE}})$: correlation between estimation error $\\hat\\beta-1$ and plug-in SE. $N_{\\mathrm{eff}}$, Kurt., and Skew.: medians across replications of the influence-share effective sample size $(\\sum g_v^2)^2/\\sum g_v^4$, score fourth-moment ratio $\\overline{g^4}/(\\overline{g^2})^2$, and score skewness $\\overline{g^3}/(\\overline{g^2})^{3/2}$ (evaluated at $\\beta_0=1$ for Kurt./Skew., at $\\hat\\beta$ for $N_{\\mathrm{eff}}$). Panel~A separates the two compounding-kurtosis channels: lognormal deal skewness drives the $H=0$ left-tail excess and positive $\\mathrm{Corr}(\\hat e,\\widehat{\\mathrm{SE}})$, whereas 15-year stochastic factor compounding $A_{v,15}^2$ drives the additional $H=15$ drop in $N_{\\mathrm{eff}}$ and SE/SD (even under Gaussian factors and symmetric deals). Panel~B confirms asymptotic convergence: by $V=1{,}600$, $H=0$ Wald rejection reaches nominal 4.4\\% ($n_v=20$, SE/SD $=1.00$) and 5.0\\% ($n_v=5$, SE/SD $=0.96$). ",
+  sprintf("The symmetric deal shocks are mechanism ablations outside Assumption~\\ref{ass:deal_level_dgp}, which requires positive payoffs: the variance-matched shock $1+\\mathcal{N}(0, e^{k s^2}-1)$ makes %s\\%% of deal payoffs negative (%s\\%% of those held at least 11 years), the light shock $1+\\mathcal{N}(0, 0.5^2)$ %s\\%%.}",
+    neg.pct(neg["all"]), neg.pct(neg["long"]), sprintf("%.1f", 100 * neg["light"])),
   "\\end{table}"
 )
 writeLines(tex, "results/mc_step4/paper/table_AS7_v400_studentization.tex")
