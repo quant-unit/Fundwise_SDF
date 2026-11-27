@@ -32,6 +32,7 @@ Runtimes below were measured on the machine that produced the paper (macOS, 12 c
 | `LANG=en_US.UTF-8 Rscript run_synthetic_verification.R` | Builds synthetic Buyout and VC panels with the paper's vintage counts on the historical $q^5$ path. Checks the exact horizon rescaling identity (T1), the $U_{v,H}$ identity (the $O(n_v)$ formula against the direct sum over distinct fund pairs, EW and FW), and the fixed-$b$ critical values 2.790 / 2.867 / 2.722. Then runs the single-factor and $(\alpha,\beta)$ estimation, Bartlett fixed-$b$ inference, $N_{\mathrm{eff}}$, and the centered AR set end to end. Writes `output/synthetic_verification_summary.csv` (deterministic). | ~11 s |
 | `LANG=en_US.UTF-8 Rscript simulation/mc_paper.R` | Rebuilds all Monte Carlo exhibits from the included simulation outputs: main Tables 2–3 and Figure 2; Supplement Tables C.3, D.2–D.8 and E.1; Figures D.1–D.2. Writes `results/mc_step4/paper/` and the Figure 1 Panel C data. | ~2 s |
 | `LANG=en_US.UTF-8 Rscript simulation/mc_v400_table.R` | Supplement Table D.1 from `results/mc_step4/v400_studentization_diagnostic.csv`. | <2 s |
+| `LANG=en_US.UTF-8 Rscript results/fixedb_kv05_comparison.R` | Compares the fixed-$b$ critical values with the cubic approximation of Kiefer and Vogelsang (2005, Table 1) (Supplement Appendix D footnote). With the licensed empirical results present, it also lists the $U_{v,H}$ tests whose 5% decision would change. | ~5 s |
 
 ---
 
