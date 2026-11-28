@@ -159,7 +159,7 @@ Let $m_v(\theta) := \mathbb{E}[PV_v(\theta)\mid\mathcal{F}_{t_v^0}]$. Under Cond
 \[
 \mathbb{E}\!\left[PV_v(\theta)^2\right] = \mathbb{E}\!\left[\operatorname{Var}\!\left(PV_v(\theta)\,\middle|\,\mathcal{F}_{t_v^0}\right)\right] + \mathbb{E}\!\left[m_v(\theta)^2\right].
 \]
-The gradient of the second term, $2\,\mathbb{E}[m_v(\theta)\nabla_\theta m_v(\theta)]$, vanishes at $\theta_0$ because $m_v(\theta_0) = 0$, which gives the first equality of T3; the second equality is direct differentiation of $\mathbb{E}[PV_v(\theta)^2]$. The gradient is generically nonzero: in the two-fund example of Section~\ref{sec:fundwise_lmd_estimator} it equals $\sigma_N^2\nabla_\theta\log\Psi_T(\theta_0)$ (Equation~\eqref{eq:one_deal_gradient} at $H=0$, or $(2\sigma_N^2/n)\nabla_\theta\log\Psi_T(\theta_0)$ for an equal-weighted $n$-fund pool), which is nonzero whenever $\sigma_N^2 > 0$. \qed
+The gradient of the second term, $2\,\mathbb{E}[m_v(\theta)\nabla_\theta m_v(\theta)]$, vanishes at $\theta_0$ because $m_v(\theta_0) = 0$, which gives the first equality of T3; the second equality is direct differentiation of $\mathbb{E}[PV_v(\theta)^2]$. Note that T3 uses the inception-conditional variance $\operatorname{Var}(PV_v(\theta)\mid\mathcal{F}_{t_v^0})$ rather than the path-conditional variance $\sigma_{\mathrm{eff},v}^2(\theta) = \operatorname{Var}(PV_v(\theta)\mid\mathcal{G}_v)$ of Section~\ref{sec:optimal_H_theory}: under~(P) alone, $\mu_v(\theta_0) = \mathbb{E}[PV_v(\theta_0)\mid\mathcal{G}_v]$ need not vanish, so the derivative of $\mathbb{E}[\mu_v(\theta)^2]$ can offset $\nabla_\theta\mathbb{E}[\sigma_{\mathrm{eff},v}^2(\theta)]$ even when the latter is nonzero (whereas averaging the inception-conditional variance gradient over vintages yields the exact score of $Q_0^{\mathrm{L2}}$ at $\theta_0$). The gradient is generically nonzero: in the two-fund example of Section~\ref{sec:fundwise_lmd_estimator} it equals $\sigma_N^2\nabla_\theta\log\Psi_T(\theta_0)$ (Equation~\eqref{eq:one_deal_gradient} at $H=0$, or $(2\sigma_N^2/n)\nabla_\theta\log\Psi_T(\theta_0)$ for an equal-weighted $n$-fund pool), which is nonzero whenever $\sigma_N^2 > 0$. \qed
 
 \subsection{Proof of T4 (Finite-$n_v$ L2 decomposition)}
 \label{sec:proof_T4}
@@ -409,14 +409,14 @@ Hence $\bar\tau_{\mathrm{stoch}}(H; r_{\mathrm{arith}}, \sigma_r) > \bar\tau(H; 
 \mathbb{E}\!\left[U_{v,H}(\theta) \,\middle|\, \mathcal{F}^{\mathrm{pub}},\mathcal{W}\right]
 = A_{v,H}(\theta)^2\bigl(\mu_v(\theta)^2 + c_{v,v}(\theta)\bigr),
 \]
-independently of $c_{v,w}(\theta)$ ($v \neq w$). Writing $\tilde{q}_v := q_v / \sum_{w:\,n_w \ge 2} q_w$ (which is $\mathcal{W}$-measurable), linearity of conditional expectation gives
+independently of $c_{v,w}(\theta)$ ($v \neq w$). Let $E_v := \mathbf{1}_{\{n_v \ge 2\}}$ denote vintage-$v$ pair eligibility and put $\tilde{q}_v := E_v q_v / \sum_{w=1}^V E_w q_w$ on the positive-eligibility event $\sum_{w=1}^V E_w q_w > 0$ (both $\mathcal{W}$-measurable). Linearity of conditional expectation gives
 \begin{align*}
 \mathbb{E}\!\left[\widehat{U}_H(\theta)\,\middle|\,\mathcal{W}\right]
-&= \sum_{v:\,n_v\ge 2} \tilde{q}_v\,\mathbb{E}\!\left[A_{v,H}(\theta)^2\bigl(\mu_v(\theta)^2 + c_v(\theta)\bigr)\,\middle|\,\mathcal{W}\right], \\
+&= \sum_{v=1}^V \tilde{q}_v\,\mathbb{E}\!\left[A_{v,H}(\theta)^2\bigl(\mu_v(\theta)^2 + c_v(\theta)\bigr)\,\middle|\,\mathcal{W}\right], \\
 \mathbb{E}\!\left[\widehat{U}_H(\theta)\right]
-&= \sum_{v:\,n_v\ge 2} \mathbb{E}\!\left[\tilde{q}_v\,A_{v,H}(\theta)^2\bigl(\mu_v(\theta)^2 + c_v(\theta)\bigr)\right]
+&= \sum_{v=1}^V \mathbb{E}\!\left[\tilde{q}_v\,A_{v,H}(\theta)^2\bigl(\mu_v(\theta)^2 + c_v(\theta)\bigr)\right]
 \end{align*}
-(where $\tilde{q}_v$ exits the unconditional expectation directly under deterministic baseline weights $q_v \equiv 1$), and under the increasing-domain mixing/local-dependence conditions of Proposition~\ref{prop:consistency_clt}, the ULLN ensures $\widehat{U}_H(\theta) \xrightarrow{p} Q_H(\theta)$ uniformly on $\Theta$. Thus off-diagonal covariances $c_{v,w}$ ($v \neq w$) do not enter $Q_H(\theta)$ or $H_0^\ast$ when the entire within-vintage marginal law is held fixed. Because the cross-vintage covariance matrix $[c_{v,w}(\theta_0)]_{v,w=1}^V$ is positive semidefinite, any pair with $c_{v,w}(\theta_0) \neq 0$ must satisfy $c_v(\theta_0) c_w(\theta_0) \ge c_{v,w}(\theta_0)^2 > 0$, forcing $c_v(\theta_0) > 0$. This is a statement about covariance \emph{levels}; $U_{v,0}$ inherits a nonzero inception score whenever $\mathbb{E}[q_v \nabla_\theta c_v(\theta_0)] \neq 0$ (with sign governed by that derivative and, in vector models, coupled through $\mathcal{H}_0^{-1}$).
+(retaining $E_v$ and the denominator inside the unconditional expectation whenever eligibility is random; $\tilde{q}_v$ exits the unconditional expectation only when both $q_v$ and the eligible set are deterministic or conditioned on). Working on the $V$ pair-eligible vintages (conditioning on the eligible design, as in Assumption~A2) with $\bar{q}_V := V^{-1}\sum_{v=1}^V q_v \xrightarrow{p} \mu_q \in (0,\infty)$, the increasing-domain ULLN of Proposition~\ref{prop:consistency_clt} ensures $Q_{V,H}(\theta) = V^{-1}\sum_{v=1}^V q_v U_{v,H}(\theta) \xrightarrow{p} Q_H(\theta)$ and hence $\widehat{U}_H(\theta) = \bar{q}_V^{-1}Q_{V,H}(\theta) \xrightarrow{p} Q_H(\theta)/\mu_q$ uniformly on $\Theta$ (with $\mu_q = 1$ under baseline $q_v \equiv 1$, and an identical minimizer $\theta_H^\dagger$ for any positive $\mu_q$). Thus off-diagonal covariances $c_{v,w}$ ($v \neq w$) do not enter $Q_H(\theta)$ or $H_0^\ast$ when the entire within-vintage marginal law is held fixed. Because the cross-vintage covariance matrix $[c_{v,w}(\theta_0)]_{v,w=1}^V$ is positive semidefinite, any pair with $c_{v,w}(\theta_0) \neq 0$ must satisfy $c_v(\theta_0) c_w(\theta_0) \ge c_{v,w}(\theta_0)^2 > 0$, forcing $c_v(\theta_0) > 0$. This is a statement about covariance \emph{levels}; $U_{v,0}$ inherits a nonzero inception score whenever the vintage-average $\lim_{V\to\infty} V^{-1}\sum_{v=1}^V \mathbb{E}[q_v \nabla_\theta c_v(\theta_0)] \neq 0$ (with sign governed by that derivative and, in vector models, coupled through $\mathcal{H}_0^{-1}$).
 
 (b) Under a stationary vintage shock $W_v$ with fixed within-vintage marginal law ($\operatorname{Var}(W_v) = \sigma_W^2$) and $\operatorname{Cov}(W_v, W_w) = \sigma_W^2 \rho_W^{|y_v-y_w|}$, the within-vintage cross-fund cash-flow covariance $\Sigma_{v,U}^{(s,t)} = \sigma_W^2 \mu_{v,s}^{\mathrm{exit}}\mu_{v,t}^{\mathrm{exit}}$ is independent of $\rho_W$, so $Q_H(\theta)$, $T_{\mathrm{eff}}$, and $H_0^\ast$ are invariant to $\rho_W$.
 By contrast, under a zero-mean calendar-time private shock $e_u \perp \mathcal{F}^{\mathrm{pub}}$ accumulated over each deal's active period $[a,b]$ (linearized multiplicative shock $\sum_{u=a+1}^b e_u$ with $\operatorname{Cov}(e_u,e_{u'}) = \gamma_e(|u-u'|)$), the cross-fund covariance between equal-outlay deals $(a_1,b_1)$ and $(a_2,b_2)$ in vintage $v$ is
@@ -447,18 +447,24 @@ Hence for $v \neq w$,
 = 4\,q_v q_w A_{v,H}^2 A_{w,H}^2\,\mu_v'(\theta_0)\,\mu_w'(\theta_0)\,c_{v,w}(\theta_0),
 \]
 which enters the linear component of $\Lambda_H^{\mathrm{cross}} = \lim_{V\to\infty} V^{-1}\sum_{v\neq w}\operatorname{Cov}(s_{v,H}, s_{w,H})$ directly. Notice that $c_{v,w}(\theta_0) > 0$ contributes positively to this linear component whenever the unconditional expectation of $q_v q_w A_{v,H}^2 A_{w,H}^2 \mu_v'(\theta_0)\mu_w'(\theta_0)c_{v,w}(\theta_0)$ is positive (automatic for $\alpha$, where $\mu_v' < 0$, whereas for $\beta$ the sensitivity product $\mu_v'\mu_w'$ can be negative across opposing factor regimes); because total $\Lambda_H^{\mathrm{cross}}$ also contains quadratic and linear--quadratic cross-terms from \eqref{eq:app_score_decomp}, signing total $\Lambda_H$ additionally requires sign restrictions on those remaining components.
-Moreover, by standard second-order M-estimator expansion around $\theta_H^\dagger$ \citep{rilstone1996second,newey2004higher} (written for scalar $\theta$; the vector tensor analogue is immediate),
+Moreover, define the finite-$V$ expected-criterion minimizer $\theta_{V,H}^\dagger := \arg\min_{\theta \in \Theta} V^{-1}\sum_{v=1}^V \mathbb{E}[\mathcal{L}_{v,H}(\theta)]$, which satisfies $V^{-1}\sum_{v=1}^V \mathbb{E}[s_{v,H}(\theta_{V,H}^\dagger)] = 0$ when interior. Under standard higher-order stochastic-expansion regularity for weakly dependent observations \citep[cf.][]{rilstone1996second,newey2004higher,bao2007timeseries} (written for scalar $\theta$; the vector tensor analogue is immediate), expanding around $\theta_{V,H}^\dagger$ gives
 \[
-\mathbb{E}[\hat\theta_H - \theta_H^\dagger]
+\mathbb{E}\!\left[\hat\theta_H - \theta_{V,H}^\dagger\right]
 = \frac{1}{V}\left[\mathcal{H}_H^{-2}\,C_{hs}(H) - \frac{1}{2}\mathcal{H}_H^{-3}\mathcal{D}_H\,\Lambda_H\right] + o(V^{-1}),
 \]
 where
 \[
 C_{hs}(H) := \lim_{V\to\infty}\frac{1}{V}\sum_{v,w}\operatorname{Cov}\!\bigl(h_{v,H}(\theta_H^\dagger),\, s_{w,H}(\theta_H^\dagger)\bigr),
 \qquad
-\mathcal{D}_H := \lim_{V\to\infty}\frac{1}{V}\sum_{v=1}^V \mathbb{E}\!\left[\nabla_{\theta\theta\theta}\mathcal{L}_{v,H}(\theta_H^\dagger)\right].
+\mathcal{D}_H := \lim_{V\to\infty}\frac{1}{V}\sum_{v=1}^V \mathbb{E}\!\left[\nabla_{\theta\theta\theta}\mathcal{L}_{v,H}(\theta_H^\dagger)\right],
 \]
-Both $C_{hs}(H)$ and $\Lambda_H$ contain double sums over nearby vintages $v \neq w$ and carry opposite signs in the bracketed expression, so cross-vintage dependence enters both components of the $O(1/V)$ bias $b_1(H)/V$ without forcing a universal sign.
+and therefore
+\[
+\mathbb{E}\!\left[\hat\theta_H - \theta_H^\dagger\right]
+= \bigl(\theta_{V,H}^\dagger - \theta_H^\dagger\bigr)
++ \frac{1}{V}\left[\mathcal{H}_H^{-2}\,C_{hs}(H) - \frac{1}{2}\mathcal{H}_H^{-3}\mathcal{D}_H\,\Lambda_H\right] + o(V^{-1}).
+\]
+With heterogeneous vintages, the deterministic shift $\theta_{V,H}^\dagger - \theta_H^\dagger$ can vanish slower than $O(V^{-1})$ under mere convergence $V^{-1}\sum_{v=1}^V \mathbb{E}[s_{v,H}(\theta_H^\dagger)] \to 0$ (for instance, under a drifting shared-shock variance $c_v = c + d/\sqrt{v}$, $\theta_{V,H}^\dagger - \theta_H^\dagger = O(V^{-1/2})$). Obtaining an $O(V^{-1})$ bias expansion around the \emph{limiting} target $\theta_H^\dagger$ therefore requires the matching rate condition $V^{-1}\sum_{v=1}^V \mathbb{E}[s_{v,H}(\theta_H^\dagger)] = \gamma_1(H)/V + o(V^{-1})$ (giving $\theta_{V,H}^\dagger - \theta_H^\dagger = -\mathcal{H}_H^{-1}\gamma_1(H)/V + o(V^{-1})$, which vanishes when $V^{-1}\sum_v\mathbb{E}[s_{v,H}(\theta_H^\dagger)] = o(V^{-1})$, e.g.\ under homogeneous vintages or per-vintage centering), yielding $\mathbb{E}[\hat\theta_H - \theta_H^\dagger] = b_1(H)/V + o(V^{-1})$ with $b_1(H) = -\mathcal{H}_H^{-1}\gamma_1(H) + \mathcal{H}_H^{-2}C_{hs}(H) - \frac{1}{2}\mathcal{H}_H^{-3}\mathcal{D}_H\Lambda_H$. Both $C_{hs}(H)$ and $\Lambda_H$ contain double sums over nearby vintages $v \neq w$ and carry opposite signs in the stochastic bracket, so cross-vintage dependence enters both components of the $O(1/V)$ sampling bias without forcing a universal sign.
 Finally, for a multiplicative shock $\eta_v(\theta) = W_v \tilde{g}_v(\theta)$ with $\nabla_\theta\log\tilde{g}_v(\theta_0) = -\bar{S}_v^{\mathrm{eff}}(\theta_0)$, the quadratic cohort score simplifies pointwise to
 \[
 s_{v,H}^{\mathrm{quad}}(\theta_0) = 2\,q_v A_{v,H}(\theta_0)^2\,\eta_v(\theta_0)^2\,\Big(\bar{S}_{v,H}^{\mathrm{comp}}(\theta_0) - \bar{S}_v^{\mathrm{eff}}(\theta_0)\Big).
@@ -487,8 +493,8 @@ in a neighborhood of $H_0^\ast$ with $\delta_V := H_{\mathrm{MSE}}^{\ast,\mathrm
 \implies
 H_{\mathrm{MSE}}^{\ast,\mathrm{as}}(V) = H_0^\ast - \frac{\mathcal{V}'(H_0^\ast)}{2\,V\,[B_0'(H_0^\ast)]^2} + O(V^{-2}).
 \]
-If $H_0^\ast$ is the unique globally separated zero of $B_0$ on a compact horizon domain $\mathcal{H}$, this local minimizer is also the global minimizer for large $V$; when multiple simple zeros coexist (e.g., $B_0(H) = (H-1)(H-2)$), the global MSE-optimal horizon converges instead to the zero with the smallest asymptotic variance $\mathcal{V}$, so competing roots must be compared by $\mathcal{V}$.
-For the \emph{actual} finite-$V$ MSE, assume a uniformly differentiable $O(V^{-1})$ expansion on a neighborhood of $H_0^\ast$ with $\mathbb{E}[\hat\theta_H - \theta_H^\dagger] = b_1(H)/V + o(V^{-1})$ (Part~(ii)(c)), so
+If $H_0^\ast$ is the unique globally separated zero of $B_0$ on a compact horizon domain $\mathcal{H}$, this local minimizer is also the global minimizer for large $V$; when multiple simple zeros coexist (e.g., $B_0(H) = (H-1)(H-2)$), the global MSE-optimal horizon converges instead to a zero minimizing the asymptotic variance $\mathcal{V}$, so competing roots must be compared by $\mathcal{V}$ (if competing zeros tie on $\mathcal{V}$, the $O(V^{-1})$ expansion leaves the tie unresolved).
+For the \emph{actual} finite-$V$ MSE, assume a uniformly differentiable $O(V^{-1})$ expansion on a neighborhood of $H_0^\ast$ with $\mathbb{E}[\hat\theta_H - \theta_H^\dagger] = b_1(H)/V + o(V^{-1})$ (incorporating any deterministic $O(V^{-1})$ shift $-\mathcal{H}_H^{-1}\gamma_1(H)/V$ alongside the stochastic terms of Part~(ii)(c), with vanishing deterministic shift when $V^{-1}\sum_v\mathbb{E}[s_{v,H}(\theta_H^\dagger)] = o(V^{-1})$), so
 \[
 \mathbb{E}\!\left[(\hat\theta_H - \theta_0)^2\right]
 = B_0(H)^2 + \frac{\mathcal{V}(H) + 2\,B_0(H)\,b_1(H)}{V} + o(V^{-1}),
@@ -540,17 +546,17 @@ When $V$ is small (e.g., $V=25$) and cross-vintage correlation is strong ($\rho_
 \textbf{Dependence regime} & \textbf{Within-vintage $U_{v,0}$} & \textbf{Uninstrumented $\widetilde{U}_{0,m}^{\mathrm{cross}}$} & \textbf{Composite $(U_{v,H}, H^\ast)$} \\
 \midrule
 \textbf{1. i.i.d.\ fund noise}\newline ($\sigma_{\nu,v}^2>0$, $c_v=0$, $c_{v,w}=0$) &
-  \textbf{Exact fix at $H=0$}: kills $\sigma_{\nu,v}^2/n_v$; full-rank $\mathbb{E}[\mu_v^2]$ under spanning $J_v$. &
+  \textbf{Exact fix at $H=0$}: kills diagonal $h_v\sigma_{\nu,v}^2$ ($\sigma_{\nu,v}^2/n_v$ EW); full-rank $\mathbb{E}[\mu_v^2]$ under spanning $J_v$. &
   Unnecessary; collapses to rank-1 $(\mathbb{E}[\mu_v])^2$ (loses regular $p\ge 2$ ID; can admit multiple roots). &
   Targets $\theta_0$ for all $H \ge 0$; $H=0$ minimizes RMSE in core MC (no universal ranking). \\
 \addlinespace[3pt]
 \textbf{2. Independent vintage shocks}\newline ($c_v>0$, $c_{v,w}=0$ for $v\neq w$) &
-  Kills $\sigma_{\nu,v}^2/n_v$; retains $c_v$ score term and non-coercivity in $\alpha$. &
+  Kills diagonal $h_v\sigma_{\nu,v}^2$; retains $c_v$ score term and non-coercivity in $\alpha$. &
   Kills $c_v$ only via rank-1 collapse to $(\mathbb{E}[PV_v])^2$ and indefinite $M_0$. &
   \textbf{Score root $H_0^\ast$} solving \eqref{eq:duration_matching_score} (or \eqref{eq:exact_tau_bar}); coercive for late enough $H$; cuts bias \& RMSE. \\
 \addlinespace[3pt]
 \textbf{3. Nearby cross-vintage dependence}\newline ($c_{v,w}\neq 0$ for $|y_v-y_w|\le L \Rightarrow c_v>0$) &
-  Kills $\sigma_{\nu,v}^2/n_v$; no extra $O(1)$ shift from $c_{v,w}$ at fixed marginal law; $V_{\mathrm{eff}}\downarrow$. &
+  Kills diagonal $h_v\sigma_{\nu,v}^2$; no extra $O(1)$ shift from $c_{v,w}$ at fixed marginal law; $V_{\mathrm{eff}}\downarrow$. &
   Kills lag-$m$ $c_{v,w}$ only via rank-1 collapse and indefinite $M_m$ (42\%--100\% bound hits). &
   \textbf{Same $O(1)$ score root} (invariant to $\rho_W$; longer under $e_u$ when exit-overlap cov.\ $>0$); alters $\Lambda_H$ \& $O(1/V)$ bias. \\
 \bottomrule
@@ -742,7 +748,7 @@ Slutsky's theorem and \eqref{eq:integrated_hessian} give $\sqrt{V}(\hat\theta_H 
 \label{rem:per_vintage_centering}
 The definition of $\theta_H^\dagger$ makes only the cross-vintage average $V^{-1}\sum_{v}\mathbb{E}[s_{v,H}(\theta_H^\dagger)]$ vanish in the limit, whereas Proposition~\ref{prop:proof_cons_clt} and Corollary~\ref{cor:fixed_b_ar}(i) need each vintage's mean score to vanish.
 (a)~For $U_{v,H}$ under the conditions of Theorem~\ref{thm:finite_pool}(T7), $\mathbb{E}[U_{v,H}(\theta)\mid\mathcal{G}_v]$ is a weighted sum of products $A_{v,H}(\theta)^2\mu_{v,i}(\theta)\mu_{v,j}(\theta)$ with $\mu_{v,i}(\theta_0) = 0$, so its gradient vanishes at $\theta_0$ in every vintage, whatever the pool sizes $n_v$; the condition holds at $\theta_H^\dagger = \theta_0$.
-(b)~For L2 VYP, each vintage's expected criterion contains the variance tilt of Theorem~\ref{thm:finite_pool}(T3--T6), whose gradient at $\theta_0$ scales with $\sum_{i}\omega_{v,i}^2$ ($n_v^{-1}$ under equal weights). The vintage-level minimizers then coincide only when these terms do, for example when pool sizes and payoff variances are the same in every vintage. With $n_v$ rising from 2 to 41 (Buyout) and 56 (VC) in our panels, the mean scores $\mathbb{E}[s_{v,H}(\theta_H^\dagger)]$ of L2 are nonzero and only average to zero, Corollary~\ref{cor:fixed_b_ar}(i) does not cover L2, and its Bartlett estimator also absorbs the cross-vintage spread of these means. The empirical tables therefore report L2 standard errors for comparison but attach fixed-$b$ significance markers only to $U_{v,H}$.
+(b)~For L2 VYP, each vintage's expected criterion contains the variance tilt of Theorem~\ref{thm:finite_pool}(T3--T6), whose gradient at $\theta_0$ scales with $\sum_{i}\omega_{v,i}^2$ ($n_v^{-1}$ under equal weights). The vintage-level minimizers then coincide only when these terms do, for example when pool sizes and payoff variances are the same in every vintage. With $n_v$ rising from 2 to 41 (Buyout) and 56 (VC) in our panels, the mean scores $\mathbb{E}[s_{v,H}(\theta_H^\dagger)]$ of L2 are generally nonzero and need only average to zero, Corollary~\ref{cor:fixed_b_ar}(i) does not cover L2, and its Bartlett estimator also absorbs the cross-vintage spread of these means. The empirical tables therefore report L2 standard errors for comparison but attach fixed-$b$ significance markers only to $U_{v,H}$.
 (c)~The same inference gap can apply to shared-shock $U_{v,H}$ fits under Theorem~\ref{thm:finite_pool}(T8): even at a zero-score horizon $H_0^\ast$ where the cross-vintage average score vanishes, vintage-specific horizon caps, factor realizations, or heterogeneous $c_v$ can leave each vintage's expected score $\mathbb{E}[s_{v,H}(\theta_H^\dagger)]$ nonzero. Any tests attached to the calibrated $H=12.5$~yr VC sensitivity estimates therefore carry this qualification in addition to finite-sample persistent-shock over-rejection.
 \end{remark}
 
