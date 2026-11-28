@@ -92,7 +92,7 @@ We establish valid small-sample (fixed-$b$) and identification-robust inference,
 
 Empirical asset pricing overwhelmingly studies traded securities whose periodic market prices allow researchers to compute one-period returns and estimate risk exposures linearly.
 Even a listed corporation is a collection of staggered, untraded investment projects---factories, research pipelines, and acquisitions---whose cash flows the stock market continuously aggregates into a share price.
-Without a public exchange, a vast share of global wealth is valued without reliable periodic prices, relying at best on stale appraisals and often on no intermediate valuation at all.
+Without a public exchange, a vast share of global wealth is valued without reliable periodic prices, relying at best on stale appraisals \citep{BGK19,JLRS20,brown2023nowcasting} and often on no intermediate valuation at all.
 
 Across this non-traded economy, irregular cash-flow streams are the primary economic record, and pooling arises naturally at two levels.
 First, many non-traded claims are \emph{natively pooled} entities whose cash flows aggregate staggered underlying projects.
@@ -108,7 +108,7 @@ Yet finite cohorts retain a non-vanishing distortion, and even massive cohorts (
 Formalizing the volatility bias noted by \citet[p.~517 fn.~8; Table~1, p.~522]{DLP12}, we prove that squared pooled NPVs can converge to a shifted population target even as the number of cohorts grows without bound at fixed cohort sizes (Theorem~\ref{thm:finite_pool}, T3--T4); absent shared shocks, consistency requires diffuse within-cohort infill (Online Supplement Lemma~\ref{lem:infill}).
 
 To break this finite-pool trap without requiring large cohorts, we exploit a structural feature shared by all cohort cash-flow panels: every unit originating in the same vintage experiences the identical public factor path.
-Replacing each cohort's squared average NPV with the normalized average of \emph{distinct-unit} pair products $U_{v,H}$ removes all own-unit diagonal squares identically.
+Replacing each cohort's squared average NPV with the normalized average of \emph{distinct-unit} pair products $U_{v,H}$ removes all own-unit diagonal squares identically, adapting leave-one-out quadratic-form debiasing and pairwise U-statistic M-estimation to nonlinear cash-flow discounting \citep{HP94,AIK99,CSHNW12,CJN18,KSS20,MS22}.
 This tuning-free upgrade computes in $O(n_v)$ operations via a simple algebraic identity, scaling effortlessly from tiny to massive cohorts.
 Under conditional independence across units given the public factor path and sign-aligned conditional means, $U_{v,H}$ restores exact identification at inception---and at any compounding horizon---with as few as two units per cohort (Theorem~\ref{thm:finite_pool}, T7).
 
@@ -137,10 +137,6 @@ In simulations, equal-vintage $U_{v,0}$ eliminates finite-pool bias with near-no
 Empirically, with $\alpha$ fixed at zero, Buyout exhibits modest finite-pool bias and stable market exposures just above unity across horizons.
 In Venture Capital, removing diagonal squares lowers inception estimates substantially, prevents long-horizon squared-loss collapse, and yields coherent market exposures under both inception and shared-shock ($12.5$-year) sensitivity horizons.
 Under inception pricing alone, AR sets rule out low Buyout exposures but remain wide for Venture Capital; across both strategies, abnormal performance ($\alpha$) and multi-factor exposures remain poorly identified.
-
-\paragraph{Related literature.}
-Methodologically, $U_{v,H}$ connects to leave-one-out quadratic-form debiasing and U-statistic M-estimation \citep{AIK99,CSHNW12,CJN18,KSS20,MS22,HP94} as well as conditional-moment methods \citep{DL04,MJK20}; our distinct setting---repeated cohort units sharing one high-dimensional public factor path under parameter-dependent horizon revaluation---drives both duration-matched horizon selection and cross-vintage rank-1 collapse while formalizing \citet[eq.~4]{TP24}.
-In empirical financial economics, we delineate cash-flow-identified reciprocal benchmark deflators \citep{DLP12,kroencke2013return,kim2015estimation,farrelly2019risk,lee2019new} from public-calibrated SDF frameworks \citep{KN16,GSW20,GN18,andonov2021institutional,riddiough2022private,cordell2023clo,erel2024risk,jeffers2024risk,KN24,korteweg2024private}, complementing \citet{burnside2016identification}, parametric PE models \citep{FNP12,ACGP18}, tailored PMEs \citep{HJK14,RS16}, secondary pricing \citep{boyer2023discount}, and NAV smoothing \citep{BGK19,JLRS20,brown2023nowcasting}.
 
 The remainder of the article is organized as follows.
 Section~\ref{sec:model_id} develops the pooled cash-flow model, finite-pool identification theory, and the cross-fund pair-product estimator.
@@ -465,7 +461,7 @@ Unlike quadratic criteria, the linear inception pricing moment
 z_{v,H} := \frac{A_{v,H}(1)}{A_{v,0}(1)},
 \end{equation}
 reduces at $H = 0$ ($z_{v,0} \equiv 1$) to $V^{-1}\sum_v PV_v(\theta)$, which has exact mean zero under Condition~(P) alone---even when $c_v \neq 0$ or strict exogeneity~(X) fails (at $H>0$, $z_{v,H}$ is a fixed reference-parameter instrument evaluated at $\beta=1$, so it does not grow with candidate $\alpha$; Online Supplement Remark~\ref{rem:iv_alpha}).
-Solving $\bar{g}_0(\beta) = 0$ for a point estimate is fragile, however: the nonlinear pricing moment can admit multiple roots on $\Theta$ (including the public growth-optimal exposure; Online Supplement Lemma~\ref{lem:multiple_roots}), can lose all roots in finite samples, and faces boundary/collinearity subtleties in two-parameter $(\alpha,\beta)$ systems (Online Supplement Remark~\ref{rem:iv_alpha}).
+Solving $\bar{g}_0(\beta) = 0$ for a point estimate is fragile, however: the nonlinear pricing moment can admit multiple roots on $\Theta$ (including the public growth-optimal exposure; Online Supplement Lemma~\ref{lem:multiple_roots}), can lose all roots in finite samples, and faces boundary/collinearity subtleties in two-parameter $(\alpha,\beta)$ systems (Online Supplement Remark~\ref{rem:iv_alpha}; cf.\ \citealp{burnside2016identification} on weak identification in linear SDF models).
 
 To bypass root selection and weak-slope division, we invert the centered Bartlett fixed-$b$ moment test \citep{AR49,SW00,KV05} across all $\beta \in \Theta$: with $s_v(\beta) = z_{v,H} PV_v(\beta)$ and centered long-run variance $\hat\Omega_g(\beta) = V^{-1}\sum_{v,w} K(|y_v - y_w|/S)\,(s_v(\beta)-\bar{g}_H(\beta))(s_w(\beta)-\bar{g}_H(\beta))$, collect all $\beta \in \Theta$ satisfying
 \begin{equation}
